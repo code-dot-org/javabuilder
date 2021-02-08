@@ -17,4 +17,24 @@ dependencies {
 
     // This dependency is used internally, and not exposed to consumers on their own compile classpath.
     implementation 'com.google.guava:guava:29.0-jre'
+
+    // AWS Lambda dependencies
+    implementation 'com.google.code.gson:gson:2.8.6'
+    implementation 'com.amazonaws:aws-lambda-java-core:1.2.1'
+    implementation 'com.amazonaws:aws-lambda-java-events:3.1.0'
+    runtimeOnly 'com.amazonaws:aws-lambda-java-log4j2:1.2.0'
+
+    // Code dependencies
+    implementation 'commons-io:commons-io:2.8.0'
+}
+
+// Build code into a zip as required by AWS Lambda https://docs.aws.amazon.com/lambda/latest/dg/java-package.html
+// Invoke via `./gradlew -q buildZip`
+// Output goes to ./build/distributions/lib.zip
+task buildZip(type: Zip) {
+    from compileJava
+    from processResources
+    into('lib') {
+        from configurations.runtimeClasspath
+    }
 }
