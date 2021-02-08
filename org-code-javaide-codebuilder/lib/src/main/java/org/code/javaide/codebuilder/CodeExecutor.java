@@ -19,12 +19,15 @@ import org.apache.commons.io.FilenameUtils;
  * This is the AWS Lambda handler
  * Details: https://docs.aws.amazon.com/lambda/latest/dg/java-handler.html
  * It compiles and runs the input Java code and returns the output of that code's execution
- * @param userProject A mapping of filenames in a user's project to the code in those files
- * @param __          Unused. The environment context where the handler is executed
- * @return            The output from the user's code execution
  */
 public class CodeExecutor implements RequestHandler<Map<String,String>, String>{
   Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
+  /**
+  * @param userProject A mapping of filenames in a user's project to the code in those files
+  * @param __          Unused. The environment context where the handler is executed
+  * @return            The output from the user's code execution
+  */
   @Override
   public String handleRequest(Map<String,String> userProject, Context __)
   {
