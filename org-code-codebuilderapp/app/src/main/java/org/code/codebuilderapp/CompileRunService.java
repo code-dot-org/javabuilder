@@ -12,7 +12,7 @@ public class CompileRunService {
 
   private final SimpMessagingTemplate simpMessagingTemplate;
   private static final String WS_MESSAGE_TRANSFER_DESTINATION =
-    "/topic/output";
+    Destinations.PTP_PREFIX + Destinations.OUTPUT_CHANNEL;
 
   CompileRunService(SimpMessagingTemplate simpMessagingTemplate) {
     this.simpMessagingTemplate = simpMessagingTemplate;
