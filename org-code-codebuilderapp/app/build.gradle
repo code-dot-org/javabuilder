@@ -5,7 +5,7 @@
  *
  * To get your changes into the docker container, do the following
  * gradle build
- * cp app/build/libs/app-0.0.1-SNAPSHOT.jar dockerContainer
+ * cp app/build/libs/codebuilderapp-0.0.1.jar dockerContainer
  * cd dockerContainer
  * docker build .
  *
@@ -23,6 +23,10 @@ plugins {
 group = 'org.code'
 version = '0.0.1'
 sourceCompatibility = '1.8'
+
+bootJar {
+  baseName = 'codebuilderapp'
+}
 
 repositories {
   mavenCentral()
