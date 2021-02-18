@@ -2,9 +2,7 @@ package org.code.javabuilder;
 
 import java.security.Principal;
 
-/**
- * A principal associated with a single anonymous session.
- */
+/** A principal associated with a single anonymous session. */
 public class AnonymousUser implements Principal {
 
   String name;

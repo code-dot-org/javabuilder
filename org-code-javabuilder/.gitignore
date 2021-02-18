@@ -8,6 +8,5 @@ bin
 # Ignore Gradle auto-generated files
 app/.project
 *.classpath
-
-# Ignore compiled Java files
-*.class
+.settings
+.project
