@@ -6,9 +6,8 @@ import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.stereotype.Controller;
 
 /**
- * Accepts requests to the /execute channel to compile and run user code.
- * Directs output from the user's program to the user on the /topic/output
- * channel.
+ * Accepts requests to the /execute channel to compile and run user code. Directs output from the
+ * user's program to the user on the /topic/output channel.
  */
 @Controller
 public class JavaBuildController {
@@ -19,10 +18,7 @@ public class JavaBuildController {
     this.compileRunService = compileRunService;
   }
 
-  /**
-   * Executes the user code and sends the output of that code across the
-   * established websocket.
-   */
+  /** Executes the user code and sends the output of that code across the established websocket. */
   @MessageMapping(Destinations.EXECUTE_CODE)
   @SendToUser(Destinations.PTP_PREFIX + Destinations.OUTPUT_CHANNEL)
   public UserProgramOutput execute(UserProgram userProgram, Principal principal) {
