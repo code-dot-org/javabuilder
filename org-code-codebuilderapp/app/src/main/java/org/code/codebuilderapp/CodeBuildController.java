@@ -23,8 +23,8 @@ public class CodeBuildController {
    * Executes the user code and sends the output of that code across the
    * established websocket.
    */
-  @MessageMapping("/execute")
-  @SendToUser("/topic/output")
+  @MessageMapping(Destinations.EXECUTE_CODE)
+  @SendToUser(Destinations.PTP_PREFIX + Destinations.OUTPUT_CHANNEL)
   public UserProgramOutput execute(UserProgram userProgram, Principal principal) {
     // Send fake output
     compileRunService.sendMessages(principal.getName(), "Compiling...");

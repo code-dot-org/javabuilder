@@ -20,8 +20,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
    */
   @Override
   public void configureMessageBroker(MessageBrokerRegistry config) {
-    config.enableSimpleBroker("/topic");
-    config.setApplicationDestinationPrefixes("/app");
+    config.enableSimpleBroker(Destinations.PTP_PREFIX);
+    config.setApplicationDestinationPrefixes(Destinations.MAGIC_DESTINATION_HEADER);
   }
 
   /**
@@ -32,11 +32,11 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
   @Override
   public void registerStompEndpoints(StompEndpointRegistry registry) {
     registry
-      .addEndpoint("/codebuilder")
+      .addEndpoint(Destinations.APP_ENDPOINT)
       .setHandshakeHandler(new AnonymousHandshakeHandler());
 
     registry
-      .addEndpoint("/codebuilder")
+      .addEndpoint(Destinations.APP_ENDPOINT)
       .setHandshakeHandler(new AnonymousHandshakeHandler())
       .withSockJS();
   }
