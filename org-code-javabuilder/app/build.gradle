@@ -1,0 +1,49 @@
+/*
+ * Usage:
+ * gradle build -> builds the project
+ * gradle bootRun -> sets up a local server -> can be accessed at localhost:8080
+ *
+ * To get your changes into the docker container, do the following
+ * gradle build
+ * cp app/build/libs/org.code.javabuilder-0.0.1.jar dockerContainer
+ * cd dockerContainer
+ * docker build .
+ *
+ * To publish that docker container, do the following
+ * docker tag <id> jmkulwik/test-fargate-websocket:<tag>
+ * docker push jmkulwik/test-fargate-websocket:<tag>
+ */
+
+plugins {
+  id 'org.springframework.boot' version '2.4.2'
+  id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+  id 'java'
+}
+
+group = 'org.code'
+version = '0.0.1'
+sourceCompatibility = '1.8'
+
+bootJar {
+  baseName = 'org.code.javabuilder'
+}
+
+repositories {
+  mavenCentral()
+}
+
+dependencies {
+  implementation 'org.springframework.boot:spring-boot-starter-websocket'
+  implementation 'org.webjars:webjars-locator-core'
+  implementation 'org.webjars:sockjs-client:1.0.2'
+  implementation 'org.webjars:stomp-websocket:2.3.3'
+  implementation 'org.webjars:bootstrap:3.3.7'
+  implementation 'org.webjars:jquery:3.1.1-1'
+  implementation 'commons-io:commons-io:2.8.0'
+  implementation 'com.googlecode.json-simple:json-simple:1.1.1'
+  testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+test {
+  useJUnitPlatform()
+}
