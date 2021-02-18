@@ -1,0 +1,8 @@
+org-code-javabuilder/gradlew verGJF -p org-code-javabuilder
+RESULT=$?
+
+RED='\033[0;31m'
+
+# return 1 exit code if running checks fails
+[ $RESULT -ne 0 ] && echo "${RED}\nJava linting errors were detected. These can be fixed by running 'gradle goJF'\n" && exit 1
+exit 0
