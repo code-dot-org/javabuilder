@@ -1,4 +1,4 @@
-package org.code.codebuilderapp;
+package org.code.javabuilder;
 
 import java.security.Principal;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -11,11 +11,11 @@ import org.springframework.stereotype.Controller;
  * channel.
  */
 @Controller
-public class CodeBuildController {
+public class JavaBuildController {
 
   private final CompileRunService compileRunService;
 
-  CodeBuildController(CompileRunService compileRunService) {
+  JavaBuildController(CompileRunService compileRunService) {
     this.compileRunService = compileRunService;
   }
 

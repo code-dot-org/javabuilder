@@ -5,7 +5,7 @@
  *
  * To get your changes into the docker container, do the following
  * gradle build
- * cp app/build/libs/codebuilderapp-0.0.1.jar dockerContainer
+ * cp app/build/libs/org.code.javabuilder-0.0.1.jar dockerContainer
  * cd dockerContainer
  * docker build .
  *
@@ -25,7 +25,7 @@ version = '0.0.1'
 sourceCompatibility = '1.8'
 
 bootJar {
-  baseName = 'codebuilderapp'
+  baseName = 'org.code.javabuilder'
 }
 
 repositories {
