@@ -1,4 +1,4 @@
-package org.code.codebuilderapp;
+package org.code.javabuilder;
 
 /**
  * Logical representation of the output from the user's program. Will be sent to

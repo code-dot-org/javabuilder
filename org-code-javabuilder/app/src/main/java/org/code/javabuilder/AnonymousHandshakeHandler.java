@@ -1,4 +1,4 @@
-package org.code.codebuilderapp;
+package org.code.javabuilder;
 
 import java.security.Principal;
 import java.util.Map;

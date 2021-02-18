@@ -1,4 +1,4 @@
-package org.code.codebuilderapp;
+package org.code.javabuilder;
 
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;

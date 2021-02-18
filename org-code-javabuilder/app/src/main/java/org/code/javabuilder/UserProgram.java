@@ -1,4 +1,4 @@
-package org.code.codebuilderapp;
+package org.code.javabuilder;
 
 /**
  * Logical representation of the user program received as a json object from the

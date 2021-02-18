@@ -1,4 +1,4 @@
-package org.code.codebuilderapp;
+package org.code.javabuilder;
 
 public final class Destinations {
   private Destinations(){}
