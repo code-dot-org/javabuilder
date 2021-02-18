@@ -1,8 +1,8 @@
 package org.code.javabuilder;
 
 /**
- * Logical representation of the output from the user's program. Will be sent to
- * the client as a json object.
+ * Logical representation of the output from the user's program. Will be sent to the client as a
+ * json object.
  */
 public class UserProgramOutput {
 

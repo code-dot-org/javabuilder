@@ -1,9 +1,6 @@
 package org.code.javabuilder;
 
-/**
- * Logical representation of the user program received as a json object from the
- * client.
- */
+/** Logical representation of the user program received as a json object from the client. */
 public class UserProgram {
 
   private String fileName;
