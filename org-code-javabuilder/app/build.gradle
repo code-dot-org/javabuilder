@@ -4,16 +4,13 @@
  * gradle bootRun -> sets up a local server -> can be accessed at localhost:8080
  * gradle goJF -> runs the linter and fixes files
  * gradle verGJF -> just runs the linter
- *
- * To get your changes into the docker container, do the following
- * gradle build
- * cp app/build/libs/org.code.javabuilder-0.0.1.jar dockerContainer
- * cd dockerContainer
- * docker build .
+ * gradle buildDocker -> builds the docker container
  *
  * To publish that docker container, do the following
+ * gradle buildDocker
  * docker tag <id> jmkulwik/test-fargate-websocket:<tag>
  * docker push jmkulwik/test-fargate-websocket:<tag>
+ * TODO: Update these instructions to use the code.org docker hub account
  */
 
 plugins {
@@ -55,4 +52,14 @@ task installGitHook(type: Copy) {
   from new File(rootProject.rootDir, 'scripts/pre-commit')
   into { new File(rootProject.rootDir, '../.git/hooks') }
   fileMode 0777
+}
+
+task buildDocker(type: Copy) {
+  dependsOn build
+  from file("$buildDir/libs")
+  into file("$rootDir/dockerContainer")
+  exec {
+    executable "docker"
+    args "build", "$rootDir/dockerContainer"
+  }
 }
