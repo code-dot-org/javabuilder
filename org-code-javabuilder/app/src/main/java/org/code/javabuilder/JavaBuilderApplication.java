@@ -17,11 +17,3 @@ public class JavaBuilderApplication {
     SpringApplication.run(JavaBuilderApplication.class, args);
   }
 }
-
-/* Sample test code
-public class Foo {
-  public static void main(String[] args) {
-    System.out.println("Hello world!");
-  }
-}
-*/

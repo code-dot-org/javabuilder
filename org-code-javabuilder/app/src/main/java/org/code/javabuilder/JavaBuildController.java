@@ -41,7 +41,7 @@ public class JavaBuildController {
   public UserProgramOutput execute(UserProgram userProgram, Principal principal) throws Exception {
     // TODO: CSA-48 Handle more than one file
     String filename = userProgram.getFileName();
-    // We expect the filename to have no .java suffix
+    // We expect the filename to have no .java suffix, remove it if necessary.
     if (filename.endsWith(".java")) {
       userProgram.setFileName(filename.substring(0, filename.indexOf(".java")));
     }
@@ -55,7 +55,7 @@ public class JavaBuildController {
       tempFolder = Files.createTempDirectory("tmpdir").toFile();
       DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<JavaFileObject>();
 
-      CompilationTask task = getCompilationTask(tempFolder, userProgram, diagnostics);
+      CompilationTask task = getCompilationTask(userProgram, tempFolder, diagnostics);
       compileRunService.sendMessages(principal.getName(), "Compiling your program...");
       boolean success = task.call();
 
@@ -64,13 +64,13 @@ public class JavaBuildController {
         compileRunService.sendMessages(principal.getName(), diagnostic.toString());
       }
 
-      // set System.out to be a specific output stream in order to capture output of the
-      // program and send it back to the user
-      ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-      PrintStream out = new PrintStream(outputStream);
-      System.setOut(out);
-
       if (success) {
+        // set System.out to be a specific output stream in order to capture output of the
+        // program and send it back to the user
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        PrintStream out = new PrintStream(outputStream);
+        System.setOut(out);
+
         compileRunService.sendMessages(principal.getName(), "Compiled!");
         compileRunService.sendMessages(principal.getName(), "Running your program...");
         runClass(tempFolder.toURI().toURL(), userProgram.getFileName(), principal);
@@ -87,6 +87,8 @@ public class JavaBuildController {
       }
 
     } catch (IOException e) {
+      // IOException could be called by creating a temporary folder or writing to that folder.
+      // May need better error handling for this.
       compileRunService.sendMessages(
           principal.getName(), "There was an issue trying to run your program, please try again.");
       System.out.println(e.getStackTrace());
@@ -100,8 +102,10 @@ public class JavaBuildController {
     System.setOut(System.out);
   }
 
+  // Given a user program, create a compilation task that will save the .class file to the given
+  // temp folder and output any compilation messages to diagnostics.
   public CompilationTask getCompilationTask(
-      File tempFolder, UserProgram userProgram, DiagnosticCollector<JavaFileObject> diagnostics)
+      UserProgram userProgram, File tempFolder, DiagnosticCollector<JavaFileObject> diagnostics)
       throws IOException {
     JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 
@@ -140,7 +144,7 @@ public class JavaBuildController {
       compileRunService.sendMessages(
           principal.getName(), "Error: your program does not contain a main method");
     } catch (IllegalAccessException e) {
-      // TODO: this error messages may not be not very friendly
+      // TODO: this error message may not be not very friendly
       compileRunService.sendMessages(principal.getName(), "Illegal access: " + e);
     } catch (InvocationTargetException e) {
       compileRunService.sendMessages(
