@@ -1,2 +1,7 @@
+# Ignore compiled Java files
+*.class
+*.jar
+
+# Ignore configuration files create on MacOS
 */.DS_Store
 .DS_Store
