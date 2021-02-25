@@ -21,7 +21,7 @@ public class UserProgram {
     return code;
   }
 
-  public void getFileName(String fileName) {
+  public void setFileName(String fileName) {
     this.fileName = fileName;
   }
 

@@ -10,6 +10,7 @@ import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.security.Principal;
 import java.util.Arrays;
+import javax.tools.Diagnostic;
 import javax.tools.DiagnosticCollector;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaCompiler.CompilationTask;
@@ -39,72 +40,116 @@ public class JavaBuildController {
   @SendToUser(Destinations.PTP_PREFIX + Destinations.OUTPUT_CHANNEL)
   public UserProgramOutput execute(UserProgram userProgram, Principal principal) throws Exception {
     // TODO: CSA-48 Handle more than one file
+    String filename = userProgram.getFileName();
+    // We expect the filename to have no .java suffix
+    if (filename.endsWith(".java")) {
+      userProgram.setFileName(filename.substring(0, filename.indexOf(".java")));
+    }
     executeHelper(userProgram, principal);
-    return new UserProgramOutput("Ran program!");
+    return new UserProgramOutput("Done!");
   }
 
   public void executeHelper(UserProgram userProgram, Principal principal) {
-    JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-    StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null);
     File tempFolder = null;
     try {
       tempFolder = Files.createTempDirectory("tmpdir").toFile();
-      System.out.println(tempFolder.getAbsolutePath());
-      fileManager.setLocation(StandardLocation.CLASS_OUTPUT, Arrays.asList(tempFolder));
-
       DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<JavaFileObject>();
-      JavaFileObject file =
-          new JavaSourceFromString(userProgram.getFileName(), userProgram.getCode());
-      Iterable<? extends JavaFileObject> compilationUnits = Arrays.asList(file);
-      CompilationTask task =
-          compiler.getTask(null, fileManager, diagnostics, null, null, compilationUnits);
+
+      CompilationTask task = getCompilationTask(tempFolder, userProgram, diagnostics);
+      compileRunService.sendMessages(principal.getName(), "Compiling your program...");
       boolean success = task.call();
 
+      // diagnostics will include any compiler errors
+      for (Diagnostic<? extends JavaFileObject> diagnostic : diagnostics.getDiagnostics()) {
+        compileRunService.sendMessages(principal.getName(), diagnostic.toString());
+      }
+
+      // set System.out to be a specific output stream in order to capture output of the
+      // program and send it back to the user
       ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
       PrintStream out = new PrintStream(outputStream);
       System.setOut(out);
 
       if (success) {
-        runClass(tempFolder.toURI().toURL(), userProgram.getFileName());
+        compileRunService.sendMessages(principal.getName(), "Compiled!");
+        compileRunService.sendMessages(principal.getName(), "Running your program...");
+        runClass(tempFolder.toURI().toURL(), userProgram.getFileName(), principal);
+
+        // outputStream should now contain output of userProgram
+        outputStream.flush();
+        String result = outputStream.toString();
+        if (result.length() > 0) {
+          compileRunService.sendMessages(principal.getName(), result);
+        }
+      } else {
+        compileRunService.sendMessages(
+            principal.getName(), "There was an error compiling your program.");
       }
-      outputStream.flush();
-      String result = outputStream.toString();
-      compileRunService.sendMessages(principal.getName(), result);
+
     } catch (IOException e) {
+      compileRunService.sendMessages(
+          principal.getName(), "There was an issue trying to run your program, please try again.");
       System.out.println(e.getStackTrace());
     }
+
     if (tempFolder != null) {
       tempFolder.delete();
     }
+
+    // ensure System.out is reset
+    System.setOut(System.out);
   }
 
-  public void runClass(URL filePath, String className) {
+  public CompilationTask getCompilationTask(
+      File tempFolder, UserProgram userProgram, DiagnosticCollector<JavaFileObject> diagnostics)
+      throws IOException {
+    JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+
+    // set output of compilation to be a temporary folder
+    StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null);
+    fileManager.setLocation(StandardLocation.CLASS_OUTPUT, Arrays.asList(tempFolder));
+
+    // create file for user-provided code
+    JavaFileObject file =
+        new JavaSourceFromString(userProgram.getFileName(), userProgram.getCode());
+    Iterable<? extends JavaFileObject> compilationUnits = Arrays.asList(file);
+
+    // create compilation task
+    CompilationTask task =
+        compiler.getTask(null, fileManager, diagnostics, null, null, compilationUnits);
+    return task;
+  }
+
+  public void runClass(URL filePath, String className, Principal principal) {
     URL[] classLoaderUrls = new URL[] {filePath};
 
     // Create a new URLClassLoader
     URLClassLoader urlClassLoader = new URLClassLoader(classLoaderUrls);
 
-    // Load the target class
     try {
-      Class<?> hello = urlClassLoader.loadClass(className);
-      hello
+      // load and run the main method of the class
+      urlClassLoader
+          .loadClass(className)
           .getDeclaredMethod("main", new Class[] {String[].class})
           .invoke(null, new Object[] {null});
 
     } catch (ClassNotFoundException e) {
+      // this should be caught earlier in compilation
       System.err.println("Class not found: " + e);
     } catch (NoSuchMethodException e) {
-      System.err.println("No such method: " + e);
+      compileRunService.sendMessages(
+          principal.getName(), "Error: your program does not contain a main method");
     } catch (IllegalAccessException e) {
-      System.err.println("Illegal access: " + e);
+      // TODO: this error messages may not be not very friendly
+      compileRunService.sendMessages(principal.getName(), "Illegal access: " + e);
     } catch (InvocationTargetException e) {
-      System.err.println("Invocation target: " + e);
+      compileRunService.sendMessages(
+          principal.getName(), "Your code hit an exception " + e.getCause().getClass().toString());
     }
     try {
       urlClassLoader.close();
     } catch (IOException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+      System.err.println("Error closing urlClassLoader: " + e);
     }
   }
 }
