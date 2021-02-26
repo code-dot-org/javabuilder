@@ -27,7 +27,7 @@ public class JavaBuildController {
    */
   @MessageMapping(Destinations.EXECUTE_CODE)
   @SendToUser(Destinations.PTP_PREFIX + Destinations.OUTPUT_CHANNEL)
-  public UserProgramOutput execute(UserProgram userProgram, Principal principal) throws Exception {
+  public UserProgramOutput execute(UserProgram userProgram, Principal principal) {
     // TODO: CSA-48 Handle more than one file
     JavaRunner.compileAndRunUserProgram(userProgram, principal, this.compileRunService);
     return new UserProgramOutput("Done!");
