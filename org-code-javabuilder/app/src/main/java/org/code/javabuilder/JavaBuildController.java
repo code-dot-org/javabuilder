@@ -12,18 +12,24 @@ import org.springframework.stereotype.Controller;
 @Controller
 public class JavaBuildController {
 
-  private final CompileRunService compileRunService;
+  private final JavaRunner javaRunner;
 
-  JavaBuildController(CompileRunService compileRunService) {
-    this.compileRunService = compileRunService;
+  JavaBuildController(CompileRunService compileRunService, JavaRunner javaRunner) {
+    this.javaRunner = javaRunner;
   }
 
-  /** Executes the user code and sends the output of that code across the established websocket. */
+  /**
+   * Executes the user code and sends the output of that code across the established websocket.
+   *
+   * @param userProgram UserProgram containing users code and file name
+   * @param principal the user running the code
+   * @return UserProgramOutput
+   */
   @MessageMapping(Destinations.EXECUTE_CODE)
   @SendToUser(Destinations.PTP_PREFIX + Destinations.OUTPUT_CHANNEL)
   public UserProgramOutput execute(UserProgram userProgram, Principal principal) {
-    // Send fake output
-    compileRunService.sendMessages(principal.getName(), "Compiling...");
-    return new UserProgramOutput("Hello World!");
+    // TODO: CSA-48 Handle more than one file
+    this.javaRunner.compileAndRunUserProgram(userProgram, principal);
+    return new UserProgramOutput("Done!");
   }
 }
