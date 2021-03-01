@@ -1,12 +1,7 @@
 package org.code.javabuilder;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.lang.reflect.InvocationTargetException;
-import java.net.URL;
-import java.net.URLClassLoader;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.security.Principal;
 import java.util.Arrays;
@@ -56,21 +51,34 @@ public class JavaRunner {
 
       if (compileSuccess) {
         // this try statement will close the streams automatically
-        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            PrintStream out = new PrintStream(outputStream)) {
+        try (PipedInputStream inputStream = new PipedInputStream();
+             PipedOutputStream outputStream = new PipedOutputStream(inputStream);
+             PrintStream out = new PrintStream(outputStream)) {
           // set System.out to be a specific output stream in order to capture output of the
           // program and send it back to the user
           System.setOut(out);
 
           this.compileRunService.sendMessages(principal.getName(), "Compiled!");
           this.compileRunService.sendMessages(principal.getName(), "Running your program...");
-          runClass(tempFolder.toURI().toURL(), userProgram, principal);
-
-          // outputStream should now contain output of userProgram
-          outputStream.flush();
-          String result = outputStream.toString();
-          if (result.length() > 0) {
-            this.compileRunService.sendMessages(principal.getName(), result);
+          JavaExecutorThread userRuntime = new JavaExecutorThread(tempFolder.toURI().toURL(), userProgram, principal, this.compileRunService);
+          userRuntime.start();
+          String result = null;
+          byte[] streamBytes = new byte[1024];
+          try {
+            while (inputStream.read(streamBytes, 0, 1024) != -1) {
+              result = new String(streamBytes, StandardCharsets.UTF_8);
+              streamBytes = new byte[1024];
+              if (result.length() > 0) {
+                this.compileRunService.sendMessages(principal.getName(), result);
+              }
+              try {
+                Thread.sleep(100);
+              } catch (InterruptedException e) {
+                this.compileRunService.sendMessages(principal.getName(), "Your program ended unexpectedly. Try running it again.");
+              }
+            }
+          } catch (IOException e) {
+            // Do nothing. This is expected when the input stream ends
           }
         }
       } else {
@@ -137,38 +145,5 @@ public class JavaRunner {
     CompilationTask task =
         compiler.getTask(null, fileManager, diagnostics, null, null, compilationUnits);
     return task;
-  }
-
-  private void runClass(URL filePath, UserProgram userProgram, Principal principal) {
-    URL[] classLoaderUrls = new URL[] {filePath};
-
-    // Create a new URLClassLoader
-    URLClassLoader urlClassLoader = new URLClassLoader(classLoaderUrls);
-
-    try {
-      // load and run the main method of the class
-      urlClassLoader
-          .loadClass(userProgram.getClassName())
-          .getDeclaredMethod("main", new Class[] {String[].class})
-          .invoke(null, new Object[] {null});
-
-    } catch (ClassNotFoundException e) {
-      // this should be caught earlier in compilation
-      System.err.println("Class not found: " + e);
-    } catch (NoSuchMethodException e) {
-      this.compileRunService.sendMessages(
-          principal.getName(), "Error: your program does not contain a main method");
-    } catch (IllegalAccessException e) {
-      // TODO: this error message may not be not very friendly
-      this.compileRunService.sendMessages(principal.getName(), "Illegal access: " + e);
-    } catch (InvocationTargetException e) {
-      this.compileRunService.sendMessages(
-          principal.getName(), "Your code hit an exception " + e.getCause().getClass().toString());
-    }
-    try {
-      urlClassLoader.close();
-    } catch (IOException e) {
-      System.err.println("Error closing urlClassLoader: " + e);
-    }
   }
 }
