@@ -10,3 +10,5 @@ app/.project
 *.classpath
 .settings
 .project
+
+.vscode/*
