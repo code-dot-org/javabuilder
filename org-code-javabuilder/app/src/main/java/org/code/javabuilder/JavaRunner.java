@@ -37,10 +37,9 @@ public class JavaRunner {
   public void compileAndRunUserProgram(
       UserProgram userProgram, Principal principal, CompileRunService compileRunService) {
 
-    String className = null;
     if (userProgram.getFileName().indexOf(".java") > 0) {
-      className =
-          userProgram.getFileName().substring(0, userProgram.getFileName().indexOf(".java"));
+      userProgram.setClassName(
+          userProgram.getFileName().substring(0, userProgram.getFileName().indexOf(".java")));
     } else {
       compileRunService.sendMessages(
           principal.getName(), "Invalid File Name. File name must end in '.java'.");
@@ -53,7 +52,7 @@ public class JavaRunner {
 
       compileRunService.sendMessages(principal.getName(), "Compiling your program...");
       boolean compileSuccess =
-          compileProgram(userProgram, className, principal, compileRunService, tempFolder);
+          compileProgram(userProgram, principal, compileRunService, tempFolder);
 
       if (compileSuccess) {
         // this try statement will close the streams automatically
@@ -65,7 +64,7 @@ public class JavaRunner {
 
           compileRunService.sendMessages(principal.getName(), "Compiled!");
           compileRunService.sendMessages(principal.getName(), "Running your program...");
-          runClass(tempFolder.toURI().toURL(), className, compileRunService, principal);
+          runClass(tempFolder.toURI().toURL(), userProgram, compileRunService, principal);
 
           // outputStream should now contain output of userProgram
           outputStream.flush();
@@ -97,13 +96,12 @@ public class JavaRunner {
 
   private boolean compileProgram(
       UserProgram userProgram,
-      String className,
       Principal principal,
       CompileRunService compileRunService,
       File tempFolder) {
     DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<JavaFileObject>();
 
-    CompilationTask task = getCompilationTask(userProgram, className, tempFolder, diagnostics);
+    CompilationTask task = getCompilationTask(userProgram, tempFolder, diagnostics);
     if (task == null) {
       return false;
     }
@@ -120,10 +118,7 @@ public class JavaRunner {
   // Given a user program, create a compilation task that will save the .class file to the given
   // temp folder and output any compilation messages to diagnostics.
   private CompilationTask getCompilationTask(
-      UserProgram userProgram,
-      String className,
-      File tempFolder,
-      DiagnosticCollector<JavaFileObject> diagnostics) {
+      UserProgram userProgram, File tempFolder, DiagnosticCollector<JavaFileObject> diagnostics) {
     JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 
     // set output of compilation to be a temporary folder
@@ -138,7 +133,8 @@ public class JavaRunner {
     }
 
     // create file for user-provided code
-    JavaFileObject file = new JavaSourceFromString(className, userProgram.getCode());
+    JavaFileObject file =
+        new JavaSourceFromString(userProgram.getClassName(), userProgram.getCode());
     Iterable<? extends JavaFileObject> compilationUnits = Arrays.asList(file);
 
     // create compilation task
@@ -148,7 +144,10 @@ public class JavaRunner {
   }
 
   private void runClass(
-      URL filePath, String className, CompileRunService compileRunService, Principal principal) {
+      URL filePath,
+      UserProgram userProgram,
+      CompileRunService compileRunService,
+      Principal principal) {
     URL[] classLoaderUrls = new URL[] {filePath};
 
     // Create a new URLClassLoader
@@ -157,7 +156,7 @@ public class JavaRunner {
     try {
       // load and run the main method of the class
       urlClassLoader
-          .loadClass(className)
+          .loadClass(userProgram.getClassName())
           .getDeclaredMethod("main", new Class[] {String[].class})
           .invoke(null, new Object[] {null});
 
