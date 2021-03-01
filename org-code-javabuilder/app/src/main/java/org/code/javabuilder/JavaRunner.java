@@ -18,30 +18,31 @@ import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.StandardLocation;
 import javax.tools.ToolProvider;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 @Component
-@Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
 public class JavaRunner {
 
+  private CompileRunService compileRunService;
+
+  public JavaRunner(CompileRunService compileRunService) {
+    this.compileRunService = compileRunService;
+  }
+
   /**
-   * Compile and Run the given user program and output results to the given compileRunService for
-   * the given user (principal)
+   * Compile and Run the given user program and output results to this.compileRunService for the
+   * given user (principal)
    *
    * @param userProgram
    * @param principal
-   * @param compileRunService
    */
-  public void compileAndRunUserProgram(
-      UserProgram userProgram, Principal principal, CompileRunService compileRunService) {
+  public void compileAndRunUserProgram(UserProgram userProgram, Principal principal) {
 
     if (userProgram.getFileName().indexOf(".java") > 0) {
       userProgram.setClassName(
           userProgram.getFileName().substring(0, userProgram.getFileName().indexOf(".java")));
     } else {
-      compileRunService.sendMessages(
+      this.compileRunService.sendMessages(
           principal.getName(), "Invalid File Name. File name must end in '.java'.");
       return;
     }
@@ -50,9 +51,8 @@ public class JavaRunner {
     try {
       tempFolder = Files.createTempDirectory("tmpdir").toFile();
 
-      compileRunService.sendMessages(principal.getName(), "Compiling your program...");
-      boolean compileSuccess =
-          compileProgram(userProgram, principal, compileRunService, tempFolder);
+      this.compileRunService.sendMessages(principal.getName(), "Compiling your program...");
+      boolean compileSuccess = compileProgram(userProgram, principal, tempFolder);
 
       if (compileSuccess) {
         // this try statement will close the streams automatically
@@ -62,26 +62,26 @@ public class JavaRunner {
           // program and send it back to the user
           System.setOut(out);
 
-          compileRunService.sendMessages(principal.getName(), "Compiled!");
-          compileRunService.sendMessages(principal.getName(), "Running your program...");
-          runClass(tempFolder.toURI().toURL(), userProgram, compileRunService, principal);
+          this.compileRunService.sendMessages(principal.getName(), "Compiled!");
+          this.compileRunService.sendMessages(principal.getName(), "Running your program...");
+          runClass(tempFolder.toURI().toURL(), userProgram, principal);
 
           // outputStream should now contain output of userProgram
           outputStream.flush();
           String result = outputStream.toString();
           if (result.length() > 0) {
-            compileRunService.sendMessages(principal.getName(), result);
+            this.compileRunService.sendMessages(principal.getName(), result);
           }
         }
       } else {
-        compileRunService.sendMessages(
+        this.compileRunService.sendMessages(
             principal.getName(), "There was an error compiling your program.");
       }
 
     } catch (IOException e) {
       // IOException could be called by creating a temporary folder or writing to that folder.
       // May need better error handling for this.
-      compileRunService.sendMessages(
+      this.compileRunService.sendMessages(
           principal.getName(), "There was an issue trying to run your program, please try again.");
       e.printStackTrace();
     }
@@ -94,11 +94,7 @@ public class JavaRunner {
     System.setOut(System.out);
   }
 
-  private boolean compileProgram(
-      UserProgram userProgram,
-      Principal principal,
-      CompileRunService compileRunService,
-      File tempFolder) {
+  private boolean compileProgram(UserProgram userProgram, Principal principal, File tempFolder) {
     DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<JavaFileObject>();
 
     CompilationTask task = getCompilationTask(userProgram, tempFolder, diagnostics);
@@ -110,7 +106,7 @@ public class JavaRunner {
 
     // diagnostics will include any compiler errors
     for (Diagnostic<? extends JavaFileObject> diagnostic : diagnostics.getDiagnostics()) {
-      compileRunService.sendMessages(principal.getName(), diagnostic.toString());
+      this.compileRunService.sendMessages(principal.getName(), diagnostic.toString());
     }
     return success;
   }
@@ -143,11 +139,7 @@ public class JavaRunner {
     return task;
   }
 
-  private void runClass(
-      URL filePath,
-      UserProgram userProgram,
-      CompileRunService compileRunService,
-      Principal principal) {
+  private void runClass(URL filePath, UserProgram userProgram, Principal principal) {
     URL[] classLoaderUrls = new URL[] {filePath};
 
     // Create a new URLClassLoader
@@ -164,13 +156,13 @@ public class JavaRunner {
       // this should be caught earlier in compilation
       System.err.println("Class not found: " + e);
     } catch (NoSuchMethodException e) {
-      compileRunService.sendMessages(
+      this.compileRunService.sendMessages(
           principal.getName(), "Error: your program does not contain a main method");
     } catch (IllegalAccessException e) {
       // TODO: this error message may not be not very friendly
-      compileRunService.sendMessages(principal.getName(), "Illegal access: " + e);
+      this.compileRunService.sendMessages(principal.getName(), "Illegal access: " + e);
     } catch (InvocationTargetException e) {
-      compileRunService.sendMessages(
+      this.compileRunService.sendMessages(
           principal.getName(), "Your code hit an exception " + e.getCause().getClass().toString());
     }
     try {
