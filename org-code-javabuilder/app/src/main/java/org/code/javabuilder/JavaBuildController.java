@@ -13,9 +13,11 @@ import org.springframework.stereotype.Controller;
 public class JavaBuildController {
 
   private final CompileRunService compileRunService;
+  private final JavaRunner javaRunner;
 
-  JavaBuildController(CompileRunService compileRunService) {
+  JavaBuildController(CompileRunService compileRunService, JavaRunner javaRunner) {
     this.compileRunService = compileRunService;
+    this.javaRunner = javaRunner;
   }
 
   /**
@@ -29,7 +31,7 @@ public class JavaBuildController {
   @SendToUser(Destinations.PTP_PREFIX + Destinations.OUTPUT_CHANNEL)
   public UserProgramOutput execute(UserProgram userProgram, Principal principal) {
     // TODO: CSA-48 Handle more than one file
-    JavaRunner.compileAndRunUserProgram(userProgram, principal, this.compileRunService);
+    this.javaRunner.compileAndRunUserProgram(userProgram, principal, this.compileRunService);
     return new UserProgramOutput("Done!");
   }
 }

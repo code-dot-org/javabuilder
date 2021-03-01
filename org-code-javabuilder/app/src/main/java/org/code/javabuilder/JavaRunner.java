@@ -18,7 +18,12 @@ import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.StandardLocation;
 import javax.tools.ToolProvider;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
+@Component
+@Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
 public class JavaRunner {
 
   /**
@@ -29,12 +34,17 @@ public class JavaRunner {
    * @param principal
    * @param compileRunService
    */
-  public static void compileAndRunUserProgram(
+  public void compileAndRunUserProgram(
       UserProgram userProgram, Principal principal, CompileRunService compileRunService) {
-    String filename = userProgram.getFileName();
-    // We expect the filename to have no .java suffix, remove it if necessary.
-    if (filename.endsWith(".java")) {
-      userProgram.setFileName(filename.substring(0, filename.indexOf(".java")));
+
+    String className = null;
+    if (userProgram.getFileName().indexOf(".java") > 0) {
+      className =
+          userProgram.getFileName().substring(0, userProgram.getFileName().indexOf(".java"));
+    } else {
+      compileRunService.sendMessages(
+          principal.getName(), "Invalid File Name. File name must end in '.java'.");
+      return;
     }
 
     File tempFolder = null;
@@ -43,25 +53,26 @@ public class JavaRunner {
 
       compileRunService.sendMessages(principal.getName(), "Compiling your program...");
       boolean compileSuccess =
-          compileProgram(userProgram, principal, compileRunService, tempFolder);
+          compileProgram(userProgram, className, principal, compileRunService, tempFolder);
 
       if (compileSuccess) {
-        // set System.out to be a specific output stream in order to capture output of the
-        // program and send it back to the user
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        PrintStream out = new PrintStream(outputStream);
-        System.setOut(out);
+        // this try statement will close the streams automatically
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            PrintStream out = new PrintStream(outputStream)) {
+          // set System.out to be a specific output stream in order to capture output of the
+          // program and send it back to the user
+          System.setOut(out);
 
-        compileRunService.sendMessages(principal.getName(), "Compiled!");
-        compileRunService.sendMessages(principal.getName(), "Running your program...");
-        runClass(
-            tempFolder.toURI().toURL(), userProgram.getFileName(), compileRunService, principal);
+          compileRunService.sendMessages(principal.getName(), "Compiled!");
+          compileRunService.sendMessages(principal.getName(), "Running your program...");
+          runClass(tempFolder.toURI().toURL(), className, compileRunService, principal);
 
-        // outputStream should now contain output of userProgram
-        outputStream.flush();
-        String result = outputStream.toString();
-        if (result.length() > 0) {
-          compileRunService.sendMessages(principal.getName(), result);
+          // outputStream should now contain output of userProgram
+          outputStream.flush();
+          String result = outputStream.toString();
+          if (result.length() > 0) {
+            compileRunService.sendMessages(principal.getName(), result);
+          }
         }
       } else {
         compileRunService.sendMessages(
@@ -84,14 +95,15 @@ public class JavaRunner {
     System.setOut(System.out);
   }
 
-  private static boolean compileProgram(
+  private boolean compileProgram(
       UserProgram userProgram,
+      String className,
       Principal principal,
       CompileRunService compileRunService,
       File tempFolder) {
     DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<JavaFileObject>();
 
-    CompilationTask task = getCompilationTask(userProgram, tempFolder, diagnostics);
+    CompilationTask task = getCompilationTask(userProgram, className, tempFolder, diagnostics);
     if (task == null) {
       return false;
     }
@@ -107,8 +119,11 @@ public class JavaRunner {
 
   // Given a user program, create a compilation task that will save the .class file to the given
   // temp folder and output any compilation messages to diagnostics.
-  private static CompilationTask getCompilationTask(
-      UserProgram userProgram, File tempFolder, DiagnosticCollector<JavaFileObject> diagnostics) {
+  private CompilationTask getCompilationTask(
+      UserProgram userProgram,
+      String className,
+      File tempFolder,
+      DiagnosticCollector<JavaFileObject> diagnostics) {
     JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 
     // set output of compilation to be a temporary folder
@@ -123,8 +138,7 @@ public class JavaRunner {
     }
 
     // create file for user-provided code
-    JavaFileObject file =
-        new JavaSourceFromString(userProgram.getFileName(), userProgram.getCode());
+    JavaFileObject file = new JavaSourceFromString(className, userProgram.getCode());
     Iterable<? extends JavaFileObject> compilationUnits = Arrays.asList(file);
 
     // create compilation task
@@ -133,7 +147,7 @@ public class JavaRunner {
     return task;
   }
 
-  private static void runClass(
+  private void runClass(
       URL filePath, String className, CompileRunService compileRunService, Principal principal) {
     URL[] classLoaderUrls = new URL[] {filePath};
 
