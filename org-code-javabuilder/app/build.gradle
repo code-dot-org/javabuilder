@@ -54,7 +54,7 @@ task installGitHook(type: Copy) {
   fileMode 0777
 }
 
-task buildDocker(type: Copy) {
+def buildDocker = tasks.register('buildDocker', Copy) {
   dependsOn build
   from file("$buildDir/libs")
   into file("$rootDir/dockerContainer")
