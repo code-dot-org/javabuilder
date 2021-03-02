@@ -36,6 +36,10 @@ function sendFileName() {
     stompClient.send("/app/execute", {}, JSON.stringify({'fileName': $("#fileName").val(), 'code': $("#code").val()}));
 }
 
+function sendUserInput() {
+    stompClient.send("/app/userInput", {}, JSON.stringify({'input': $("#input").val());
+}
+
 function showOutput(message) {
     $("#output").append("<tr><td>" + message + "</td></tr>");
 }
@@ -47,4 +51,5 @@ $(function () {
     $( "#connect" ).click(function() { connect(); });
     $( "#disconnect" ).click(function() { disconnect(); });
     $( "#send" ).click(function() { sendFileName(); });
+    $( "#sendInput" ).click(function() { sendUserInput(); });
 });
