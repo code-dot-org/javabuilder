@@ -19,6 +19,8 @@ import org.springframework.stereotype.Component;
 public class JavaRunner {
 
   private CompileRunService compileRunService;
+  private PipedInputStream systemInputStream;
+  private PipedOutputStream systemInputWriter;
 
   public JavaRunner(CompileRunService compileRunService) {
     this.compileRunService = compileRunService;
@@ -51,12 +53,15 @@ public class JavaRunner {
 
       if (compileSuccess) {
         // this try statement will close the streams automatically
-        try (PipedInputStream inputStream = new PipedInputStream();
-             PipedOutputStream outputStream = new PipedOutputStream(inputStream);
-             PrintStream out = new PrintStream(outputStream)) {
+        try (PipedInputStream systemOutputReader = new PipedInputStream();
+             PipedOutputStream systemOutputStream = new PipedOutputStream(systemOutputReader);
+             PrintStream out = new PrintStream(systemOutputStream)) {
           // set System.out to be a specific output stream in order to capture output of the
           // program and send it back to the user
           System.setOut(out);
+          this.systemInputStream = new PipedInputStream();
+          this.systemInputWriter = new PipedOutputStream(this.systemInputStream);
+          System.setIn(this.systemInputStream);
 
           this.compileRunService.sendMessages(principal.getName(), "Compiled!");
           this.compileRunService.sendMessages(principal.getName(), "Running your program...");
@@ -65,7 +70,7 @@ public class JavaRunner {
           String result = null;
           byte[] streamBytes = new byte[1024];
           try {
-            while (inputStream.read(streamBytes, 0, 1024) != -1) {
+            while (systemOutputReader.read(streamBytes, 0, 1024) != -1) {
               result = new String(streamBytes, StandardCharsets.UTF_8);
               streamBytes = new byte[1024];
               if (result.length() > 0) {
@@ -100,6 +105,17 @@ public class JavaRunner {
 
     // ensure System.out is reset
     System.setOut(System.out);
+    System.setIn(System.in);
+  }
+
+  public void passInputToRuntime(UserInput userInput, Principal principal) {
+    byte[] input = userInput.getInput().getBytes(StandardCharsets.UTF_8);
+    try {
+      this.systemInputWriter.write(input, 0, input.length);
+    } catch (IOException e) {
+      // Figure out what to do here
+      e.printStackTrace();
+    }
   }
 
   private boolean compileProgram(UserProgram userProgram, Principal principal, File tempFolder) {
