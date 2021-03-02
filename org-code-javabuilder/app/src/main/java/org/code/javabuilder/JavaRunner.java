@@ -4,6 +4,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.Arrays;
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticCollector;
@@ -68,13 +69,17 @@ public class JavaRunner {
           JavaExecutorThread userRuntime = new JavaExecutorThread(tempFolder.toURI().toURL(), userProgram, principal, this.compileRunService);
           userRuntime.start();
           String result = null;
-          byte[] streamBytes = new byte[1024];
+
+          // todo find a better way of reading this stream
+          byte[] streamBytes = new byte[64];
           try {
-            while (systemOutputReader.read(streamBytes, 0, 1024) != -1) {
+            while (systemOutputReader.read(streamBytes, 0, 64) != -1) {
               result = new String(streamBytes, StandardCharsets.UTF_8);
-              streamBytes = new byte[1024];
+              streamBytes = new byte[64];
               if (result.length() > 0) {
                 this.compileRunService.sendMessages(principal.getName(), result);
+              } else {
+                systemOutputStream.flush();
               }
               try {
                 Thread.sleep(100);
@@ -109,9 +114,10 @@ public class JavaRunner {
   }
 
   public void passInputToRuntime(UserInput userInput, Principal principal) {
-    byte[] input = userInput.getInput().getBytes(StandardCharsets.UTF_8);
+    byte[] input = (userInput.getInput() + "\n").getBytes(StandardCharsets.UTF_8);
     try {
       this.systemInputWriter.write(input, 0, input.length);
+      this.systemInputWriter.flush();
     } catch (IOException e) {
       // Figure out what to do here
       e.printStackTrace();
