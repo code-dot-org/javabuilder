@@ -37,7 +37,7 @@ function sendFileName() {
 }
 
 function sendUserInput() {
-    stompClient.send("/app/userInput", {}, JSON.stringify({'input': $("#input").val());
+    stompClient.send("/app/userInput", {}, JSON.stringify({'input': $("#input").val()}));
 }
 
 function showOutput(message) {

@@ -6,13 +6,43 @@ To test, run the following commands from the `org-code-javabuilder` folder.
 gradle bootRun
 open localhost:8080
 ```
+<br/>
+Simple program<br/>
 
-Sample program
-Filename: Foo.java
 ```
 public class Foo {
   public static void main(String[] args) {
     System.out.println("Hello World");
+  }
+}
+```
+<br/>
+Simple I/O program
+
+```
+import java.util.Scanner;
+
+public class Foo {
+  public static void main(String[] args) {
+    System.out.println("What's your name?");
+    Scanner scanner = new Scanner(System.in);
+    String input = scanner.nextLine();
+    System.out.println("Hello " + input);
+  }
+}
+```
+<br/>
+Simple long-running program
+
+```
+public class Foo {
+  public static void main(String[] args) throws Exception {
+    int x = 0;
+    while(x < 10) {
+      x++;
+      Thread.sleep(500);
+      System.out.println(x + " Hello World!");
+    }
   }
 }
 ```
