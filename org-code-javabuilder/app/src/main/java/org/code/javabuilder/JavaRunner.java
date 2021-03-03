@@ -53,8 +53,10 @@ public class JavaRunner {
 
       if (compileSuccess) {
         // this try statement will close the streams automatically
-        try (PipedInputStream systemOutputReader = new PipedInputStream();
-            PipedOutputStream systemOutputStream = new PipedOutputStream(systemOutputReader);
+        try (PipedInputStream inputStream = new PipedInputStream();
+            BufferedReader systemOutputReader =
+                new BufferedReader(new InputStreamReader(inputStream));
+            PipedOutputStream systemOutputStream = new PipedOutputStream(inputStream);
             PrintStream out = new PrintStream(systemOutputStream)) {
           // set System.out to be a specific output stream in order to capture output of the
           // program and send it back to the user
@@ -71,12 +73,8 @@ public class JavaRunner {
           userRuntime.start();
           String result = null;
 
-          // todo find a better way of reading this stream
-          byte[] streamBytes = new byte[64];
           try {
-            while (systemOutputReader.read(streamBytes, 0, 64) != -1) {
-              result = new String(streamBytes, StandardCharsets.UTF_8);
-              streamBytes = new byte[64];
+            while ((result = systemOutputReader.readLine()) != null && userRuntime.isAlive()) {
               if (result.length() > 0) {
                 this.compileRunService.sendMessages(principal.getName(), result);
               } else {

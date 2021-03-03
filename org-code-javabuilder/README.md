@@ -7,7 +7,7 @@ gradle bootRun
 open localhost:8080
 ```
 <br/>
-Simple program<br/>
+Simple program
 
 ```
 public class Foo {
