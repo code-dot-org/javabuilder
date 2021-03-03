@@ -1,13 +1,14 @@
 /*
  * Usage:
- * gradle build -> builds the project
- * gradle bootRun -> sets up a local server -> can be accessed at localhost:8080
- * gradle goJF -> runs the linter and fixes files
- * gradle verGJF -> just runs the linter
- * gradle buildDocker -> builds the docker container
+ * ./gradlew build -> builds the project
+ * ./gradlew bootRun -> sets up a local server -> can be accessed at localhost:8080
+ * ./gradlew goJF -> runs the linter and fixes files
+ * ./gradlew verGJF -> just runs the linter
+ * ./gradlew buildDocker -> builds the docker container
  *
  * To publish that docker container, do the following
- * gradle buildDocker
+ * ./gradlew build
+ * ./gradlew buildDocker
  * docker tag <id> jmkulwik/test-fargate-websocket:<tag>
  * docker push jmkulwik/test-fargate-websocket:<tag>
  * TODO: Update these instructions to use the code.org docker hub account
