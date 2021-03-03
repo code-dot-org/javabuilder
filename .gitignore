@@ -5,3 +5,7 @@
 # Ignore configuration files create on MacOS
 */.DS_Store
 .DS_Store
+
+# Ignore editor-specific configuration files
+.gradle
+.vscode
