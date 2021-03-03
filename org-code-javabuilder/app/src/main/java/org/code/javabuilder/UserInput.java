@@ -1,5 +1,6 @@
 package org.code.javabuilder;
 
+/** Logical representation of the commandline input received as a json object from the client. */
 public class UserInput {
   private String input;
 

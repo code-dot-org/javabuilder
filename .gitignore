@@ -9,3 +9,4 @@
 # Ignore editor-specific configuration files
 .gradle
 .vscode
+.idea
