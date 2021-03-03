@@ -12,7 +12,11 @@ public class JavaExecutorThread extends Thread {
   Principal principal;
   private CompileRunService compileRunService;
 
-  JavaExecutorThread(URL filePath, UserProgram userProgram, Principal principal, CompileRunService compileRunService) {
+  JavaExecutorThread(
+      URL filePath,
+      UserProgram userProgram,
+      Principal principal,
+      CompileRunService compileRunService) {
     this.filePath = filePath;
     this.userProgram = userProgram;
     this.principal = principal;
@@ -43,7 +47,8 @@ public class JavaExecutorThread extends Thread {
       this.compileRunService.sendMessages(this.principal.getName(), "Illegal access: " + e);
     } catch (InvocationTargetException e) {
       this.compileRunService.sendMessages(
-          this.principal.getName(), "Your code hit an exception " + e.getCause().getClass().toString());
+          this.principal.getName(),
+          "Your code hit an exception " + e.getCause().getClass().toString());
     }
     try {
       urlClassLoader.close();

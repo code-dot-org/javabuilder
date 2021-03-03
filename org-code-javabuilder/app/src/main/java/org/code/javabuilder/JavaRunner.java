@@ -4,7 +4,6 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.security.Principal;
-import java.util.ArrayList;
 import java.util.Arrays;
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticCollector;
@@ -55,8 +54,8 @@ public class JavaRunner {
       if (compileSuccess) {
         // this try statement will close the streams automatically
         try (PipedInputStream systemOutputReader = new PipedInputStream();
-             PipedOutputStream systemOutputStream = new PipedOutputStream(systemOutputReader);
-             PrintStream out = new PrintStream(systemOutputStream)) {
+            PipedOutputStream systemOutputStream = new PipedOutputStream(systemOutputReader);
+            PrintStream out = new PrintStream(systemOutputStream)) {
           // set System.out to be a specific output stream in order to capture output of the
           // program and send it back to the user
           System.setOut(out);
@@ -66,7 +65,9 @@ public class JavaRunner {
 
           this.compileRunService.sendMessages(principal.getName(), "Compiled!");
           this.compileRunService.sendMessages(principal.getName(), "Running your program...");
-          JavaExecutorThread userRuntime = new JavaExecutorThread(tempFolder.toURI().toURL(), userProgram, principal, this.compileRunService);
+          JavaExecutorThread userRuntime =
+              new JavaExecutorThread(
+                  tempFolder.toURI().toURL(), userProgram, principal, this.compileRunService);
           userRuntime.start();
           String result = null;
 
@@ -84,7 +85,8 @@ public class JavaRunner {
               try {
                 Thread.sleep(100);
               } catch (InterruptedException e) {
-                this.compileRunService.sendMessages(principal.getName(), "Your program ended unexpectedly. Try running it again.");
+                this.compileRunService.sendMessages(
+                    principal.getName(), "Your program ended unexpectedly. Try running it again.");
               }
             }
           } catch (IOException e) {

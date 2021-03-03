@@ -1,9 +1,8 @@
 package org.code.javabuilder;
 
+import java.security.Principal;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.stereotype.Controller;
-
-import java.security.Principal;
 
 @Controller
 public class RuntimeInputController {
