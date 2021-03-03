@@ -47,61 +47,59 @@ public class JavaRunner {
     File tempFolder = null;
     try {
       tempFolder = Files.createTempDirectory("tmpdir").toFile();
+    } catch (IOException e) {
+      this.compileRunService.sendMessages(
+          principal.getName(),
+          "We hit an error on our side while compiling your program. Try again.");
+    }
 
-      this.compileRunService.sendMessages(principal.getName(), "Compiling your program...");
-      boolean compileSuccess = compileProgram(userProgram, principal, tempFolder);
+    this.compileRunService.sendMessages(principal.getName(), "Compiling your program...");
+    boolean compileSuccess = compileProgram(userProgram, principal, tempFolder);
 
-      if (compileSuccess) {
-        // this try statement will close the streams automatically
-        try (PipedInputStream inputStream = new PipedInputStream();
-            BufferedReader systemOutputReader =
-                new BufferedReader(new InputStreamReader(inputStream));
-            PipedOutputStream systemOutputStream = new PipedOutputStream(inputStream);
-            PrintStream out = new PrintStream(systemOutputStream)) {
-          // set System.out to be a specific output stream in order to capture output of the
-          // program and send it back to the user
-          System.setOut(out);
-          this.systemInputStream = new PipedInputStream();
-          this.systemInputWriter = new PipedOutputStream(this.systemInputStream);
-          System.setIn(this.systemInputStream);
+    if (compileSuccess) {
+      // this try statement will close the streams automatically
+      try (PipedInputStream inputStream = new PipedInputStream();
+          BufferedReader systemOutputReader =
+              new BufferedReader(new InputStreamReader(inputStream));
+          PipedOutputStream systemOutputStream = new PipedOutputStream(inputStream);
+          PrintStream out = new PrintStream(systemOutputStream)) {
+        // set System.out to be a specific output stream in order to capture output of the
+        // program and send it back to the user
+        System.setOut(out);
+        this.systemInputStream = new PipedInputStream();
+        this.systemInputWriter = new PipedOutputStream(this.systemInputStream);
+        System.setIn(this.systemInputStream);
 
-          this.compileRunService.sendMessages(principal.getName(), "Compiled!");
-          this.compileRunService.sendMessages(principal.getName(), "Running your program...");
-          JavaExecutorThread userRuntime =
-              new JavaExecutorThread(
-                  tempFolder.toURI().toURL(), userProgram, principal, this.compileRunService);
-          userRuntime.start();
-          String result = null;
+        this.compileRunService.sendMessages(principal.getName(), "Compiled!");
+        this.compileRunService.sendMessages(principal.getName(), "Running your program...");
+        JavaExecutorThread userRuntime =
+            new JavaExecutorThread(
+                tempFolder.toURI().toURL(), userProgram, principal, this.compileRunService);
+        userRuntime.start();
 
-          try {
-            while ((result = systemOutputReader.readLine()) != null) {
-              if (result.length() > 0) {
-                this.compileRunService.sendMessages(principal.getName(), result);
-              } else {
-                systemOutputStream.flush();
-              }
-              try {
-                Thread.sleep(100);
-              } catch (InterruptedException e) {
-                this.compileRunService.sendMessages(
-                    principal.getName(), "Your program ended unexpectedly. Try running it again.");
-              }
+        while (true) {
+          if (systemOutputReader.ready()) {
+            this.compileRunService.sendMessages(principal.getName(), systemOutputReader.readLine());
+          } else if (userRuntime.isAlive()) {
+            try {
+              Thread.sleep(200);
+            } catch (InterruptedException e) {
+              this.compileRunService.sendMessages(
+                  principal.getName(), "Your program ended unexpectedly. Try running it again.");
             }
-          } catch (IOException e) {
-            // Do nothing. This is expected when the input stream ends
+            systemOutputStream.flush();
+          } else {
+            // We've read all the output and the program has ended.
+            break;
           }
         }
-      } else {
+      } catch (IOException e) {
         this.compileRunService.sendMessages(
-            principal.getName(), "There was an error compiling your program.");
+            principal.getName(), "There was an error processing your program's output.");
       }
-
-    } catch (IOException e) {
-      // IOException could be called by creating a temporary folder or writing to that folder.
-      // May need better error handling for this.
+    } else {
       this.compileRunService.sendMessages(
-          principal.getName(), "There was an issue trying to run your program, please try again.");
-      e.printStackTrace();
+          principal.getName(), "There was an error compiling your program.");
     }
 
     if (tempFolder != null) {
@@ -119,8 +117,8 @@ public class JavaRunner {
       this.systemInputWriter.write(input, 0, input.length);
       this.systemInputWriter.flush();
     } catch (IOException e) {
-      // Figure out what to do here
-      e.printStackTrace();
+      this.compileRunService.sendMessages(
+          principal.getName(), "There was an error passing input to your program.");
     }
   }
 
