@@ -6,6 +6,11 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.security.Principal;
 
+/**
+ * Executes the Java program that exists at the given filePath. Logs information about the runtime
+ * to the user's channel. This happens as a new thread so we can handle console IO while the program
+ * is running.
+ */
 public class JavaExecutorThread extends Thread {
   URL filePath;
   UserProgram userProgram;
@@ -23,6 +28,7 @@ public class JavaExecutorThread extends Thread {
     this.compileRunService = compileRunService;
   }
 
+  /** Starts a thread which executes a user's program. */
   public void run() {
     URL[] classLoaderUrls = new URL[] {this.filePath};
 

@@ -57,20 +57,22 @@ public class JavaRunner {
     boolean compileSuccess = compileProgram(userProgram, principal, tempFolder);
 
     if (compileSuccess) {
-      // this try statement will close the streams automatically
+      this.compileRunService.sendMessages(principal.getName(), "Compiled!");
+      // We use a PipedInput and PipedOutput stream for I/O so we can control input to the user's
+      // program and output from the user's program.
+      // This try statement will close the streams automatically.
       try (PipedInputStream inputStream = new PipedInputStream();
           BufferedReader systemOutputReader =
               new BufferedReader(new InputStreamReader(inputStream));
           PipedOutputStream systemOutputStream = new PipedOutputStream(inputStream);
           PrintStream out = new PrintStream(systemOutputStream)) {
-        // set System.out to be a specific output stream in order to capture output of the
+        // Set System.out to be a specific output stream in order to capture output of the
         // program and send it back to the user
         System.setOut(out);
         this.systemInputStream = new PipedInputStream();
         this.systemInputWriter = new PipedOutputStream(this.systemInputStream);
         System.setIn(this.systemInputStream);
 
-        this.compileRunService.sendMessages(principal.getName(), "Compiled!");
         this.compileRunService.sendMessages(principal.getName(), "Running your program...");
         JavaExecutorThread userRuntime =
             new JavaExecutorThread(
@@ -79,8 +81,10 @@ public class JavaRunner {
 
         while (true) {
           if (systemOutputReader.ready()) {
+            // The user's program has produced output. Read it and pass it to the client console.
             this.compileRunService.sendMessages(principal.getName(), systemOutputReader.readLine());
           } else if (userRuntime.isAlive()) {
+            // The user's program is running, but there's no output. Let it continue running.
             try {
               Thread.sleep(200);
             } catch (InterruptedException e) {
@@ -111,8 +115,16 @@ public class JavaRunner {
     System.setIn(System.in);
   }
 
+  /**
+   * Write the given userInput to the user's (principal's) input stream
+   *
+   * @param userInput the given input directed to System.in
+   * @param principal the user's identification
+   */
   public void passInputToRuntime(UserInput userInput, Principal principal) {
-    byte[] input = (userInput.getInput() + "\n").getBytes(StandardCharsets.UTF_8);
+    // System.in expects input to end with a lineSeparator. We add that to allow the user program to
+    // continue.
+    byte[] input = (userInput.getInput() + System.lineSeparator()).getBytes(StandardCharsets.UTF_8);
     try {
       this.systemInputWriter.write(input, 0, input.length);
       this.systemInputWriter.flush();
