@@ -2,7 +2,6 @@ package org.code.javabuilder;
 
 /** String constants representing websocket channels and destinations. */
 public final class Destinations {
-
   private Destinations() {}
 
   /**
