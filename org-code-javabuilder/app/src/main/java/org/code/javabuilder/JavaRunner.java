@@ -74,7 +74,7 @@ public class JavaRunner {
           String result = null;
 
           try {
-            while ((result = systemOutputReader.readLine()) != null && userRuntime.isAlive()) {
+            while ((result = systemOutputReader.readLine()) != null) {
               if (result.length() > 0) {
                 this.compileRunService.sendMessages(principal.getName(), result);
               } else {
