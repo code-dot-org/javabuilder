@@ -79,6 +79,8 @@ public class JavaRunner {
                 tempFolder.toURI().toURL(), userProgram, principal, this.compileRunService);
         userRuntime.start();
 
+        // TODO we'll need to stop execution after a certain time limit otherwise we'll hang here
+        // forever if a user writes infinite loops
         while (userRuntime.isAlive() || systemOutputReader.ready()) {
           if (systemOutputReader.ready()) {
             // The user's program has produced output. Read it and pass it to the client console.
