@@ -55,12 +55,14 @@ task installGitHook(type: Copy) {
   fileMode 0777
 }
 
-def buildDocker = tasks.register('buildDocker', Copy) {
+def copyDocker = tasks.register('copyDocker', Copy) {
   dependsOn build
-  from file("$buildDir/libs")
-  into file("$rootDir/dockerContainer")
-  exec {
-    executable "docker"
-    args "build", "$rootDir/dockerContainer"
-  }
+  from "$buildDir/libs"
+  into "$rootDir/dockerContainer"
+}
+
+def buildDocker = tasks.register('buildDocker', Exec) {
+  dependsOn copyDocker
+  executable "docker"
+  args "build", "$rootDir/dockerContainer"
 }
