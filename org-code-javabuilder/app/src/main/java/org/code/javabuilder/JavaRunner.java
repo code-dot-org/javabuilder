@@ -1,12 +1,7 @@
 package org.code.javabuilder;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.lang.reflect.InvocationTargetException;
-import java.net.URL;
-import java.net.URLClassLoader;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.security.Principal;
 import java.util.Arrays;
@@ -24,6 +19,8 @@ import org.springframework.stereotype.Component;
 public class JavaRunner {
 
   private CompileRunService compileRunService;
+  private PipedInputStream systemInputStream;
+  private PipedOutputStream systemInputWriter;
 
   public JavaRunner(CompileRunService compileRunService) {
     this.compileRunService = compileRunService;
@@ -50,40 +47,62 @@ public class JavaRunner {
     File tempFolder = null;
     try {
       tempFolder = Files.createTempDirectory("tmpdir").toFile();
+    } catch (IOException e) {
+      this.compileRunService.sendMessages(
+          principal.getName(),
+          "We hit an error on our side while compiling your program. Try again.");
+    }
 
-      this.compileRunService.sendMessages(principal.getName(), "Compiling your program...");
-      boolean compileSuccess = compileProgram(userProgram, principal, tempFolder);
+    this.compileRunService.sendMessages(principal.getName(), "Compiling your program...");
+    boolean compileSuccess = compileProgram(userProgram, principal, tempFolder);
 
-      if (compileSuccess) {
-        // this try statement will close the streams automatically
-        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            PrintStream out = new PrintStream(outputStream)) {
-          // set System.out to be a specific output stream in order to capture output of the
-          // program and send it back to the user
-          System.setOut(out);
+    if (compileSuccess) {
+      this.compileRunService.sendMessages(principal.getName(), "Compiled!");
+      // We use a PipedInput and PipedOutput stream for I/O so we can control input to the user's
+      // program and output from the user's program.
+      // This try statement will close the streams automatically.
+      try (PipedInputStream inputStream = new PipedInputStream();
+          BufferedReader systemOutputReader =
+              new BufferedReader(new InputStreamReader(inputStream));
+          PipedOutputStream systemOutputStream = new PipedOutputStream(inputStream);
+          PrintStream out = new PrintStream(systemOutputStream)) {
+        // Set System.out to be a specific output stream in order to capture output of the
+        // program and send it back to the user
+        System.setOut(out);
+        this.systemInputStream = new PipedInputStream();
+        this.systemInputWriter = new PipedOutputStream(this.systemInputStream);
+        System.setIn(this.systemInputStream);
 
-          this.compileRunService.sendMessages(principal.getName(), "Compiled!");
-          this.compileRunService.sendMessages(principal.getName(), "Running your program...");
-          runClass(tempFolder.toURI().toURL(), userProgram, principal);
+        this.compileRunService.sendMessages(principal.getName(), "Running your program...");
+        JavaExecutorThread userRuntime =
+            new JavaExecutorThread(
+                tempFolder.toURI().toURL(), userProgram, principal, this.compileRunService);
+        userRuntime.start();
 
-          // outputStream should now contain output of userProgram
-          outputStream.flush();
-          String result = outputStream.toString();
-          if (result.length() > 0) {
-            this.compileRunService.sendMessages(principal.getName(), result);
+        // TODO we'll need to stop execution after a certain time limit otherwise we'll hang here
+        // forever if a user writes infinite loops
+        while (userRuntime.isAlive() || systemOutputReader.ready()) {
+          if (systemOutputReader.ready()) {
+            // The user's program has produced output. Read it and pass it to the client console.
+            this.compileRunService.sendMessages(principal.getName(), systemOutputReader.readLine());
+          } else {
+            // The user's program is running, but there's no output. Let it continue running.
+            try {
+              Thread.sleep(200);
+            } catch (InterruptedException e) {
+              this.compileRunService.sendMessages(
+                  principal.getName(), "Your program ended unexpectedly. Try running it again.");
+            }
+            systemOutputStream.flush();
           }
         }
-      } else {
+      } catch (IOException e) {
         this.compileRunService.sendMessages(
-            principal.getName(), "There was an error compiling your program.");
+            principal.getName(), "There was an error processing your program's output.");
       }
-
-    } catch (IOException e) {
-      // IOException could be called by creating a temporary folder or writing to that folder.
-      // May need better error handling for this.
+    } else {
       this.compileRunService.sendMessages(
-          principal.getName(), "There was an issue trying to run your program, please try again.");
-      e.printStackTrace();
+          principal.getName(), "There was an error compiling your program.");
     }
 
     if (tempFolder != null) {
@@ -92,6 +111,26 @@ public class JavaRunner {
 
     // ensure System.out is reset
     System.setOut(System.out);
+    System.setIn(System.in);
+  }
+
+  /**
+   * Write the given userInput to the user's (principal's) input stream
+   *
+   * @param userInput the given input directed to System.in
+   * @param principal the user's identification
+   */
+  public void passInputToRuntime(UserInput userInput, Principal principal) {
+    // System.in expects input to end with a lineSeparator. We add that to allow the user program to
+    // continue.
+    byte[] input = (userInput.getInput() + System.lineSeparator()).getBytes(StandardCharsets.UTF_8);
+    try {
+      this.systemInputWriter.write(input, 0, input.length);
+      this.systemInputWriter.flush();
+    } catch (IOException e) {
+      this.compileRunService.sendMessages(
+          principal.getName(), "There was an error passing input to your program.");
+    }
   }
 
   private boolean compileProgram(UserProgram userProgram, Principal principal, File tempFolder) {
@@ -137,38 +176,5 @@ public class JavaRunner {
     CompilationTask task =
         compiler.getTask(null, fileManager, diagnostics, null, null, compilationUnits);
     return task;
-  }
-
-  private void runClass(URL filePath, UserProgram userProgram, Principal principal) {
-    URL[] classLoaderUrls = new URL[] {filePath};
-
-    // Create a new URLClassLoader
-    URLClassLoader urlClassLoader = new URLClassLoader(classLoaderUrls);
-
-    try {
-      // load and run the main method of the class
-      urlClassLoader
-          .loadClass(userProgram.getClassName())
-          .getDeclaredMethod("main", new Class[] {String[].class})
-          .invoke(null, new Object[] {null});
-
-    } catch (ClassNotFoundException e) {
-      // this should be caught earlier in compilation
-      System.err.println("Class not found: " + e);
-    } catch (NoSuchMethodException e) {
-      this.compileRunService.sendMessages(
-          principal.getName(), "Error: your program does not contain a main method");
-    } catch (IllegalAccessException e) {
-      // TODO: this error message may not be not very friendly
-      this.compileRunService.sendMessages(principal.getName(), "Illegal access: " + e);
-    } catch (InvocationTargetException e) {
-      this.compileRunService.sendMessages(
-          principal.getName(), "Your code hit an exception " + e.getCause().getClass().toString());
-    }
-    try {
-      urlClassLoader.close();
-    } catch (IOException e) {
-      System.err.println("Error closing urlClassLoader: " + e);
-    }
   }
 }
