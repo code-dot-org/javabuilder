@@ -79,11 +79,11 @@ public class JavaRunner {
                 tempFolder.toURI().toURL(), userProgram, principal, this.compileRunService);
         userRuntime.start();
 
-        while (true) {
+        while (userRuntime.isAlive() || systemOutputReader.ready()) {
           if (systemOutputReader.ready()) {
             // The user's program has produced output. Read it and pass it to the client console.
             this.compileRunService.sendMessages(principal.getName(), systemOutputReader.readLine());
-          } else if (userRuntime.isAlive()) {
+          } else {
             // The user's program is running, but there's no output. Let it continue running.
             try {
               Thread.sleep(200);
@@ -92,9 +92,6 @@ public class JavaRunner {
                   principal.getName(), "Your program ended unexpectedly. Try running it again.");
             }
             systemOutputStream.flush();
-          } else {
-            // We've read all the output and the program has ended.
-            break;
           }
         }
       } catch (IOException e) {
