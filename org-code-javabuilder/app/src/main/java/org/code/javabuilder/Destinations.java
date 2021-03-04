@@ -21,4 +21,7 @@ public final class Destinations {
 
   /** The channel where the client should send code to be compiled/run. */
   public static final String EXECUTE_CODE = "/execute";
+
+  /** The channel where the client should send input to be passed to a running program */
+  public static final String PROCESS_INPUT = "/userInput";
 }
