@@ -4,6 +4,7 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.events.S3Event;
+import java.util.Map;
 
 import com.amazonaws.services.s3.event.S3EventNotification.S3EventNotificationRecord;
 
@@ -14,12 +15,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 //https://github.com/awsdocs/aws-lambda-developer-guide/tree/main/sample-apps/blank-java
 // Handler value: example.Handler
-public class JavaBuilder implements RequestHandler<S3Event, String>{
-  private static final Logger logger = LoggerFactory.getLogger(JavaBuilder.class);
-  Gson gson = new GsonBuilder().setPrettyPrinting().create();
+public class JavaBuilder implements RequestHandler<Map<String,String>, String>{
+  //  private static final Logger logger = LoggerFactory.getLogger(JavaBuilder.class);
+//  Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
+
+  //  private static final Logger logger = LoggerFactory.getLogger(JavaBuilder.class);
+//  Gson gson = new GsonBuilder().setPrettyPrinting().create();
   @Override
-  public String handleRequest(S3Event event, Context context)
-  {
+  public String handleRequest(Map<String, String> __, Context context) {
     InputPoller input = new InputPoller();
     OutputHandler output = new OutputHandler();
     String response = input.poll();
