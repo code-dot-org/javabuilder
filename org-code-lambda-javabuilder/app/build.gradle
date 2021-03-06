@@ -1,61 +1,60 @@
-/*
- * Usage:
- * ./gradlew build -> builds the project
- * ./gradlew bootRun -> sets up a local server -> can be accessed at localhost:8080
- * ./gradlew goJF -> runs the linter and fixes files
- * ./gradlew verGJF -> just runs the linter
- * ./gradlew buildDocker -> builds the docker container
- *
- * To publish that docker container, do the following
- * ./gradlew build
- * ./gradlew buildDocker
- * docker tag <id> jmkulwik/test-fargate-websocket:<tag>
- * docker push jmkulwik/test-fargate-websocket:<tag>
- * TODO: Update these instructions to use the code.org docker hub account
- */
-
 plugins {
-  id 'com.github.sherter.google-java-format' version '0.8'
-	id 'org.springframework.boot' version '2.4.2'
-	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
-	id 'java'
-}
-
-group = 'org.code'
-version = '0.0.1'
-sourceCompatibility = '1.8'
-
-bootJar {
-  baseName = 'org.code.lambda.javabuilder'
+    id 'java'
 }
 
 repositories {
-  mavenCentral()
+    mavenCentral()
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    // https://mvnrepository.com/artifact/software.amazon.awssdk/sqs
+    implementation group: 'software.amazon.awssdk', name: 'sqs', version: '2.16.12'
+
+    implementation platform('com.amazonaws:aws-xray-recorder-sdk-bom:2.4.0')
+    implementation 'com.amazonaws:aws-lambda-java-core:1.2.1'
+    implementation 'com.amazonaws:aws-lambda-java-events:2.2.9'
+    implementation 'com.amazonaws:aws-java-sdk-s3:1.11.578'
+    implementation 'com.amazonaws:aws-java-sdk-kinesis:1.11.578'
+    implementation 'com.amazonaws:aws-java-sdk-dynamodb:1.11.578'
+    implementation 'com.amazonaws:aws-xray-recorder-sdk-core'
+    implementation 'com.amazonaws:aws-xray-recorder-sdk-aws-sdk'
+    implementation 'com.amazonaws:aws-xray-recorder-sdk-aws-sdk-instrumentor'
+    implementation 'com.google.code.gson:gson:2.8.6'
+    implementation 'org.apache.logging.log4j:log4j-api:2.13.0'
+    implementation 'org.apache.logging.log4j:log4j-core:2.13.0'
+    implementation 'org.apache.logging.log4j:log4j-slf4j18-impl:2.13.0'
+    runtimeOnly 'com.amazonaws:aws-lambda-java-log4j2:1.2.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.6.0'
+
 }
 
 test {
-  useJUnitPlatform()
+    useJUnitPlatform()
 }
 
-task installGitHook(type: Copy) {
-  from new File(rootProject.rootDir, 'scripts/pre-commit')
-  into { new File(rootProject.rootDir, '../.git/hooks') }
-  fileMode 0777
+task packageBig(type: Zip) {
+    from compileJava
+    from processResources
+    into('lib') {
+        from configurations.runtimeClasspath
+    }
 }
 
-def copyDocker = tasks.register('copyDocker', Copy) {
-  dependsOn build
-  from "$buildDir/libs"
-  into "$rootDir/dockerContainer"
+task packageLibs(type: Zip) {
+    into('java/lib') {
+        from configurations.runtimeClasspath
+    }
 }
 
-def buildDocker = tasks.register('buildDocker', Exec) {
-  dependsOn copyDocker
-  executable "docker"
-  args "build", "$rootDir/dockerContainer"
+task packageSmall(type: Zip) {
+    from compileJava
+    from processResources
 }
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+build.dependsOn packageSmall
