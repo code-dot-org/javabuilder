@@ -8,4 +8,4 @@
  */
 
 rootProject.name = 'org-code-lambda-javabuilder'
-include('app')
+include('lib')
