@@ -46,3 +46,8 @@ public class Foo {
   }
 }
 ```
+
+To test the lambda function the first time, follow the instructions here:
+https://docs.aws.amazon.com/toolkit-for-jetbrains/latest/userguide/setup-toolkit.html
+
+This step next: https://docs.aws.amazon.com/toolkit-for-jetbrains/latest/userguide/key-tasks.html#key-tasks-first-connect

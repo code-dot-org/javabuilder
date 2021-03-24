@@ -1,51 +1,71 @@
 package org.code.lambda.javabuilder;
 
-import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.amazonaws.services.lambda.runtime.LambdaLogger;
-import com.amazonaws.services.lambda.runtime.events.S3Event;
-import java.util.Map;
+import com.amazonaws.client.builder.AwsClientBuilder;
+import com.amazonaws.services.apigatewaymanagementapi.AmazonApiGatewayManagementApi;
+import com.amazonaws.services.apigatewaymanagementapi.AmazonApiGatewayManagementApiClientBuilder;
+import com.amazonaws.services.sqs.AmazonSQS;
+import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
+import com.amazonaws.regions.Regions;
 
-import com.amazonaws.services.s3.event.S3EventNotification.S3EventNotificationRecord;
+import java.io.IOException;
+import java.util.Scanner;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+public class JavaBuilder {
+  private final OutputHandler outputHandler;
+  private final InputPoller inputPoller;
+  private final RuntimeIO runtimeIO;
+  private final OutputPoller outputPoller;
+  private final JavaRunner javaRunner;
+  private final OutputSemaphore outputSemaphore;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-//https://github.com/awsdocs/aws-lambda-developer-guide/tree/main/sample-apps/blank-java
-// Handler value: example.Handler
-public class JavaBuilder implements RequestHandler<Map<String,String>, String>{
-  //  private static final Logger logger = LoggerFactory.getLogger(JavaBuilder.class);
-//  Gson gson = new GsonBuilder().setPrettyPrinting().create();
+  public JavaBuilder(String connectionId, String apiEndpoint, String queueUrl) {
+    // Create output handler
+    AmazonApiGatewayManagementApi api = AmazonApiGatewayManagementApiClientBuilder.standard().withEndpointConfiguration(
+        new AwsClientBuilder.EndpointConfiguration(apiEndpoint,  "us-east-1")
+    ).build();
+    this.outputHandler = new OutputHandler(connectionId, api);
 
+    // Overwrite system I/O
+    try {
+      this.runtimeIO = new RuntimeIO();
+    } catch (IOException e) {
+      this.outputHandler.sendMessage("There was an error running your code. Try again.");
+      throw new RuntimeException("Error setting up console IO", e);
+    }
 
-  //  private static final Logger logger = LoggerFactory.getLogger(JavaBuilder.class);
-//  Gson gson = new GsonBuilder().setPrettyPrinting().create();
-  @Override
-  public String handleRequest(Map<String, String> __, Context context) {
-    InputPoller input = new InputPoller();
-    OutputHandler output = new OutputHandler();
-    String response = input.poll();
-    // output.start();
-    // while(input.isAlive() || output.isAlive()) {
-    //   try {
-    //     Thread.sleep(30000);
-    //   } catch (InterruptedException e) {
-    //     // TODO Auto-generated catch block
-    //     e.printStackTrace();
-    //   }
-    // }
-    // // String response = new String("200 OK");
-    // S3EventNotificationRecord record = event.getRecords().get(0);
-    // String srcBucket = record.getS3().getBucket().getName();
-    // // Object key may have spaces or unicode non-ASCII characters.
-    // String srcKey = record.getS3().getObject().getUrlDecodedKey();
-    // logger.info("RECORD: " + record);
-    // logger.info("SOURCE BUCKET: " + srcBucket);
-    // logger.info("SOURCE KEY: " + srcKey);
-    // log execution details
-    // Util.logEnvironment(event, context, gson);
-    return response;
+    // Create input poller
+    final AmazonSQS sqsClient = AmazonSQSClientBuilder.defaultClient();
+    this.inputPoller = new InputPoller(sqsClient, queueUrl, this.runtimeIO, this.outputHandler);
+
+    // Create output poller
+    this.outputPoller = new OutputPoller(this.outputHandler);
+
+    // Create code runner
+    this.javaRunner = new JavaRunner();
+
+    this.outputSemaphore = new OutputSemaphore();
+
+    this.inputPoller.start();
+    this.outputPoller.start();
+  }
+
+  public void runUserCode() {
+    this.javaRunner.start();
+    while(javaRunner.isAlive()) {
+      try {
+        Thread.sleep(200);
+      } catch (InterruptedException e) {
+        outputHandler.sendMessage("There was an error running to your program. Try running it again." + e.toString());
+      }
+    }
+
+    OutputSemaphore.signalProcessFinalOutput();
+    while (OutputSemaphore.anyOutputInProgress()) {
+      try {
+        Thread.sleep(200);
+      } catch (InterruptedException e) {
+        outputHandler.sendMessage("There was an error running to your program. Try running it again." + e.toString());
+      }
+    }
   }
 }
