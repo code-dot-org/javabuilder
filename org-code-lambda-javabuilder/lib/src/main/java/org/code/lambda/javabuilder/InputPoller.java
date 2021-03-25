@@ -34,14 +34,12 @@ public class InputPoller extends Thread {
           outputHandler.sendMessage("There was an error passing input to your program." + e.toString());
         }
         sqsClient.deleteMessage(queueUrl, message.getReceiptHandle());
-//        return outputHandler.processMessage(m);
       }
       try {
-        Thread.sleep(200);
+        Thread.sleep(400);
       } catch (InterruptedException e) {
         outputHandler.sendMessage("There was an error passing input to your program. Try running it again." + e.toString());
       }
     }
-//    return "got nothing";
   }
 }

@@ -5,10 +5,8 @@ import com.amazonaws.services.apigatewaymanagementapi.AmazonApiGatewayManagement
 import com.amazonaws.services.apigatewaymanagementapi.AmazonApiGatewayManagementApiClientBuilder;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
-import com.amazonaws.regions.Regions;
 
 import java.io.IOException;
-import java.util.Scanner;
 
 public class JavaBuilder {
   private final OutputHandler outputHandler;
@@ -25,6 +23,8 @@ public class JavaBuilder {
     ).build();
     this.outputHandler = new OutputHandler(connectionId, api);
 
+    this.outputHandler.sendDebuggingMessage("Done setting up output handler");
+
     // Overwrite system I/O
     try {
       this.runtimeIO = new RuntimeIO();
@@ -32,6 +32,8 @@ public class JavaBuilder {
       this.outputHandler.sendMessage("There was an error running your code. Try again.");
       throw new RuntimeException("Error setting up console IO", e);
     }
+
+    this.outputHandler.sendDebuggingMessage("Done setting up runtime IO handler");
 
     // Create input poller
     final AmazonSQS sqsClient = AmazonSQSClientBuilder.defaultClient();
@@ -46,26 +48,31 @@ public class JavaBuilder {
     this.outputSemaphore = new OutputSemaphore();
 
     this.inputPoller.start();
+    this.outputHandler.sendDebuggingMessage("Started Input Poller");
     this.outputPoller.start();
+    this.outputHandler.sendDebuggingMessage("Started Output Poller");
   }
 
   public void runUserCode() {
     this.javaRunner.start();
+    this.outputHandler.sendDebuggingMessage("Started Running Code");
     while(javaRunner.isAlive()) {
       try {
-        Thread.sleep(200);
+        Thread.sleep(400);
       } catch (InterruptedException e) {
         outputHandler.sendMessage("There was an error running to your program. Try running it again." + e.toString());
       }
     }
 
     OutputSemaphore.signalProcessFinalOutput();
+    this.outputHandler.sendDebuggingMessage("Waiting for output");
     while (OutputSemaphore.anyOutputInProgress()) {
       try {
-        Thread.sleep(200);
+        Thread.sleep(400);
       } catch (InterruptedException e) {
         outputHandler.sendMessage("There was an error running to your program. Try running it again." + e.toString());
       }
     }
+    this.outputHandler.sendDebuggingMessage("Done");
   }
 }
