@@ -23,7 +23,7 @@ public class OutputPoller extends Thread {
       }
 
       try {
-        Thread.sleep(200);
+        Thread.sleep(400);
       } catch (InterruptedException e) {
         outputHandler.sendMessage("There was an error reading output from your program. Try running it again." + e.toString());
       }
