@@ -8,4 +8,4 @@
  */
 
 rootProject.name = 'org-code-javabuilder'
-include('app')
+include('lib')
