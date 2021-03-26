@@ -11,10 +11,11 @@ public class OutputSemaphore {
   }
 
   public synchronized static void decreaseOutputInProgress() {
-    outputBeingProcessed--;
+    outputBeingProcessed = Math.max(outputBeingProcessed - 1, 0);
   }
 
   public synchronized static boolean anyOutputInProgress() {
+    OutputHandler.sendDebuggingMessage("Output in progress: " + outputBeingProcessed);
     return outputBeingProcessed > 0 || processingFinalOutput;
   }
 

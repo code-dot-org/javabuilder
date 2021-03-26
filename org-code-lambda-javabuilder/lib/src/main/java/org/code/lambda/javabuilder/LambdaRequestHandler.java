@@ -3,8 +3,6 @@ package org.code.lambda.javabuilder;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import java.util.Map;
-import com.amazonaws.services.sqs.AmazonSQS;
-import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 
 //https://github.com/awsdocs/aws-lambda-developer-guide/tree/main/sample-apps/blank-java
 public class LambdaRequestHandler implements RequestHandler<Map<String,String>, String>{

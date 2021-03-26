@@ -5,26 +5,25 @@ import com.amazonaws.services.apigatewaymanagementapi.AmazonApiGatewayManagement
 import com.amazonaws.services.apigatewaymanagementapi.model.PostToConnectionRequest;
 
 public class OutputHandler extends Thread {
-  private String connectionId = "";
-  private final AmazonApiGatewayManagementApi api;
+  private static String connectionId;
+  private static AmazonApiGatewayManagementApi api;
 
   public OutputHandler(String connectionId, AmazonApiGatewayManagementApi api){
     this.connectionId = connectionId;
     this.api = api;
   }
-  public void sendDebuggingMessage(String message) {
-    String time = String.valueOf(java.time.Clock.systemUTC().instant());
-    PostToConnectionRequest post = new PostToConnectionRequest();
-    post.setConnectionId(connectionId);
-    post.setData(ByteBuffer.wrap((message + " " + time).getBytes()));
-    api.postToConnection(post);
+  public static void sendDebuggingMessage(String message) {
+//    String time = String.valueOf(java.time.Clock.systemUTC().instant());
+//    PostToConnectionRequest post = new PostToConnectionRequest();
+//    post.setConnectionId(connectionId);
+//    post.setData(ByteBuffer.wrap((message + " " + time).getBytes()));
+//    api.postToConnection(post);
   }
 
-  public void sendMessage(String message) {
+  public static void sendMessage(String message) {
     PostToConnectionRequest post = new PostToConnectionRequest();
     post.setConnectionId(connectionId);
     post.setData(ByteBuffer.wrap((message).getBytes()));
     api.postToConnection(post);
-    OutputSemaphore.decreaseOutputInProgress();
   }
 }

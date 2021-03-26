@@ -2,7 +2,7 @@ Resources:
   Function:
     Type: AWS::Serverless::Function
     Properties:
-      Timeout: 30
+      Timeout: 60
       MemorySize: 512
       Handler: org.code.lambda.javabuilder.LambdaRequestHandler
       CodeUri: C:\Users\jmkul\IdeaProjects\java-ide\org-code-lambda-javabuilder\lib

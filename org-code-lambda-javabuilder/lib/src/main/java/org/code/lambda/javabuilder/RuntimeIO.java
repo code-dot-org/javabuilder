@@ -49,10 +49,9 @@ public class RuntimeIO {
     RuntimeIO.systemOutputStream.flush();
     if(RuntimeIO.systemOutputReader.ready()) {
       OutputSemaphore.addOutputInProgress();
-      OutputSemaphore.processFinalOutput();
       return RuntimeIO.systemOutputReader.readLine();
     } else {
-      OutputSemaphore.processFinalOutput();
+      OutputSemaphore.decreaseOutputInProgress();
       return null;
     }
   }

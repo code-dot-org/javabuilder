@@ -11,35 +11,33 @@ public class InputPoller extends Thread {
   private final String queueUrl;
   private final AmazonSQS sqsClient;
   private final RuntimeIO runtimeIO;
-  private final OutputHandler outputHandler;
+  private final JavaRunner javaRunner;
 
-  public InputPoller(AmazonSQS sqsClient, String queueUrl, RuntimeIO runtimeIO, OutputHandler outputHandler) {
+  public InputPoller(AmazonSQS sqsClient, String queueUrl, RuntimeIO runtimeIO, JavaRunner javaRunner) {
     this.queueUrl = queueUrl;
     this.sqsClient = sqsClient;
     this.runtimeIO = runtimeIO;
-    this.outputHandler = outputHandler;
+    this.javaRunner = javaRunner;
   }
 
   public void run() {
-    int x = 0;
-    while (x < 100) {
-      x++;
+    while (javaRunner.isAlive()) {
       List<Message> messages = sqsClient.receiveMessage(queueUrl).getMessages();
 
       for (Message message : messages) {
-        // TODO: Handle input messages
         try {
           runtimeIO.passInputToProgram(message.getBody());
         } catch (IOException e) {
-          outputHandler.sendMessage("There was an error passing input to your program." + e.toString());
+          OutputHandler.sendMessage("There was an error passing input to your program." + e.getStackTrace());
         }
         sqsClient.deleteMessage(queueUrl, message.getReceiptHandle());
       }
       try {
         Thread.sleep(400);
       } catch (InterruptedException e) {
-        outputHandler.sendMessage("There was an error passing input to your program. Try running it again." + e.toString());
+        OutputHandler.sendMessage("There was an error passing input to your program. Try running it again." + e.toString());
       }
     }
+    OutputHandler.sendDebuggingMessage("Done polling for input");
   }
 }

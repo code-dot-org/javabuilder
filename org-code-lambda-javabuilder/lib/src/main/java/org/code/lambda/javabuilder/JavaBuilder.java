@@ -35,27 +35,26 @@ public class JavaBuilder {
 
     this.outputHandler.sendDebuggingMessage("Done setting up runtime IO handler");
 
-    // Create input poller
-    final AmazonSQS sqsClient = AmazonSQSClientBuilder.defaultClient();
-    this.inputPoller = new InputPoller(sqsClient, queueUrl, this.runtimeIO, this.outputHandler);
-
-    // Create output poller
-    this.outputPoller = new OutputPoller(this.outputHandler);
-
     // Create code runner
     this.javaRunner = new JavaRunner();
 
-    this.outputSemaphore = new OutputSemaphore();
+    // Create input poller
+    final AmazonSQS sqsClient = AmazonSQSClientBuilder.defaultClient();
+    this.inputPoller = new InputPoller(sqsClient, queueUrl, this.runtimeIO, this.javaRunner);
 
-    this.inputPoller.start();
-    this.outputHandler.sendDebuggingMessage("Started Input Poller");
-    this.outputPoller.start();
-    this.outputHandler.sendDebuggingMessage("Started Output Poller");
+    // Create output poller
+    this.outputPoller = new OutputPoller(this.javaRunner);
+
+    this.outputSemaphore = new OutputSemaphore();
   }
 
   public void runUserCode() {
     this.javaRunner.start();
     this.outputHandler.sendDebuggingMessage("Started Running Code");
+    this.inputPoller.start();
+    this.outputHandler.sendDebuggingMessage("Started Input Poller");
+    this.outputPoller.start();
+    this.outputHandler.sendDebuggingMessage("Started Output Poller");
     while(javaRunner.isAlive()) {
       try {
         Thread.sleep(400);
@@ -64,7 +63,6 @@ public class JavaBuilder {
       }
     }
 
-    OutputSemaphore.signalProcessFinalOutput();
     this.outputHandler.sendDebuggingMessage("Waiting for output");
     while (OutputSemaphore.anyOutputInProgress()) {
       try {
