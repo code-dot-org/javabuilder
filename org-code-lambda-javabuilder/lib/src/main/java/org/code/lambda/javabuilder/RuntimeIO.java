@@ -4,15 +4,16 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 
 public class RuntimeIO {
-  private static PrintStream stdout;
-  private static InputStream stdin;
-  private static PipedOutputStream systemInputWriter;
-  private static BufferedReader systemOutputReader;
-  private static PipedOutputStream systemOutputStream;
-//  private static RuntimeIO RUNTIME_IO_INSTANCE = null;
+  private final PrintStream stdout;
+  private final InputStream stdin;
+  private final PipedOutputStream systemInputWriter;
+  private final BufferedReader systemOutputReader;
+  private final PipedOutputStream systemOutputStream;
+  private final OutputSemaphore outputSemaphore;
 
+  public RuntimeIO(OutputSemaphore outputSemaphore) throws IOException {
+    this.outputSemaphore = outputSemaphore;
 
-  public RuntimeIO() throws IOException {
     // -- Redirect output from the user's program --
     PipedInputStream inputStream = new PipedInputStream();
 
@@ -37,31 +38,27 @@ public class RuntimeIO {
     System.setIn(systemInputStream);
   }
 
-  public static void passInputToProgram(String userInput) throws IOException {
+  public void passInputToProgram(String userInput) throws IOException {
     // System.in expects input to end with a lineSeparator. We add that to allow the user program to
     // continue.
     byte[] input = (userInput + System.lineSeparator()).getBytes(StandardCharsets.UTF_8);
-    RuntimeIO.systemInputWriter.write(input, 0, input.length);
-    RuntimeIO.systemInputWriter.flush();
+    systemInputWriter.write(input, 0, input.length);
+    systemInputWriter.flush();
   }
 
-  public static String pollForOutput() throws IOException {
-    RuntimeIO.systemOutputStream.flush();
-    if(RuntimeIO.systemOutputReader.ready()) {
-      OutputSemaphore.addOutputInProgress();
-      return RuntimeIO.systemOutputReader.readLine();
+  public String pollForOutput() throws IOException {
+    systemOutputStream.flush();
+    if(systemOutputReader.ready()) {
+      outputSemaphore.addOutputInProgress();
+      return systemOutputReader.readLine();
     } else {
-      OutputSemaphore.decreaseOutputInProgress();
+      outputSemaphore.decreaseOutputInProgress();
       return null;
     }
   }
 
-  public static boolean areStreamsEmpty() throws IOException {
-    return RuntimeIO.systemOutputReader.ready();
-  }
-
-  public static void restoreSystemIO() {
-    System.setOut(RuntimeIO.stdout);
-    System.setIn(RuntimeIO.stdin);
+  public void restoreSystemIO() {
+    System.setOut(stdout);
+    System.setIn(stdin);
   }
 }
