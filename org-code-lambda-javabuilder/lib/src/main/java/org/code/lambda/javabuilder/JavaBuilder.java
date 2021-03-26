@@ -11,7 +11,6 @@ import java.io.IOException;
 public class JavaBuilder {
   private final OutputHandler outputHandler;
   private final InputPoller inputPoller;
-  private final RuntimeIO runtimeIO;
   private final OutputPoller outputPoller;
   private final JavaRunner javaRunner;
   private final OutputSemaphore outputSemaphore;
@@ -19,42 +18,35 @@ public class JavaBuilder {
   public JavaBuilder(String connectionId, String apiEndpoint, String queueUrl) {
     // Create output handler
     AmazonApiGatewayManagementApi api = AmazonApiGatewayManagementApiClientBuilder.standard().withEndpointConfiguration(
-        new AwsClientBuilder.EndpointConfiguration(apiEndpoint,  "us-east-1")
+        new AwsClientBuilder.EndpointConfiguration(apiEndpoint, "us-east-1")
     ).build();
     this.outputHandler = new OutputHandler(connectionId, api);
-
-    this.outputHandler.sendDebuggingMessage("Done setting up output handler");
+    this.outputSemaphore = new OutputSemaphore();
 
     // Overwrite system I/O
+    RuntimeIO runtimeIO;
     try {
-      this.runtimeIO = new RuntimeIO();
+      runtimeIO = new RuntimeIO(this.outputSemaphore);
     } catch (IOException e) {
       this.outputHandler.sendMessage("There was an error running your code. Try again.");
       throw new RuntimeException("Error setting up console IO", e);
     }
 
-    this.outputHandler.sendDebuggingMessage("Done setting up runtime IO handler");
-
     // Create code runner
-    this.javaRunner = new JavaRunner();
+    this.javaRunner = new JavaRunner(this.outputSemaphore);
 
     // Create input poller
-    final AmazonSQS sqsClient = AmazonSQSClientBuilder.defaultClient();
-    this.inputPoller = new InputPoller(sqsClient, queueUrl, this.runtimeIO, this.javaRunner);
+    AmazonSQS sqsClient = AmazonSQSClientBuilder.defaultClient();
+    this.inputPoller = new InputPoller(sqsClient, queueUrl, runtimeIO, this.javaRunner, this.outputHandler);
 
     // Create output poller
-    this.outputPoller = new OutputPoller(this.javaRunner);
-
-    this.outputSemaphore = new OutputSemaphore();
+    this.outputPoller = new OutputPoller(this.javaRunner, this.outputHandler, runtimeIO, this.outputSemaphore);
   }
 
   public void runUserCode() {
     this.javaRunner.start();
-    this.outputHandler.sendDebuggingMessage("Started Running Code");
     this.inputPoller.start();
-    this.outputHandler.sendDebuggingMessage("Started Input Poller");
     this.outputPoller.start();
-    this.outputHandler.sendDebuggingMessage("Started Output Poller");
     while(javaRunner.isAlive()) {
       try {
         Thread.sleep(400);
@@ -63,14 +55,12 @@ public class JavaBuilder {
       }
     }
 
-    this.outputHandler.sendDebuggingMessage("Waiting for output");
-    while (OutputSemaphore.anyOutputInProgress()) {
+    while (outputSemaphore.anyOutputInProgress()) {
       try {
         Thread.sleep(400);
       } catch (InterruptedException e) {
         outputHandler.sendMessage("There was an error running to your program. Try running it again." + e.toString());
       }
     }
-    this.outputHandler.sendDebuggingMessage("Done");
   }
 }

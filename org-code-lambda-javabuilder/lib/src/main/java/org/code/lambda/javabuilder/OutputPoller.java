@@ -4,34 +4,36 @@ import java.io.IOException;
 
 public class OutputPoller extends Thread {
   private final JavaRunner javaRunner;
-  public OutputPoller(JavaRunner javaRunner) {
+  private final OutputHandler outputHandler;
+  private final RuntimeIO runtimeIO;
+  private final OutputSemaphore outputSemaphore;
+  public OutputPoller(JavaRunner javaRunner, OutputHandler outputHandler, RuntimeIO runtimeIO, OutputSemaphore outputSemaphore) {
     this.javaRunner = javaRunner;
+    this.outputHandler = outputHandler;
+    this.runtimeIO = runtimeIO;
+    this.outputSemaphore = outputSemaphore;
   }
 
   public void run() {
-    while (javaRunner.isAlive() || OutputSemaphore.anyOutputInProgress()) {
+    while (javaRunner.isAlive() || outputSemaphore.anyOutputInProgress()) {
       if(!javaRunner.isAlive()) {
-        OutputHandler.sendDebuggingMessage("Processing Final Output");
-        OutputSemaphore.processFinalOutput();
-        OutputHandler.sendDebuggingMessage("Should be false: " + String.valueOf(javaRunner.isAlive() || OutputSemaphore.anyOutputInProgress()));
+        outputSemaphore.processFinalOutput();
       }
       String message = null;
       try {
-        message = RuntimeIO.pollForOutput();
+        message = runtimeIO.pollForOutput();
       } catch (IOException e) {
-        OutputHandler.sendMessage("There was an error reading output from your program. Try running it again." + e.toString());
+        outputHandler.sendMessage("There was an error reading output from your program. Try running it again." + e.toString());
       }
       if (message != null) {
-        OutputHandler.sendMessage(message);
+        outputHandler.sendMessage(message);
       }
 
       try {
         Thread.sleep(400);
       } catch (InterruptedException e) {
-        OutputHandler.sendMessage("There was an error reading output from your program. Try running it again." + e.toString());
+        outputHandler.sendMessage("There was an error reading output from your program. Try running it again." + e.toString());
       }
     }
-
-    OutputHandler.sendDebuggingMessage("Done polling for output");
   }
 }
