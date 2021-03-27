@@ -1,4 +1,5 @@
 plugins {
+    id 'com.github.sherter.google-java-format' version '0.8'
     id 'java'
 }
 
@@ -54,4 +55,10 @@ task buildZip(type: Zip) {
     into('lib') {
         from configurations.runtimeClasspath
     }
+}
+
+task installGitHook(type: Copy) {
+  from new File(rootProject.rootDir, 'scripts/pre-commit')
+  into { new File(rootProject.rootDir, '../.git/hooks') }
+  fileMode 0777
 }

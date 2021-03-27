@@ -5,7 +5,6 @@ import com.amazonaws.services.apigatewaymanagementapi.AmazonApiGatewayManagement
 import com.amazonaws.services.apigatewaymanagementapi.AmazonApiGatewayManagementApiClientBuilder;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
-
 import java.io.IOException;
 
 public class JavaBuilder {
@@ -17,9 +16,11 @@ public class JavaBuilder {
 
   public JavaBuilder(String connectionId, String apiEndpoint, String queueUrl) {
     // Create output handler
-    AmazonApiGatewayManagementApi api = AmazonApiGatewayManagementApiClientBuilder.standard().withEndpointConfiguration(
-        new AwsClientBuilder.EndpointConfiguration(apiEndpoint, "us-east-1")
-    ).build();
+    AmazonApiGatewayManagementApi api =
+        AmazonApiGatewayManagementApiClientBuilder.standard()
+            .withEndpointConfiguration(
+                new AwsClientBuilder.EndpointConfiguration(apiEndpoint, "us-east-1"))
+            .build();
     this.outputHandler = new OutputHandler(connectionId, api);
     this.outputSemaphore = new OutputSemaphore();
 
@@ -37,21 +38,24 @@ public class JavaBuilder {
 
     // Create input poller
     AmazonSQS sqsClient = AmazonSQSClientBuilder.defaultClient();
-    this.inputPoller = new InputPoller(sqsClient, queueUrl, runtimeIO, this.javaRunner, this.outputHandler);
+    this.inputPoller =
+        new InputPoller(sqsClient, queueUrl, runtimeIO, this.javaRunner, this.outputHandler);
 
     // Create output poller
-    this.outputPoller = new OutputPoller(this.javaRunner, this.outputHandler, runtimeIO, this.outputSemaphore);
+    this.outputPoller =
+        new OutputPoller(this.javaRunner, this.outputHandler, runtimeIO, this.outputSemaphore);
   }
 
   public void runUserCode() {
     this.javaRunner.start();
     this.inputPoller.start();
     this.outputPoller.start();
-    while(javaRunner.isAlive()) {
+    while (javaRunner.isAlive()) {
       try {
         Thread.sleep(400);
       } catch (InterruptedException e) {
-        outputHandler.sendMessage("There was an error running to your program. Try running it again." + e.toString());
+        outputHandler.sendMessage(
+            "There was an error running to your program. Try running it again." + e.toString());
       }
     }
 
@@ -59,7 +63,8 @@ public class JavaBuilder {
       try {
         Thread.sleep(400);
       } catch (InterruptedException e) {
-        outputHandler.sendMessage("There was an error running to your program. Try running it again." + e.toString());
+        outputHandler.sendMessage(
+            "There was an error running to your program. Try running it again." + e.toString());
       }
     }
   }

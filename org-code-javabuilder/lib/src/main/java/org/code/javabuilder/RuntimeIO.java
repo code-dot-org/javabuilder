@@ -48,7 +48,7 @@ public class RuntimeIO {
 
   public String pollForOutput() throws IOException {
     systemOutputStream.flush();
-    if(systemOutputReader.ready()) {
+    if (systemOutputReader.ready()) {
       outputSemaphore.addOutputInProgress();
       return systemOutputReader.readLine();
     } else {

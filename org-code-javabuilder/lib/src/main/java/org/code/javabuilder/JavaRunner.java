@@ -4,6 +4,7 @@ import java.util.Scanner;
 
 public class JavaRunner extends Thread {
   private final OutputSemaphore outputSemaphore;
+
   public JavaRunner(OutputSemaphore outputSemaphore) {
     this.outputSemaphore = outputSemaphore;
   }

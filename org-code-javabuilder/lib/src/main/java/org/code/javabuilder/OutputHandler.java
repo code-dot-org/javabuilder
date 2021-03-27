@@ -1,14 +1,14 @@
 package org.code.javabuilder;
 
-import java.nio.ByteBuffer;
 import com.amazonaws.services.apigatewaymanagementapi.AmazonApiGatewayManagementApi;
 import com.amazonaws.services.apigatewaymanagementapi.model.PostToConnectionRequest;
+import java.nio.ByteBuffer;
 
 public class OutputHandler extends Thread {
   private final String connectionId;
   private final AmazonApiGatewayManagementApi api;
 
-  public OutputHandler(String connectionId, AmazonApiGatewayManagementApi api){
+  public OutputHandler(String connectionId, AmazonApiGatewayManagementApi api) {
     this.connectionId = connectionId;
     this.api = api;
   }
