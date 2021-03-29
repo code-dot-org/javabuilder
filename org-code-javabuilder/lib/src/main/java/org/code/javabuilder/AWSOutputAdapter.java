@@ -4,11 +4,11 @@ import java.nio.ByteBuffer;
 import com.amazonaws.services.apigatewaymanagementapi.AmazonApiGatewayManagementApi;
 import com.amazonaws.services.apigatewaymanagementapi.model.PostToConnectionRequest;
 
-public class OutputHandler extends Thread {
+public class AWSOutputAdapter implements OutputAdapter {
   private final String connectionId;
   private final AmazonApiGatewayManagementApi api;
 
-  public OutputHandler(String connectionId, AmazonApiGatewayManagementApi api){
+  public AWSOutputAdapter(String connectionId, AmazonApiGatewayManagementApi api){
     this.connectionId = connectionId;
     this.api = api;
   }
