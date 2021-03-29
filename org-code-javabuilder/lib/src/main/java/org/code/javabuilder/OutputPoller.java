@@ -4,12 +4,12 @@ import java.io.IOException;
 
 public class OutputPoller extends Thread {
   private final JavaRunner javaRunner;
-  private final OutputHandler outputHandler;
+  private final OutputAdapter outputAdapter;
   private final RuntimeIO runtimeIO;
   private final OutputSemaphore outputSemaphore;
-  public OutputPoller(JavaRunner javaRunner, OutputHandler outputHandler, RuntimeIO runtimeIO, OutputSemaphore outputSemaphore) {
+  public OutputPoller(JavaRunner javaRunner, OutputAdapter outputAdapter, RuntimeIO runtimeIO, OutputSemaphore outputSemaphore) {
     this.javaRunner = javaRunner;
-    this.outputHandler = outputHandler;
+    this.outputAdapter = outputAdapter;
     this.runtimeIO = runtimeIO;
     this.outputSemaphore = outputSemaphore;
   }
@@ -23,16 +23,16 @@ public class OutputPoller extends Thread {
       try {
         message = runtimeIO.pollForOutput();
       } catch (IOException e) {
-        outputHandler.sendMessage("There was an error reading output from your program. Try running it again." + e.toString());
+        outputAdapter.sendMessage("There was an error reading output from your program. Try running it again." + e.toString());
       }
       if (message != null) {
-        outputHandler.sendMessage(message);
+        outputAdapter.sendMessage(message);
       }
 
       try {
         Thread.sleep(400);
       } catch (InterruptedException e) {
-        outputHandler.sendMessage("There was an error reading output from your program. Try running it again." + e.toString());
+        outputAdapter.sendMessage("There was an error reading output from your program. Try running it again." + e.toString());
       }
     }
   }

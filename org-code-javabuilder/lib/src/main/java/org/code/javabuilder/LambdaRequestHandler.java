@@ -1,7 +1,13 @@
 package org.code.javabuilder;
 
+import com.amazonaws.client.builder.AwsClientBuilder;
+import com.amazonaws.services.apigatewaymanagementapi.AmazonApiGatewayManagementApi;
+import com.amazonaws.services.apigatewaymanagementapi.AmazonApiGatewayManagementApiClientBuilder;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
+import com.amazonaws.services.sqs.AmazonSQS;
+import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
+
 import java.util.Map;
 
 // https://github.com/awsdocs/aws-lambda-developer-guide/tree/main/sample-apps/blank-java
@@ -12,7 +18,16 @@ public class LambdaRequestHandler implements RequestHandler<Map<String,String>, 
     final String connectionId = lambdaInput.get("connectionId");
     final String apiEndpoint = lambdaInput.get("apiEndpoint");
     final String queueUrl = lambdaInput.get("queueUrl");
-    JavaBuilder javaBuilder = new JavaBuilder(connectionId, apiEndpoint, queueUrl);
+
+    AmazonApiGatewayManagementApi api = AmazonApiGatewayManagementApiClientBuilder.standard().withEndpointConfiguration(
+        new AwsClientBuilder.EndpointConfiguration(apiEndpoint, "us-east-1")
+    ).build();
+    final AWSOutputAdapter outputAdapter = new AWSOutputAdapter(connectionId, api);
+
+    final AmazonSQS sqsClient = AmazonSQSClientBuilder.defaultClient();
+    final AWSInputAdapter inputAdapter = new AWSInputAdapter(sqsClient, queueUrl);
+
+    JavaBuilder javaBuilder = new JavaBuilder(inputAdapter, outputAdapter);
     javaBuilder.runUserCode();
 
     return "done";
