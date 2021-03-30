@@ -16,6 +16,6 @@ public class JavaRunner extends Thread {
     System.out.println("Hello " + s + "!");
 
     // Tell the output poller to collect any remaining output from the program.
-    outputSemaphore.signalProcessFinalOutput();
+//    outputSemaphore.signalProcessFinalOutput();
   }
 }

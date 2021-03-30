@@ -7,9 +7,9 @@ public class RuntimeIO {
   private final PrintStream stdout;
   private final InputStream stdin;
   private final PipedOutputStream systemInputWriter;
-  private final BufferedReader systemOutputReader;
-  private final PipedOutputStream systemOutputStream;
-  private final OutputSemaphore outputSemaphore;
+  private BufferedReader systemOutputReader;
+  private PipedOutputStream systemOutputStream;
+  private OutputSemaphore outputSemaphore;
 
   public RuntimeIO(OutputSemaphore outputSemaphore) throws IOException {
     this.outputSemaphore = outputSemaphore;
@@ -26,6 +26,38 @@ public class RuntimeIO {
     // Overwrite System.out
     this.stdout = System.out;
     System.setOut(new PrintStream(systemOutputStream));
+
+    // -- Redirect input to the user's program --
+    PipedInputStream systemInputStream = new PipedInputStream();
+
+    // Where we can write input to the user's program
+    this.systemInputWriter = new PipedOutputStream(systemInputStream);
+
+    // Overwrite System.in
+    this.stdin = System.in;
+    System.setIn(systemInputStream);
+  }
+
+  public RuntimeIO(OutputStream outputStream) throws IOException {
+    // Overwrite System.out
+    this.stdout = System.out;
+    System.setOut(new PrintStream(outputStream, true));
+
+    // -- Redirect input to the user's program --
+    PipedInputStream systemInputStream = new PipedInputStream();
+
+    // Where we can write input to the user's program
+    this.systemInputWriter = new PipedOutputStream(systemInputStream);
+
+    // Overwrite System.in
+    this.stdin = System.in;
+    System.setIn(systemInputStream);
+  }
+
+  public RuntimeIO(CustomOutputStream customOutputStream) throws IOException {
+    // Overwrite System.out
+    this.stdout = System.out;
+    System.setOut(customOutputStream);
 
     // -- Redirect input to the user's program --
     PipedInputStream systemInputStream = new PipedInputStream();
