@@ -2,6 +2,7 @@ package org.code.javabuilder;
 
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.model.Message;
+import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -19,10 +20,14 @@ public class AWSInputAdapter implements InputAdapter {
   }
 
   public String getNextMessage() {
+    ReceiveMessageRequest request = new ReceiveMessageRequest();
+    request.setQueueUrl(queueUrl);
+    request.setWaitTimeSeconds(20);
+    request.setMaxNumberOfMessages(10);
     while (messages.peek() == null) {
-      List<Message> messages = sqsClient.receiveMessage(queueUrl).getMessages();
+      List<Message> messages = sqsClient.receiveMessage(request).getMessages();
       for (Message message : messages) {
-        this.messages.add(message.getBody());
+        this.messages.add(message.getBody() + System.lineSeparator() + '\n');
         sqsClient.deleteMessage(queueUrl, message.getReceiptHandle());
       }
     }

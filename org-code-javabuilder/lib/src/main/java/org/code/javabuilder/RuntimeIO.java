@@ -6,7 +6,7 @@ import java.nio.charset.StandardCharsets;
 public class RuntimeIO {
   private final PrintStream stdout;
   private final InputStream stdin;
-  private final PipedOutputStream systemInputWriter;
+  private PipedOutputStream systemInputWriter;
 
   public RuntimeIO(OutputStream outputStream) throws IOException {
     // Overwrite System.out
@@ -22,6 +22,16 @@ public class RuntimeIO {
     // Overwrite System.in
     this.stdin = System.in;
     System.setIn(systemInputStream);
+  }
+
+  public RuntimeIO(OutputStream outputStream, InputStream inputStream) throws IOException {
+    // Overwrite System.out
+    this.stdout = System.out;
+    System.setOut(new PrintStream(outputStream, true));
+
+    // Overwrite System.in
+    this.stdin = System.in;
+    System.setIn(inputStream);
   }
 
   public void passInputToProgram(String userInput) throws IOException {
