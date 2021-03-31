@@ -1,3 +1,10 @@
+/*
+ * Usage:
+ * ./gradlew goJF -> runs the linter and fixes files
+ * ./gradlew verGJF -> just runs the linter
+ * ./gradlew buildZip -> builds a zip package that is compatible with AWS Lambda
+ */
+
 plugins {
     id 'java'
 }
@@ -21,20 +28,6 @@ test {
     useJUnitPlatform()
 }
 
-task packageBig(type: Zip) {
-    from compileJava
-    from processResources
-    into('lib') {
-        from configurations.runtimeClasspath
-    }
-}
-
-task packageLibs(type: Zip) {
-    into('java/lib') {
-        from configurations.runtimeClasspath
-    }
-}
-
 task packageSmall(type: Zip) {
     from compileJava
     from processResources
@@ -47,7 +40,6 @@ java {
 
 build.dependsOn packageSmall
 
-// USE THIS ONE!
 task buildZip(type: Zip) {
     from compileJava
     from processResources
