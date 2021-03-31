@@ -8,22 +8,17 @@ public class AWSOutputAdapter implements OutputAdapter {
   private final String connectionId;
   private final AmazonApiGatewayManagementApi api;
 
-  private static String s_connectionId;
-  private static AmazonApiGatewayManagementApi s_api;
-
   public AWSOutputAdapter(String connectionId, AmazonApiGatewayManagementApi api){
     this.connectionId = connectionId;
     this.api = api;
-    this.s_connectionId = connectionId;
-    this.s_api = api;
   }
 
-  public static void sendDebuggingMessage(String message) {
+  public void sendDebuggingMessage(String message) {
     String time = String.valueOf(java.time.Clock.systemUTC().instant());
     PostToConnectionRequest post = new PostToConnectionRequest();
-    post.setConnectionId(s_connectionId);
+    post.setConnectionId(connectionId);
     post.setData(ByteBuffer.wrap((message + " " + time).getBytes()));
-    s_api.postToConnection(post);
+    api.postToConnection(post);
   }
 
   public void sendMessage(String message) {

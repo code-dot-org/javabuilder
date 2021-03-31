@@ -10,6 +10,9 @@ import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 
 import java.util.Map;
 
+/**
+ *
+ */
 // https://github.com/awsdocs/aws-lambda-developer-guide/tree/main/sample-apps/blank-java
 public class LambdaRequestHandler implements RequestHandler<Map<String,String>, String>{
   @Override

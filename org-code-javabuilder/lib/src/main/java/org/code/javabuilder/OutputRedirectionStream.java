@@ -1,11 +1,10 @@
 package org.code.javabuilder;
 
-import java.io.IOException;
 import java.io.OutputStream;
 
 public class OutputRedirectionStream extends OutputStream {
   private final OutputAdapter outputAdapter;
-  private StringBuilder buffer;
+  private final StringBuilder buffer;
   public OutputRedirectionStream(OutputAdapter outputAdapter) {
     super();
     this.outputAdapter = outputAdapter;
@@ -13,17 +12,17 @@ public class OutputRedirectionStream extends OutputStream {
   }
 
   @Override
-  public void write(int b) throws IOException {
+  public void write(int b) {
     buffer.append((char)b);
   }
 
   @Override
-  public void write(byte[] b) throws IOException {
+  public void write(byte[] b) {
     write(b, 0, b.length);
   }
 
   @Override
-  public void write(byte[] b, int off, int len) throws IOException {
+  public void write(byte[] b, int off, int len) {
     if (b == null) {
       throw new NullPointerException();
     }

@@ -9,9 +9,9 @@ import java.util.List;
 import java.util.Queue;
 
 public class AWSInputAdapter implements InputAdapter {
-  private AmazonSQS sqsClient;
-  private String queueUrl;
-  private Queue<String> messages;
+  private final AmazonSQS sqsClient;
+  private final String queueUrl;
+  private final Queue<String> messages;
 
   public AWSInputAdapter(AmazonSQS sqsClient, String queueUrl) {
     this.sqsClient = sqsClient;

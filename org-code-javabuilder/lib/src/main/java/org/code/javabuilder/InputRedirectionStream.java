@@ -7,41 +7,33 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 public class InputRedirectionStream extends InputStream {
-  private Queue<Byte> queue;
-//  private boolean endOfMessage = false;
+  private final Queue<Byte> queue;
   private final InputAdapter inputAdapter;
 
   public InputRedirectionStream(InputAdapter inputAdapter) {
-    super();
     this.inputAdapter = inputAdapter;
     this.queue = new LinkedList<>();
   }
 
   @Override
-  public int read() throws IOException {
-//    if (queue.peek() == null && endOfMessage) {
-//      endOfMessage = false;
-//      return -1;
-//    }
+  public int read() {
     if (queue.peek() == null) {
       byte[] message = inputAdapter.getNextMessage().getBytes(StandardCharsets.UTF_8);
       for (byte b : message) {
         queue.add(b);
       }
-//      endOfMessage = true;
     }
-int character = queue.remove();
-    AWSOutputAdapter.sendDebuggingMessage(String.valueOf(character));
-    return character;//(int)queue.remove();
+
+    return (int)queue.remove();
   }
 
   @Override
-  public int read(byte[] b) throws IOException {
+  public int read(byte[] b) {
     return read(b, 0, b.length);
   }
 
   @Override
-  public int read(byte[] b, int off, int len) throws IOException {
+  public int read(byte[] b, int off, int len) {
     if(b == null) {
       throw new NullPointerException();
     }
@@ -49,8 +41,8 @@ int character = queue.remove();
       throw new IndexOutOfBoundsException();
     }
 
-    int k;
-    for (k = 0; k < len;) {
+    int k = 0;
+    while (k < len) {
       b[k + off] = (byte)read();
       k++;
       if (queue.peek() == null) {
@@ -58,7 +50,6 @@ int character = queue.remove();
       }
     }
 
-    AWSOutputAdapter.sendDebuggingMessage(String.valueOf(k));
     return k;
   }
 
@@ -68,7 +59,7 @@ int character = queue.remove();
   }
 
   @Override
-  public int available() throws IOException {
+  public int available() {
     return queue.size();
   }
 
