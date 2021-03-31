@@ -5,7 +5,6 @@ import java.io.IOException;
 public class JavaBuilder {
   private final OutputAdapter outputAdapter;
   private final InputAdapter inputAdapter;
-  private InputPoller inputPoller;
   private final JavaRunner javaRunner;
 
   public JavaBuilder(InputAdapter inputAdapter, OutputAdapter outputAdapter) {
@@ -16,6 +15,7 @@ public class JavaBuilder {
     RuntimeIO runtimeIO;
     OutputRedirectionStream outputRedirectionStream = new OutputRedirectionStream(this.outputAdapter);
     InputRedirectionStream inputRedirectionStream = new InputRedirectionStream(this.inputAdapter);
+    this.outputAdapter.sendMessage("Update 5");
 
     try {
       runtimeIO = new RuntimeIO(outputRedirectionStream, inputRedirectionStream);
@@ -26,14 +26,10 @@ public class JavaBuilder {
 
     // Create code runner
     this.javaRunner = new JavaRunner();
-
-    // Create input poller
-//    this.inputPoller = new InputPoller(this.inputAdapter, runtimeIO, this.javaRunner, this.outputAdapter);
   }
 
   public void runUserCode() {
     this.javaRunner.start();
-//    this.inputPoller.start();
     while(javaRunner.isAlive()) {
       try {
         Thread.sleep(400);
