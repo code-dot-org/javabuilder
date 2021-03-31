@@ -3,7 +3,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Timeout: 180
-      MemorySize: 256
+      MemorySize: 512
       Handler: org.code.javabuilder.LambdaRequestHandler
       CodeUri: C:\Users\jmkul\IdeaProjects\java-ide\org-code-javabuilder\lib
       Runtime: java11

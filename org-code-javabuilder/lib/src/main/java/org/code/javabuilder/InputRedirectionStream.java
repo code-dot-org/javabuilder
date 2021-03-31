@@ -8,6 +8,7 @@ import java.util.Queue;
 
 public class InputRedirectionStream extends InputStream {
   private Queue<Byte> queue;
+//  private boolean endOfMessage = false;
   private final InputAdapter inputAdapter;
 
   public InputRedirectionStream(InputAdapter inputAdapter) {
@@ -18,14 +19,20 @@ public class InputRedirectionStream extends InputStream {
 
   @Override
   public int read() throws IOException {
+//    if (queue.peek() == null && endOfMessage) {
+//      endOfMessage = false;
+//      return -1;
+//    }
     if (queue.peek() == null) {
       byte[] message = inputAdapter.getNextMessage().getBytes(StandardCharsets.UTF_8);
       for (byte b : message) {
         queue.add(b);
       }
+//      endOfMessage = true;
     }
-
-    return (int)queue.remove();
+int character = queue.remove();
+    AWSOutputAdapter.sendDebuggingMessage(String.valueOf(character));
+    return character;//(int)queue.remove();
   }
 
   @Override
@@ -43,13 +50,15 @@ public class InputRedirectionStream extends InputStream {
     }
 
     int k;
-    for (k = 0; k < len; k++) {
+    for (k = 0; k < len;) {
       b[k + off] = (byte)read();
+      k++;
       if (queue.peek() == null) {
         break;
       }
     }
 
+    AWSOutputAdapter.sendDebuggingMessage(String.valueOf(k));
     return k;
   }
 

@@ -27,7 +27,7 @@ public class AWSInputAdapter implements InputAdapter {
     while (messages.peek() == null) {
       List<Message> messages = sqsClient.receiveMessage(request).getMessages();
       for (Message message : messages) {
-        this.messages.add(message.getBody() + System.lineSeparator() + '\n');
+        this.messages.add(message.getBody() + System.lineSeparator());
         sqsClient.deleteMessage(queueUrl, message.getReceiptHandle());
       }
     }
