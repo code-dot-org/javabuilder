@@ -2,6 +2,9 @@ package org.code.javabuilder;
 
 import java.io.PrintStream;
 
+/**
+ * The orchestrator for code compilation and execution.
+ */
 public class JavaBuilder {
   private final OutputAdapter outputAdapter;
   private final InputAdapter inputAdapter;
@@ -11,6 +14,9 @@ public class JavaBuilder {
     this.inputAdapter = inputAdapter;
   }
 
+  /**
+   * Sets replaces System.in and System.out with our custom implementation and executes the user's code.
+   */
   public void runUserCode() {
     System.setOut(new PrintStream(new OutputRedirectionStream(this.outputAdapter), true));
     System.setIn(new InputRedirectionStream(this.inputAdapter));

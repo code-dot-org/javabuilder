@@ -1,5 +1,8 @@
 package org.code.javabuilder;
 
 public interface InputAdapter {
-  public String getNextMessage();
+  /**
+   * @return The next user input to the currently running program
+   */
+  String getNextMessage();
 }
