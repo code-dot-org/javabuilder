@@ -2,6 +2,9 @@ package org.code.javabuilder;
 
 import java.util.Scanner;
 
+/**
+ * Currently, JavaRunner just runs a sample student code. We'll add more here when we execute arbitrary student code.
+ */
 public class JavaRunner {
   public void runCode() {
     // Sample program. In the future, student code will be executed here.
