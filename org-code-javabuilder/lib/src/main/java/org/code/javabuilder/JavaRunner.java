@@ -16,6 +16,6 @@ public class JavaRunner {
     System.out.print("are ");
     System.out.print("you? ");
     s = in.nextLine();
-    System.out.println("You are " + s);
+    System.out.println("You said: " + s);
   }
 }
