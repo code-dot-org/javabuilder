@@ -1,7 +1,5 @@
 package org.code.javabuilder;
 
-import java.io.PrintStream;
-
 /** The orchestrator for code compilation and execution. */
 public class JavaBuilder {
   private final OutputAdapter outputAdapter;
@@ -17,7 +15,7 @@ public class JavaBuilder {
    * code.
    */
   public void runUserCode() {
-    System.setOut(new PrintStream(new OutputRedirectionStream(this.outputAdapter), true));
+    System.setOut(new OutputPrintStream(this.outputAdapter));
     System.setIn(new InputRedirectionStream(this.inputAdapter));
     JavaRunner runner = new JavaRunner();
     runner.runCode();

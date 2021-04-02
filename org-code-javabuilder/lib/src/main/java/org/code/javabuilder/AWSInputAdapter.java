@@ -29,7 +29,9 @@ public class AWSInputAdapter implements InputAdapter {
   public String getNextMessage() {
     ReceiveMessageRequest request = new ReceiveMessageRequest();
     request.setQueueUrl(queueUrl);
+    // Sets the request timeout to its maximum value of 20 seconds
     request.setWaitTimeSeconds(20);
+    // Sets the the number of messages to retrieve to its maximum value of 10
     request.setMaxNumberOfMessages(10);
     while (messages.peek() == null) {
       List<Message> messages = sqsClient.receiveMessage(request).getMessages();
