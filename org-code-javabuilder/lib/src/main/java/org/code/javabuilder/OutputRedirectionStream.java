@@ -17,14 +17,6 @@ public class OutputRedirectionStream extends OutputStream {
     this.outputAdapter = outputAdapter;
     this.buffer = new StringBuilder();
   }
-  /**
-   * See: https://docs.oracle.com/javase/8/docs/api/java/io/InputStream.html#read-- Checks the queue
-   * for existing bytes. If the queue is empty, polls the inputAdapter for new data. This is a
-   * blocking call.
-   *
-   * @return the first byte in the queue
-   */
-  //
 
   /**
    * See: https://docs.oracle.com/javase/8/docs/api/java/io/OutputStream.html#write-int- Adds the
@@ -40,7 +32,7 @@ public class OutputRedirectionStream extends OutputStream {
   /** See: https://docs.oracle.com/javase/8/docs/api/java/io/OutputStream.html#write-byte:A- */
   @Override
   public void write(byte[] b) {
-    write(b, 0, b.length);
+    this.write(b, 0, b.length);
   }
 
   /**

@@ -43,7 +43,7 @@ public class InputRedirectionStream extends InputStream {
   /** See: https://docs.oracle.com/javase/8/docs/api/java/io/InputStream.html#read-byte:A- */
   @Override
   public int read(byte[] b) {
-    return read(b, 0, b.length);
+    return this.read(b, 0, b.length);
   }
 
   /**
@@ -60,7 +60,8 @@ public class InputRedirectionStream extends InputStream {
 
     int k = 0;
     while (k < len) {
-      b[off + k++] = (byte) read();
+      b[off + k] = (byte) this.read();
+      k++;
       if (queue.peek() == null) {
         break;
       }
