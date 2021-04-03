@@ -7,6 +7,8 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
+
+import java.util.ArrayList;
 import java.util.Map;
 
 /**
@@ -32,6 +34,8 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     final String connectionId = lambdaInput.get("connectionId");
     final String apiEndpoint = lambdaInput.get("apiEndpoint");
     final String queueUrl = lambdaInput.get("queueUrl");
+    final String projectUrl = lambdaInput.get("projectUrl");
+    final String[] fileNames = lambdaInput.get("fileNames").split(",");
 
     // Create user-program output handlers
     AmazonApiGatewayManagementApi api =
@@ -44,6 +48,12 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     // Create user input handlers
     final AmazonSQS sqsClient = AmazonSQSClientBuilder.defaultClient();
     final AWSInputAdapter inputAdapter = new AWSInputAdapter(sqsClient, queueUrl);
+
+    // Create file manager
+    final ProjectFileManager projectFileManager = new ProjectFileManager(
+        "https://studio.code.org/v3/files/UVXkRDHwYNbXPZTQXPzNJ1C8Oyv1ZCCA5O6M2a-fs1E",
+        new String[]{"MyClass.java"}
+    );
 
     // Create and invoke the code execution environment
     JavaBuilder javaBuilder = new JavaBuilder(inputAdapter, outputAdapter);
