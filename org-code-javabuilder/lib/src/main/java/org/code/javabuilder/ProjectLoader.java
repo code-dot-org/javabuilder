@@ -4,40 +4,53 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
-import java.util.ArrayList;
 
-public class ProjectLoader {
-  private final String channelId;
-  private final ArrayList<String> fileList;
-  public ProjectLoader(String channelId, Array fileList) {
-    this.channelId = channelId;
-    this.fileList = new ArrayList<>();
-    this.fileList.add("MyClass.java");
+public class ProjectLoader extends Thread {
+  private final ProjectFile projectFile;
+  private final String fileUrl;
+  public ProjectLoader(ProjectFile projectFile, String fileUrl) {
+    this.projectFile = projectFile;
+    this.fileUrl = fileUrl;
   }
 
-  public void loadFiles() throws MalformedURLException, ProtocolException, IOException {
-    URL url = new URL("https://studio.code.org/v3/files/UVXkRDHwYNbXPZTQXPzNJ1C8Oyv1ZCCA5O6M2a-fs1E/MyClass.java");
-    HttpURLConnection con = (HttpURLConnection) url.openConnection();
-    con.setRequestMethod("GET");
-    int status = con.getResponseCode();
-    Reader streamReader = null;
-    if (status > 299) {
-      streamReader = new InputStreamReader(con.getErrorStream());
-    } else {
-      streamReader = new InputStreamReader(con.getInputStream());
+  // GOOD?
+  public void run() {
+    URL url = null;
+    try {
+      url = new URL(fileUrl);
+    } catch (MalformedURLException e) {
+      e.printStackTrace();
     }
-    BufferedReader in = new BufferedReader(streamReader);
-    String inputLine;
-    StringBuffer content = new StringBuffer();
-    while ((inputLine = in.readLine()) != null) {
-      content.append(inputLine);
+    try {
+      assert url != null;
+      HttpURLConnection con = (HttpURLConnection) url.openConnection();
+      try {
+        con.setRequestMethod("GET");
+      } catch (ProtocolException e) {
+        e.printStackTrace();
+      }
+      int status = con.getResponseCode();
+      Reader streamReader = null;
+      if (status > 299) {
+        streamReader = new InputStreamReader(con.getErrorStream());
+      } else {
+        streamReader = new InputStreamReader(con.getInputStream());
+      }
+      BufferedReader in = new BufferedReader(streamReader);
+      String inputLine;
+      StringBuffer content = new StringBuffer();
+      while ((inputLine = in.readLine()) != null) {
+        content.append(inputLine);
+      }
+      in.close();
+      con.disconnect();
+      projectFile.setCode(content.toString());
+    } catch (IOException e) {
+      e.printStackTrace();
     }
-    in.close();
-    con.disconnect();
   }
 }

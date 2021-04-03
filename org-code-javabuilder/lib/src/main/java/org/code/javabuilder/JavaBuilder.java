@@ -11,7 +11,7 @@ public class JavaBuilder {
   }
 
   /**
-   * Sets replaces System.in and System.out with our custom implementation and executes the user's
+   * Replaces System.in and System.out with our custom implementation and executes the user's
    * code.
    */
   public void runUserCode() {

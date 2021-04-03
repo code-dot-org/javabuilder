@@ -5,9 +5,9 @@ public class ProjectFile {
   private String code;
   private String className;
 
-  public ProjectFile(String fileName, String code) throws Exception {
+  // GOOD
+  public ProjectFile(String fileName) throws Exception {
     this.fileName = fileName;
-    this.code = code;
     if (fileName.indexOf(".java") > 0) {
       this.className = fileName.substring(0, fileName.indexOf(".java"));
     } else {
