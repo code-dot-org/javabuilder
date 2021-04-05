@@ -3,42 +3,30 @@ require 'aws-sdk-lambda'
 require 'json'
 require 'jwt'
 
-def lambda_handler(event:, context:, callback: )
+def lambda_handler(event:, context:)
   puts event
+  puts context
   headers = event['headers']
   auth_header = headers['Authorization']
-  is_valid = false
 
   if auth_header.start_with?('Bearer: ')
     jwt_token = auth_header.split[1]
-    decoded_token = JWT.decode(jwt_token, dev_public_key, true, algorithm: 'RS256')
-    callback('Unauthorized') unless decoded_token
-    current_time = Time.now.to_i
-    token_data = decoded_token[0]
-    if token_data['iat'] < current_time && token_data['exp'] > current_time
-      is_valid = true
+    begin
+      decoded_token = JWT.decode(jwt_token, dev_public_key, true, algorithm: 'RS256')
+    rescue JWT::ExpiredSignature
+      return generate_deny(nil, event['methodArn'])
     end
-  end
 
-  tmp = event['methodArn'].split(':')
-  api_gateway_arn_tmp = tmp[5].split('/')
-  aws_account_id = tmp[4]
-  region = tmp[3]
-  rest_api_id = api_gateway_arn_tmp[0]
-  stage = api_gateway_arn_tmp[1]
-  method = api_gateway_arn_tmp[2]
-  resource = '/' # root resource
-  resource += api_gateway_arn_tmp[3] if api_gateway_arn_tmp[3]
+    return generate_deny(nil, event['methodArn']) unless decoded_token
 
-  if is_valid
-    callback(null, generate_allow('me', event['methodArn']))
+    generate_allow('me', event['methodArn'], decoded_token[0])
   else
-    callback('Unauthorized')
+    generate_deny(nil, event['methodArn'])
   end
 end
 
 # Helper function to generate an IAM policy
-def generate_policy(principal_id, effect, resource)
+def generate_policy(principal_id, effect, resource, token_data)
   # Required output:
   auth_response = {}
   auth_response['principalId'] = principal_id
@@ -53,15 +41,16 @@ def generate_policy(principal_id, effect, resource)
     policy_document['Statement'][0] = statement_one
     auth_response['policyDocument'] = policy_document
   end
+  auth_response['context'] = token_data if token_data
   auth_response
 end
 
-def generate_allow(principal_id, resource)
-  generate_policy(principal_id, 'Allow', resource)
+def generate_allow(principal_id, resource, token_data)
+  generate_policy(principal_id, 'Allow', resource, token_data)
 end
 
 def generate_deny(principal_id, resource)
-  generate_policy(principal_id, 'Deny', resource)
+  generate_policy(principal_id, 'Deny', resource, nil)
 end
 
 def dev_public_key
