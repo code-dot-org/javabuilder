@@ -12,6 +12,7 @@ import java.net.URL;
 public class ProjectLoader extends Thread {
   private final ProjectFile projectFile;
   private final String fileUrl;
+
   public ProjectLoader(ProjectFile projectFile, String fileUrl) {
     this.projectFile = projectFile;
     this.fileUrl = fileUrl;

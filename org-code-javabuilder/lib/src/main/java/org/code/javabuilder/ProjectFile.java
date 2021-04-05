@@ -1,17 +1,17 @@
 package org.code.javabuilder;
 
+/** In-memory representation of a Java class that will be compiled. */
 public class ProjectFile {
   private String fileName;
   private String code;
   private String className;
 
-  // GOOD
-  public ProjectFile(String fileName) throws Exception {
+  public ProjectFile(String fileName) throws UserFacingException {
     this.fileName = fileName;
     if (fileName.indexOf(".java") > 0) {
       this.className = fileName.substring(0, fileName.indexOf(".java"));
     } else {
-      throw new Exception("Invalid File Name. File name must end in '.java'.");
+      throw new UserFacingException("Invalid File Name. File name must end in '.java'.");
     }
   }
 
