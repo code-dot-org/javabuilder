@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+bundle install
+
 # remove function.zip if it exists
 rm -f function.zip
 
