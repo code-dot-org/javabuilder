@@ -48,8 +48,8 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     final AWSInputAdapter inputAdapter = new AWSInputAdapter(sqsClient, queueUrl);
 
     // Create file manager
-    final UserProjectProjectFileManager userProjectFileManager =
-        new UserProjectProjectFileManager(
+    final UserProjectFileManager userProjectFileManager =
+        new UserProjectFileManager(
             "https://studio.code.org/v3/files/UVXkRDHwYNbXPZTQXPzNJ1C8Oyv1ZCCA5O6M2a-fs1E",
             new String[] {"MyClass.java"});
 
