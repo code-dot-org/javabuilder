@@ -11,4 +11,7 @@ app/.project
 .settings
 .project
 
+# Ignore AWS SAM generated files
+.aws-sam
+
 .vscode/*
