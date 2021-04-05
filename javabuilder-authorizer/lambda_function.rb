@@ -8,20 +8,21 @@ def lambda_handler(event:, context:)
   puts context
   headers = event['headers']
   auth_header = headers['Authorization']
+  method_arn = event['methodArn']
 
   if auth_header.start_with?('Bearer: ')
     jwt_token = auth_header.split[1]
     begin
-      decoded_token = JWT.decode(jwt_token, dev_public_key, true, algorithm: 'RS256')
+      decoded_token = JWT.decode(jwt_token, get_public_key(method_arn), true, algorithm: 'RS256')
     rescue JWT::ExpiredSignature
-      return generate_deny(nil, event['methodArn'])
+      return generate_deny(nil, method_arn)
     end
 
-    return generate_deny(nil, event['methodArn']) unless decoded_token
+    return generate_deny(nil, method_arn) unless decoded_token
 
-    generate_allow('me', event['methodArn'], decoded_token[0])
+    generate_allow('me', method_arn, decoded_token[0])
   else
-    generate_deny(nil, event['methodArn'])
+    generate_deny(nil, method_arn)
   end
 end
 
@@ -53,8 +54,15 @@ def generate_deny(principal_id, resource)
   generate_policy(principal_id, 'Deny', resource, nil)
 end
 
-def dev_public_key
-  key_file = File.open('./public_keys/javabuilder_rsa_dev_public.pem')
+def get_public_key(method_arn)
+  # method_arn is in format
+  # arn:aws:execute-api:region:account-id:api-id/stage-name/$connect
+  # We only care about stage--that tells us which key to get (development, staging, etc.)
+  tmp = method_arn.split(':')
+  api_gateway_arn = tmp[5].split('/')
+  stage_id = api_gateway_arn[1]
+
+  key_file = File.open("./public_keys/javabuilder_rsa_#{stage_id}_pub.pem")
   public_key = key_file.read
   OpenSSL::PKey::RSA.new(public_key)
 end
