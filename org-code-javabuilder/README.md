@@ -1,12 +1,10 @@
 # JavaBuilder App
+To test the lambda function the first time, follow the instructions here:
+https://docs.aws.amazon.com/toolkit-for-jetbrains/latest/userguide/setup-toolkit.html
+
+Followed by these: https://docs.aws.amazon.com/toolkit-for-jetbrains/latest/userguide/key-tasks.html#key-tasks-first-connect
 
 ## Testing
-To test, run the following commands from the `org-code-javabuilder` folder.
-```
-gradle bootRun
-open localhost:8080
-```
-<br/>
 Simple program
 
 ```

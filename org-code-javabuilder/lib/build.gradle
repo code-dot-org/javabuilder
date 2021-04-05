@@ -1,0 +1,50 @@
+/*
+ * Usage:
+ * ./gradlew goJF -> runs the linter and fixes files
+ * ./gradlew verGJF -> just runs the linter
+ * ./gradlew buildZip -> builds a zip package that is compatible with AWS Lambda
+ */
+
+plugins {
+    id 'com.github.sherter.google-java-format' version '0.8'
+    id 'java'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // https://mvnrepository.com/artifact/com.amazonaws/aws-lambda-java-core
+    implementation group: 'com.amazonaws', name: 'aws-lambda-java-core', version: '1.2.1'
+    // https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-apigatewaymanagementapi
+    implementation group: 'com.amazonaws', name: 'aws-java-sdk-apigatewaymanagementapi', version: '1.11.978'
+    // https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-sqs
+    implementation group: 'com.amazonaws', name: 'aws-java-sdk-sqs', version: '1.11.978'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.6.0'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+task packageSmall(type: Zip) {
+    from compileJava
+    from processResources
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+build.dependsOn packageSmall
+
+task buildZip(type: Zip) {
+    from compileJava
+    from processResources
+    into('lib') {
+        from configurations.runtimeClasspath
+    }
+}
