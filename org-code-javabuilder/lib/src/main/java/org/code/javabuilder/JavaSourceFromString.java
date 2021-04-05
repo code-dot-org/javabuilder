@@ -3,7 +3,6 @@ package org.code.javabuilder;
 import java.net.URI;
 import javax.tools.SimpleJavaFileObject;
 
-// GOOD?
 /** A file object used to represent source coming from a string. */
 public class JavaSourceFromString extends SimpleJavaFileObject {
   /** The source code of this "file". */

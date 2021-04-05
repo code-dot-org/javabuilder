@@ -5,12 +5,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-public class UserProjectProjectFileManager implements ProjectFileManager {
+public class UserProjectFileManager implements ProjectFileManager {
   private final String baseUrl;
   private final String[] fileNames;
   private final ArrayList<ProjectFile> fileList;
 
-  public UserProjectProjectFileManager(String baseUrl, String[] fileNames) {
+  public UserProjectFileManager(String baseUrl, String[] fileNames) {
     this.baseUrl = baseUrl;
     this.fileNames = fileNames;
     this.fileList = new ArrayList<>();

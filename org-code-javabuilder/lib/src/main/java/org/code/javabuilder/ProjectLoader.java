@@ -18,7 +18,6 @@ public class ProjectLoader extends Thread {
     this.fileUrl = fileUrl;
   }
 
-  // GOOD?
   public void run() {
     URL url = null;
     try {
