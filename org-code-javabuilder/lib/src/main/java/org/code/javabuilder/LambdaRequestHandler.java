@@ -7,8 +7,6 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
-
-import java.util.ArrayList;
 import java.util.Map;
 
 /**
@@ -50,14 +48,24 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     final AWSInputAdapter inputAdapter = new AWSInputAdapter(sqsClient, queueUrl);
 
     // Create file manager
-    final ProjectFileManager projectFileManager = new ProjectFileManager(
-        "https://studio.code.org/v3/files/UVXkRDHwYNbXPZTQXPzNJ1C8Oyv1ZCCA5O6M2a-fs1E",
-        new String[]{"MyClass.java"}
-    );
+    final UserProjectProjectFileManager userProjectFileManager =
+        new UserProjectProjectFileManager(
+            "https://studio.code.org/v3/files/UVXkRDHwYNbXPZTQXPzNJ1C8Oyv1ZCCA5O6M2a-fs1E",
+            new String[] {"MyClass.java"});
 
     // Create and invoke the code execution environment
-    JavaBuilder javaBuilder = new JavaBuilder(inputAdapter, outputAdapter);
-    javaBuilder.runUserCode();
+    try {
+      CodeBuilder codeBuilder =
+          new CodeBuilder(inputAdapter, outputAdapter, userProjectFileManager);
+      codeBuilder.runUserCode();
+    } catch (UserFacingException e) {
+      // Send user-facing exceptions to the user and log the stack trace to CloudWatch
+      outputAdapter.sendMessage(e.getMessage());
+      context.getLogger().log(e.getLoggingString());
+    } catch (InternalFacingException e) {
+      // Send internal-facing exceptions to CloudWatch
+      context.getLogger().log(e.getLoggingString());
+    }
 
     return "done";
   }

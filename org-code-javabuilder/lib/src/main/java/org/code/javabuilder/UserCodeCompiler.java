@@ -1,32 +1,50 @@
 package org.code.javabuilder;
 
-import javax.tools.*;
-import javax.tools.JavaCompiler.CompilationTask;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import javax.tools.*;
+import javax.tools.JavaCompiler.CompilationTask;
 
-// TODO HERE
+/**
+ * Compiles all user code managed by the ProjectFileManager. Any compiler output will be passed
+ * directly to the user.
+ */
 public class UserCodeCompiler {
-  public void compileProgram() {
-    DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<JavaFileObject>();
+  private final ProjectFileManager projectFileManager;
+  private final File tempFolder;
+  private final OutputAdapter outputAdapter;
 
-    CompilationTask task = getCompilationTask("userProgram", null, diagnostics);
-    if (task == null) {
-//      return false;
-    }
+  public UserCodeCompiler(
+      ProjectFileManager projectFileManager, File tempFolder, OutputAdapter outputAdapter) {
+    this.projectFileManager = projectFileManager;
+    this.tempFolder = tempFolder;
+    this.outputAdapter = outputAdapter;
+  }
+
+  /**
+   * @throws UserFacingException If the user's code has a compiler error or if we hit an internal
+   *     exception that interferes with compilation.
+   */
+  public void compileProgram() throws UserFacingException {
+    DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
+
+    CompilationTask task = getCompilationTask(diagnostics);
 
     boolean success = task.call();
 
     // diagnostics will include any compiler errors
     for (Diagnostic<? extends JavaFileObject> diagnostic : diagnostics.getDiagnostics()) {
-      System.out.println(diagnostic.toString());
+      outputAdapter.sendMessage(diagnostic.toString());
     }
-//    return success;
+    if (!success) {
+      throw new UserFacingException(
+          "We couldn't compile your program. Look for bugs in your program and try again.");
+    }
   }
 
-  private CompilationTask getCompilationTask(
-      String userProgram /*connect here*/, File tempFolder, DiagnosticCollector<JavaFileObject> diagnostics) {
+  private CompilationTask getCompilationTask(DiagnosticCollector<JavaFileObject> diagnostics)
+      throws UserFacingException {
     JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 
     // set output of compilation to be a temporary folder
@@ -35,13 +53,15 @@ public class UserCodeCompiler {
       fileManager.setLocation(StandardLocation.CLASS_OUTPUT, Arrays.asList(tempFolder));
     } catch (IOException e) {
       e.printStackTrace();
-      // if we can't set the file location we won't be able to run the class properly, so return
-      // null
-      return null;
+      // if we can't set the file location we won't be able to run the class properly.
+      throw new UserFacingException(
+          "We hit an error on our side while compiling your program. Try again.");
     }
 
     // create file for user-provided code
-    JavaFileObject file = new JavaSourceFromString("foo", "bar");
+    ProjectFile projectFile = projectFileManager.getFile();
+    JavaFileObject file =
+        new JavaSourceFromString(projectFile.getClassName(), projectFile.getCode());
     Iterable<? extends JavaFileObject> compilationUnits = Arrays.asList(file);
 
     // create compilation task
