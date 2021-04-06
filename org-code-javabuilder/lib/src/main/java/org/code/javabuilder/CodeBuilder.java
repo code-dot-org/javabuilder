@@ -2,24 +2,32 @@ package org.code.javabuilder;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
 import java.net.MalformedURLException;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Comparator;
 
 /** The orchestrator for code compilation and execution. */
-public class CodeBuilder {
+public class CodeBuilder implements AutoCloseable {
   private final OutputAdapter outputAdapter;
   private final InputAdapter inputAdapter;
   private final ProjectFileManager fileManager;
   private final File tempFolder;
+  private final PrintStream sysout;
+  private final InputStream sysin;
 
   public CodeBuilder(
       InputAdapter inputAdapter, OutputAdapter outputAdapter, ProjectFileManager fileManager)
       throws UserFacingException {
+    this.sysout = System.out;
+    this.sysin = System.in;
     this.outputAdapter = outputAdapter;
     this.inputAdapter = inputAdapter;
     this.fileManager = fileManager;
     try {
-      tempFolder = Files.createTempDirectory("tmpdir").toFile();
+      this.tempFolder = Files.createTempDirectory("tmpdir").toFile();
     } catch (IOException e) {
       throw new UserFacingException(
           "We hit an error on our side while loading your program. Try again.");
@@ -55,14 +63,22 @@ public class CodeBuilder {
   }
 
   /**
-   * Removes the temporary folder we generated to compile the user's code.
+   * Resets System.in and System.out. Removes the temporary folder we generated to compile the
+   * user's code.
    *
    * @throws InternalFacingException if the folder cannot be deleted.
    */
-  public void cleanUp() throws InternalFacingException {
-    if (tempFolder != null) {
+  @Override
+  public void close() throws InternalFacingException {
+    System.setOut(this.sysout);
+    System.setIn(this.sysin);
+    if (this.tempFolder != null) {
       try {
-        Files.delete(tempFolder.toPath());
+        // Recursively delete the temp folder
+        Files.walk(this.tempFolder.toPath())
+            .sorted(Comparator.reverseOrder())
+            .map(Path::toFile)
+            .forEach(File::delete);
       } catch (IOException e) {
         throw new InternalFacingException(e.toString());
       }
