@@ -49,7 +49,9 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
 
     // Create file manager
     final UserProjectFileManager userProjectFileManager =
-        new UserProjectFileManager(projectUrl, fileNames);
+        new UserProjectFileManager(
+            "https://studio.code.org/v3/files/UVXkRDHwYNbXPZTQXPzNJ1C8Oyv1ZCCA5O6M2a-fs1E",
+            new String[] {"MyClass.java"});
 
     // Create and invoke the code execution environment
     try {
