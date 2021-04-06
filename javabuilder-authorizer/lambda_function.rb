@@ -27,7 +27,8 @@ def lambda_handler(event:, context:)
 
     return generate_deny(nil, method_arn) unless decoded_token
 
-    generate_allow('me', method_arn, decoded_token[0])
+    user_id = decoded_token[0]['uid']
+    generate_allow(user_id, method_arn, decoded_token[0])
   else
     generate_deny(nil, method_arn)
   end
@@ -61,8 +62,8 @@ def generate_deny(principal_id, resource)
   generate_policy(principal_id, 'Deny', resource, nil)
 end
 
-# Load the JWT token from public_keys based on the environment the request
-# was sent from.
+# Load the JWT public key from the appropriate environment variable
+# based on the environment the request was sent from.
 #
 # method_arn is in format
 # arn:aws:execute-api:region:account-id:api-id/stage-name/$connect
@@ -70,9 +71,18 @@ end
 def get_public_key(method_arn)
   tmp = method_arn.split(':')
   api_gateway_arn = tmp[5].split('/')
-  stage_id = api_gateway_arn[1]
+  stage_name = api_gateway_arn[1]
 
-  key_file = File.open("./public_keys/javabuilder_rsa_#{stage_id}_pub.pem")
-  public_key = key_file.read
+
+  public_key = ENV["rsa_pub_#{stage_name}"]
+  # Environment variables can't contain newlines
+  # (if you copy over an environment variable with
+  # newlines they are replaced with spaces)
+  # The public keys are saved in the configuration
+  # by copying over the key with literal '\n' at the end of each line.
+  # Environment variable save then escapes '\n' and adds a space.
+  # We need to replace '\\n<space>' with a real '\n'
+  # for the key generation to work.
+  public_key = public_key.gsub('\n ', "\n")
   OpenSSL::PKey::RSA.new(public_key)
 end
