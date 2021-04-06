@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
 
+/** Manages the in-memory list of user project files. */
 public class UserProjectFileManager implements ProjectFileManager {
   private final String baseUrl;
   private final String[] fileNames;
@@ -15,13 +16,18 @@ public class UserProjectFileManager implements ProjectFileManager {
     this.fileList = new ArrayList<>();
   }
 
+  /**
+   * Asynchronously loads all user project files.
+   *
+   * @throws UserFacingException If the load times out or fails.
+   */
   public void loadFiles() throws UserFacingException {
     ExecutorService executor = Executors.newCachedThreadPool();
     List<Callable<Boolean>> callables = new ArrayList<>();
     for (String fileName : fileNames) {
       ProjectFile file = new ProjectFile(fileName);
       fileList.add(file);
-      callables.add(new ProjectLoader(file, String.join("/", baseUrl, fileName)));
+      callables.add(new ProjectFileLoader(file, String.join("/", baseUrl, fileName)));
     }
     List<Future<Boolean>> futures;
     try {
@@ -46,6 +52,12 @@ public class UserProjectFileManager implements ProjectFileManager {
     }
   }
 
+  /**
+   * Returns the user project file. Currently, we only allow a single user project file. TODO:
+   * Enable multi-file programs
+   *
+   * @return the user project file.
+   */
   @Override
   public ProjectFile getFile() {
     return fileList.get(0);
