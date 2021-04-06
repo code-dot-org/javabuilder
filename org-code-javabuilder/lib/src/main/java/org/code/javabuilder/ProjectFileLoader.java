@@ -8,15 +8,28 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.concurrent.Callable;
 
-public class ProjectLoader implements Callable<Boolean> {
+/**
+ * Fetches an individual file from a student's project. This should be used with the
+ * {dashboardHost}/v3/files/{channelId}/{fileName} API. It has no permissions to use AWS S3. This
+ * should be used asynchronously so multiple files can be retrieved at once.
+ */
+public class ProjectFileLoader implements Callable<Boolean> {
   private final ProjectFile projectFile;
   private final String fileUrl;
 
-  public ProjectLoader(ProjectFile projectFile, String fileUrl) {
+  /**
+   * @param projectFile The in-memory representation of the given file
+   * @param fileUrl The URL to use to fetch the file
+   */
+  public ProjectFileLoader(ProjectFile projectFile, String fileUrl) {
     this.projectFile = projectFile;
     this.fileUrl = fileUrl;
   }
 
+  /**
+   * @return true if the load succeeds
+   * @throws UserFacingException If any errors occur while fetching the file.
+   */
   @Override
   public Boolean call() throws UserFacingException {
     try {
