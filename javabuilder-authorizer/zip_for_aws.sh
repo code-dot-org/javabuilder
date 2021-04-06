@@ -6,4 +6,4 @@ bundle install
 rm -f function.zip
 
 # zip required files into function.zip
-zip -r function.zip lambda_function.rb vendor public_keys
+zip -r function.zip lambda_function.rb vendor
