@@ -17,6 +17,6 @@ public class InternalFacingException extends Exception {
     StringWriter stringWriter = new StringWriter();
     PrintWriter printWriter = new PrintWriter(stringWriter);
     printStackTrace(printWriter);
-    return printWriter.toString();
+    return stringWriter.toString();
   }
 }
