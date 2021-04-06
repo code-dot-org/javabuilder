@@ -1,9 +1,8 @@
 package org.code.javabuilder;
 
 import java.util.ArrayList;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.List;
+import java.util.concurrent.*;
 
 public class UserProjectFileManager implements ProjectFileManager {
   private final String baseUrl;
@@ -18,22 +17,32 @@ public class UserProjectFileManager implements ProjectFileManager {
 
   public void loadFiles() throws UserFacingException {
     ExecutorService executor = Executors.newCachedThreadPool();
+    List<Callable<Boolean>> callables = new ArrayList<>();
     for (String fileName : fileNames) {
       ProjectFile file = new ProjectFile(fileName);
       fileList.add(file);
-      executor.execute(new ProjectLoader(file, String.join(baseUrl, fileName, "/")));
+      callables.add(new ProjectLoader(file, String.join("/", baseUrl, fileName)));
     }
-    executor.shutdown();
-    boolean finished;
+    List<Future<Boolean>> futures;
     try {
+      futures = executor.invokeAll(callables);
+      executor.shutdown();
+      boolean finished;
       finished = executor.awaitTermination(10, TimeUnit.SECONDS);
-    } catch (InterruptedException e) {
+
+      if (!finished) {
+        throw new UserFacingException(
+            "We couldn't fetch your files before our loader timed out. Try again.");
+      }
+      for (Future<Boolean> future : futures) {
+        if (!future.get()) {
+          throw new UserFacingException(
+              "We hit an error on our side while loading your files. Try again.");
+        }
+      }
+    } catch (InterruptedException | ExecutionException e) {
       throw new UserFacingException(
           "We hit an error on our side while loading your files. Try again.");
-    }
-    if (!finished) {
-      throw new UserFacingException(
-          "We couldn't fetch your files before our loader timed out. Try again.");
     }
   }
 

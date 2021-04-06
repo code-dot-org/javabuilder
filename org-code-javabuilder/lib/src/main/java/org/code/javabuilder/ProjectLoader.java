@@ -5,11 +5,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
 import java.net.URL;
+import java.util.concurrent.Callable;
 
-public class ProjectLoader extends Thread {
+public class ProjectLoader implements Callable<Boolean> {
   private final ProjectFile projectFile;
   private final String fileUrl;
 
@@ -18,39 +17,37 @@ public class ProjectLoader extends Thread {
     this.fileUrl = fileUrl;
   }
 
-  public void run() {
-    URL url = null;
+  @Override
+  public Boolean call() throws UserFacingException {
     try {
-      url = new URL(fileUrl);
-    } catch (MalformedURLException e) {
-      e.printStackTrace();
-    }
-    try {
-      assert url != null;
+      URL url = new URL(fileUrl);
       HttpURLConnection con = (HttpURLConnection) url.openConnection();
-      try {
-        con.setRequestMethod("GET");
-      } catch (ProtocolException e) {
-        e.printStackTrace();
-      }
+      con.setRequestMethod("GET");
       int status = con.getResponseCode();
-      Reader streamReader = null;
+      Reader streamReader;
       if (status > 299) {
         streamReader = new InputStreamReader(con.getErrorStream());
       } else {
         streamReader = new InputStreamReader(con.getInputStream());
       }
       BufferedReader in = new BufferedReader(streamReader);
+      StringBuilder content = new StringBuilder();
       String inputLine;
-      StringBuffer content = new StringBuffer();
       while ((inputLine = in.readLine()) != null) {
         content.append(inputLine);
       }
       in.close();
       con.disconnect();
+      if (status > 299) {
+        throw new UserFacingException(
+            "We hit an error on our side while loading your files. Try again. \n"
+                + content.toString());
+      }
       projectFile.setCode(content.toString());
+      return true;
     } catch (IOException e) {
-      e.printStackTrace();
+      throw new UserFacingException(
+          "We hit an error on our side while loading your files. Try again.");
     }
   }
 }

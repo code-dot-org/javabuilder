@@ -49,15 +49,15 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
 
     // Create file manager
     final UserProjectFileManager userProjectFileManager =
-        new UserProjectFileManager(
-            "https://studio.code.org/v3/files/UVXkRDHwYNbXPZTQXPzNJ1C8Oyv1ZCCA5O6M2a-fs1E",
-            new String[] {"MyClass.java"});
+        new UserProjectFileManager(projectUrl, fileNames);
 
     // Create and invoke the code execution environment
     try {
       CodeBuilder codeBuilder =
           new CodeBuilder(inputAdapter, outputAdapter, userProjectFileManager);
+      codeBuilder.compileUserCode();
       codeBuilder.runUserCode();
+      codeBuilder.cleanUp();
     } catch (UserFacingException e) {
       // Send user-facing exceptions to the user and log the stack trace to CloudWatch
       outputAdapter.sendMessage(e.getMessage());
