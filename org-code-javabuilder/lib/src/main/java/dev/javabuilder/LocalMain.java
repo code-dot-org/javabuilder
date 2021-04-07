@@ -5,9 +5,9 @@ import org.code.javabuilder.InternalFacingException;
 import org.code.javabuilder.UserFacingException;
 
 /**
- * This is a local version of the Javabuilder lambda function. The LocalInputAdapter can be used to
- * pass input to the program. The "MyClass.java" program in the resources folder is the "user
- * program." Output goes to the console.
+ * Intended for local testing only. This is a local version of the Javabuilder lambda function. The
+ * LocalInputAdapter can be used to pass input to the program. The "MyClass.java" program in the
+ * resources folder is the "user program." Output goes to the console.
  */
 public class LocalMain {
   public static void main(String[] args) {

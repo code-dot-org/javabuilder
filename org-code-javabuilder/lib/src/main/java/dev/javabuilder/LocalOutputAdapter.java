@@ -3,7 +3,7 @@ package dev.javabuilder;
 import java.io.PrintStream;
 import org.code.javabuilder.OutputAdapter;
 
-/** Passes output to the provided PrintStream */
+/** Intended for local testing only. Passes output to the provided PrintStream */
 public class LocalOutputAdapter implements OutputAdapter {
   private final PrintStream outputStream;
 
