@@ -55,7 +55,7 @@ public class UserCodeCompiler {
       e.printStackTrace();
       // if we can't set the file location we won't be able to run the class properly.
       throw new UserFacingException(
-          "We hit an error on our side while compiling your program. Try again.");
+          "We hit an error on our side while compiling your program. Try again.", e);
     }
 
     // create file for user-provided code

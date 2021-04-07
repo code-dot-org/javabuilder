@@ -20,7 +20,7 @@ public class LocalProjectFileManager implements ProjectFileManager {
                   Paths.get(getClass().getClassLoader().getResource("MyClass.java").toURI()))));
     } catch (Exception e) {
       e.printStackTrace();
-      throw new UserFacingException("We hit an error while loading your program. Try again.");
+      throw new UserFacingException("We hit an error while loading your program. Try again.", e);
     }
   }
 

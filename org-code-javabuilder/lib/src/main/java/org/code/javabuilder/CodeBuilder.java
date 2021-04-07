@@ -30,7 +30,7 @@ public class CodeBuilder implements AutoCloseable {
       this.tempFolder = Files.createTempDirectory("tmpdir").toFile();
     } catch (IOException e) {
       throw new UserFacingException(
-          "We hit an error on our side while loading your program. Try again.");
+          "We hit an error on our side while loading your program. Try again.", e);
     }
   }
 
@@ -57,7 +57,7 @@ public class CodeBuilder implements AutoCloseable {
       runner = new JavaRunner(tempFolder.toURI().toURL(), fileManager, outputAdapter);
     } catch (MalformedURLException e) {
       throw new UserFacingException(
-          "We hit an error on our side while running your program. Try Again");
+          "We hit an error on our side while running your program. Try Again", e);
     }
     runner.runCode();
   }
@@ -80,7 +80,7 @@ public class CodeBuilder implements AutoCloseable {
             .map(Path::toFile)
             .forEach(File::delete);
       } catch (IOException e) {
-        throw new InternalFacingException(e.toString());
+        throw new InternalFacingException(e.toString(), e);
       }
     }
   }
