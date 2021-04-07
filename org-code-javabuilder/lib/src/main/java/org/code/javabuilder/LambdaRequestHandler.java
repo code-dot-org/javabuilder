@@ -55,7 +55,9 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     try {
       CodeBuilder codeBuilder =
           new CodeBuilder(inputAdapter, outputAdapter, userProjectFileManager);
+      codeBuilder.compileUserCode();
       codeBuilder.runUserCode();
+      codeBuilder.cleanUp();
     } catch (UserFacingException e) {
       // Send user-facing exceptions to the user and log the stack trace to CloudWatch
       outputAdapter.sendMessage(e.getMessage());
