@@ -42,22 +42,22 @@ public class JavaRunner {
     } catch (ClassNotFoundException e) {
       // this should be caught earlier in compilation
       throw new UserFacingException(
-          "We hit an error on our side while running your program. Try Again");
+          "We hit an error on our side while running your program. Try Again", e);
     } catch (NoSuchMethodException e) {
-      throw new UserFacingException("Error: your program does not contain a main method");
+      throw new UserFacingException("Error: your program does not contain a main method", e);
     } catch (IllegalAccessException e) {
       // TODO: this error message may not be not very friendly
-      throw new UserFacingException("Illegal access: " + e);
+      throw new UserFacingException("Illegal access: " + e, e);
     } catch (InvocationTargetException e) {
       throw new UserFacingException(
-          "Your code hit an exception " + e.getCause().getClass().toString());
+          "Your code hit an exception " + e.getCause().getClass().toString(), e);
     }
     try {
       urlClassLoader.close();
     } catch (IOException e) {
       // The user code has finished running. We don't want to confuse them at this point with an
       // error message.
-      throw new InternalFacingException("Error closing urlClassLoader: " + e);
+      throw new InternalFacingException("Error closing urlClassLoader: " + e, e);
     }
   }
 }

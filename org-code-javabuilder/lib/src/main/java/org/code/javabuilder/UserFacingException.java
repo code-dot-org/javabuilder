@@ -9,6 +9,10 @@ public class UserFacingException extends Exception {
     super(errorMessage);
   }
 
+  public UserFacingException(String errorMessage, Exception cause) {
+    super(errorMessage, cause);
+  }
+
   /** @return A pretty version of the exception and stack trace. */
   public String getLoggingString() {
     StringWriter stringWriter = new StringWriter();
