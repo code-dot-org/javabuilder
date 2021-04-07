@@ -11,7 +11,7 @@ import java.util.concurrent.Callable;
 /**
  * Fetches an individual file from a student's project. This should be used with the
  * {dashboardHost}/v3/files/{channelId}/{fileName} API. It has no permissions to use AWS S3. This
- * should be used asynchronously so multiple files can be retrieved at once.
+ * should be used an executor so multiple files can be retrieved at once.
  */
 public class ProjectFileLoader implements Callable<Boolean> {
   private final ProjectFile projectFile;
