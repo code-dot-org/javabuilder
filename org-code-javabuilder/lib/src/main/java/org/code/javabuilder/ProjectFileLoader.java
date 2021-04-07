@@ -60,7 +60,7 @@ public class ProjectFileLoader implements Callable<Boolean> {
       return true;
     } catch (IOException e) {
       throw new UserFacingException(
-          "We hit an error on our side while loading your files. Try again.");
+          "We hit an error on our side while loading your files. Try again.", e);
     }
   }
 }

@@ -48,7 +48,7 @@ public class UserProjectFileManager implements ProjectFileManager {
       }
     } catch (InterruptedException | ExecutionException e) {
       throw new UserFacingException(
-          "We hit an error on our side while loading your files. Try again.");
+          "We hit an error on our side while loading your files. Try again.", e);
     }
   }
 
