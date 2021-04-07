@@ -10,7 +10,7 @@ public interface ProjectFileManager {
    *
    * @throws UserFacingException If an error occurs while loading
    */
-  void loadFiles() throws UserFacingException;
+  void loadFiles() throws UserFacingException, UserInitiatedException;
 
   /**
    * @return The user's Java file. Currently there is only one file that can be used or returned.

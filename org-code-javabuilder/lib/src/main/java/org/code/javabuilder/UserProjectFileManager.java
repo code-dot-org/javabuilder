@@ -17,21 +17,21 @@ public class UserProjectFileManager implements ProjectFileManager {
   }
 
   /**
-   * Asynchronously loads all user project files.
+   * Loads all user project files concurrently.
    *
    * @throws UserFacingException If the load times out or fails.
    */
-  public void loadFiles() throws UserFacingException {
+  public void loadFiles() throws UserFacingException, UserInitiatedException {
     ExecutorService executor = Executors.newCachedThreadPool();
-    List<Callable<Boolean>> callables = new ArrayList<>();
+    List<Callable<Boolean>> fileLoaders = new ArrayList<>();
     for (String fileName : fileNames) {
       ProjectFile file = new ProjectFile(fileName);
       fileList.add(file);
-      callables.add(new ProjectFileLoader(file, String.join("/", baseUrl, fileName)));
+      fileLoaders.add(new ProjectFileLoader(file, String.join("/", baseUrl, fileName)));
     }
     List<Future<Boolean>> futures;
     try {
-      futures = executor.invokeAll(callables);
+      futures = executor.invokeAll(fileLoaders);
       executor.shutdown();
       boolean finished;
       finished = executor.awaitTermination(10, TimeUnit.SECONDS);
