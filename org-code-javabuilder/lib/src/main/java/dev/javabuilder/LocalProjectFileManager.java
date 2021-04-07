@@ -6,7 +6,7 @@ import org.code.javabuilder.ProjectFile;
 import org.code.javabuilder.ProjectFileManager;
 import org.code.javabuilder.UserFacingException;
 
-/** Loads the MyClass.java file from the resources folder. */
+/** Intended for local testing only. Loads the MyClass.java file from the resources folder. */
 public class LocalProjectFileManager implements ProjectFileManager {
   private ProjectFile file;
 
