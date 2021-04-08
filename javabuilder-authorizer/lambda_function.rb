@@ -27,15 +27,19 @@ def lambda_handler(event:, context:)
 
     return generate_deny(nil, method_arn) unless decoded_token
 
-    user_id = decoded_token[0]['uid']
-    generate_allow(user_id, method_arn, decoded_token[0])
+    token_payload = decoded_token[0]
+    user_id = token_payload['uid']
+    issuer = token_payload['iss']
+    principal_id = "#{issuer}/#{user_id}"
+
+    generate_allow(principal_id, method_arn, token_payload)
   else
     generate_deny(nil, method_arn)
   end
 end
 
 # Helper function to generate an IAM policy.
-def generate_policy(principal_id, effect, resource, token_data)
+def generate_policy(principal_id, effect, resource, token_payload)
   # Required output:
   auth_response = {}
   auth_response['principalId'] = principal_id
@@ -50,12 +54,12 @@ def generate_policy(principal_id, effect, resource, token_data)
     policy_document['Statement'][0] = statement_one
     auth_response['policyDocument'] = policy_document
   end
-  auth_response['context'] = token_data if token_data
+  auth_response['context'] = token_payload if token_payload
   auth_response
 end
 
-def generate_allow(principal_id, resource, token_data)
-  generate_policy(principal_id, 'Allow', resource, token_data)
+def generate_allow(principal_id, resource, token_payload)
+  generate_policy(principal_id, 'Allow', resource, token_payload)
 end
 
 def generate_deny(principal_id, resource)
