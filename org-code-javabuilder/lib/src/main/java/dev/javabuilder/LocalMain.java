@@ -3,6 +3,7 @@ package dev.javabuilder;
 import org.code.javabuilder.CodeBuilder;
 import org.code.javabuilder.InternalFacingException;
 import org.code.javabuilder.UserFacingException;
+import org.code.javabuilder.UserInitiatedException;
 
 /**
  * Intended for local testing only. This is a local version of the Javabuilder lambda function. The
@@ -19,6 +20,9 @@ public class LocalMain {
       codeBuilder.compileUserCode();
       codeBuilder.runUserCode();
     } catch (UserFacingException e) {
+      outputAdapter.sendMessage(e.getMessage());
+      outputAdapter.sendMessage("\n" + e.getLoggingString());
+    } catch (UserInitiatedException e) {
       outputAdapter.sendMessage(e.getMessage());
       outputAdapter.sendMessage("\n" + e.getLoggingString());
     } catch (InternalFacingException e) {

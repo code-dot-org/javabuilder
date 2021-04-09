@@ -6,12 +6,12 @@ public class ProjectFile {
   private String code;
   private String className;
 
-  public ProjectFile(String fileName) throws UserFacingException {
+  public ProjectFile(String fileName) throws UserInitiatedException {
     this.fileName = fileName;
     if (fileName.indexOf(".java") > 0) {
       this.className = fileName.substring(0, fileName.indexOf(".java"));
     } else {
-      throw new UserFacingException("Invalid File Name. File name must end in '.java'.");
+      throw new UserInitiatedException("Invalid File Name. File name must end in '.java'.");
     }
   }
 
