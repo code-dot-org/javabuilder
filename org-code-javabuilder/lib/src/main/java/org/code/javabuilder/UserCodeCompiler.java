@@ -26,7 +26,7 @@ public class UserCodeCompiler {
    * @throws UserFacingException If the user's code has a compiler error or if we hit an internal
    *     exception that interferes with compilation.
    */
-  public void compileProgram() throws UserFacingException {
+  public void compileProgram() throws UserFacingException, UserInitiatedException {
     DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
 
     CompilationTask task = getCompilationTask(diagnostics);
@@ -38,7 +38,7 @@ public class UserCodeCompiler {
       outputAdapter.sendMessage(diagnostic.toString());
     }
     if (!success) {
-      throw new UserFacingException(
+      throw new UserInitiatedException(
           "We couldn't compile your program. Look for bugs in your program and try again.");
     }
   }

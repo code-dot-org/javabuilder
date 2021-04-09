@@ -5,13 +5,14 @@ import java.nio.file.Paths;
 import org.code.javabuilder.ProjectFile;
 import org.code.javabuilder.ProjectFileManager;
 import org.code.javabuilder.UserFacingException;
+import org.code.javabuilder.UserInitiatedException;
 
 /** Intended for local testing only. Loads the MyClass.java file from the resources folder. */
 public class LocalProjectFileManager implements ProjectFileManager {
   private ProjectFile file;
 
   @Override
-  public void loadFiles() throws UserFacingException {
+  public void loadFiles() throws UserFacingException, UserInitiatedException {
     this.file = new ProjectFile("MyClass.java");
     try {
       this.file.setCode(

@@ -40,7 +40,7 @@ public class CodeBuilder implements AutoCloseable {
    * @throws UserFacingException if the user's code contains a compiler error or if we are unable to
    *     compile due to internal errors.
    */
-  public void compileUserCode() throws UserFacingException {
+  public void compileUserCode() throws UserFacingException, UserInitiatedException {
     this.fileManager.loadFiles();
     UserCodeCompiler codeCompiler = new UserCodeCompiler(fileManager, tempFolder, outputAdapter);
     codeCompiler.compileProgram();
@@ -49,7 +49,8 @@ public class CodeBuilder implements AutoCloseable {
   /**
    * Replaces System.in and System.out with our custom implementation and executes the user's code.
    */
-  public void runUserCode() throws UserFacingException, InternalFacingException {
+  public void runUserCode()
+      throws UserFacingException, InternalFacingException, UserInitiatedException {
     System.setOut(new OutputPrintStream(this.outputAdapter));
     System.setIn(new InputRedirectionStream(this.inputAdapter));
     JavaRunner runner;

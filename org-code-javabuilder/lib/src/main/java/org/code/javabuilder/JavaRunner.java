@@ -26,7 +26,8 @@ public class JavaRunner {
    * @throws InternalFacingException When we hit an internal error after the user's code has
    *     finished executing.
    */
-  public void runCode() throws UserFacingException, InternalFacingException {
+  public void runCode()
+      throws UserFacingException, InternalFacingException, UserInitiatedException {
     URL[] classLoaderUrls = new URL[] {this.executableLocation};
 
     // Create a new URLClassLoader
@@ -44,12 +45,12 @@ public class JavaRunner {
       throw new UserFacingException(
           "We hit an error on our side while running your program. Try Again", e);
     } catch (NoSuchMethodException e) {
-      throw new UserFacingException("Error: your program does not contain a main method", e);
+      throw new UserInitiatedException("Error: your program does not contain a main method", e);
     } catch (IllegalAccessException e) {
       // TODO: this error message may not be not very friendly
       throw new UserFacingException("Illegal access: " + e, e);
     } catch (InvocationTargetException e) {
-      throw new UserFacingException(
+      throw new UserInitiatedException(
           "Your code hit an exception " + e.getCause().getClass().toString(), e);
     }
     try {
