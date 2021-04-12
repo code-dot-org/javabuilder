@@ -1,9 +1,6 @@
 package dev.javabuilder;
 
-import org.code.javabuilder.CodeBuilder;
-import org.code.javabuilder.InternalFacingException;
-import org.code.javabuilder.UserFacingException;
-import org.code.javabuilder.UserInitiatedException;
+import org.code.javabuilder.*;
 
 /**
  * Intended for local testing only. This is a local version of the Javabuilder lambda function. The
@@ -12,9 +9,19 @@ import org.code.javabuilder.UserInitiatedException;
  */
 public class LocalMain {
   public static void main(String[] args) {
-    final LocalInputAdapter inputAdapter = new LocalInputAdapter();
-    final LocalOutputAdapter outputAdapter = new LocalOutputAdapter(System.out);
-    final LocalProjectFileManager fileManager = new LocalProjectFileManager();
+//    final LocalInputAdapter inputAdapter = new LocalInputAdapter();
+//    final LocalOutputAdapter outputAdapter = new LocalOutputAdapter(System.out);
+//    final LocalProjectFileManager fileManager = new LocalProjectFileManager();
+
+
+    String projectUrl = "http://localhost-studio.code.org:3000/v3/files/MoGwvaZmQSQZaImS3LliCQ";
+    String[] fileNames = new String[]{"MyClass.java"};
+    final UserProjectFileManager fileManager = new UserProjectFileManager(projectUrl, fileNames);
+    final WebSocketInputAdapter inputAdapter = new WebSocketInputAdapter();
+    final WebSocketServer server = new WebSocketServer(inputAdapter);
+    final WebSocketOutputAdapter outputAdapter = new WebSocketOutputAdapter(server);
+
+
     // Create and invoke the code execution environment
     try (CodeBuilder codeBuilder = new CodeBuilder(inputAdapter, outputAdapter, fileManager)) {
       codeBuilder.compileUserCode();
