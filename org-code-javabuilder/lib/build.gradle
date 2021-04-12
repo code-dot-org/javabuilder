@@ -6,6 +6,7 @@
  */
 
 plugins {
+    id "org.gretty" version "2.2.0"
     id 'com.github.sherter.google-java-format' version '0.8'
     id 'java'
 }
@@ -26,6 +27,12 @@ dependencies {
     testImplementation group: 'org.mockito', name: 'mockito-core', version: '3.9.0'
 
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.6.0'
+    compile 'javax.websocket:javax.websocket-api:1.1'
+}
+
+gretty {
+    servletContainer = 'tomcat8'
+    contextPath = '/'
 }
 
 test {
