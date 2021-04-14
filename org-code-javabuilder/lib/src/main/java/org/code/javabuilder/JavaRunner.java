@@ -2,8 +2,10 @@ package org.code.javabuilder;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.List;
 
 /** The class that executes the student's code */
 public class JavaRunner {
@@ -35,17 +37,8 @@ public class JavaRunner {
 
     try {
       // load and run the main method of the class
-      urlClassLoader
-          .loadClass(this.fileManager.getFile().getClassName())
-          .getDeclaredMethod("main", new Class[] {String[].class})
-          .invoke(null, new Object[] {null});
-
-    } catch (ClassNotFoundException e) {
-      // this should be caught earlier in compilation
-      throw new UserFacingException(
-          "We hit an error on our side while running your program. Try Again", e);
-    } catch (NoSuchMethodException e) {
-      throw new UserInitiatedException("Error: your program does not contain a main method", e);
+      Method mainMethod = this.findMainMethod(urlClassLoader);
+      mainMethod.invoke(null, new Object[] {null});
     } catch (IllegalAccessException e) {
       // TODO: this error message may not be not very friendly
       throw new UserFacingException("Illegal access: " + e, e);
@@ -60,5 +53,35 @@ public class JavaRunner {
       // error message.
       throw new InternalFacingException("Error closing urlClassLoader: " + e, e);
     }
+  }
+
+  private Method findMainMethod(URLClassLoader classLoader)
+      throws UserFacingException, UserInitiatedException {
+    List<ProjectFile> files = this.fileManager.getFiles();
+    Method mainMethod = null;
+    for (int i = 0; i < files.size(); i++) {
+      ProjectFile file = files.get(i);
+      try {
+        Method tempMain =
+            classLoader.loadClass(file.getClassName()).getDeclaredMethod("main", String[].class);
+        if (mainMethod != null) {
+          throw new UserInitiatedException(
+              "Your code can only have one main method."
+                  + " We found at least two classes with main methods.");
+        } else {
+          mainMethod = tempMain;
+        }
+      } catch (ClassNotFoundException e) {
+        // this should be caught earlier in compilation
+        throw new UserFacingException(
+            "We hit an error on our side while running your program. Try Again", e);
+      } catch (NoSuchMethodException e) {
+        // this class does not have a main, this exception can be safely ignored.
+      }
+    }
+    if (mainMethod == null) {
+      throw new UserInitiatedException("Error: your program does not contain a main method");
+    }
+    return mainMethod;
   }
 }

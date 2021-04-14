@@ -2,7 +2,9 @@ package org.code.javabuilder;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import javax.tools.*;
 import javax.tools.JavaCompiler.CompilationTask;
 
@@ -59,14 +61,16 @@ public class UserCodeCompiler {
     }
 
     // create file for user-provided code
-    ProjectFile projectFile = projectFileManager.getFile();
-    JavaFileObject file =
-        new JavaSourceFromString(projectFile.getClassName(), projectFile.getCode());
-    Iterable<? extends JavaFileObject> compilationUnits = Arrays.asList(file);
+    List<ProjectFile> projectFiles = projectFileManager.getFiles();
+    List<JavaFileObject> files = new ArrayList<JavaFileObject>();
+    for (int i = 0; i < projectFiles.size(); i++) {
+      files.add(
+          new JavaSourceFromString(
+              projectFiles.get(i).getClassName(), projectFiles.get(i).getCode()));
+    }
 
     // create compilation task
-    CompilationTask task =
-        compiler.getTask(null, fileManager, diagnostics, null, null, compilationUnits);
+    CompilationTask task = compiler.getTask(null, fileManager, diagnostics, null, null, files);
     return task;
   }
 }

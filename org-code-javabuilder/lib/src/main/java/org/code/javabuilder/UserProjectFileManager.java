@@ -65,4 +65,14 @@ public class UserProjectFileManager implements ProjectFileManager {
     }
     return fileList.get(0);
   }
+
+  /**
+   * Return the user's project files
+   *
+   * @return A list of project files, or null if the files have not been loaded.
+   */
+  @Override
+  public List<ProjectFile> getFiles() {
+    return this.fileList;
+  }
 }

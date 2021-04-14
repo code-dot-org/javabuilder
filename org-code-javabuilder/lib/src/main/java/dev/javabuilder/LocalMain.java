@@ -11,9 +11,7 @@ public class LocalMain {
   public static void main(String[] args) {
     final LocalInputAdapter inputAdapter = new LocalInputAdapter();
     final LocalOutputAdapter outputAdapter = new LocalOutputAdapter(System.out);
-    // replace with your testing url.
-    String url = "http://localhost-studio.code.org:3000/v3/sources/2sZQjPkr7-vE6zRhbEGTPg";
-    final UserProjectFileManager fileManager = new UserProjectFileManager(url);
+    final LocalProjectFileManager fileManager = new LocalProjectFileManager();
     // Create and invoke the code execution environment
     try (CodeBuilder codeBuilder = new CodeBuilder(inputAdapter, outputAdapter, fileManager)) {
       codeBuilder.compileUserCode();

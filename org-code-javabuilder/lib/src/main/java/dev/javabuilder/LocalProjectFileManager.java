@@ -1,32 +1,36 @@
 package dev.javabuilder;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import org.code.javabuilder.ProjectFile;
-import org.code.javabuilder.ProjectFileManager;
-import org.code.javabuilder.UserFacingException;
-import org.code.javabuilder.UserInitiatedException;
+import java.util.List;
+import org.code.javabuilder.*;
 
 /** Intended for local testing only. Loads the MyClass.java file from the resources folder. */
 public class LocalProjectFileManager implements ProjectFileManager {
-  private ProjectFile file;
+  private List<ProjectFile> files;
 
   @Override
   public void loadFiles() throws UserFacingException, UserInitiatedException {
-    this.file = new ProjectFile("MyClass.java");
     try {
-      this.file.setCode(
+      String mainJson =
           new String(
               Files.readAllBytes(
-                  Paths.get(getClass().getClassLoader().getResource("MyClass.java").toURI()))));
-    } catch (Exception e) {
-      e.printStackTrace();
-      throw new UserFacingException("We hit an error while loading your program. Try again.", e);
+                  Paths.get(getClass().getClassLoader().getResource("main.json").toURI())));
+      this.files = new UserProjectFileParser().parseFileJson(mainJson);
+    } catch (IOException | URISyntaxException e) {
+      throw new UserFacingException("We could not parse your files", e);
     }
   }
 
   @Override
   public ProjectFile getFile() {
-    return this.file;
+    return this.files.get(0);
+  }
+
+  @Override
+  public List<ProjectFile> getFiles() {
+    return this.files;
   }
 }
