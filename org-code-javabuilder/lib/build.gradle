@@ -6,13 +6,15 @@
  */
 
 plugins {
-    id "org.gretty" version "2.2.0"
+    id "org.gretty" version "3.0.4" //version "2.2.0"
+    id 'application'
     id 'com.github.sherter.google-java-format' version '0.8'
     id 'java'
 }
 
 repositories {
-    mavenCentral()
+//    mavenCentral()
+    jcenter()
 }
 
 dependencies {
@@ -28,11 +30,11 @@ dependencies {
 
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.6.0'
     compile 'javax.websocket:javax.websocket-api:1.1'
-}
+//    // https://mvnrepository.com/artifact/org.springframework/spring-messaging
+//    implementation group: 'org.springframework', name: 'spring-messaging', version: '5.3.5'
+//// https://mvnrepository.com/artifact/org.springframework/spring-websocket
+//    implementation group: 'org.springframework', name: 'spring-websocket', version: '5.3.5'
 
-gretty {
-    servletContainer = 'tomcat8'
-    contextPath = '/'
 }
 
 test {
@@ -47,6 +49,16 @@ task packageSmall(type: Zip) {
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
     targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+gretty {
+    servletContainer = 'tomcat9'
+    contextPath = '/'
+}
+
+application {
+    // Define the main class for the application.
+    mainClass = 'dev.javabuilder.LocalMain'
 }
 
 build.dependsOn packageSmall
