@@ -1,0 +1,120 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  Define IAM Roles utilized to build, deploy, and operate the JavaBuilder service.
+  Note: CAPABILITY_IAM capability is required to deploy this stack.
+
+Parameters:
+  ArtifactBucket:
+    Type: String
+    Description: Name of existing S3 bucket for storing pipeline artifacts
+  TemplateBucket:
+    Type: String
+    Description: Name of existing S3 bucket for storing CloudFormation template artifacts
+
+Resources:
+  JavaBuilderLambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: ['sts:AssumeRole']
+            Effect: Allow
+            Principal: {Service: [lambda.amazonaws.com]}
+      Path: /
+      Policies:
+        - PolicyName: JavaBuilderLambdaExecutionPolicy
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "codepipeline:GetPipelineState"
+                  - "codepipeline:GetPipelineExecution"
+                  - "codepipeline:PutApprovalResult"
+                  - "cloudformation:DescribeStacks"
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - "xray:PutTraceSegments"
+                  - "xray:PutTelemetryRecords"
+                Resource: '*'
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+  JavaBuilderCloudFormationRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: ['sts:AssumeRole']
+            Effect: Allow
+            Principal: {Service: [cloudformation.amazonaws.com]}
+        Version: '2012-10-17'
+      Path: /
+      Policies:
+        - PolicyName: ManageResourcesAccess
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "apigateway:*"
+                  - "lambda:*"
+                  - "cloudformation:*"
+                  - "route53:*"
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - "s3:GetObject"
+                Resource:
+                  - !Sub "arn:aws:s3:::${TemplateBucket}/*"
+              - Effect: Allow
+                Action:
+                  - "iam:PassRole"
+                Resource:
+                  - !GetAtt JavaBuilderLambdaExecutionRole.Arn
+  JavaBuilderCodeBuildRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: ['sts:AssumeRole']
+            Effect: Allow
+            Principal: {Service: [codebuild.amazonaws.com]}
+        Version: '2012-10-17'
+      Path: /service-role/
+      Policies:
+        - PolicyName: CodeBuildResourcesAccess
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "logs:CreateLogGroup"
+                  - "logs:CreateLogStream"
+                  - "logs:PutLogEvents"
+                Resource:
+                  - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/*"
+              - Effect: Allow
+                Action:
+                  - "s3:*"
+                Resource:
+                  - !Sub "arn:aws:s3:::${ArtifactBucket}/*"
+                  - !Sub "arn:aws:s3:::${ArtifactBucket}"
+                  - !Sub "arn:aws:s3:::${TemplateBucket}/*"
+                  - !Sub "arn:aws:s3:::${TemplateBucket}"
+              - Effect: Allow
+                Action:
+                  - "cloudformation:DescribeStacks"
+                Resource: '*'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPowerUser'
+Outputs:
+  JavaBuilderLambdaExecutionRole:
+    Description: JavaBuilder Lambda Execution Role ARN
+    Value: !GetAtt JavaBuilderLambdaExecutionRole.Arn
+    Export: {Name: JavaBuilderLambdaExecutionRole}
+  JavaBuilderCloudFormationRole:
+    Description: JavaBuilder CloudFormation Role ARN
+    Value: !GetAtt JavaBuilderCloudFormationRole.Arn
+    Export: {Name: JavaBuilder CloudFormationRole}
+  JavaBuilderCodeBuildRole:
+    Description: JavaBuilder CodeBuild Role ARN
+    Value: !GetAtt JavaBuilderCodeBuildRole.Arn
+    Export: {Name: JavaBuilderCodeBuildRole}
