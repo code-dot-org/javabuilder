@@ -1,6 +1,9 @@
 package dev.javabuilder;
 
-import org.code.javabuilder.*;
+import org.code.javabuilder.CodeBuilder;
+import org.code.javabuilder.InternalFacingException;
+import org.code.javabuilder.UserFacingException;
+import org.code.javabuilder.UserInitiatedException;
 
 /**
  * Intended for local testing only. This is a local version of the Javabuilder lambda function. The
@@ -12,7 +15,6 @@ public class LocalMain {
     final LocalInputAdapter inputAdapter = new LocalInputAdapter();
     final LocalOutputAdapter outputAdapter = new LocalOutputAdapter(System.out);
     final LocalProjectFileManager fileManager = new LocalProjectFileManager();
-
     // Create and invoke the code execution environment
     try (CodeBuilder codeBuilder = new CodeBuilder(inputAdapter, outputAdapter, fileManager)) {
       codeBuilder.compileUserCode();
