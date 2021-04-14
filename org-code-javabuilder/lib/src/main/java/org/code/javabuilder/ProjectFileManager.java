@@ -1,5 +1,7 @@
 package org.code.javabuilder;
 
+import java.util.List;
+
 /**
  * Handles loading user files (i.e. from local storage or via HTTP) and manages the in-memory
  * representation of them.
@@ -16,4 +18,7 @@ public interface ProjectFileManager {
    * @return The user's Java file. Currently there is only one file that can be used or returned.
    */
   ProjectFile getFile();
+
+  /** @return The user's Java files. */
+  List<ProjectFile> getFiles();
 }
