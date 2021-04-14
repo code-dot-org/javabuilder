@@ -1,27 +1,25 @@
 package org.code.javabuilder;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Map;
+import java.util.List;
 
 /** Manages the in-memory list of user project files. */
 public class UserProjectFileManager implements ProjectFileManager {
   private final String baseUrl;
-  private final ArrayList<ProjectFile> fileList;
-  private final ObjectMapper objectMapper;
+  private final UserProjectFileParser projectFileParser;
+  private List<ProjectFile> fileList;
 
   private final String MAIN_SOURCE_FILE_NAME = "main.json";
 
   public UserProjectFileManager(String baseUrl) {
     this.baseUrl = baseUrl;
-    this.fileList = new ArrayList<>();
-    this.objectMapper = new ObjectMapper();
+    this.fileList = null;
+    this.projectFileParser = new UserProjectFileParser();
   }
 
   /**
@@ -50,7 +48,7 @@ public class UserProjectFileManager implements ProjectFileManager {
           "We hit an error on our side while loading your files. Try again. \n",
           new Exception(body));
     }
-    this.parseFiles(body);
+    this.fileList = this.projectFileParser.parseFileJson(body);
   }
 
   /**
@@ -62,27 +60,9 @@ public class UserProjectFileManager implements ProjectFileManager {
   @Override
   public ProjectFile getFile() {
     // TODO: Enable multi-file. For now, load the first file.
-    return fileList.get(0);
-  }
-
-  /**
-   * Parses json string containing file data and stores it in this.fileList.
-   *
-   * @param body JSON String in UserSourceData format
-   * @throws UserFacingException
-   * @throws UserInitiatedException
-   */
-  private void parseFiles(String body) throws UserFacingException, UserInitiatedException {
-    try {
-      UserSourceData sourceData = this.objectMapper.readValue(body, UserSourceData.class);
-      Map<String, UserFileData> sources = sourceData.getSource();
-      for (String fileName : sources.keySet()) {
-        UserFileData fileData = sources.get(fileName);
-        fileList.add(new ProjectFile(fileName, fileData.getText()));
-      }
-    } catch (IOException io) {
-      throw new UserFacingException(
-          "We hit an error trying to load your files. Please try again.\n", io);
+    if (fileList == null) {
+      return null;
     }
+    return fileList.get(0);
   }
 }
