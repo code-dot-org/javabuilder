@@ -1,29 +1,24 @@
 package dev.javabuilder;
 
+import java.io.IOException;
+import javax.websocket.RemoteEndpoint;
+import javax.websocket.Session;
 import org.code.javabuilder.OutputAdapter;
 
-import javax.websocket.RemoteEndpoint;
-import java.io.IOException;
-
+/**
+ * Intended for local testing with dashboard only. Passes output to the provided WebSocket session
+ */
 public class WebSocketOutputAdapter implements OutputAdapter {
-  private WebSocketServer server;
+  private final RemoteEndpoint.Basic endpoint;
 
-//  public WebSocketOutputAdapter(WebSocketServer server) {
-//    this.server = server;
-//  }
+  public WebSocketOutputAdapter(Session session) {
+    this.endpoint = session.getBasicRemote();
+  }
 
   @Override
   public void sendMessage(String message) {
-    while(WebSocketConfig.getSession() == null) {
-      try {
-        Thread.sleep(1000);
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
-    }
-    RemoteEndpoint.Basic other = WebSocketConfig.getSession().getBasicRemote();
     try {
-      other.sendText(message);
+      endpoint.sendText(message);
     } catch (IOException e) {
       e.printStackTrace();
     }

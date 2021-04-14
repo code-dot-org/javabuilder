@@ -1,12 +1,13 @@
 package dev.javabuilder;
 
-import org.code.javabuilder.InputAdapter;
-
 import java.util.LinkedList;
 import java.util.Queue;
+import org.code.javabuilder.InputAdapter;
 
+/** Intended for local testing with dashboard only. Accepts input from a WebSocket session. */
 public class WebSocketInputAdapter implements InputAdapter {
   private final Queue<String> messages;
+
   public WebSocketInputAdapter() {
     this.messages = new LinkedList<>();
   }
@@ -24,6 +25,6 @@ public class WebSocketInputAdapter implements InputAdapter {
   }
 
   public void appendMessage(String message) {
-    messages.add(message);
+    messages.add(message + System.lineSeparator());
   }
 }

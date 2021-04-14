@@ -47,8 +47,8 @@ task packageSmall(type: Zip) {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
 }
 
 gretty {
@@ -56,10 +56,7 @@ gretty {
     contextPath = '/'
 }
 
-application {
-    // Define the main class for the application.
-    mainClass = 'dev.javabuilder.LocalMain'
-}
+
 
 build.dependsOn packageSmall
 
