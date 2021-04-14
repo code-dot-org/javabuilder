@@ -26,7 +26,6 @@ public class UserProjectFileManager implements ProjectFileManager {
    * @throws UserFacingException If the load times out or fails.
    */
   public void loadFiles() throws UserFacingException, UserInitiatedException {
-    System.out.println("Loading files");
     HttpClient client = HttpClient.newBuilder().build();
     // TODO: Enable multi-file. For now, we will always have exactly one file.
     String fileName = fileNames[0];

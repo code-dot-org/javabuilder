@@ -8,23 +8,10 @@ import org.code.javabuilder.*;
  * resources folder is the "user program." Output goes to the console.
  */
 public class LocalMain {
-  public static void main(String[] args) throws Exception {
-//    final LocalInputAdapter inputAdapter = new LocalInputAdapter();
-//    final LocalOutputAdapter outputAdapter = new LocalOutputAdapter(System.out);
-//    final LocalProjectFileManager fileManager = new LocalProjectFileManager();
-//throw new Exception("ERROR!!!");
-    System.out.println("In the main function.");
-
-    String projectUrl = "http://localhost-studio.code.org:3000/v3/files/MoGwvaZmQSQZaImS3LliCQ";
-    String[] fileNames = new String[]{"MyClass.java"};
-    final UserProjectFileManager fileManager = new UserProjectFileManager(projectUrl, fileNames);
-    final WebSocketInputAdapter inputAdapter = new WebSocketInputAdapter();
-//    final WebSocketServer server = new WebSocketServer(inputAdapter);
-    final WebSocketOutputAdapter outputAdapter = new WebSocketOutputAdapter();
-    WebSocketConfig.setInputAdapter(inputAdapter);
-    WebSocketConfig.setOutputAdapter(outputAdapter);
-    System.out.println("In the main function.");
-
+  public static void main(String[] args) {
+    final LocalInputAdapter inputAdapter = new LocalInputAdapter();
+    final LocalOutputAdapter outputAdapter = new LocalOutputAdapter(System.out);
+    final LocalProjectFileManager fileManager = new LocalProjectFileManager();
 
     // Create and invoke the code execution environment
     try (CodeBuilder codeBuilder = new CodeBuilder(inputAdapter, outputAdapter, fileManager)) {
