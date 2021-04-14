@@ -25,11 +25,6 @@ public class LocalProjectFileManager implements ProjectFileManager {
   }
 
   @Override
-  public ProjectFile getFile() {
-    return this.files.get(0);
-  }
-
-  @Override
   public List<ProjectFile> getFiles() {
     return this.files;
   }

@@ -14,11 +14,6 @@ public interface ProjectFileManager {
    */
   void loadFiles() throws UserFacingException, UserInitiatedException;
 
-  /**
-   * @return The user's Java file. Currently there is only one file that can be used or returned.
-   */
-  ProjectFile getFile();
-
   /** @return The user's Java files. */
   List<ProjectFile> getFiles();
 }
