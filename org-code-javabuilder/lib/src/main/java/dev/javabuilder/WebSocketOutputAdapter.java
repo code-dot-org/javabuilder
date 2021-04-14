@@ -8,20 +8,20 @@ import java.io.IOException;
 public class WebSocketOutputAdapter implements OutputAdapter {
   private WebSocketServer server;
 
-  public WebSocketOutputAdapter(WebSocketServer server) {
-    this.server = server;
-  }
+//  public WebSocketOutputAdapter(WebSocketServer server) {
+//    this.server = server;
+//  }
 
   @Override
   public void sendMessage(String message) {
-    while(server.getSession() == null) {
+    while(WebSocketConfig.getSession() == null) {
       try {
         Thread.sleep(1000);
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
     }
-    RemoteEndpoint.Basic other = server.getSession().getBasicRemote();
+    RemoteEndpoint.Basic other = WebSocketConfig.getSession().getBasicRemote();
     try {
       other.sendText(message);
     } catch (IOException e) {
