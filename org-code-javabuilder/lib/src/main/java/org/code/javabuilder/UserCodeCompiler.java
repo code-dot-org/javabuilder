@@ -61,7 +61,7 @@ public class UserCodeCompiler {
     }
 
     // create file for user-provided code
-    List<ProjectFile> projectFiles = projectFileManager.getFiles();
+    List<ProjectFile> projectFiles = this.projectFileManager.getFiles();
     List<JavaFileObject> files = new ArrayList<JavaFileObject>();
     for (int i = 0; i < projectFiles.size(); i++) {
       files.add(
