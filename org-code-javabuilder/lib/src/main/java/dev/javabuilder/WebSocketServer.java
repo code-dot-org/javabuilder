@@ -1,5 +1,6 @@
 package dev.javabuilder;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import javax.websocket.OnClose;
 import javax.websocket.OnMessage;
@@ -53,6 +54,12 @@ public class WebSocketServer {
                 outputAdapter.sendMessage("\n" + e.getLoggingString());
               } catch (InternalFacingException e) {
                 outputAdapter.sendMessage("\n" + e.getLoggingString());
+              } finally {
+                try {
+                  session.close();
+                } catch (IOException e) {
+                  e.printStackTrace();
+                }
               }
             });
     codeExecutor.start();
