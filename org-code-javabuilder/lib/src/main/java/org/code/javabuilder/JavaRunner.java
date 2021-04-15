@@ -46,7 +46,6 @@ public class JavaRunner {
       throw new UserInitiatedException(
           "Your code hit an exception " + e.getCause().getClass().toString(), e);
     }
-
     try {
       urlClassLoader.close();
     } catch (IOException e) {
@@ -57,9 +56,9 @@ public class JavaRunner {
   }
 
   /**
-   * Finds the Main method in the set of files in fileManager if it exists.
+   * Finds the main method in the set of files in fileManager if it exists.
    *
-   * @param urlClassLoader
+   * @param urlClassLoader class loader pointing to location of compiled classes
    * @return the main method if it is found
    * @throws UserFacingException if there is an issue loading a class
    * @throws UserInitiatedException if there is more than one main method or no main method
@@ -76,8 +75,7 @@ public class JavaRunner {
             urlClassLoader.loadClass(file.getClassName()).getDeclaredMethod("main", String[].class);
         if (mainMethod != null) {
           throw new UserInitiatedException(
-              "Your code can only have one main method."
-                  + " We found at least two classes with main methods.");
+              "Your code can only have one main method. We found at least two classes with main methods.");
         } else {
           mainMethod = tempMain;
         }
