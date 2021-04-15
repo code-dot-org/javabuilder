@@ -33,7 +33,6 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     final String apiEndpoint = lambdaInput.get("apiEndpoint");
     final String queueUrl = lambdaInput.get("queueUrl");
     final String projectUrl = lambdaInput.get("projectUrl");
-    final String[] fileNames = lambdaInput.get("fileNames").split(",");
 
     // Create user-program output handlers
     AmazonApiGatewayManagementApi api =
@@ -48,8 +47,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     final AWSInputAdapter inputAdapter = new AWSInputAdapter(sqsClient, queueUrl);
 
     // Create file manager
-    final UserProjectFileManager userProjectFileManager =
-        new UserProjectFileManager(projectUrl, fileNames);
+    final UserProjectFileManager userProjectFileManager = new UserProjectFileManager(projectUrl);
 
     // Create and invoke the code execution environment
     try (CodeBuilder codeBuilder =
