@@ -14,9 +14,10 @@ public class UserProjectFileParser {
   }
 
   /**
-   * Parses json string containing file data and stores it in this.fileList.
+   * Parses json string containing file data and returns a list of project files.
    *
    * @param json JSON String in UserSourceData format
+   * @return a list of ProjectFile objects
    * @throws UserFacingException
    * @throws UserInitiatedException
    */

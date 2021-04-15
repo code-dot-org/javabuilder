@@ -1,6 +1,7 @@
 package org.code.javabuilder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,5 +30,13 @@ public class UserProjectFileParserTest {
     ProjectFile firstFile = files.get(0);
     assertEquals(firstFile.getFileName(), "HelloWorld.java");
     assertEquals(firstFile.getCode(), expectedCode);
+  }
+
+  @Test
+  public void throwsExceptionOnInvalidJson() throws UserFacingException, UserInitiatedException {
+    String invalidJson =
+        "{\"source\":{\"HelloWorld.java\":{\"text\":\"public class HelloWorld {\\n";
+    assertThrows(
+        UserFacingException.class, () -> this.userProjectFileParser.parseFileJson(invalidJson));
   }
 }
