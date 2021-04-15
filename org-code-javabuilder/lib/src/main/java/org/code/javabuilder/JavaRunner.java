@@ -46,6 +46,7 @@ public class JavaRunner {
       throw new UserInitiatedException(
           "Your code hit an exception " + e.getCause().getClass().toString(), e);
     }
+
     try {
       urlClassLoader.close();
     } catch (IOException e) {
@@ -55,15 +56,24 @@ public class JavaRunner {
     }
   }
 
-  private Method findMainMethod(URLClassLoader classLoader)
+  /**
+   * Finds the Main method in the set of files in fileManager if it exists.
+   *
+   * @param urlClassLoader
+   * @return the main method if it is found
+   * @throws UserFacingException if there is an issue loading a class
+   * @throws UserInitiatedException if there is more than one main method or no main method
+   */
+  public Method findMainMethod(URLClassLoader urlClassLoader)
       throws UserFacingException, UserInitiatedException {
-    List<ProjectFile> files = this.fileManager.getFiles();
+
     Method mainMethod = null;
-    for (int i = 0; i < files.size(); i++) {
-      ProjectFile file = files.get(i);
+    List<ProjectFile> fileList = this.fileManager.getFiles();
+    for (int i = 0; i < fileList.size(); i++) {
+      ProjectFile file = fileList.get(i);
       try {
         Method tempMain =
-            classLoader.loadClass(file.getClassName()).getDeclaredMethod("main", String[].class);
+            urlClassLoader.loadClass(file.getClassName()).getDeclaredMethod("main", String[].class);
         if (mainMethod != null) {
           throw new UserInitiatedException(
               "Your code can only have one main method."
@@ -79,6 +89,7 @@ public class JavaRunner {
         // this class does not have a main, this exception can be safely ignored.
       }
     }
+
     if (mainMethod == null) {
       throw new UserInitiatedException("Error: your program does not contain a main method");
     }
