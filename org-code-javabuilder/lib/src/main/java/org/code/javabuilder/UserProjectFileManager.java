@@ -6,19 +6,22 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 
 /** Manages the in-memory list of user project files. */
 public class UserProjectFileManager implements ProjectFileManager {
   private final String baseUrl;
   private final UserProjectFileParser projectFileParser;
-  private List<ProjectFile> fileList;
+  private List<JavaProjectFile> javaFileList;
+  private List<TextProjectFile> textFileList;
 
   private final String MAIN_SOURCE_FILE_NAME = "main.json";
 
   public UserProjectFileManager(String baseUrl) {
     this.baseUrl = baseUrl;
-    this.fileList = null;
+    this.javaFileList = new ArrayList<JavaProjectFile>();
+    this.textFileList = new ArrayList<TextProjectFile>();
     this.projectFileParser = new UserProjectFileParser();
   }
 
@@ -48,16 +51,21 @@ public class UserProjectFileManager implements ProjectFileManager {
           "We hit an error on our side while loading your files. Try again. \n",
           new Exception(body));
     }
-    this.fileList = this.projectFileParser.parseFileJson(body);
+    this.projectFileParser.parseFileJson(body, this.javaFileList, this.textFileList);
   }
 
   /**
-   * Return the user's project files
+   * Return the user's Java project files
    *
-   * @return A list of project files, or null if the files have not been loaded.
+   * @return A list of Java project files, which may be empty if files have not been loaded
    */
   @Override
-  public List<ProjectFile> getFiles() {
-    return this.fileList;
+  public List<JavaProjectFile> getJavaFiles() {
+    return this.javaFileList;
+  }
+
+  @Override
+  public List<TextProjectFile> getTextFiles() {
+    return this.textFileList;
   }
 }

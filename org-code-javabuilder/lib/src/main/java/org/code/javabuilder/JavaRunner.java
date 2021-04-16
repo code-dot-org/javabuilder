@@ -45,6 +45,8 @@ public class JavaRunner {
     } catch (InvocationTargetException e) {
       throw new UserInitiatedException(
           "Your code hit an exception " + e.getCause().getClass().toString(), e);
+    } catch (Exception e) {
+      throw new UserFacingException("there's another exception!", e);
     }
     try {
       urlClassLoader.close();
@@ -67,9 +69,9 @@ public class JavaRunner {
       throws UserFacingException, UserInitiatedException {
 
     Method mainMethod = null;
-    List<ProjectFile> fileList = this.fileManager.getFiles();
+    List<JavaProjectFile> fileList = this.fileManager.getJavaFiles();
     for (int i = 0; i < fileList.size(); i++) {
-      ProjectFile file = fileList.get(i);
+      JavaProjectFile file = fileList.get(i);
       try {
         Method tempMain =
             urlClassLoader.loadClass(file.getClassName()).getDeclaredMethod("main", String[].class);

@@ -1,7 +1,9 @@
 package org.code.javabuilder;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -31,6 +33,7 @@ public class UserCodeCompiler {
   public void compileProgram() throws UserFacingException, UserInitiatedException {
     DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
 
+    this.saveTextFiles();
     CompilationTask task = getCompilationTask(diagnostics);
 
     boolean success = task.call();
@@ -42,6 +45,20 @@ public class UserCodeCompiler {
     if (!success) {
       throw new UserInitiatedException(
           "We couldn't compile your program. Look for bugs in your program and try again.");
+    }
+  }
+
+  private void saveTextFiles() throws UserFacingException {
+    List<TextProjectFile> textProjectFiles = this.projectFileManager.getTextFiles();
+    for (int i = 0; i < textProjectFiles.size(); i++) {
+      TextProjectFile projectFile = textProjectFiles.get(i);
+      String filePath = this.tempFolder + "/" + projectFile.getFileName();
+      try (PrintWriter out = new PrintWriter(filePath)) {
+        out.println(projectFile.getFileContents());
+      } catch (FileNotFoundException e) {
+        throw new UserFacingException(
+            "We hit an error on our side while compiling your program. Try again.", e);
+      }
     }
   }
 
@@ -61,12 +78,12 @@ public class UserCodeCompiler {
     }
 
     // create file for user-provided code
-    List<ProjectFile> projectFiles = this.projectFileManager.getFiles();
-    List<JavaFileObject> files = new ArrayList<JavaFileObject>();
-    for (int i = 0; i < projectFiles.size(); i++) {
+    List<JavaProjectFile> javaProjectFiles = this.projectFileManager.getJavaFiles();
+    List<JavaFileObject> files = new ArrayList<>();
+    for (int i = 0; i < javaProjectFiles.size(); i++) {
       files.add(
           new JavaSourceFromString(
-              projectFiles.get(i).getClassName(), projectFiles.get(i).getCode()));
+              javaProjectFiles.get(i).getClassName(), javaProjectFiles.get(i).getFileContents()));
     }
 
     // create compilation task
