@@ -32,13 +32,11 @@ public class WebSocketServer {
    */
   @OnOpen
   public void onOpen(Session session) {
-    // Temporary project url until the dashboard side is integrated
-    String projectUrl = "http://localhost-studio.code.org:3000/v3/files/MoGwvaZmQSQZaImS3LliCQ";
-    String[] fileNames = new String[] {"MyClass.java"};
+    String projectUrl = session.getQueryString().replaceFirst("projectUrl=", "");
 
     outputAdapter = new WebSocketOutputAdapter(session);
     inputAdapter = new WebSocketInputAdapter();
-    final UserProjectFileManager fileManager = new UserProjectFileManager(projectUrl, fileNames);
+    final UserProjectFileManager fileManager = new UserProjectFileManager(projectUrl);
     Thread codeExecutor =
         new Thread(
             () -> {
