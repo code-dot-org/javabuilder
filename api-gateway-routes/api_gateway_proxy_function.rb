@@ -15,9 +15,6 @@ def lambda_handler(event:, context:)
 end
 
 def on_connect(event, context)
-  project_url = "https://studio.code.org/v3/files/UVXkRDHwYNbXPZTQXPzNJ1C8Oyv1ZCCA5O6M2a-fs1E"
-  file_names = ["MyClass.java"]
-
   region = get_region(context)
 
   request_context = event["requestContext"]
@@ -36,7 +33,7 @@ def on_connect(event, context)
     :queueUrl => sqs_queue.queue_url,
     :apiEndpoint => api_endpoint,
     :connectionId => request_context["connectionId"],
-    :projectUrl => project_url,
+    :projectUrl => request_context["authorizer"]["project_url"],
     :fileNames => file_names
   }
   response = lambda_client.invoke({
