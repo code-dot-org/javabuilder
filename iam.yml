@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: >-
-  Define IAM Roles utilized to build, deploy, and operate the JavaBuilder service.
+  Define IAM Roles utilized to build, deploy, and operate the Javabuilder service.
   Note: CAPABILITY_IAM capability is required to deploy this stack.
 
 Parameters:
@@ -12,7 +12,7 @@ Parameters:
     Description: Name of existing S3 bucket for storing CloudFormation template artifacts
 
 Resources:
-  JavaBuilderLambdaExecutionRole:
+  JavabuilderLambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
@@ -22,7 +22,7 @@ Resources:
             Principal: {Service: [lambda.amazonaws.com]}
       Path: /
       Policies:
-        - PolicyName: JavaBuilderLambdaExecutionPolicy
+        - PolicyName: JavabuilderLambdaExecutionPolicy
           PolicyDocument:
             Statement:
               - Effect: Allow
@@ -39,7 +39,7 @@ Resources:
                 Resource: '*'
       ManagedPolicyArns:
         - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-  JavaBuilderCloudFormationRole:
+  JavabuilderCloudFormationRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
@@ -69,8 +69,8 @@ Resources:
                 Action:
                   - "iam:PassRole"
                 Resource:
-                  - !GetAtt JavaBuilderLambdaExecutionRole.Arn
-  JavaBuilderCodeBuildRole:
+                  - !GetAtt JavabuilderLambdaExecutionRole.Arn
+  JavabuilderCodeBuildRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
@@ -106,15 +106,15 @@ Resources:
       ManagedPolicyArns:
         - 'arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPowerUser'
 Outputs:
-  JavaBuilderLambdaExecutionRole:
-    Description: JavaBuilder Lambda Execution Role ARN
-    Value: !GetAtt JavaBuilderLambdaExecutionRole.Arn
-    Export: {Name: JavaBuilderLambdaExecutionRole}
-  JavaBuilderCloudFormationRole:
-    Description: JavaBuilder CloudFormation Role ARN
-    Value: !GetAtt JavaBuilderCloudFormationRole.Arn
-    Export: {Name: JavaBuilder CloudFormationRole}
-  JavaBuilderCodeBuildRole:
-    Description: JavaBuilder CodeBuild Role ARN
-    Value: !GetAtt JavaBuilderCodeBuildRole.Arn
-    Export: {Name: JavaBuilderCodeBuildRole}
+  JavabuilderLambdaExecutionRole:
+    Description: Javabuilder Lambda Execution Role ARN
+    Value: !GetAtt JavabuilderLambdaExecutionRole.Arn
+    Export: {Name: JavabuilderLambdaExecutionRole}
+  JavabuilderCloudFormationRole:
+    Description: Javabuilder CloudFormation Role ARN
+    Value: !GetAtt JavabuilderCloudFormationRole.Arn
+    Export: {Name: Javabuilder CloudFormationRole}
+  JavabuilderCodeBuildRole:
+    Description: Javabuilder CodeBuild Role ARN
+    Value: !GetAtt JavabuilderCodeBuildRole.Arn
+    Export: {Name: JavabuilderCodeBuildRole}
