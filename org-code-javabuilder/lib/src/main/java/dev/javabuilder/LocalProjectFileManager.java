@@ -7,7 +7,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import org.code.javabuilder.*;
 
-/** Intended for local testing only. Loads the MyClass.java file from the resources folder. */
+/** Intended for local testing only. Loads the main.json file from the resources folder. */
 public class LocalProjectFileManager implements ProjectFileManager {
   private List<ProjectFile> files;
 
@@ -17,7 +17,7 @@ public class LocalProjectFileManager implements ProjectFileManager {
       String mainJson =
           new String(
               Files.readAllBytes(
-                  Paths.get(getClass().getClassLoader().getResource("main_painter.json").toURI())));
+                  Paths.get(getClass().getClassLoader().getResource("main.json").toURI())));
       this.files = new UserProjectFileParser().parseFileJson(mainJson);
     } catch (IOException | URISyntaxException e) {
       throw new UserFacingException("We could not parse your files", e);
