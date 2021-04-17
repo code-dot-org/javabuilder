@@ -33,8 +33,7 @@ def on_connect(event, context)
     :queueUrl => sqs_queue.queue_url,
     :apiEndpoint => api_endpoint,
     :connectionId => request_context["connectionId"],
-    :projectUrl => request_context["authorizer"]["project_url"],
-    :fileNames => file_names
+    :projectUrl => request_context["authorizer"]["project_url"]
   }
   response = lambda_client.invoke({
     function_name: 'javaBuilderExecuteCode',
