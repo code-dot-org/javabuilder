@@ -12,7 +12,7 @@ public class InputRedirectionStreamTest {
   private InputAdapter inputAdapter;
 
   @BeforeEach
-  public void setup() {
+  public void setUp() {
     inputAdapter = mock(InputAdapter.class);
     when(inputAdapter.getNextMessage()).thenReturn("hello world");
     stream = new InputRedirectionStream(inputAdapter);
