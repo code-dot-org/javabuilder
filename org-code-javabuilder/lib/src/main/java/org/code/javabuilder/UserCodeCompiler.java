@@ -2,7 +2,9 @@ package org.code.javabuilder;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import javax.tools.*;
 import javax.tools.JavaCompiler.CompilationTask;
 
@@ -58,15 +60,15 @@ public class UserCodeCompiler {
           "We hit an error on our side while compiling your program. Try again.", e);
     }
 
-    // create file for user-provided code
-    ProjectFile projectFile = projectFileManager.getFile();
-    JavaFileObject file =
-        new JavaSourceFromString(projectFile.getClassName(), projectFile.getCode());
-    Iterable<? extends JavaFileObject> compilationUnits = Arrays.asList(file);
+    // create files for user-provided code
+    List<ProjectFile> projectFiles = this.projectFileManager.getFiles();
+    List<JavaFileObject> files = new ArrayList<JavaFileObject>();
+    for (ProjectFile projectFile : projectFiles) {
+      files.add(new JavaSourceFromString(projectFile.getClassName(), projectFile.getCode()));
+    }
 
     // create compilation task
-    CompilationTask task =
-        compiler.getTask(null, fileManager, diagnostics, null, null, compilationUnits);
+    CompilationTask task = compiler.getTask(null, fileManager, diagnostics, null, null, files);
     return task;
   }
 }

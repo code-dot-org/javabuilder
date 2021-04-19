@@ -15,6 +15,11 @@ public class ProjectFile {
     }
   }
 
+  public ProjectFile(String fileName, String code) throws UserInitiatedException {
+    this(fileName);
+    this.code = code;
+  }
+
   public String getFileName() {
     return fileName;
   }
