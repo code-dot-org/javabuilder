@@ -15,47 +15,50 @@ import org.junit.jupiter.api.Test;
 
 public class AWSInputAdapterTest {
   private AWSInputAdapter inputAdapter;
-
   private AmazonSQS sqsMock;
 
   @BeforeEach
   public void setUp() {
-    Message firstMessage = mock(Message.class);
-    Message secondMessage = mock(Message.class);
-    when(firstMessage.getBody()).thenReturn("hello");
-    when(secondMessage.getBody()).thenReturn("world");
-    List<Message> messages = new ArrayList<>();
-    messages.add(firstMessage);
-    messages.add(secondMessage);
+    sqsMock = mock(AmazonSQS.class);
+    inputAdapter = new AWSInputAdapter(sqsMock, "url");
+  }
+
+  private void messageSetUp(String[] messages) {
+    List<Message> messageList = new ArrayList<>();
+    for (String s : messages) {
+      Message message = mock(Message.class);
+      when(message.getBody()).thenReturn(s);
+      messageList.add(message);
+    }
 
     ReceiveMessageResult result = mock(ReceiveMessageResult.class);
-    when(result.getMessages()).thenReturn(messages);
-    sqsMock = mock(AmazonSQS.class);
+    when(result.getMessages()).thenReturn(messageList);
     when(sqsMock.receiveMessage(any(ReceiveMessageRequest.class))).thenReturn(result);
-
-    inputAdapter = new AWSInputAdapter(sqsMock, "url");
   }
 
   @Test
   void addsNewlineToMessage() {
+    messageSetUp(new String[] {"hello"});
     assertEquals(inputAdapter.getNextMessage(), "hello" + System.lineSeparator());
-    verify(sqsMock, times(2)).deleteMessage("url", null);
   }
 
   @Test
   void addsAllReceivedMessagesToQueue() {
+    messageSetUp(new String[] {"", "world"});
     inputAdapter.getNextMessage();
     assertEquals(inputAdapter.getNextMessage(), "world" + System.lineSeparator());
   }
 
   @Test
   void deletesAllReadMessages() {
+    messageSetUp(new String[] {"", ""});
     inputAdapter.getNextMessage();
     verify(sqsMock, times(2)).deleteMessage("url", null);
   }
 
   @Test
   void cachesMessages() {
+    messageSetUp(new String[] {"", ""});
     inputAdapter.getNextMessage();
     inputAdapter.getNextMessage();
     verify(sqsMock, times(1)).receiveMessage(any(ReceiveMessageRequest.class));
