@@ -68,23 +68,26 @@ public class JavaRunner {
 
     Method mainMethod = null;
     List<ProjectFile> fileList = this.fileManager.getFiles();
-    for (int i = 0; i < fileList.size(); i++) {
-      ProjectFile file = fileList.get(i);
+    for (ProjectFile file : fileList) {
       try {
-        Method tempMain =
-            urlClassLoader.loadClass(file.getClassName()).getDeclaredMethod("main", String[].class);
-        if (mainMethod != null) {
-          throw new UserInitiatedException(
-              "Your code can only have one main method. We found at least two classes with main methods.");
-        } else {
-          mainMethod = tempMain;
+        Method[] declaredMethods =
+            urlClassLoader.loadClass(file.getClassName()).getDeclaredMethods();
+        for (Method method : declaredMethods) {
+          Class[] parameterTypes = method.getParameterTypes();
+          if (method.getName().equals("main")
+              && parameterTypes.length == 1
+              && parameterTypes[0].equals(String[].class)) {
+            if (mainMethod != null) {
+              throw new UserInitiatedException(
+                  "Your code can only have one main method. We found at least two classes with main methods.");
+            }
+            mainMethod = method;
+          }
         }
       } catch (ClassNotFoundException e) {
         // this should be caught earlier in compilation
         throw new UserFacingException(
             "We hit an error on our side while running your program. Try Again", e);
-      } catch (NoSuchMethodException e) {
-        // this class does not have a main, this exception can be safely ignored.
       }
     }
 
