@@ -139,7 +139,7 @@ Outputs:
   JavabuilderCloudFormationRole:
     Description: Javabuilder CloudFormation Role ARN
     Value: !GetAtt JavabuilderCloudFormationRole.Arn
-    Export: {Name: Javabuilder CloudFormationRole}
+    Export: {Name: JavabuilderCloudFormationRole}
   JavabuilderCodeBuildRole:
     Description: Javabuilder CodeBuild Role ARN
     Value: !GetAtt JavabuilderCodeBuildRole.Arn
