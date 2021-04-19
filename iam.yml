@@ -129,8 +129,6 @@ Resources:
                 Action:
                   - "cloudformation:DescribeStacks"
                 Resource: '*'
-      ManagedPolicyArns:
-        - 'arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPowerUser'
 Outputs:
   JavabuilderLambdaExecutionRole:
     Description: Javabuilder Lambda Execution Role ARN
