@@ -60,13 +60,11 @@ public class UserCodeCompiler {
           "We hit an error on our side while compiling your program. Try again.", e);
     }
 
-    // create file for user-provided code
+    // create files for user-provided code
     List<ProjectFile> projectFiles = this.projectFileManager.getFiles();
     List<JavaFileObject> files = new ArrayList<JavaFileObject>();
-    for (int i = 0; i < projectFiles.size(); i++) {
-      files.add(
-          new JavaSourceFromString(
-              projectFiles.get(i).getClassName(), projectFiles.get(i).getCode()));
+    for (ProjectFile projectFile : projectFiles) {
+      files.add(new JavaSourceFromString(projectFile.getClassName(), projectFile.getCode()));
     }
 
     // create compilation task
