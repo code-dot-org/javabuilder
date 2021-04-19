@@ -52,17 +52,12 @@ public class UserProjectFileManager implements ProjectFileManager {
   }
 
   /**
-   * Returns the user project file. Currently, we only allow a single user project file. TODO:
-   * Enable multi-file programs
+   * Return the user's project files
    *
-   * @return the user project file.
+   * @return A list of project files, or null if the files have not been loaded.
    */
   @Override
-  public ProjectFile getFile() {
-    // TODO: Enable multi-file. For now, load the first file.
-    if (fileList == null) {
-      return null;
-    }
-    return fileList.get(0);
+  public List<ProjectFile> getFiles() {
+    return this.fileList;
   }
 }
