@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.code.javabuilder.*;
 
-/** Intended for local testing only. Loads the MyClass.java file from the resources folder. */
+/** Intended for local testing only. Loads the main.json file from the resources folder. */
 public class LocalProjectFileManager implements ProjectFileManager {
   private List<JavaProjectFile> javaFiles;
   private List<TextProjectFile> textFiles;
