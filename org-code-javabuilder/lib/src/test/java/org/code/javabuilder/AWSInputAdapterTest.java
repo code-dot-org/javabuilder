@@ -23,6 +23,11 @@ public class AWSInputAdapterTest {
     inputAdapter = new AWSInputAdapter(sqsMock, "url");
   }
 
+  /**
+   * Adds messages to the SQS Queue Mock to be retrieved by the input Adapter
+   *
+   * @param messages an array of messages in the queue
+   */
   private void messageSetUp(String[] messages) {
     List<Message> messageList = new ArrayList<>();
     for (String s : messages) {
@@ -49,6 +54,12 @@ public class AWSInputAdapterTest {
     assertEquals(inputAdapter.getNextMessage(), "world" + System.lineSeparator());
   }
 
+  /**
+   * When getNextMessage is called on an empty inputAdapter, it fetches and caches all available
+   * messages from the SQS Queue (up to the AWS maximum of 10). To ensure these messages are not
+   * retrieved again, we need to delete them from the SQS Queue. This test checks that we are
+   * cleaning up the queue after retrieving messages
+   */
   @Test
   void deletesAllReadMessages() {
     messageSetUp(new String[] {"", ""});
@@ -56,6 +67,12 @@ public class AWSInputAdapterTest {
     verify(sqsMock, times(2)).deleteMessage("url", null);
   }
 
+  /**
+   * Retrieving messages from the SQS Queue is an expensive operation. When we have no more messages
+   * available in the inputAdapter, we retrieve multiple messages from the Queue at once. They are
+   * cached and subsequent calls to getNextMessage do not retrieve additional messages until the
+   * local queue is empty.
+   */
   @Test
   void cachesMessages() {
     messageSetUp(new String[] {"", ""});
