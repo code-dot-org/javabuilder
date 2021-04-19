@@ -12,6 +12,11 @@ Parameters:
     Description: Name of existing S3 bucket for storing CloudFormation template artifacts
 
 Resources:
+  # TODO: Split this into separate roles:
+  # 1) Permissions for the long-running Lambda that compiles/runs student projects
+  # 2) Permissions for the synchronous Lambda that invokes the long-running Lambda and then relays web messages to it.
+  # 3) Permissions for the Lambda Authorizer
+  # 4) Permissions for CodePipeline Slack approval Lambda.
   JavabuilderLambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:
@@ -25,6 +30,7 @@ Resources:
         - PolicyName: JavabuilderLambdaExecutionPolicy
           PolicyDocument:
             Statement:
+              # CodePipeline Slack Approval Lambda
               - Effect: Allow
                 Action:
                   - "codepipeline:GetPipelineState"
@@ -32,13 +38,33 @@ Resources:
                   - "codepipeline:PutApprovalResult"
                   - "cloudformation:DescribeStacks"
                 Resource: '*'
+
+              # All Lambdas need logging permissions.
+              - Effect: Allow
+                Action:
+                  - "logs:CreateLogGroup"
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - "logs:CreateLogStream"
+                  - "logs:PutLogEvents"
+                Resource: 'arn:aws:logs:::log-group:/aws/lambda/javabuilder*'
               - Effect: Allow
                 Action:
                   - "xray:PutTraceSegments"
                   - "xray:PutTelemetryRecords"
                 Resource: '*'
       ManagedPolicyArns:
-        - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+        # Authorizer
+        # Currently doesn't require any permissions beyond logging.
+
+        # Invoke and relay messages to Project Lambda.
+        - "arn:aws:iam::aws:policy/service-role/AWSLambdaRole"
+        - "arn:aws:iam::aws:policy/AmazonSQSFullAccess"
+
+        # Compile and Run Project Lambda.
+        - "arn:aws:iam::aws:policy/service-role/AWSLambdaSQSQueueExecutionRole"
+        - "arn:aws:iam::aws:policy/AmazonAPIGatewayInvokeFullAccess"
   JavabuilderCloudFormationRole:
     Type: AWS::IAM::Role
     Properties:
