@@ -50,8 +50,7 @@ public class UserCodeCompiler {
 
   private void saveTextFiles() throws UserFacingException {
     List<TextProjectFile> textProjectFiles = this.projectFileManager.getTextFiles();
-    for (int i = 0; i < textProjectFiles.size(); i++) {
-      TextProjectFile projectFile = textProjectFiles.get(i);
+    for (TextProjectFile projectFile : textProjectFiles) {
       String filePath = this.tempFolder + "/" + projectFile.getFileName();
       try (PrintWriter out = new PrintWriter(filePath)) {
         out.println(projectFile.getFileContents());
