@@ -45,8 +45,6 @@ public class JavaRunner {
     } catch (InvocationTargetException e) {
       throw new UserInitiatedException(
           "Your code hit an exception " + e.getCause().getClass().toString(), e);
-    } catch (Exception e) {
-      throw new UserFacingException("there's another exception!", e);
     }
     try {
       urlClassLoader.close();

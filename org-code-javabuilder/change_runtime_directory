@@ -1,4 +1,6 @@
 #!/bin/bash
+# This script is deployed as a lambda layer to ensure our lambda runs from a temporary folder.
+# This enables File I/O on our lambda.
 rm -rf /tmp/*
 cd $(mktemp -d)
 exec "$@"

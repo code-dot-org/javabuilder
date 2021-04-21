@@ -17,5 +17,6 @@ public interface ProjectFileManager {
   /** @return The user's Java files. */
   List<JavaProjectFile> getJavaFiles();
 
+  /** @return The user's text files. */
   List<TextProjectFile> getTextFiles();
 }

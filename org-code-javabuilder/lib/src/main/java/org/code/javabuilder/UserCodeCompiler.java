@@ -48,6 +48,7 @@ public class UserCodeCompiler {
     }
   }
 
+  // Save all text files to current working directory.
   private void saveTextFiles() throws UserFacingException {
     List<TextProjectFile> textProjectFiles = this.projectFileManager.getTextFiles();
     for (TextProjectFile projectFile : textProjectFiles) {
