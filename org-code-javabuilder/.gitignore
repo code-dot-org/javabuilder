@@ -15,3 +15,5 @@ app/.project
 .aws-sam
 
 .vscode/*
+
+*.zip
