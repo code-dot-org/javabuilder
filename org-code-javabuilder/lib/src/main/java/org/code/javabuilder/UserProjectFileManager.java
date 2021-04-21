@@ -20,8 +20,8 @@ public class UserProjectFileManager implements ProjectFileManager {
 
   public UserProjectFileManager(String baseUrl) {
     this.baseUrl = baseUrl;
-    this.javaFileList = new ArrayList<JavaProjectFile>();
-    this.textFileList = new ArrayList<TextProjectFile>();
+    this.javaFileList = new ArrayList<>();
+    this.textFileList = new ArrayList<>();
     this.projectFileParser = new UserProjectFileParser();
   }
 
@@ -57,13 +57,19 @@ public class UserProjectFileManager implements ProjectFileManager {
   /**
    * Return the user's Java project files
    *
-   * @return A list of Java project files, which may be empty if files have not been loaded
+   * @return A list of Java project files, which may be empty if files have not been loaded.
    */
   @Override
   public List<JavaProjectFile> getJavaFiles() {
     return this.javaFileList;
   }
 
+  /**
+   * Return the user's text project files
+   *
+   * @return A list of text project files, which may be empty if files have not been loaded or if
+   *     there are no text files.
+   */
   @Override
   public List<TextProjectFile> getTextFiles() {
     return this.textFileList;
