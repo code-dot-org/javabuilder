@@ -33,8 +33,11 @@ public class AWSInputAdapter implements InputAdapter {
     request.setWaitTimeSeconds(20);
     // Sets the the number of messages to retrieve to its maximum value of 10
     request.setMaxNumberOfMessages(10);
-    while (messages.peek() == null) {
+    if (messages.peek() == null) {
       List<Message> messages = sqsClient.receiveMessage(request).getMessages();
+      if (messages.size() == 0) {
+        return null;
+      }
       for (Message message : messages) {
         // The Java Lab console is an <input> element that uses the enter key to trigger onSubmit.
         // Rather than adding an arbitrary line separator from the client, we instead add the
