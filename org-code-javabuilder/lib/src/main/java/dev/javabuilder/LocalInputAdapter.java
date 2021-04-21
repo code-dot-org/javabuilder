@@ -17,6 +17,9 @@ public class LocalInputAdapter implements InputAdapter {
 
   @Override
   public String getNextMessage() {
+    if (messages.peek() == null) {
+      return null;
+    }
     return messages.remove();
   }
 }
