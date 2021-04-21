@@ -31,15 +31,12 @@ public class InputRedirectionStream extends InputStream {
   @Override
   public int read() {
     if (queue.peek() == null) {
-      String messageStr = inputAdapter.getNextMessage();
-      if (messageStr == null) {
-        return -1;
-      }
-      byte[] message = messageStr.getBytes(StandardCharsets.UTF_8);
+      byte[] message = inputAdapter.getNextMessage().getBytes(StandardCharsets.UTF_8);
       for (byte b : message) {
         queue.add(b);
       }
     }
+
     return (int) queue.remove();
   }
 
@@ -54,7 +51,6 @@ public class InputRedirectionStream extends InputStream {
    */
   @Override
   public int read(byte[] b, int off, int len) {
-    // System.out.println("in read with len of " + len);
     if (b == null) {
       throw new NullPointerException();
     }
@@ -64,13 +60,11 @@ public class InputRedirectionStream extends InputStream {
 
     int k = 0;
     while (k < len) {
-      int readResult = this.read();
-      if (readResult == -1) {
-        // if we have not read anything yet, return -1. Otherwise return the number of bytes read
-        return k == 0 ? -1 : k;
-      }
-      b[off + k] = (byte) readResult;
+      b[off + k] = (byte) this.read();
       k++;
+      if (queue.peek() == null) {
+        break;
+      }
     }
 
     return k;

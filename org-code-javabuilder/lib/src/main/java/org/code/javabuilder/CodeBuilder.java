@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
@@ -50,7 +51,15 @@ public class CodeBuilder implements AutoCloseable {
    */
   public void runUserCode()
       throws UserFacingException, InternalFacingException, UserInitiatedException {
-    JavaRunner runner = new JavaRunner(tempFolder, fileManager, outputAdapter, inputAdapter);
+    System.setOut(new OutputPrintStream(this.outputAdapter));
+    System.setIn(new InputRedirectionStream(this.inputAdapter));
+    JavaRunner runner;
+    try {
+      runner = new JavaRunner(tempFolder.toURI().toURL(), fileManager, outputAdapter);
+    } catch (MalformedURLException e) {
+      throw new UserFacingException(
+          "We hit an error on our side while running your program. Try Again", e);
+    }
     runner.runCode();
   }
 
