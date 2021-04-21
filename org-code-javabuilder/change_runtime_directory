@@ -1,0 +1,4 @@
+#!/bin/bash
+rm -rf /tmp/*
+cd $(mktemp -d)
+exec "$@"

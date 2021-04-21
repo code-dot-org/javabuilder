@@ -51,7 +51,7 @@ public class UserCodeCompiler {
   private void saveTextFiles() throws UserFacingException {
     List<TextProjectFile> textProjectFiles = this.projectFileManager.getTextFiles();
     for (TextProjectFile projectFile : textProjectFiles) {
-      String filePath = this.tempFolder + "/" + projectFile.getFileName();
+      String filePath = projectFile.getFileName();
       try (PrintWriter out = new PrintWriter(filePath)) {
         out.println(projectFile.getFileContents());
       } catch (FileNotFoundException e) {
