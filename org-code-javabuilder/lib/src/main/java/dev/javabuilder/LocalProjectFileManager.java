@@ -21,7 +21,7 @@ public class LocalProjectFileManager implements ProjectFileManager {
       String mainJson =
           new String(
               Files.readAllBytes(
-                  Paths.get(getClass().getClassLoader().getResource("main.json").toURI())));
+                  Paths.get(getClass().getClassLoader().getResource("main_painter.json").toURI())));
       new UserProjectFileParser().parseFileJson(mainJson, javaFiles, textFiles);
     } catch (IOException | URISyntaxException e) {
       throw new UserFacingException("We could not parse your files", e);

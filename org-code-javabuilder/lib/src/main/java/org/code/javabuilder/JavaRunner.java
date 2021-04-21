@@ -1,31 +1,23 @@
 package org.code.javabuilder;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.List;
 
 /** The class that executes the student's code */
 public class JavaRunner {
-  private final File executableLocation;
+  private final URL executableLocation;
   private final ProjectFileManager fileManager;
   private final OutputAdapter outputAdapter;
-  private final InputAdapter inputAdapter;
 
   public JavaRunner(
-      File executableLocation,
-      ProjectFileManager fileManager,
-      OutputAdapter outputAdapter,
-      InputAdapter inputAdapter) {
+      URL executableLocation, ProjectFileManager fileManager, OutputAdapter outputAdapter) {
     this.executableLocation = executableLocation;
     this.fileManager = fileManager;
     this.outputAdapter = outputAdapter;
-    this.inputAdapter = inputAdapter;
   }
 
   /**
@@ -38,20 +30,24 @@ public class JavaRunner {
    */
   public void runCode()
       throws UserFacingException, InternalFacingException, UserInitiatedException {
-    URL[] classLoaderUrls;
-    try {
-      classLoaderUrls = new URL[] {this.executableLocation.toURI().toURL()};
-    } catch (MalformedURLException e) {
-      throw new UserFacingException(
-          "We hit an error on our side while running your program. Try Again", e);
-    }
+    URL[] classLoaderUrls = new URL[] {this.executableLocation};
 
     // Create a new URLClassLoader
     URLClassLoader urlClassLoader = new URLClassLoader(classLoaderUrls);
 
-    String mainClass = this.findMainClass(urlClassLoader);
-    runMainClass(mainClass);
-
+    try {
+      // load and run the main method of the class
+      Method mainMethod = this.findMainMethod(urlClassLoader);
+      mainMethod.invoke(null, new Object[] {null});
+    } catch (IllegalAccessException e) {
+      // TODO: this error message may not be not very friendly
+      throw new UserFacingException("Illegal access: " + e, e);
+    } catch (InvocationTargetException e) {
+      throw new UserInitiatedException(
+          "Your code hit an exception " + e.getCause().getClass().toString(), e);
+    } catch (Exception e) {
+      throw new UserFacingException("there's another exception!", e);
+    }
     try {
       urlClassLoader.close();
     } catch (IOException e) {
@@ -61,49 +57,18 @@ public class JavaRunner {
     }
   }
 
-  private void runMainClass(String mainClass) throws UserFacingException {
-    ProcessBuilder processBuilder = new ProcessBuilder("java", mainClass);
-    processBuilder.directory(this.executableLocation);
-    processBuilder.redirectErrorStream(true);
-    Process process;
-    try {
-      process = processBuilder.start();
-    } catch (IOException e) {
-      throw new UserFacingException(
-          "We hit an error on our side while running your program. Try Again", e);
-    }
-    OutputStream stdin = process.getOutputStream();
-    InputStream stdout = process.getInputStream();
-
-    InputStream userInput = new InputRedirectionStream(this.inputAdapter);
-    OutputStream outputToUser = new OutputPrintStream(this.outputAdapter);
-
-    Thread inputThread = new Thread(new InputProcessor(userInput, stdin));
-    Thread outputThread = new Thread(new InputProcessor(stdout, outputToUser));
-    inputThread.start();
-    outputThread.start();
-    try {
-      process.waitFor();
-    } catch (InterruptedException e) {
-      throw new UserFacingException(
-          "We hit an error on our side while running your program. Try Again", e);
-    }
-    inputThread.interrupt();
-    outputThread.interrupt();
-  }
-
   /**
-   * Finds the name of the Class with a main method in the set of files in fileManager if it exists.
+   * Finds the main method in the set of files in fileManager if it exists.
    *
    * @param urlClassLoader class loader pointing to location of compiled classes
-   * @return the name of the Class if it is found
+   * @return the main method if it is found
    * @throws UserFacingException if there is an issue loading a class
    * @throws UserInitiatedException if there is more than one main method or no main method
    */
-  public String findMainClass(URLClassLoader urlClassLoader)
+  public Method findMainMethod(URLClassLoader urlClassLoader)
       throws UserFacingException, UserInitiatedException {
 
-    String mainClass = null;
+    Method mainMethod = null;
     List<JavaProjectFile> fileList = this.fileManager.getJavaFiles();
     for (JavaProjectFile file : fileList) {
       try {
@@ -114,11 +79,11 @@ public class JavaRunner {
           if (method.getName().equals("main")
               && parameterTypes.length == 1
               && parameterTypes[0].equals(String[].class)) {
-            if (mainClass != null) {
+            if (mainMethod != null) {
               throw new UserInitiatedException(
                   "Your code can only have one main method. We found at least two classes with main methods.");
             }
-            mainClass = file.getClassName();
+            mainMethod = method;
           }
         }
       } catch (ClassNotFoundException e) {
@@ -128,9 +93,9 @@ public class JavaRunner {
       }
     }
 
-    if (mainClass == null) {
+    if (mainMethod == null) {
       throw new UserInitiatedException("Error: your program does not contain a main method");
     }
-    return mainClass;
+    return mainMethod;
   }
 }
