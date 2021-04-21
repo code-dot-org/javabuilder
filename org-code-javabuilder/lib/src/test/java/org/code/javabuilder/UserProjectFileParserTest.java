@@ -12,7 +12,7 @@ public class UserProjectFileParserTest {
   private UserProjectFileParser userProjectFileParser;
 
   @BeforeEach
-  public void setup() {
+  public void setUp() {
     this.userProjectFileParser = new UserProjectFileParser();
   }
 
