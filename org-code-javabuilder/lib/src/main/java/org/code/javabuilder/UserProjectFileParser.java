@@ -29,7 +29,7 @@ public class UserProjectFileParser {
       for (String fileName : sources.keySet()) {
         UserFileData fileData = sources.get(fileName);
 
-        if (fileName.indexOf(".java") > 0) {
+        if (fileName.endsWith(".java")) {
           javaFileList.add(new JavaProjectFile(fileName, fileData.getText()));
         } else {
           // we treat any non-Java file as a plain text file

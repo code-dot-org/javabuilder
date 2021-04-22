@@ -8,7 +8,7 @@ public class JavaProjectFile implements ProjectFile {
 
   public JavaProjectFile(String fileName) throws UserInitiatedException {
     this.fileName = fileName;
-    if (fileName.indexOf(".java") > 0) {
+    if (fileName.endsWith(".java")) {
       this.className = fileName.substring(0, fileName.indexOf(".java"));
     } else {
       throw new UserInitiatedException("Invalid File Name. File name must end in '.java'.");
