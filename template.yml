@@ -1,0 +1,43 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: AWS::Serverless-2016-10-31
+Description: Javabuilder service
+
+Parameters:
+  BaseDomainName:
+    Type: String
+    Description: Base domain name.
+    Default: dev-code.org
+  SubDomainName:
+    Type: String
+    Description: Sub domain name for javabuilder service.
+    Default: javabuilderpilot
+  LogBucket:
+    Type: String
+    Default: cdo-logs.s3.amazonaws.com
+
+Globals:
+  Function:
+    Runtime: ruby2.5
+    Timeout: 30
+    MemorySize: 3008
+    Tracing: Active
+
+Resources:
+  APICertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Sub "${SubDomainName}.${BaseDomainName}"
+      ValidationMethod: DNS
+  Domain:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      # Add trailing dot `.` to base domain to identify Zone.
+      HostedZoneName: !Sub "${BaseDomainName}."
+      Name: !Sub "${SubDomainName}.${BaseDomainName}."
+      Type: A
+      ResourceRecords:
+        - "127.0.0.1"
+      TTL: 60
+Outputs:
+  JavabuilderURL:
+    Value: !Sub "https://${SubDomainName}.${BaseDomainName}"
