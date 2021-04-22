@@ -15,5 +15,8 @@ public interface ProjectFileManager {
   void loadFiles() throws UserFacingException, UserInitiatedException;
 
   /** @return The user's Java files. */
-  List<ProjectFile> getFiles();
+  List<JavaProjectFile> getJavaFiles();
+
+  /** @return The user's text files. */
+  List<TextProjectFile> getTextFiles();
 }
