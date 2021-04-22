@@ -67,8 +67,8 @@ public class JavaRunner {
       throws UserFacingException, UserInitiatedException {
 
     Method mainMethod = null;
-    List<ProjectFile> fileList = this.fileManager.getFiles();
-    for (ProjectFile file : fileList) {
+    List<JavaProjectFile> fileList = this.fileManager.getJavaFiles();
+    for (JavaProjectFile file : fileList) {
       try {
         Method[] declaredMethods =
             urlClassLoader.loadClass(file.getClassName()).getDeclaredMethods();
