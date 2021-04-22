@@ -4,6 +4,7 @@
  * ./gradlew verGJF -> just runs the linter
  * ./gradlew buildZip -> builds a zip package that is compatible with AWS Lambda
  * ./gradlew appRun -> runs the WebSocket server for local development
+ * ./gradlew test -> runs the unit tests
  */
 
 plugins {
