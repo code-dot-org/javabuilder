@@ -15,7 +15,7 @@ public class UserProjectFileParser {
    * Parses json string containing file data and returns a list of project files.
    *
    * @param json JSON String in UserSourceData format
-   * @return a list of ProjectFile objects
+   * @return UserProjectFiles: all files in the project
    * @throws UserFacingException
    * @throws UserInitiatedException
    */
