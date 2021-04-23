@@ -18,6 +18,8 @@ def on_connect(event, context)
   region = get_region(context)
 
   request_context = event["requestContext"]
+  # Add in some logging to make debugging easier
+  puts request_context
 
   # -- Create SQS for this session --
   sqs_client = Aws::SQS::Client.new(region: region)
@@ -28,7 +30,7 @@ def on_connect(event, context)
 
   # -- Create Lambda for this session --
   lambda_client = Aws::Lambda::Client.new(region: region)
-  api_endpoint = "https://#{request_context['domainName']}/#{request_context['stage']}"
+  api_endpoint = "https://#{request_context['apiId']}.execute-api.#{region}.amazonaws.com/#{request_context['stage']}"
   payload = {
     :queueUrl => sqs_queue.queue_url,
     :apiEndpoint => api_endpoint,
