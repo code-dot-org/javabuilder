@@ -3,6 +3,7 @@ package org.code.javabuilder;
 import java.util.ArrayList;
 import java.util.List;
 
+/** In memory representation of all files in a user's project. */
 public class UserProjectFiles {
   private List<JavaProjectFile> javaFiles;
   private List<TextProjectFile> textFiles;
