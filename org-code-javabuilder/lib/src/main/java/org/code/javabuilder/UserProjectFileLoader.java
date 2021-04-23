@@ -6,22 +6,16 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
 
 /** Manages the in-memory list of user project files. */
-public class UserProjectFileManager implements ProjectFileManager {
+public class UserProjectFileLoader implements ProjectFileLoader {
   private final String baseUrl;
   private final UserProjectFileParser projectFileParser;
-  private List<JavaProjectFile> javaFileList;
-  private List<TextProjectFile> textFileList;
 
   private final String MAIN_SOURCE_FILE_NAME = "main.json";
 
-  public UserProjectFileManager(String baseUrl) {
+  public UserProjectFileLoader(String baseUrl) {
     this.baseUrl = baseUrl;
-    this.javaFileList = new ArrayList<>();
-    this.textFileList = new ArrayList<>();
     this.projectFileParser = new UserProjectFileParser();
   }
 
@@ -30,7 +24,8 @@ public class UserProjectFileManager implements ProjectFileManager {
    *
    * @throws UserFacingException If the load times out or fails.
    */
-  public void loadFiles() throws UserFacingException, UserInitiatedException {
+  @Override
+  public UserProjectFiles loadFiles() throws UserFacingException, UserInitiatedException {
     HttpClient client = HttpClient.newBuilder().build();
     // TODO: Support loading validation code
     HttpRequest request =
@@ -51,27 +46,6 @@ public class UserProjectFileManager implements ProjectFileManager {
           "We hit an error on our side while loading your files. Try again. \n",
           new Exception(body));
     }
-    this.projectFileParser.parseFileJson(body, this.javaFileList, this.textFileList);
-  }
-
-  /**
-   * Return the user's Java project files
-   *
-   * @return A list of Java project files, which may be empty if files have not been loaded.
-   */
-  @Override
-  public List<JavaProjectFile> getJavaFiles() {
-    return this.javaFileList;
-  }
-
-  /**
-   * Return the user's text project files
-   *
-   * @return A list of text project files, which may be empty if files have not been loaded or if
-   *     there are no text files.
-   */
-  @Override
-  public List<TextProjectFile> getTextFiles() {
-    return this.textFileList;
+    return this.projectFileParser.parseFileJson(body);
   }
 }

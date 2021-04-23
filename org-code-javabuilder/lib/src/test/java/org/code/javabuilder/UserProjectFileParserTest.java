@@ -3,7 +3,6 @@ package org.code.javabuilder;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,12 +20,10 @@ public class UserProjectFileParserTest {
     String validJson =
         "{\"source\":{\"HelloWorld.java\":{\"text\":\"my code\",\"visible\":true}},\"animations\":{}}";
     String expectedCode = "my code";
-    List<JavaProjectFile> javaFiles = new ArrayList<>();
-    List<TextProjectFile> textFiles = new ArrayList<>();
-    this.userProjectFileParser.parseFileJson(validJson, javaFiles, textFiles);
-    assertEquals(textFiles.size(), 0);
-    assertEquals(javaFiles.size(), 1);
-    ProjectFile firstFile = javaFiles.get(0);
+    UserProjectFiles projectFiles = this.userProjectFileParser.parseFileJson(validJson);
+    assertEquals(projectFiles.getTextFiles().size(), 0);
+    assertEquals(projectFiles.getJavaFiles().size(), 1);
+    ProjectFile firstFile = projectFiles.getJavaFiles().get(0);
     assertEquals(firstFile.getFileName(), "HelloWorld.java");
     assertEquals(firstFile.getFileContents(), expectedCode);
   }
@@ -36,11 +33,8 @@ public class UserProjectFileParserTest {
     String invalidJson =
         "{\"source\":{\"HelloWorld.java\":{\"text\":\"public class HelloWorld {\\n";
 
-    List<JavaProjectFile> javaFiles = new ArrayList<>();
-    List<TextProjectFile> textFiles = new ArrayList<>();
     assertThrows(
-        UserFacingException.class,
-        () -> this.userProjectFileParser.parseFileJson(invalidJson, javaFiles, textFiles));
+        UserFacingException.class, () -> this.userProjectFileParser.parseFileJson(invalidJson));
   }
 
   @Test
@@ -50,9 +44,9 @@ public class UserProjectFileParserTest {
             + "\"HelloWorld2.java\":{\"text\":\"my code\",\"visible\":true},"
             + "\"test.txt\":{\"text\":\"my text\",\"visible\":true}},\"animations\":{}}";
 
-    List<JavaProjectFile> javaFiles = new ArrayList<>();
-    List<TextProjectFile> textFiles = new ArrayList<>();
-    this.userProjectFileParser.parseFileJson(validJson, javaFiles, textFiles);
+    UserProjectFiles projectFiles = this.userProjectFileParser.parseFileJson(validJson);
+    List<JavaProjectFile> javaFiles = projectFiles.getJavaFiles();
+    List<TextProjectFile> textFiles = projectFiles.getTextFiles();
     assertEquals(javaFiles.size(), 2);
     assertEquals(javaFiles.get(0).getFileName(), "HelloWorld.java");
     assertEquals(javaFiles.get(1).getFileName(), "HelloWorld2.java");

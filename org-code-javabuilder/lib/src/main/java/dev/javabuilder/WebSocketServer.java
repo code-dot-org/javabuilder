@@ -36,14 +36,17 @@ public class WebSocketServer {
 
     outputAdapter = new WebSocketOutputAdapter(session);
     inputAdapter = new WebSocketInputAdapter();
-    final UserProjectFileManager fileManager = new UserProjectFileManager(projectUrl);
+    final UserProjectFileLoader fileLoader = new UserProjectFileLoader(projectUrl);
     Thread codeExecutor =
         new Thread(
             () -> {
-              try (CodeBuilder codeBuilder =
-                  new CodeBuilder(inputAdapter, outputAdapter, fileManager)) {
-                codeBuilder.compileUserCode();
-                codeBuilder.runUserCode();
+              try {
+                UserProjectFiles userProjectFiles = fileLoader.loadFiles();
+                try (CodeBuilder codeBuilder =
+                    new CodeBuilder(inputAdapter, outputAdapter, userProjectFiles)) {
+                  codeBuilder.buildUserCode();
+                  codeBuilder.runUserCode();
+                }
               } catch (UserFacingException e) {
                 outputAdapter.sendMessage(e.getMessage());
                 outputAdapter.sendMessage("\n" + e.getLoggingString());
