@@ -93,9 +93,9 @@ public class CodeBuilder implements AutoCloseable {
     List<TextProjectFile> textProjectFiles = this.userProjectFiles.getTextFiles();
     for (TextProjectFile projectFile : textProjectFiles) {
       String filePath = projectFile.getFileName();
-      try (PrintWriter out = new PrintWriter(filePath)) {
-        out.println(projectFile.getFileContents());
-      } catch (FileNotFoundException e) {
+      try {
+        Files.writeString(Path.of(filePath), projectFile.getFileContents());
+      } catch (IOException e) {
         throw new UserFacingException(
             "We hit an error on our side while compiling your program. Try again.", e);
       }

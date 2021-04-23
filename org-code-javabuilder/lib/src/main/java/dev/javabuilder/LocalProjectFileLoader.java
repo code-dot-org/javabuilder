@@ -13,9 +13,8 @@ public class LocalProjectFileLoader implements ProjectFileLoader {
   public UserProjectFiles loadFiles() throws UserFacingException, UserInitiatedException {
     try {
       String mainJson =
-          new String(
-              Files.readAllBytes(
-                  Paths.get(getClass().getClassLoader().getResource("main.json").toURI())));
+          Files.readString(
+              Paths.get(getClass().getClassLoader().getResource("main_painter.json").toURI()));
       return new UserProjectFileParser().parseFileJson(mainJson);
     } catch (IOException | URISyntaxException e) {
       throw new UserFacingException("We could not parse your files", e);
