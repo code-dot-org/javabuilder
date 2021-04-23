@@ -15,7 +15,7 @@ public class CodeBuilderTest {
   public void setUp() throws Exception {
     codeBuilder =
         new CodeBuilder(
-            mock(InputAdapter.class), mock(OutputAdapter.class), mock(ProjectFileManager.class));
+            mock(InputAdapter.class), mock(OutputAdapter.class), mock(UserProjectFiles.class));
   }
 
   @Test
