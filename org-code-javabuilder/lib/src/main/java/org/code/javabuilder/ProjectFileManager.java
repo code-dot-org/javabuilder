@@ -1,22 +1,37 @@
 package org.code.javabuilder;
 
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.List;
 
 /**
- * Handles loading user files (i.e. from local storage or via HTTP) and manages the in-memory
- * representation of them.
+ * Handles basic file operations for a user project: in-memory representation of user files saving
+ * assets to local storage for future use.
  */
-public interface ProjectFileManager {
-  /**
-   * Loads the user's Java files from HTTP or local storage
-   *
-   * @throws UserFacingException If an error occurs while loading
-   */
-  void loadFiles() throws UserFacingException, UserInitiatedException;
+public class ProjectFileManager {
+  private UserProjectFiles userProjectFiles;
 
-  /** @return The user's Java files. */
-  List<JavaProjectFile> getJavaFiles();
+  public ProjectFileManager(UserProjectFiles userProjectFiles) {
+    this.userProjectFiles = userProjectFiles;
+  }
 
-  /** @return The user's text files. */
-  List<TextProjectFile> getTextFiles();
+  /** @return the user's project assets */
+  public UserProjectFiles getUserProjectFiles() {
+    return this.userProjectFiles;
+  }
+
+  /** Save any non-source code files to storage */
+  public void saveProjectAssets() throws UserFacingException {
+    // Save all text files to current folder.
+    List<TextProjectFile> textProjectFiles = this.getUserProjectFiles().getTextFiles();
+    for (TextProjectFile projectFile : textProjectFiles) {
+      String filePath = projectFile.getFileName();
+      try (PrintWriter out = new PrintWriter(filePath)) {
+        out.println(projectFile.getFileContents());
+      } catch (FileNotFoundException e) {
+        throw new UserFacingException(
+            "We hit an error on our side while compiling your program. Try again.", e);
+      }
+    }
+  }
 }

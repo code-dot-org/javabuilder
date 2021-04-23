@@ -11,11 +11,15 @@ public class LocalMain {
   public static void main(String[] args) {
     final LocalInputAdapter inputAdapter = new LocalInputAdapter();
     final LocalOutputAdapter outputAdapter = new LocalOutputAdapter(System.out);
-    final LocalProjectFileManager fileManager = new LocalProjectFileManager();
+    final LocalProjectFileLoader fileLoader = new LocalProjectFileLoader();
     // Create and invoke the code execution environment
-    try (CodeBuilder codeBuilder = new CodeBuilder(inputAdapter, outputAdapter, fileManager)) {
-      codeBuilder.compileUserCode();
-      codeBuilder.runUserCode();
+    try {
+      UserProjectFiles userProjectFiles = fileLoader.loadFiles();
+      try (CodeBuilder codeBuilder =
+          new CodeBuilder(inputAdapter, outputAdapter, userProjectFiles)) {
+        codeBuilder.buildUserCode();
+        codeBuilder.runUserCode();
+      }
     } catch (UserFacingException e) {
       outputAdapter.sendMessage(e.getMessage());
       outputAdapter.sendMessage("\n" + e.getLoggingString());
