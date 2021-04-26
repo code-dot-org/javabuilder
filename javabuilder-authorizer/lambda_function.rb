@@ -7,6 +7,7 @@ require 'jwt'
 # public key (dependant on the environment the request came from),
 # and checks the token has not expired and its issue time is not in the future.
 def lambda_handler(event:, context:)
+  origin = event['headers']['Origin']
   jwt_token = event['queryStringParameters']['Authorization']
   # Return early if this is the user connectivity test
   if jwt_token == 'connectivityTest'
@@ -18,7 +19,10 @@ def lambda_handler(event:, context:)
     begin
       decoded_token = JWT.decode(
         jwt_token,
-        get_public_key(method_arn),
+        # Temporarily choose the key based on the client origin rather than the
+        # method_arn until we have environment-specific Javabuilders set up.
+        # get_public_key(method_arn),
+        get_public_key(origin),
         true,
         verify_iat: true, # verify issued at time is valid
         algorithm: 'RS256'
@@ -74,11 +78,27 @@ end
 # method_arn is in format
 # arn:aws:execute-api:region:account-id:api-id/stage-name/$connect
 # We only care about stage--that tells us the environment (development, staging, etc.)
-def get_public_key(method_arn)
-  tmp = method_arn.split(':')
-  api_gateway_arn = tmp[5].split('/')
-  stage_name = api_gateway_arn[1]
+# def get_public_key(method_arn)
+def get_public_key(origin)
+  # Temporarily choose the key based on the client origin rather than the
+  # method_arn until we have environment-specific Javabuilders set up.
+  # tmp = method_arn.split(':')
+  # api_gateway_arn = tmp[5].split('/')
+  # stage_name = api_gateway_arn[1]
 
+  stage_name = ""
+  if origin.include? "localhost"
+    stage_name = "development"
+  elsif origin.include? "staging"
+    stage_name = "staging"
+  elsif origin.include? "levelbuilder"
+    stage_name = "levelbuilder"
+  elsif origin.include? "test"
+    stage_name = "test"
+  else
+    stage_name = "production"
+  end
+  # End of temporary code
 
   public_key = ENV["rsa_pub_#{stage_name}"]
   # Environment variables can't contain newlines
