@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: 2010-09-09
 Transform: AWS::Serverless-2016-10-31
-Description: Javabuilder service
+Description: Provision an instance of the Javabuilder service.
 
 Parameters:
   BaseDomainName:
@@ -23,21 +23,35 @@ Globals:
     Tracing: Active
 
 Resources:
-  APICertificate:
+  JavabuilderHTTPSCertificate:
     Type: AWS::CertificateManager::Certificate
     Properties:
       DomainName: !Sub "${SubDomainName}.${BaseDomainName}"
       ValidationMethod: DNS
-  Domain:
-    Type: AWS::Route53::RecordSet
+  JavabuilderAPIGateway:
+    Type: AWS::Serverless::Api
     Properties:
-      # Add trailing dot `.` to base domain to identify Zone.
-      HostedZoneName: !Sub "${BaseDomainName}."
-      Name: !Sub "${SubDomainName}.${BaseDomainName}."
-      Type: A
-      ResourceRecords:
-        - "127.0.0.1"
-      TTL: 60
+      AccessLogSetting:
+        DestinationArn: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/apigateway/javabuilder/${SubDomainName}.${BaseDomainName}"
+        #TODO: Expand log format to include additional details.
+        Format: "$context.requestId"
+      Auth:
+        Authorizers:
+            LambdaRequestAuthorizer:
+              FunctionArn: !GetAtt JavabuilderAuthorizer.Arn
+              FunctionPayloadType: REQUEST
+              Identity:
+                QueryStrings:
+                  - Authorization
+      Cors: !Sub "*.${BaseDomainName}"
+      Description: Javabuilder API Gateway.
+      Domain:
+        CertificateArn: !Ref JavabuilderHTTPSCertificate
+        DomainName: !Sub "${SubDomainName}.${BaseDomainName}"
+        Route53:
+          HostedZoneName: !Ref BaseDomainName
+      StageName: Prod
+      TracingEnabled: true
   JavabuilderAuthorizer:
     Type: 'AWS::Serverless::Function'
     Properties:
@@ -50,11 +64,6 @@ Resources:
       Role: !ImportValue JavabuilderLambdaExecutionRole
       Events:
         Api1:
-          Type: Api
-          Properties:
-            Path: /MyResource
-            Method: ANY
-        Api2:
           Type: Api
           Properties:
             Path: /MyResource
