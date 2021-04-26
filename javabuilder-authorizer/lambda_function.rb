@@ -8,6 +8,10 @@ require 'jwt'
 # and checks the token has not expired and its issue time is not in the future.
 def lambda_handler(event:, context:)
   jwt_token = event['queryStringParameters']['Authorization']
+  # Return early if this is the user connectivity test
+  if jwt_token == 'connectivityTest'
+    return generate_allow('connectivityTest', event['methodArn'], {connectivityTest: true})
+  end
   method_arn = event['methodArn']
 
   if jwt_token
