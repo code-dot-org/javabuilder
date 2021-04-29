@@ -73,7 +73,8 @@ Resources:
     Properties:
       ApiId: !Ref JavabuilderWebSocketAPI
       RouteKey: $connect
-      AuthorizationType: NONE
+      AuthorizationType: CUSTOM
+      AuthorizerId: !Ref WebSocketAuthorizer
       OperationName: WebSocketConnectRoute
       Target: !Join
         - '/'
@@ -137,30 +138,6 @@ Resources:
       Description: Prod Stage
       DeploymentId: !Ref Deployment
       ApiId: !Ref JavabuilderWebSocketAPI
-#  JavabuilderAPIGateway:
-#    Type: AWS::Serverless::Api
-#    Properties:
-#      AccessLogSetting:
-#        DestinationArn: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/apigateway/javabuilder/${SubDomainName}.${BaseDomainName}"
-#        #TODO: Expand log format to include additional details.
-#        Format: "$context.requestId"
-#      Auth:
-#        Authorizers:
-#          LambdaRequestAuthorizer:
-#            FunctionArn: !GetAtt JavabuilderAuthorizer.Arn
-#            FunctionPayloadType: REQUEST
-#            Identity:
-#              QueryStrings:
-#                - Authorization
-#      Cors: !Sub "*.${BaseDomainName}"
-#      Description: Javabuilder API Gateway.
-#      Domain:
-#        CertificateArn: !Ref JavabuilderHTTPSCertificate
-#        DomainName: !Sub "${SubDomainName}.${BaseDomainName}"
-#        Route53:
-#          HostedZoneName: !Ref BaseDomainName
-#      StageName: Prod
-#      TracingEnabled: true
   JavabuilderAuthorizer:
     Type: 'AWS::Serverless::Function'
     Properties:
@@ -266,6 +243,15 @@ Resources:
 #      Layers:
 #        - >-
 #          arn:aws:lambda:us-east-1:165336972514:layer:changeRuntimeDirectoryToTmp:2
+#  ChangeLambdaRuntimeDirectoryLayer:
+#    Type: AWS::Lambda::LayerVersion
+#    Properties:
+#      CompatibleRuntimes:
+#        - java11
+#      Content:
+#        # TODO: Deploy script may need to zip and upload the layer code to S3.
+#      Description: 'Change Lambda runtime directory to /tmp so that student project code can read/write files.'
+#      LayerName: changeRuntimeDirectoryToTmp
 Outputs:
   JavabuilderURL:
     Value: !Sub "https://${SubDomainName}.${BaseDomainName}"
