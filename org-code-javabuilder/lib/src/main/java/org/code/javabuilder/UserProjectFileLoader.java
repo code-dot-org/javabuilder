@@ -6,18 +6,17 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
-import java.util.ArrayList;
 
 /** Manages the in-memory list of user project files. */
-public class UserProjectFileManager implements ProjectFileManager {
+public class UserProjectFileLoader implements ProjectFileLoader {
   private final String baseUrl;
-  private final String[] fileNames;
-  private final ArrayList<ProjectFile> fileList;
+  private final UserProjectFileParser projectFileParser;
 
-  public UserProjectFileManager(String baseUrl, String[] fileNames) {
+  private final String MAIN_SOURCE_FILE_NAME = "main.json";
+
+  public UserProjectFileLoader(String baseUrl) {
     this.baseUrl = baseUrl;
-    this.fileNames = fileNames;
-    this.fileList = new ArrayList<>();
+    this.projectFileParser = new UserProjectFileParser();
   }
 
   /**
@@ -25,13 +24,13 @@ public class UserProjectFileManager implements ProjectFileManager {
    *
    * @throws UserFacingException If the load times out or fails.
    */
-  public void loadFiles() throws UserFacingException, UserInitiatedException {
+  @Override
+  public UserProjectFiles loadFiles() throws UserFacingException, UserInitiatedException {
     HttpClient client = HttpClient.newBuilder().build();
-    // TODO: Enable multi-file. For now, we will always have exactly one file.
-    String fileName = fileNames[0];
+    // TODO: Support loading validation code
     HttpRequest request =
         HttpRequest.newBuilder()
-            .uri(URI.create(String.join("/", baseUrl, fileName)))
+            .uri(URI.create(String.join("/", baseUrl, MAIN_SOURCE_FILE_NAME)))
             .timeout(Duration.ofSeconds(10))
             .build();
     HttpResponse<String> response;
@@ -47,20 +46,6 @@ public class UserProjectFileManager implements ProjectFileManager {
           "We hit an error on our side while loading your files. Try again. \n",
           new Exception(body));
     }
-    ProjectFile projectFile = new ProjectFile(fileName);
-    projectFile.setCode(body);
-    fileList.add(projectFile);
-  }
-
-  /**
-   * Returns the user project file. Currently, we only allow a single user project file. TODO:
-   * Enable multi-file programs
-   *
-   * @return the user project file.
-   */
-  @Override
-  public ProjectFile getFile() {
-    // TODO: Enable multi-file. For now, we will always have exactly one file.
-    return fileList.get(0);
+    return this.projectFileParser.parseFileJson(body);
   }
 }
