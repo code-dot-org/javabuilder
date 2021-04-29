@@ -10,14 +10,11 @@ import java.util.List;
 /** The class that executes the student's code */
 public class JavaRunner {
   private final URL executableLocation;
-  private final ProjectFileManager fileManager;
-  private final OutputAdapter outputAdapter;
+  private final List<JavaProjectFile> javaFiles;
 
-  public JavaRunner(
-      URL executableLocation, ProjectFileManager fileManager, OutputAdapter outputAdapter) {
+  public JavaRunner(URL executableLocation, List<JavaProjectFile> javaFiles) {
     this.executableLocation = executableLocation;
-    this.fileManager = fileManager;
-    this.outputAdapter = outputAdapter;
+    this.javaFiles = javaFiles;
   }
 
   /**
@@ -67,8 +64,7 @@ public class JavaRunner {
       throws UserFacingException, UserInitiatedException {
 
     Method mainMethod = null;
-    List<ProjectFile> fileList = this.fileManager.getFiles();
-    for (ProjectFile file : fileList) {
+    for (JavaProjectFile file : this.javaFiles) {
       try {
         Method[] declaredMethods =
             urlClassLoader.loadClass(file.getClassName()).getDeclaredMethods();

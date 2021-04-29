@@ -20,17 +20,19 @@ public class UserProjectFileParserTest {
     String validJson =
         "{\"source\":{\"HelloWorld.java\":{\"text\":\"my code\",\"visible\":true}},\"animations\":{}}";
     String expectedCode = "my code";
-    List<ProjectFile> files = this.userProjectFileParser.parseFileJson(validJson);
-    assertEquals(files.size(), 1);
-    ProjectFile firstFile = files.get(0);
+    UserProjectFiles projectFiles = this.userProjectFileParser.parseFileJson(validJson);
+    assertEquals(projectFiles.getTextFiles().size(), 0);
+    assertEquals(projectFiles.getJavaFiles().size(), 1);
+    ProjectFile firstFile = projectFiles.getJavaFiles().get(0);
     assertEquals(firstFile.getFileName(), "HelloWorld.java");
-    assertEquals(firstFile.getCode(), expectedCode);
+    assertEquals(firstFile.getFileContents(), expectedCode);
   }
 
   @Test
   public void throwsExceptionOnInvalidJson() throws UserFacingException, UserInitiatedException {
     String invalidJson =
         "{\"source\":{\"HelloWorld.java\":{\"text\":\"public class HelloWorld {\\n";
+
     assertThrows(
         UserFacingException.class, () -> this.userProjectFileParser.parseFileJson(invalidJson));
   }
@@ -39,10 +41,16 @@ public class UserProjectFileParserTest {
   public void canParseMultipleFiles() throws UserFacingException, UserInitiatedException {
     String validJson =
         "{\"source\":{\"HelloWorld.java\":{\"text\":\"my code\",\"visible\":true},"
-            + "\"HelloWorld2.java\":{\"text\":\"my code\",\"visible\":true}},\"animations\":{}}";
-    List<ProjectFile> files = this.userProjectFileParser.parseFileJson(validJson);
-    assertEquals(files.size(), 2);
-    assertEquals(files.get(0).getFileName(), "HelloWorld.java");
-    assertEquals(files.get(1).getFileName(), "HelloWorld2.java");
+            + "\"HelloWorld2.java\":{\"text\":\"my code\",\"visible\":true},"
+            + "\"test.txt\":{\"text\":\"my text\",\"visible\":true}},\"animations\":{}}";
+
+    UserProjectFiles projectFiles = this.userProjectFileParser.parseFileJson(validJson);
+    List<JavaProjectFile> javaFiles = projectFiles.getJavaFiles();
+    List<TextProjectFile> textFiles = projectFiles.getTextFiles();
+    assertEquals(javaFiles.size(), 2);
+    assertEquals(javaFiles.get(0).getFileName(), "HelloWorld.java");
+    assertEquals(javaFiles.get(1).getFileName(), "HelloWorld2.java");
+    assertEquals(textFiles.size(), 1);
+    assertEquals(textFiles.get(0).getFileName(), "test.txt");
   }
 }

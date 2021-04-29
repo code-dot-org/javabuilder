@@ -6,19 +6,16 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
-import java.util.List;
 
 /** Manages the in-memory list of user project files. */
-public class UserProjectFileManager implements ProjectFileManager {
+public class UserProjectFileLoader implements ProjectFileLoader {
   private final String baseUrl;
   private final UserProjectFileParser projectFileParser;
-  private List<ProjectFile> fileList;
 
   private final String MAIN_SOURCE_FILE_NAME = "main.json";
 
-  public UserProjectFileManager(String baseUrl) {
+  public UserProjectFileLoader(String baseUrl) {
     this.baseUrl = baseUrl;
-    this.fileList = null;
     this.projectFileParser = new UserProjectFileParser();
   }
 
@@ -27,7 +24,8 @@ public class UserProjectFileManager implements ProjectFileManager {
    *
    * @throws UserFacingException If the load times out or fails.
    */
-  public void loadFiles() throws UserFacingException, UserInitiatedException {
+  @Override
+  public UserProjectFiles loadFiles() throws UserFacingException, UserInitiatedException {
     HttpClient client = HttpClient.newBuilder().build();
     // TODO: Support loading validation code
     HttpRequest request =
@@ -48,16 +46,6 @@ public class UserProjectFileManager implements ProjectFileManager {
           "We hit an error on our side while loading your files. Try again. \n",
           new Exception(body));
     }
-    this.fileList = this.projectFileParser.parseFileJson(body);
-  }
-
-  /**
-   * Return the user's project files
-   *
-   * @return A list of project files, or null if the files have not been loaded.
-   */
-  @Override
-  public List<ProjectFile> getFiles() {
-    return this.fileList;
+    return this.projectFileParser.parseFileJson(body);
   }
 }

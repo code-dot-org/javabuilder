@@ -2,7 +2,12 @@
 ### Local Development
 To run Javabuilder in isolation, run the `LocalMain` class from an IDE (IntelliJ is recommended).
 This will exercise the compile and run logic in isolation. Javabuilder will execute the
-program in src/main/resources/MyClass.java. Input and output will be directed to the terminal.
+program in src/main/resources/main.json. You can update which file is used from `LocalProjectFileManager`.
+Input and output will be directed to the terminal.
+Any non-Java file used or created by the program (for example `grid.txt` in `main_painter.json`) will be
+created in the `org-code-javabuilder` folder when running locally, so be aware you may want 
+to do some cleanup after running code that relies on text files (in our Lambda runtime the code 
+all runs from a temporary folder and handles this cleanup). 
 
 ### Developing with Dashboard
 In order to run Java Lab (Code Studio client) with Javabuilder, use the WebSocketServer.

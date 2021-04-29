@@ -1,6 +1,7 @@
 require 'json'
 require 'aws-sdk-sqs'
 require 'aws-sdk-lambda'
+require 'aws-sdk-apigatewaymanagementapi'
 require 'uri'
 
 def lambda_handler(event:, context:)
@@ -18,7 +19,14 @@ def on_connect(event, context)
   region = get_region(context)
 
   request_context = event["requestContext"]
+  # Add in some logging to make debugging easier
+  puts request_context
 
+  # Return early if this is the user connectivity test
+  authorizer = request_context['authorizer']
+  if authorizer && authorizer['connectivityTest']
+    return { statusCode: 200, body: "connection successful" }
+  end
   # -- Create SQS for this session --
   sqs_client = Aws::SQS::Client.new(region: region)
   sqs_queue = sqs_client.create_queue(
@@ -28,12 +36,12 @@ def on_connect(event, context)
 
   # -- Create Lambda for this session --
   lambda_client = Aws::Lambda::Client.new(region: region)
-  api_endpoint = "https://#{request_context['domainName']}/#{request_context['stage']}"
+  api_endpoint = get_api_endpoint(event, context)
   payload = {
     :queueUrl => sqs_queue.queue_url,
     :apiEndpoint => api_endpoint,
     :connectionId => request_context["connectionId"],
-    :projectUrl => request_context["authorizer"]["project_url"]
+    :projectUrl => authorizer["project_url"]
   }
   response = lambda_client.invoke({
     function_name: 'javaBuilderExecuteCode:4',
@@ -52,8 +60,21 @@ def on_disconnect(event, context)
 end
 
 def on_default(event, context)
-  sqs = Aws::SQS::Client.new(region: get_region(context))
   message = event["body"]
+  # Return early if this is the user connectivity test
+  if message == 'connectivityTest'
+    client = Aws::ApiGatewayManagementApi::Client.new(
+      region: get_region(context),
+      endpoint: get_api_endpoint(event, context)
+    )
+    resp = client.post_to_connection({
+      data: "success",
+      connection_id: event["requestContext"]["connectionId"]
+    })
+    return { statusCode: 200, body: "success"}
+  end
+
+  sqs = Aws::SQS::Client.new(region: get_region(context))
   sqs.send_message(
     queue_url: get_sqs_url(event, context),
     message_body: message,
@@ -62,6 +83,11 @@ def on_default(event, context)
   )
 
   { statusCode: 200, body: "success"}
+end
+
+def get_api_endpoint(event, context)
+  request_context = event["requestContext"]
+  "https://#{request_context['apiId']}.execute-api.#{get_region(context)}.amazonaws.com/#{request_context['stage']}"
 end
 
 # ARN is of the format arn:aws:lambda:{region}:{account_id}:function:{lambda_name}
