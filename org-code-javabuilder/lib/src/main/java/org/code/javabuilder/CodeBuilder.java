@@ -1,31 +1,29 @@
 package org.code.javabuilder;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintStream;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
+import java.util.List;
 
 /** The orchestrator for code compilation and execution. */
 public class CodeBuilder implements AutoCloseable {
   private final OutputAdapter outputAdapter;
   private final InputAdapter inputAdapter;
-  private final ProjectFileManager fileManager;
   private final File tempFolder;
   private final PrintStream sysout;
   private final InputStream sysin;
+  private final UserProjectFiles userProjectFiles;
 
   public CodeBuilder(
-      InputAdapter inputAdapter, OutputAdapter outputAdapter, ProjectFileManager fileManager)
+      InputAdapter inputAdapter, OutputAdapter outputAdapter, UserProjectFiles userProjectFiles)
       throws UserFacingException {
     this.sysout = System.out;
     this.sysin = System.in;
     this.outputAdapter = outputAdapter;
     this.inputAdapter = inputAdapter;
-    this.fileManager = fileManager;
+    this.userProjectFiles = userProjectFiles;
     try {
       this.tempFolder = Files.createTempDirectory("tmpdir").toFile();
     } catch (IOException e) {
@@ -35,14 +33,16 @@ public class CodeBuilder implements AutoCloseable {
   }
 
   /**
-   * Loads and compiles the user's code
+   * Saves non-source code assets to storage and compiles the user's code.
    *
    * @throws UserFacingException if the user's code contains a compiler error or if we are unable to
    *     compile due to internal errors.
    */
-  public void compileUserCode() throws UserFacingException, UserInitiatedException {
-    this.fileManager.loadFiles();
-    UserCodeCompiler codeCompiler = new UserCodeCompiler(fileManager, tempFolder, outputAdapter);
+  public void buildUserCode() throws UserFacingException, UserInitiatedException {
+    this.saveProjectAssets();
+    UserCodeCompiler codeCompiler =
+        new UserCodeCompiler(
+            this.userProjectFiles.getJavaFiles(), this.tempFolder, this.outputAdapter);
     codeCompiler.compileProgram();
   }
 
@@ -55,7 +55,8 @@ public class CodeBuilder implements AutoCloseable {
     System.setIn(new InputRedirectionStream(this.inputAdapter));
     JavaRunner runner;
     try {
-      runner = new JavaRunner(tempFolder.toURI().toURL(), fileManager, outputAdapter);
+      runner =
+          new JavaRunner(this.tempFolder.toURI().toURL(), this.userProjectFiles.getJavaFiles());
     } catch (MalformedURLException e) {
       throw new UserFacingException(
           "We hit an error on our side while running your program. Try Again", e);
@@ -82,6 +83,21 @@ public class CodeBuilder implements AutoCloseable {
             .forEach(File::delete);
       } catch (IOException e) {
         throw new InternalFacingException(e.toString(), e);
+      }
+    }
+  }
+
+  /** Save any non-source code files to storage */
+  private void saveProjectAssets() throws UserFacingException {
+    // Save all text files to current folder.
+    List<TextProjectFile> textProjectFiles = this.userProjectFiles.getTextFiles();
+    for (TextProjectFile projectFile : textProjectFiles) {
+      String filePath = projectFile.getFileName();
+      try {
+        Files.writeString(Path.of(filePath), projectFile.getFileContents());
+      } catch (IOException e) {
+        throw new UserFacingException(
+            "We hit an error on our side while compiling your program. Try again.", e);
       }
     }
   }

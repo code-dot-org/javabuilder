@@ -33,7 +33,6 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     final String apiEndpoint = lambdaInput.get("apiEndpoint");
     final String queueUrl = lambdaInput.get("queueUrl");
     final String projectUrl = lambdaInput.get("projectUrl");
-    final String[] fileNames = lambdaInput.get("fileNames").split(",");
 
     // Create user-program output handlers
     AmazonApiGatewayManagementApi api =
@@ -47,15 +46,17 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     final AmazonSQS sqsClient = AmazonSQSClientBuilder.defaultClient();
     final AWSInputAdapter inputAdapter = new AWSInputAdapter(sqsClient, queueUrl);
 
-    // Create file manager
-    final UserProjectFileManager userProjectFileManager =
-        new UserProjectFileManager(projectUrl, fileNames);
+    // Create file loader
+    final UserProjectFileLoader userProjectFileLoader = new UserProjectFileLoader(projectUrl);
 
-    // Create and invoke the code execution environment
-    try (CodeBuilder codeBuilder =
-        new CodeBuilder(inputAdapter, outputAdapter, userProjectFileManager)) {
-      codeBuilder.compileUserCode();
-      codeBuilder.runUserCode();
+    // Load files to memory and create and invoke the code execution environment
+    try {
+      UserProjectFiles userProjectFiles = userProjectFileLoader.loadFiles();
+      try (CodeBuilder codeBuilder =
+          new CodeBuilder(inputAdapter, outputAdapter, userProjectFiles)) {
+        codeBuilder.buildUserCode();
+        codeBuilder.runUserCode();
+      }
     } catch (UserFacingException e) {
       // Send user-facing exceptions to the user and log the stack trace to CloudWatch
       outputAdapter.sendMessage(e.getMessage());
