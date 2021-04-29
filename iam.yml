@@ -65,6 +65,25 @@ Resources:
         # Compile and Run Project Lambda.
         - "arn:aws:iam::aws:policy/service-role/AWSLambdaSQSQueueExecutionRole"
         - "arn:aws:iam::aws:policy/AmazonAPIGatewayInvokeFullAccess"
+  JavabuilderAPIGatewayRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: ['sts:AssumeRole']
+            Effect: Allow
+            Principal: {Service: [apigateway.amazonaws.com]}
+      Path: /
+      Policies:
+        - PolicyName: JavabuilderAPIGatewayPolicy
+          PolicyDocument:
+            Statement:
+              # Grant the Javabuilder API Gateway permission to invoke its Lambda Authorizer.
+              - Effect: Allow
+                Action:
+                  - "lambda:InvokeFunction"
+                Resource:
+                  - 'arn:aws:lambda:::function:javabuilder*' #TODO: Restrict this further to just Lambda Authorizers?
   JavabuilderCloudFormationRole:
     Type: AWS::IAM::Role
     Properties:
@@ -134,6 +153,10 @@ Outputs:
     Description: Javabuilder Lambda Execution Role ARN
     Value: !GetAtt JavabuilderLambdaExecutionRole.Arn
     Export: {Name: JavabuilderLambdaExecutionRole}
+  JavabuilderAPIGatewayRole:
+    Description: Javabuilder API Gateway Role ARN
+    Value: !GetAtt JavabuilderAPIGatewayRole.Arn
+    Export: {Name: JavabuilderAPIGatewayRole}
   JavabuilderCloudFormationRole:
     Description: Javabuilder CloudFormation Role ARN
     Value: !GetAtt JavabuilderCloudFormationRole.Arn
