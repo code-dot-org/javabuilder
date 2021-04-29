@@ -58,7 +58,8 @@ Resources:
     Properties:
       ApiId: !Ref JavabuilderWebSocketAPI
       AuthorizerType: REQUEST
-      AuthorizerUri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${JavabuilderAuthorizer.Arn}/invocations"
+      AuthorizerCredentialsArn: !ImportValue JavabuilderAPIGatewayRole # Grants API Gateway permission to invoke Authorizer Lambda.
+      AuthorizerUri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${JavabuilderAuthorizerLambda.Arn}/invocations"
       IdentitySource:
         - route.request.querystring.Authorization
       Name: WebSocketAuthorizer
@@ -138,7 +139,7 @@ Resources:
       Description: Prod Stage
       DeploymentId: !Ref Deployment
       ApiId: !Ref JavabuilderWebSocketAPI
-  JavabuilderAuthorizer:
+  JavabuilderAuthorizerLambda:
     Type: 'AWS::Serverless::Function'
     Properties:
       Handler: lambda_function.lambda_handler
