@@ -2,8 +2,6 @@ package org.code.javabuilder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 public class UserProjectFileParser {
@@ -17,24 +15,30 @@ public class UserProjectFileParser {
    * Parses json string containing file data and returns a list of project files.
    *
    * @param json JSON String in UserSourceData format
-   * @return a list of ProjectFile objects
+   * @return UserProjectFiles: all files in the project
    * @throws UserFacingException
    * @throws UserInitiatedException
    */
-  public List<ProjectFile> parseFileJson(String json)
+  public UserProjectFiles parseFileJson(String json)
       throws UserFacingException, UserInitiatedException {
-    List<ProjectFile> fileList = new ArrayList<ProjectFile>();
     try {
+      UserProjectFiles userProjectFiles = new UserProjectFiles();
       UserSourceData sourceData = this.objectMapper.readValue(json, UserSourceData.class);
       Map<String, UserFileData> sources = sourceData.getSource();
       for (String fileName : sources.keySet()) {
         UserFileData fileData = sources.get(fileName);
-        fileList.add(new ProjectFile(fileName, fileData.getText()));
+
+        if (fileName.endsWith(".java")) {
+          userProjectFiles.addJavaFile(new JavaProjectFile(fileName, fileData.getText()));
+        } else {
+          // we treat any non-Java file as a plain text file
+          userProjectFiles.addTextFile(new TextProjectFile(fileName, fileData.getText()));
+        }
       }
+      return userProjectFiles;
     } catch (IOException io) {
       throw new UserFacingException(
           "We hit an error trying to load your files. Please try again.\n", io);
     }
-    return fileList;
   }
 }
