@@ -23,35 +23,144 @@ Globals:
     Tracing: Active
 
 Resources:
-  JavabuilderHTTPSCertificate:
+  Certificate:
     Type: AWS::CertificateManager::Certificate
     Properties:
       DomainName: !Sub "${SubDomainName}.${BaseDomainName}"
-      ValidationMethod: DNS
-  JavabuilderAPIGateway:
-    Type: AWS::Serverless::Api
+      ValidationMethod: DNS # TODO: Automate validation instead of manually creating the validation DNS records in Route53.
+  DomainNameRecord:
+    Type: AWS::Route53::RecordSet
     Properties:
-      AccessLogSetting:
-        DestinationArn: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/apigateway/javabuilder/${SubDomainName}.${BaseDomainName}"
-        #TODO: Expand log format to include additional details.
-        Format: "$context.requestId"
-      Auth:
-        Authorizers:
-            LambdaRequestAuthorizer:
-              FunctionArn: !GetAtt JavabuilderAuthorizer.Arn
-              FunctionPayloadType: REQUEST
-              Identity:
-                QueryStrings:
-                  - Authorization
-      Cors: !Sub "*.${BaseDomainName}"
-      Description: Javabuilder API Gateway.
-      Domain:
-        CertificateArn: !Ref JavabuilderHTTPSCertificate
-        DomainName: !Sub "${SubDomainName}.${BaseDomainName}"
-        Route53:
-          HostedZoneName: !Ref BaseDomainName
+      # Add trailing dot `.` to base domain to identify Zone.
+      HostedZoneName: !Sub "${BaseDomainName}."
+      Name: !Sub "${SubDomainName}.${BaseDomainName}."
+      Type: A
+      AliasTarget:
+        DNSName: !Sub "${JavabuilderWebSocketAPI}.execute-api.${AWS::Region}.amazonaws.com"
+        HostedZoneId: "Z1UJRXOUMOOFQ8" # TODO: Fetch us-east-1 zone id for API Gateway dynamically.
+  JavabuilderWebSocketAPI:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: !Sub "${SubDomainName}.${BaseDomainName}"
+      Description: Javabuilder service.
+      ProtocolType: WEBSOCKET
+      RouteSelectionExpression: "$request.body.action"
+      DisableExecuteApiEndpoint: true
+  WebSocketAPICustomDomainName:
+    Type: AWS::ApiGatewayV2::DomainName
+    Properties:
+      DomainName: !Sub "${SubDomainName}.${BaseDomainName}"
+      DomainNameConfigurations:
+        - CertificateArn: !Ref Certificate
+          CertificateName: !Sub "${SubDomainName}.${BaseDomainName}"
+  WebSocketAuthorizer:
+    Type: AWS::ApiGatewayV2::Authorizer
+    Properties:
+      ApiId: !Ref JavabuilderWebSocketAPI
+      AuthorizerType: REQUEST
+      AuthorizerUri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${JavabuilderAuthorizer.Arn}/invocations"
+      IdentitySource:
+        - route.request.querystring.Authorization
+      Name: WebSocketAuthorizer
+  APIMapping:
+    Type: AWS::ApiGatewayV2::ApiMapping
+    Properties:
+      ApiId: !Ref JavabuilderWebSocketAPI
+      DomainName: !Sub "${SubDomainName}.${BaseDomainName}"
+      Stage: !Ref Stage
+  WebSocketConnectRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref JavabuilderWebSocketAPI
+      RouteKey: $connect
+      AuthorizationType: NONE
+      OperationName: WebSocketConnectRoute
+      Target: !Join
+        - '/'
+        - - 'integrations'
+          - !Ref WebSocketConnectIntegration
+  WebSocketConnectIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref JavabuilderWebSocketAPI
+      Description: Lambda Proxy Integration
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${StartSessionAndRelayMessagesLambda.Arn}/invocations"
+  WebSocketDisconnectRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref JavabuilderWebSocketAPI
+      RouteKey: $disconnect
+      AuthorizationType: NONE
+      OperationName: WebSocketDisconnectRoute
+      Target: !Join
+        - '/'
+        - - 'integrations'
+          - !Ref WebSocketDisconnectIntegration
+  WebSocketDisconnectIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref JavabuilderWebSocketAPI
+      Description: Lambda Proxy Integration
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${StartSessionAndRelayMessagesLambda.Arn}/invocations"
+  WebSocketDefaultRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref JavabuilderWebSocketAPI
+      RouteKey: $default
+      AuthorizationType: NONE
+      OperationName: WebSocketDefaultRoute
+      Target: !Join
+        - '/'
+        - - 'integrations'
+          - !Ref WebSocketDefaultIntegration
+  WebSocketDefaultIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref JavabuilderWebSocketAPI
+      Description: Lambda Proxy Integration
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${StartSessionAndRelayMessagesLambda.Arn}/invocations"
+  Deployment:
+    Type: AWS::ApiGatewayV2::Deployment
+    DependsOn:
+      - WebSocketConnectRoute
+      - WebSocketDefaultRoute
+      - WebSocketDisconnectRoute
+    Properties:
+      ApiId: !Ref JavabuilderWebSocketAPI
+  Stage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
       StageName: Prod
-      TracingEnabled: true
+      Description: Prod Stage
+      DeploymentId: !Ref Deployment
+      ApiId: !Ref JavabuilderWebSocketAPI
+#  JavabuilderAPIGateway:
+#    Type: AWS::Serverless::Api
+#    Properties:
+#      AccessLogSetting:
+#        DestinationArn: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/apigateway/javabuilder/${SubDomainName}.${BaseDomainName}"
+#        #TODO: Expand log format to include additional details.
+#        Format: "$context.requestId"
+#      Auth:
+#        Authorizers:
+#          LambdaRequestAuthorizer:
+#            FunctionArn: !GetAtt JavabuilderAuthorizer.Arn
+#            FunctionPayloadType: REQUEST
+#            Identity:
+#              QueryStrings:
+#                - Authorization
+#      Cors: !Sub "*.${BaseDomainName}"
+#      Description: Javabuilder API Gateway.
+#      Domain:
+#        CertificateArn: !Ref JavabuilderHTTPSCertificate
+#        DomainName: !Sub "${SubDomainName}.${BaseDomainName}"
+#        Route53:
+#          HostedZoneName: !Ref BaseDomainName
+#      StageName: Prod
+#      TracingEnabled: true
   JavabuilderAuthorizer:
     Type: 'AWS::Serverless::Function'
     Properties:
@@ -62,12 +171,6 @@ Resources:
       MemorySize: 128
       Timeout: 3
       Role: !ImportValue JavabuilderLambdaExecutionRole
-      Events:
-        Api1:
-          Type: Api
-          Properties:
-            Path: /MyResource
-            Method: ANY
       Environment:
         Variables:
           #TODO: Pass these in as configuration settings (via Parameters?).
@@ -126,6 +229,43 @@ Resources:
             3+8Pz/c7t8me0CJquotr7p7kYtoPo6kK9NL74zu4KsAcotDvRw8tHRs3cZ/X3KEl\n
             vb2YtSsq4ecf7sZeQgSbeZ6PdwEIBp0dl5AG6SgIWPcweNwmZmJg917i0lSGgWxW\n
             OlIo9VurlVd3AgMBAAE=\n -----END RSA PUBLIC KEY-----
+  StartSessionAndRelayMessagesLambda:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Handler: api_gateway_proxy_function.lambda_handler
+      CodeUri: ./api-gateway-routes
+      Description: 'Starts the long-running Lambda that compiles and runs a JavaLab project and relays messages to it from the JavaLab client.'
+      Role: !ImportValue JavabuilderLambdaExecutionRole
+      Events:
+        Api1:
+          Type: Api
+          Properties:
+            Path: /MyResource
+            Method: ANY
+  StartSessionAndRelayMessagesLambdaPermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - JavabuilderWebSocketAPI
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref StartSessionAndRelayMessagesLambda
+      Principal: apigateway.amazonaws.com
+  BuildAndRunJavaProject:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Handler: 'org.code.javabuilder.LambdaRequestHandler::handleRequest'
+      Runtime: java11
+      CodeUri: ./org-code-javabuilder
+      Description: 'Compile and execute a JavaLab project.'
+      MemorySize: 512
+      Timeout: 300
+      Role: !ImportValue JavabuilderLambdaExecutionRole
+#      Environment:
+#        Variables:
+#          AWS_LAMBDA_EXEC_WRAPPER: /opt/change_runtime_directory
+#      Layers:
+#        - >-
+#          arn:aws:lambda:us-east-1:165336972514:layer:changeRuntimeDirectoryToTmp:2
 Outputs:
   JavabuilderURL:
     Value: !Sub "https://${SubDomainName}.${BaseDomainName}"
