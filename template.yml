@@ -139,6 +139,13 @@ Resources:
       Description: Prod Stage
       DeploymentId: !Ref Deployment
       ApiId: !Ref JavabuilderWebSocketAPI
+#      RouteSettings:
+#        DetailedMetricsEnabled: true
+#        LoggingLevel: INFO
+#        DataTraceEnabled: true
+      AccessLogSettings:
+        DestinationArn: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:${SubDomainName}.${BaseDomainName}"
+        Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "caller":"$context.identity.caller", "user":"$context.identity.user","requestTime":"$context.requestTime", "eventType":"$context.eventType","routeKey":"$context.routeKey", "status":"$context.status","connectionId":"$context.connectionId" }'
   JavabuilderAuthorizerLambda:
     Type: 'AWS::Serverless::Function'
     Properties:
