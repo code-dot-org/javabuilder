@@ -124,6 +124,7 @@ Resources:
       Description: Lambda Proxy Integration
       IntegrationType: AWS_PROXY
       IntegrationUri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${StartSessionAndRelayMessagesLambda.Arn}/invocations"
+      CredentialsArn: !ImportValue JavabuilderLambdaExecutionRole
   Deployment:
     Type: AWS::ApiGatewayV2::Deployment
     DependsOn:
