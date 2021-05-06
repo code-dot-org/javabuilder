@@ -48,13 +48,13 @@ public class WebSocketServer {
                   codeBuilder.runUserCode();
                 }
               } catch (UserFacingException e) {
-                outputAdapter.sendMessage(e.getMessage());
-                outputAdapter.sendMessage("\n" + e.getLoggingString());
+                outputAdapter.sendMessage(e.getExceptionMessage());
+                outputAdapter.sendMessage(new SystemOutMessage("\n" + e.getLoggingString()));
               } catch (UserInitiatedException e) {
-                outputAdapter.sendMessage(e.getMessage());
-                outputAdapter.sendMessage("\n" + e.getLoggingString());
+                outputAdapter.sendMessage(e.getExceptionMessage());
+                outputAdapter.sendMessage(new SystemOutMessage("\n" + e.getLoggingString()));
               } catch (InternalFacingException e) {
-                outputAdapter.sendMessage("\n" + e.getLoggingString());
+                outputAdapter.sendMessage(new SystemOutMessage("\n" + e.getLoggingString()));
               } finally {
                 try {
                   session.close();
@@ -83,11 +83,11 @@ public class WebSocketServer {
 
   @OnMessage
   public void byteMessage(ByteBuffer b) {
-    outputAdapter.sendMessage("Got a byte array message. Doing nothing.");
+    outputAdapter.sendMessage(new SystemOutMessage("Got a byte array message. Doing nothing."));
   }
 
   @OnMessage
   public void pongMessage(PongMessage p) {
-    outputAdapter.sendMessage("Got a pong message. Doing nothing.");
+    outputAdapter.sendMessage(new SystemOutMessage("Got a pong message. Doing nothing."));
   }
 }

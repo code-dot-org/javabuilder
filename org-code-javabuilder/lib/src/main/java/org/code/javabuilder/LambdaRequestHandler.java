@@ -59,11 +59,11 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
       }
     } catch (UserFacingException e) {
       // Send user-facing exceptions to the user and log the stack trace to CloudWatch
-      outputAdapter.sendMessage(e.getMessage());
+      outputAdapter.sendMessage(e.getExceptionMessage());
       context.getLogger().log(e.getLoggingString());
     } catch (UserInitiatedException e) {
       // Send user-facing exceptions to the user and log the stack trace to CloudWatch
-      outputAdapter.sendMessage(e.getMessage());
+      outputAdapter.sendMessage(e.getExceptionMessage());
       context.getLogger().log(e.getLoggingString());
     } catch (InternalFacingException e) {
       // Send internal-facing exceptions to CloudWatch
