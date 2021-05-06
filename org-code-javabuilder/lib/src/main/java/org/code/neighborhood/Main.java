@@ -3,7 +3,6 @@ package org.code.neighborhood;
 public class Main {
     public static void main(String[] args) {
         Painter art = new Painter(0, 0, "East", 5);
-        Painter steve = new Painter(0, 0, "East", 5);
         Grid globalGrid = Grid.getInstance();
         globalGrid.printGrid();
         art.takePaint();

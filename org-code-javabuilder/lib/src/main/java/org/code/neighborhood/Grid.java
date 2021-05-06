@@ -39,7 +39,6 @@ public class Grid {
     private Grid(String gridDescription) {
         String[] lines = gridDescription.split("\n");
         String parseLine = String.join("", lines);
-        parseLine.replace("\t", "");
         JSONParser jsonParser = new JSONParser();
         try {
             Object obj = jsonParser.parse(parseLine);
