@@ -28,16 +28,6 @@ Resources:
     Properties:
       DomainName: !Sub "${SubDomainName}.${BaseDomainName}"
       ValidationMethod: DNS # TODO: Automate validation instead of manually creating the validation DNS records in Route53.
-  DomainNameRecord:
-    Type: AWS::Route53::RecordSet
-    Properties:
-      # Add trailing dot `.` to base domain to identify Zone.
-      HostedZoneName: !Sub "${BaseDomainName}."
-      Name: !Sub "${SubDomainName}.${BaseDomainName}."
-      Type: A
-      AliasTarget:
-        DNSName: !Sub "${JavabuilderWebSocketAPI}.execute-api.${AWS::Region}.amazonaws.com"
-        HostedZoneId: "Z1UJRXOUMOOFQ8" # TODO: Fetch us-east-1 zone id for API Gateway dynamically.
   JavabuilderWebSocketAPI:
     Type: AWS::ApiGatewayV2::Api
     Properties:
@@ -46,13 +36,6 @@ Resources:
       ProtocolType: WEBSOCKET
       RouteSelectionExpression: "$request.body.action"
       DisableExecuteApiEndpoint: true
-  WebSocketAPICustomDomainName:
-    Type: AWS::ApiGatewayV2::DomainName
-    Properties:
-      DomainName: !Sub "${SubDomainName}.${BaseDomainName}"
-      DomainNameConfigurations:
-        - CertificateArn: !Ref Certificate
-          CertificateName: !Sub "${SubDomainName}.${BaseDomainName}"
   WebSocketAuthorizer:
     Type: AWS::ApiGatewayV2::Authorizer
     Properties:
@@ -63,12 +46,6 @@ Resources:
       IdentitySource:
         - route.request.querystring.Authorization
       Name: WebSocketAuthorizer
-  APIMapping:
-    Type: AWS::ApiGatewayV2::ApiMapping
-    Properties:
-      ApiId: !Ref JavabuilderWebSocketAPI
-      DomainName: !Sub "${SubDomainName}.${BaseDomainName}"
-      Stage: !Ref Stage
   WebSocketConnectRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
