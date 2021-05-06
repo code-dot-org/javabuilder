@@ -32,11 +32,9 @@ public class WebSocketServer {
    */
   @OnOpen
   public void onOpen(Session session) {
-    String projectUrl = session.getQueryString().replaceFirst("projectUrl=", "");
-
     outputAdapter = new WebSocketOutputAdapter(session);
     inputAdapter = new WebSocketInputAdapter();
-    final UserProjectFileLoader fileLoader = new UserProjectFileLoader(projectUrl);
+    final ProjectFileLoader fileLoader = new UserProjectRawFileLoader();
     Thread codeExecutor =
         new Thread(
             () -> {

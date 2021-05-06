@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      #main {
+        position: absolute;
+        width: 512px;
+        height: 512px;
+        background-color: gray;
+      }
+
+      #main img {
+        position: absolute;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="main"></div>
+    <script>
+      let ws = new WebSocket("ws://localhost:8080/javabuilder");
+
+      let root;
+      ws.onopen = () => {
+          root = document.getElementById("main");
+      };
+
+      ws.onmessage = function (e) {
+        if (e.data[0] == "$") {
+          let action = JSON.parse(e.data.substring(1))
+          switch (action.action) {
+            case "addclickable":
+              var clickable = new Image();
+              clickable.src = action.url;
+              clickable.style = `left: ${action.x}; top: ${action.y};`;
+              clickable.id = action.id;
+              clickable.addEventListener("click", (e) => {
+                  ws.send("$" + action.id + "\n");
+              });          
+              root.appendChild(clickable);
+              break;
+            case "addimg":
+              var img = new Image();
+              img.src = action.url;
+              img.style = `left: ${action.x}; top: ${action.y};`;
+              root.appendChild(img);
+              break;
+            case "removeclickable":
+              var rmclick = document.getElementById(action.id);
+              console.log(rmclick);
+              if (rmclick) {
+                root.removeChild(rmclick);
+              }
+              break;
+            case "removeimg":
+              let rmimg = document.getElementById(action.id);
+              if (rmimg) {
+                root.removeChild(rmimg);
+              }
+              break;
+          }
+        
+        }
+      }
+    </script>
+  </body>
+</html>

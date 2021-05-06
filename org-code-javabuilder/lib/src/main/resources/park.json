@@ -1,0 +1,21 @@
+{
+  "source": {
+    "Main.java": {
+      "text": "",
+      "visible": true
+    },
+    "Park.java": {
+      "text": "",
+      "visible": true
+    },
+    "Image.java":  {
+      "text": "",
+      "visible": true
+    },
+    "ClickableImage.java":  {
+      "text": "",
+      "visible": true
+    }
+},
+  "animations": {}
+}
