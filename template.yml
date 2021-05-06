@@ -29,101 +29,30 @@ Resources:
       DomainName: !Sub "${SubDomainName}.${BaseDomainName}"
       ValidationMethod: DNS # TODO: Automate validation instead of manually creating the validation DNS records in Route53.
   JavabuilderWebSocketAPI:
-    Type: AWS::ApiGatewayV2::Api
+    Type: AWS::Serverless::HttpApi
     Properties:
-      Name: !Sub "${SubDomainName}.${BaseDomainName}"
-      Description: Javabuilder service.
-      ProtocolType: WEBSOCKET
-      RouteSelectionExpression: "$request.body.action"
-      DisableExecuteApiEndpoint: true
-  WebSocketAuthorizer:
-    Type: AWS::ApiGatewayV2::Authorizer
-    Properties:
-      ApiId: !Ref JavabuilderWebSocketAPI
-      AuthorizerType: REQUEST
-      AuthorizerCredentialsArn: !ImportValue JavabuilderAPIGatewayRole # Grants API Gateway permission to invoke Authorizer Lambda.
-      AuthorizerUri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${JavabuilderAuthorizerLambda.Arn}/invocations"
-      IdentitySource:
-        - route.request.querystring.Authorization
-      Name: WebSocketAuthorizer
-  WebSocketConnectRoute:
-    Type: AWS::ApiGatewayV2::Route
-    Properties:
-      ApiId: !Ref JavabuilderWebSocketAPI
-      RouteKey: $connect
-      AuthorizationType: CUSTOM
-      AuthorizerId: !Ref WebSocketAuthorizer
-      OperationName: WebSocketConnectRoute
-      Target: !Join
-        - '/'
-        - - 'integrations'
-          - !Ref WebSocketConnectIntegration
-  WebSocketConnectIntegration:
-    Type: AWS::ApiGatewayV2::Integration
-    Properties:
-      ApiId: !Ref JavabuilderWebSocketAPI
-      Description: Lambda Proxy Integration
-      IntegrationType: AWS_PROXY
-      IntegrationUri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${StartSessionAndRelayMessagesLambda.Arn}/invocations"
-  WebSocketDisconnectRoute:
-    Type: AWS::ApiGatewayV2::Route
-    Properties:
-      ApiId: !Ref JavabuilderWebSocketAPI
-      RouteKey: $disconnect
-      AuthorizationType: NONE
-      OperationName: WebSocketDisconnectRoute
-      Target: !Join
-        - '/'
-        - - 'integrations'
-          - !Ref WebSocketDisconnectIntegration
-  WebSocketDisconnectIntegration:
-    Type: AWS::ApiGatewayV2::Integration
-    Properties:
-      ApiId: !Ref JavabuilderWebSocketAPI
-      Description: Lambda Proxy Integration
-      IntegrationType: AWS_PROXY
-      IntegrationUri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${StartSessionAndRelayMessagesLambda.Arn}/invocations"
-  WebSocketDefaultRoute:
-    Type: AWS::ApiGatewayV2::Route
-    Properties:
-      ApiId: !Ref JavabuilderWebSocketAPI
-      RouteKey: $default
-      AuthorizationType: NONE
-      OperationName: WebSocketDefaultRoute
-      Target: !Join
-        - '/'
-        - - 'integrations'
-          - !Ref WebSocketDefaultIntegration
-  WebSocketDefaultIntegration:
-    Type: AWS::ApiGatewayV2::Integration
-    Properties:
-      ApiId: !Ref JavabuilderWebSocketAPI
-      Description: Lambda Proxy Integration
-      IntegrationType: AWS_PROXY
-      IntegrationUri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${StartSessionAndRelayMessagesLambda.Arn}/invocations"
-      CredentialsArn: !ImportValue JavabuilderLambdaExecutionRole
-  Deployment:
-    Type: AWS::ApiGatewayV2::Deployment
-    DependsOn:
-      - WebSocketConnectRoute
-      - WebSocketDefaultRoute
-      - WebSocketDisconnectRoute
-    Properties:
-      ApiId: !Ref JavabuilderWebSocketAPI
-  Stage:
-    Type: AWS::ApiGatewayV2::Stage
-    Properties:
-      StageName: Prod
-      Description: Prod Stage
-      DeploymentId: !Ref Deployment
-      ApiId: !Ref JavabuilderWebSocketAPI
-      DefaultRouteSettings:
-        DetailedMetricsEnabled: true
-        LoggingLevel: INFO
-        DataTraceEnabled: true
       AccessLogSettings:
-        DestinationArn: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:${SubDomainName}.${BaseDomainName}"
+        DestinationArn: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/apigateway/${SubDomainName}.${BaseDomainName}"
         Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "caller":"$context.identity.caller", "user":"$context.identity.user","requestTime":"$context.requestTime", "eventType":"$context.eventType","routeKey":"$context.routeKey", "status":"$context.status","connectionId":"$context.connectionId" }'
+      Auth:
+        Authorizers:
+          LambdaAuthorizer:
+            AuthorizerPayloadFormatVersion: 2.0
+            FunctionArn: !GetAtt JavabuilderAuthorizerLambda.Arn
+            FunctionInvokeRole: !ImportValue JavabuilderLambdaExecutionRole
+            Identity:
+              QueryStrings:
+                - "$request.querystring.Authorization"
+        DefaultAuthorizer: LambdaAuthorizer
+      # CorsConfiguration: String | HttpApiCorsConfiguration
+      Description: Javabuilder service.
+      # TODO: Enable this feature and always invoke this API via its custom domain name.
+      # DisableExecuteApiEndpoint: Boolean
+      Domain:
+        CertificateArn: !Ref Certificate
+        DomainName: !Sub "${SubDomainName}.${BaseDomainName}"
+        Route53:
+          HostedZoneName: !Sub "${BaseDomainName}."
   JavabuilderAuthorizerLambda:
     Type: 'AWS::Serverless::Function'
     Properties:
