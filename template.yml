@@ -23,6 +23,10 @@ Globals:
     Tracing: Active
 
 Resources:
+  APIGatewayCloudWatchLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/apigateway/${SubDomainName}.${BaseDomainName}"
   Certificate:
     Type: AWS::CertificateManager::Certificate
     Properties:
@@ -33,7 +37,7 @@ Resources:
     Properties:
       AccessLogSettings:
         DestinationArn: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/apigateway/${SubDomainName}.${BaseDomainName}"
-        Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "caller":"$context.identity.caller", "user":"$context.identity.user","requestTime":"$context.requestTime", "eventType":"$context.eventType","routeKey":"$context.routeKey", "status":"$context.status","connectionId":"$context.connectionId" }'
+        Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "caller":"$context.identity.caller", "user":"$context.identity.user","requestTime":"$context.requestTime","routeKey":"$context.routeKey", "status":"$context.status" }'
       Auth:
         Authorizers:
           LambdaAuthorizer:
