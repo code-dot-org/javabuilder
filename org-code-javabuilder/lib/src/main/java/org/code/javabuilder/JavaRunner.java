@@ -38,10 +38,9 @@ public class JavaRunner {
       mainMethod.invoke(null, new Object[] {null});
     } catch (IllegalAccessException e) {
       // TODO: this error message may not be not very friendly
-      throw new UserFacingException("Illegal access: " + e, e);
+      throw new UserInitiatedException(UserInitiatedExceptionKey.illegalMethodAccess, e);
     } catch (InvocationTargetException e) {
-      throw new UserInitiatedException(
-          "Your code hit an exception " + e.getCause().getClass().toString(), e);
+      throw new UserInitiatedException(UserInitiatedExceptionKey.runtimeError, e);
     }
     try {
       urlClassLoader.close();
@@ -74,21 +73,19 @@ public class JavaRunner {
               && parameterTypes.length == 1
               && parameterTypes[0].equals(String[].class)) {
             if (mainMethod != null) {
-              throw new UserInitiatedException(
-                  "Your code can only have one main method. We found at least two classes with main methods.");
+              throw new UserInitiatedException(UserInitiatedExceptionKey.twoMainMethods);
             }
             mainMethod = method;
           }
         }
       } catch (ClassNotFoundException e) {
         // this should be caught earlier in compilation
-        throw new UserFacingException(
-            "We hit an error on our side while running your program. Try Again", e);
+        throw new UserFacingException(UserFacingExceptionKey.internalRuntimeException, e);
       }
     }
 
     if (mainMethod == null) {
-      throw new UserInitiatedException("Error: your program does not contain a main method");
+      throw new UserInitiatedException(UserInitiatedExceptionKey.noMainMethod);
     }
     return mainMethod;
   }
