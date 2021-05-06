@@ -84,6 +84,17 @@ Resources:
                   - "lambda:InvokeFunction"
                 Resource:
                   - 'arn:aws:lambda:::function:javabuilder*' #TODO: Restrict this further to just Lambda Authorizers?
+              # Grant API Gateway permission to publish CloudWatch Logs
+              - Effect: Allow
+                Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutRetentionPolicy'
+                  - 'logs:PutLogEvents'
+                Resource:
+                  - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/apigateway/*"
+                  - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/apigateway/"
+                  - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/apigateway/*:log-stream:*"
   JavabuilderCloudFormationRole:
     Type: AWS::IAM::Role
     Properties:
@@ -115,6 +126,16 @@ Resources:
                   - "iam:PassRole"
                 Resource:
                   - !GetAtt JavabuilderLambdaExecutionRole.Arn
+              # Grant CloudFormation permission to create CloudWatch Log Group for API Gateway.
+              - Effect: Allow
+                Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutRetentionPolicy'
+                Resource:
+                  - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/apigateway/*"
+                  - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/apigateway/"
+                  - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/apigateway/*:log-stream:*"
   JavabuilderCodeBuildRole:
     Type: AWS::IAM::Role
     Properties:
