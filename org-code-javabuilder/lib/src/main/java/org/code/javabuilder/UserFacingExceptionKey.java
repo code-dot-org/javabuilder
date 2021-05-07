@@ -1,10 +1,11 @@
 package org.code.javabuilder;
 
+/** These keys map to client-side strings that are translatable. */
 public enum UserFacingExceptionKey {
-  // "We hit an error on our side while running your program. Try Again"
+  // We caused an error while executing the user's program.
   internalRuntimeException,
-  // "We hit an error on our side while compiling your program. Try again."
+  // We caused an error while compiling the user's program.
   internalCompilerException,
-  // "We hit an error on our side while loading your program. Try again."
+  // We caused an error.
   internalException
 }

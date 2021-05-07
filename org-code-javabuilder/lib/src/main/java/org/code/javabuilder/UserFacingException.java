@@ -4,7 +4,10 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.HashMap;
 
-/** Exception with a message intended to be seen by the user */
+/**
+ * An exception caused by us that is intended to be seen by the user. These are the conceptual
+ * equivalent of HTTP 500 errors.
+ */
 public class UserFacingException extends Exception {
   private final UserFacingExceptionKey key;
 
