@@ -4,7 +4,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.HashMap;
 
-/** Exception caused by a user action. */
+/** An exception caused by a user action. */
 public class UserInitiatedException extends Exception {
   private final UserInitiatedExceptionKey key;
 
