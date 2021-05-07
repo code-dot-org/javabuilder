@@ -27,14 +27,10 @@ public abstract class ClientMessage {
   private final String value;
   private final HashMap<String, String> detail;
 
-  ClientMessage(ClientMessageType type, String value, HashMap<String, String> detail) {
+  protected ClientMessage(ClientMessageType type, String value, HashMap<String, String> detail) {
     this.type = type;
     this.value = value;
     this.detail = detail == null ? new HashMap<>() : detail;
-  }
-
-  public void addDetail(String key, String value) {
-    this.detail.put(key, value);
   }
 
   public ClientMessageType getType() {

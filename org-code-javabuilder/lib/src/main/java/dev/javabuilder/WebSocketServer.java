@@ -33,6 +33,7 @@ public class WebSocketServer {
   @OnOpen
   public void onOpen(Session session) {
     String projectUrl = session.getQueryString().replaceFirst("projectUrl=", "");
+    Properties.setConnectionId("LocalhostWebSocketConnection");
 
     outputAdapter = new WebSocketOutputAdapter(session);
     inputAdapter = new WebSocketInputAdapter();
@@ -49,12 +50,12 @@ public class WebSocketServer {
                 }
               } catch (UserFacingException e) {
                 outputAdapter.sendMessage(e.getExceptionMessage());
-                outputAdapter.sendMessage(new SystemOutMessage("\n" + e.getLoggingString()));
+                outputAdapter.sendMessage(new DebuggingMessage("\n" + e.getLoggingString()));
               } catch (UserInitiatedException e) {
                 outputAdapter.sendMessage(e.getExceptionMessage());
-                outputAdapter.sendMessage(new SystemOutMessage("\n" + e.getLoggingString()));
+                outputAdapter.sendMessage(new DebuggingMessage("\n" + e.getLoggingString()));
               } catch (InternalFacingException e) {
-                outputAdapter.sendMessage(new SystemOutMessage("\n" + e.getLoggingString()));
+                outputAdapter.sendMessage(new DebuggingMessage("\n" + e.getLoggingString()));
               } finally {
                 try {
                   session.close();

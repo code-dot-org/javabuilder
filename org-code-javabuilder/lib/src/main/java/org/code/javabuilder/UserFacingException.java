@@ -22,9 +22,9 @@ public class UserFacingException extends Exception {
   }
 
   public UserFacingExceptionMessage getExceptionMessage() {
-    HashMap<String, String> detail = null;
+    HashMap<String, String> detail = new HashMap<>();
+    detail.put("connectionId", Properties.getConnectionId());
     if (getCause() != null) {
-      detail = new HashMap<>();
       detail.put("cause", getCause().getMessage());
     }
     return new UserFacingExceptionMessage(this.key, detail);
