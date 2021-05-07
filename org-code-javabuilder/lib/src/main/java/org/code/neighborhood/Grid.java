@@ -1,80 +1,17 @@
 package org.code.neighborhood;
 
 import java.util.ArrayList;
-import java.io.File;  // Import the File class
-import java.io.FileInputStream; // Import the Scanner class to read text files
 import java.lang.System;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
 public class Grid {
-    private static Grid instance = null;
     private GridSquare[][] grid;
     private int width;
     private int height;
-    private int numPainters;
 
-    public static Grid getInstance() {
-        if (instance == null) {
-            File file = new File("grid.txt");
-            FileInputStream fis;
-            try {
-                fis = new FileInputStream(file);
-                byte[] data = new byte[(int) file.length()];
-                fis.read(data);
-                fis.close();
-//                JSONParser parser = new JSONParser();
-                instance = new Grid(new String(data, "UTF-8"));
-            } catch (Exception e) {
-                System.out.println("\nTry adding a grid.txt file.\n");
-                e.printStackTrace();
-                System.exit(1);
-            }
-        }
-        return instance;
-    }
-
-    private Grid(String gridDescription) {
-        String[] lines = gridDescription.split("\n");
-        String parseLine = String.join("", lines);
-        JSONParser jsonParser = new JSONParser();
-        try {
-            Object obj = jsonParser.parse(parseLine);
-            JSONArray gridSquares = (JSONArray) obj;
-            this.height = gridSquares.size();
-            if(this.height == 0) {
-                System.out.println("\nPlease check the format of your grid.txt file\n");
-                System.exit(1);
-            }
-            this.width = ((JSONArray) gridSquares.get(0)).size();
-            this.grid = new GridSquare[this.width][this.height];
-            int currentHeight = this.height;
-            for (int currentY = 0; currentY < this.height; currentY++) {
-                currentHeight--;
-                JSONArray line = (JSONArray) gridSquares.get(currentHeight);
-                //String[] descriptors = line.split(",");
-                if (line.size() != width) {
-                    System.out.println("width of line " + line + " does not match others. Cannot create grid.");
-                    return;
-                }
-                for (int currentX = 0; currentX < line.size(); currentX++) {
-                    JSONObject descriptor = (JSONObject) line.get(currentX);
-                    this.grid[currentX][currentY] = new GridSquare(descriptor);
-                }
-            }
-            this.numPainters = 0;
-        } catch(ParseException e) {
-            System.out.println("\nPlease check the format of your grid.txt file\n");
-            e.printStackTrace();
-            System.exit(1);
-        }
-    }
-
-    public int registerPainter() {
-        this.numPainters += 1;
-        return this.numPainters;
+    protected Grid(GridSquare[][] squares) {
+        this.grid = squares;
+        this.height = squares.length;
+        this.width = squares[0].length;
     }
 
     public void printGrid() {

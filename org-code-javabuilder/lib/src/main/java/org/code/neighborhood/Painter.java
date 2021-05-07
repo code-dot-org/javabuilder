@@ -1,6 +1,7 @@
 package org.code.neighborhood;
 
 public class Painter {
+    private static int lastId = 0;
     private int xLocation;
     private int yLocation;
     private Direction direction;
@@ -13,9 +14,8 @@ public class Painter {
         this.yLocation = y;
         this.direction = new Direction(direction);
         this.remainingPaint = paint;
-        this.grid = Grid.getInstance();
-        this.id = "Painter-"+this.grid.registerPainter();
-
+        this.grid = World.getInstance().getGrid();
+        this.id = "Painter-" + lastId++;
         System.out.println("created painter");
     }
 
