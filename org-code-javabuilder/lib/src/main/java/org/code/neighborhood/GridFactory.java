@@ -19,11 +19,8 @@ public class GridFactory {
             fis.close();
             return createGridFromString(new String(data, "UTF-8"));
         } catch (Exception e) {
-            System.out.println("\nTry adding a grid.txt file.\n");
-            e.printStackTrace();
-            System.exit(1);
+            throw new UnsupportedOperationException("Try adding a grid.txt file.");
         }
-        return null;
     }
 
     protected Grid createGridFromString(String description) {
@@ -35,8 +32,7 @@ public class GridFactory {
             JSONArray gridSquares = (JSONArray) obj;
             int height = gridSquares.size();
             if(height == 0) {
-                System.out.println("\nPlease check the format of your grid.txt file\n");
-                System.exit(1);
+                throw new UnsupportedOperationException("Please check the format of your grid.txt file");
             }
             int width = ((JSONArray) gridSquares.get(0)).size();
             GridSquare[][] grid = new GridSquare[width][height];
@@ -45,8 +41,7 @@ public class GridFactory {
                 currentHeight--;
                 JSONArray line = (JSONArray) gridSquares.get(currentHeight);
                 if (line.size() != width) {
-                    System.out.println("width of line " + line + " does not match others. Cannot create grid.");
-                    return null;
+                    throw new UnsupportedOperationException("width of line " + currentHeight + " does not match others. Cannot create grid.");
                 }
                 for (int currentX = 0; currentX < line.size(); currentX++) {
                     JSONObject descriptor = (JSONObject) line.get(currentX);
@@ -55,10 +50,7 @@ public class GridFactory {
             }
             return new Grid(grid);
         } catch(ParseException e) {
-            System.out.println("\nPlease check the format of your grid.txt file\n");
-            e.printStackTrace();
-            System.exit(1);
+            throw new UnsupportedOperationException("Please check the format of your grid.txt file");
         }
-        return null;
     }
 }

@@ -41,17 +41,13 @@ public class GridSquare {
                     this.passable = false;
             }
         } catch (NumberFormatException e) {
-            System.out.println("\nPlease check the format of your grid.txt file, especially the tileType\n");
-            e.printStackTrace();
-            System.exit(1);
+            throw new UnsupportedOperationException("Please check the format of your grid.txt file, especially the tileType");
         }
         if(descriptor.containsKey("value")) {
             try {
                 this.paintCount = Integer.parseInt(descriptor.get("value").toString());
             } catch (NumberFormatException e) {
-                System.out.println("\nPlease check the format of your grid.txt file, especially the value\n");
-                e.printStackTrace();
-                System.exit(1);
+                throw new UnsupportedOperationException("Please check the format of your grid.txt file, especially the value");
             }
         } else {
             this.paintCount = 0;

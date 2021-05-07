@@ -84,22 +84,22 @@ public class Painter {
 
     // Returns True if there is paint in the square where the painter
     // is standing.
-    public Boolean isOnPaint() {
+    public boolean isOnPaint() {
         return this.grid.getSquare(this.xLocation, this.yLocation).hasColor();
     }
 
     // Returns True if there is a paint bucket in the square where the
     // painter is standing.
-    public Boolean isOnBucket() {
+    public boolean isOnBucket() {
         return this.grid.getSquare(this.xLocation, this.yLocation).containsPaint();
     }
 
     // Returns True if remainingPaint > 0
-    public Boolean hasPaint() {
+    public boolean hasPaint() {
         return this.remainingPaint > 0;
     }
 
-    private Boolean validMovement(Direction direction) {
+    private boolean validMovement(Direction direction) {
         if (direction.isNorth()) {
             return this.grid.validLocation(this.xLocation, this.yLocation + 1);
         } else if (this.direction.isSouth()) {
@@ -113,7 +113,7 @@ public class Painter {
 
     // Returns True if there is no barrier one square ahead in the
     // requested direction.
-    public Boolean canMove(String direction) {
+    public boolean canMove(String direction) {
         return validMovement(new Direction(direction));
     }
 
@@ -123,22 +123,22 @@ public class Painter {
     }
 
     // returns True if facing North.
-    public Boolean facingNorth() {
+    public boolean facingNorth() {
         return this.direction.isNorth();
     }
 
     // returns True if facing East.
-    public Boolean facingEast() {
+    public boolean facingEast() {
         return this.direction.isEast();
     }
 
     // returns True if facing South.
-    public Boolean facingSouth() {
+    public boolean facingSouth() {
         return this.direction.isSouth();
     }
 
     // returns True if facing West.
-    public Boolean facingWest() {
+    public boolean facingWest() {
         return this.direction.isWest();
     }
 }

@@ -34,7 +34,7 @@ public class Grid {
         if (validLocation(x,y)) {
             return grid[x][y];
         } else {
-            throw new UnsupportedOperationException("fail");
+            throw new UnsupportedOperationException("failed to get square");
         }
     }
 
