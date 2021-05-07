@@ -1,11 +1,28 @@
 package org.code.neighborhood;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.json.simple.JSONObject;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+
+import static org.junit.jupiter.api.Assertions.*;
+
 public class GridSquareTest {
+    private final PrintStream standardOut = System.out;
+    private final ByteArrayOutputStream outputStreamCaptor = new ByteArrayOutputStream();
+
+    @BeforeEach
+    public void setUp() {
+        System.setOut(new PrintStream(outputStreamCaptor));
+    }
+
+    @AfterEach
+    public void tearDown() {
+        System.setOut(standardOut);
+    }
 
     @Test
     void wallsNotPassable() {
@@ -81,12 +98,38 @@ public class GridSquareTest {
     }
 
     @Test
+    void constructorWithInvalidTileTypeThrowsError() {
+        JSONObject description = new JSONObject();
+        description.put("tileType", "not a tile");
+        Exception exception = assertThrows(UnsupportedOperationException.class, () -> {
+            GridSquare s = new GridSquare(description);
+        });
+        String expectedMessage = "Please check the format of your grid.txt file, especially the tileType";
+        String actualMessage = exception.getMessage();
+        assertTrue(actualMessage.contains(expectedMessage));
+    }
+
+    @Test
+    void constructorWithInvalidValueThrowsError() {
+        JSONObject description = new JSONObject();
+        description.put("tileType", 1);
+        description.put("value", "not a value");
+        Exception exception = assertThrows(UnsupportedOperationException.class, () -> {
+            GridSquare s = new GridSquare(description);
+        });
+        String expectedMessage = "Please check the format of your grid.txt file, especially the value";
+        String actualMessage = exception.getMessage();
+        assertTrue(actualMessage.contains(expectedMessage));
+    }
+
+    @Test
     void setColorChecksColorFormatBeforeSettingColor() {
         JSONObject description = new JSONObject();
         description.put("tileType", 1);
         GridSquare s = new GridSquare(description);
         s.setColor("red");
         assertEquals(s.getColor(), "");
+        assertTrue(outputStreamCaptor.toString().trim().contains("use a 1 letter character to set your color"));
         s.setColor("r");
         assertEquals(s.getColor(), "r");
         s.setColor("green");
@@ -115,6 +158,16 @@ public class GridSquareTest {
     }
 
     @Test
+    void removePaintPrintsErrorWhenNoPaint() {
+        JSONObject description = new JSONObject();
+        description.put("tileType", 1);
+        GridSquare s = new GridSquare(description);
+        assertEquals(s.getColor(), "");
+        s.removePaint();
+        assertTrue(outputStreamCaptor.toString().trim().contains("There's no paint to remove here"));
+    }
+
+    @Test
     void containsPaint() {
         JSONObject description = new JSONObject();
         description.put("tileType", 1);
@@ -140,6 +193,7 @@ public class GridSquareTest {
         // paintCount should be 0
         assertEquals(s.containsPaint(), false);
         s.collectPaint();
+        assertTrue(outputStreamCaptor.toString().trim().contains("There's no paint to collect here"));
         // paintCount should be 0
         assertEquals(s.containsPaint(), false);
     }
