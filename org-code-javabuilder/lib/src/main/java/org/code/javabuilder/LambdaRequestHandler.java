@@ -34,6 +34,8 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     final String queueUrl = lambdaInput.get("queueUrl");
     final String projectUrl = lambdaInput.get("projectUrl");
 
+    Properties.setConnectionId(connectionId);
+
     // Create user-program output handlers
     AmazonApiGatewayManagementApi api =
         AmazonApiGatewayManagementApiClientBuilder.standard()

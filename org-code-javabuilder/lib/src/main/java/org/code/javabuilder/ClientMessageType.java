@@ -7,5 +7,7 @@ public enum ClientMessageType {
   /** An exception that should be displayed to the user. */
   exception,
   /** A neighborhood signal that directs the client-side Neighborhood program to take an action. */
-  neighborhood
+  neighborhood,
+  /** An message directed to the client in local development mode */
+  debug
 }

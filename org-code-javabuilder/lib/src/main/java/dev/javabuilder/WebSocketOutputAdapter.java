@@ -24,4 +24,12 @@ public class WebSocketOutputAdapter implements OutputAdapter {
       e.printStackTrace();
     }
   }
+
+  public void sendDebuggingMessage(ClientMessage message) {
+    try {
+      endpoint.sendText(message.getFormattedMessage());
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
 }

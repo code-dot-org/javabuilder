@@ -18,6 +18,7 @@ public class UserInitiatedException extends Exception {
     this.key = key;
   }
 
+  // TODO: Correctly print error messages.
   public UserInitiatedExceptionMessage getExceptionMessage() {
     HashMap<String, String> detail = new HashMap<>();
     if (getCause() != null) {
