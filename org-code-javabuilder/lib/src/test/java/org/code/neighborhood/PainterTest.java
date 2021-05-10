@@ -28,9 +28,18 @@ public class PainterTest {
     }
 
     @Test
+    void constructorThrowsErrorIfDirectionInvalid() {
+        Exception exception = assertThrows(UnsupportedOperationException.class, () -> {
+            new Painter(0, 0, "not a direction", 5);
+        });
+        String expectedMessage = "Invalid direction given to painter";
+        String actualMessage = exception.getMessage();
+        assertTrue(actualMessage.contains(expectedMessage));
+    }
+
+    @Test
     void canMoveReturnsFalseIfInvalid() {
         Painter painter = new Painter(0, 0, "North", 5);
-        assertTrue(outputStreamCaptor.toString().trim().contains("created painter"));
         assertFalse(painter.canMove("North"));
         assertFalse(painter.canMove("East"));
         assertFalse(painter.canMove("South"));

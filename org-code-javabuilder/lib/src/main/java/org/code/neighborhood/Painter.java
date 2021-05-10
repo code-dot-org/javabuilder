@@ -13,10 +13,12 @@ public class Painter {
         this.xLocation = x;
         this.yLocation = y;
         this.direction = Direction.fromString(direction);
+        if(this.direction == null) {
+            throw new UnsupportedOperationException("Invalid direction given to painter");
+        }
         this.remainingPaint = paint;
         this.grid = World.getInstance().getGrid();
-        this.id = "Painter-" + lastId++;
-        System.out.println("created painter");
+        this.id = "painter-" + lastId++;
     }
 
     // Turn the painter one compass direction left (i.e. North -> West)
@@ -27,7 +29,7 @@ public class Painter {
     // Move the painter one square forward in the direction the painter
     // is facing
     public void move() {
-        if (this.validMovement(this.direction)) {
+        if (this.isValidMovement(this.direction)) {
             if (this.direction.isNorth()) {
                 this.yLocation++;
             } else if (this.direction.isSouth()) {
@@ -99,7 +101,7 @@ public class Painter {
         return this.remainingPaint > 0;
     }
 
-    private boolean validMovement(Direction direction) {
+    private boolean isValidMovement(Direction direction) {
         if (direction.isNorth()) {
             return this.grid.validLocation(this.xLocation, this.yLocation + 1);
         } else if (this.direction.isSouth()) {
@@ -114,7 +116,7 @@ public class Painter {
     // Returns True if there is no barrier one square ahead in the
     // requested direction.
     public boolean canMove(String direction) {
-        return validMovement(Direction.fromString(direction));
+        return isValidMovement(Direction.fromString(direction));
     }
 
     // Returns the color of the square where the painter is standing
