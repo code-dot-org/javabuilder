@@ -9,8 +9,11 @@ import java.io.File;
 import java.io.FileInputStream;
 
 public class GridFactory {
+    private static final String gridFileName = "grid.txt";
+    private static final String gridSquareTypeField = "tileType";
+    private static final String gridSquareValueField = "value";
     protected Grid createGridFromJSON(String filename) {
-        File file = new File("grid.txt");
+        File file = new File(gridFileName);
         FileInputStream fis;
         try {
             fis = new FileInputStream(file);
@@ -23,6 +26,9 @@ public class GridFactory {
         }
     }
 
+    // Creates a grid from a string, assuming that the string is a 2D JSONArray of JSONObjects
+    // with each JSONObject containing an integer tileType and optionally an integer value
+    // corresponding with the paintCount for that tile.
     protected Grid createGridFromString(String description) {
         String[] lines = description.split("\n");
         String parseLine = String.join("", lines);
@@ -36,6 +42,8 @@ public class GridFactory {
             }
             int width = ((JSONArray) gridSquares.get(0)).size();
             GridSquare[][] grid = new GridSquare[width][height];
+
+            // We start at the maximum height because we're reading the grid from top to bottom in the file.
             int currentHeight = height;
             for (int currentY = 0; currentY < height; currentY++) {
                 currentHeight--;
@@ -46,9 +54,9 @@ public class GridFactory {
                 for (int currentX = 0; currentX < line.size(); currentX++) {
                     JSONObject descriptor = (JSONObject) line.get(currentX);
                     try {
-                        int tileType = Integer.parseInt(descriptor.get("tileType").toString());
-                        if(descriptor.containsKey("value")) {
-                            int value = Integer.parseInt(descriptor.get("value").toString());
+                        int tileType = Integer.parseInt(descriptor.get(gridSquareTypeField).toString());
+                        if(descriptor.containsKey(gridSquareValueField)) {
+                            int value = Integer.parseInt(descriptor.get(gridSquareValueField).toString());
                             grid[currentX][currentY] = new GridSquare(tileType, value);
                         } else {
                             grid[currentX][currentY] = new GridSquare(tileType);

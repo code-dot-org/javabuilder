@@ -80,27 +80,27 @@ public class GridSquareTest {
     @Test
     void setColorChecksColorFormatBeforeSettingColor() {
         GridSquare s = new GridSquare(1);
-        s.setColor("red");
-        assertEquals(s.getColor(), "");
-        assertTrue(outputStreamCaptor.toString().trim().contains("use a 1 letter character to set your color"));
         s.setColor("r");
-        assertEquals(s.getColor(), "r");
+        assertEquals(s.getColor(), "");
+        assertTrue(outputStreamCaptor.toString().trim().contains("Invalid color, please check your color format"));
+        s.setColor("red");
+        assertEquals(s.getColor(), "red");
         s.setColor("green");
-        assertEquals(s.getColor(), "r");
+        assertEquals(s.getColor(), "green");
     }
 
     @Test
     void setColorDoesNotChangeColorIfThereIsPaint() {
         GridSquare s = new GridSquare(1, 4);
-        s.setColor("r");
+        s.setColor("red");
         assertEquals(s.getColor(), "");
     }
 
     @Test
     void removePaint() {
         GridSquare s = new GridSquare(1);
-        s.setColor("r");
-        assertEquals(s.getColor(), "r");
+        s.setColor("red");
+        assertEquals(s.getColor(), "red");
         s.removePaint();
         assertEquals(s.getColor(), "");
     }
@@ -150,8 +150,8 @@ public class GridSquareTest {
     void getPrintableDescriptionReturnsColorForPassableWithColor() {
         GridSquare s = new GridSquare(1);
         assertTrue(s.isPassable());
-        s.setColor("r");
-        assertEquals(s.getPrintableDescription(), "r");
+        s.setColor("red");
+        assertEquals(s.getPrintableDescription(), "red");
     }
 
     @Test
@@ -165,7 +165,7 @@ public class GridSquareTest {
     void hasColor() {
         GridSquare s = new GridSquare(1);
         assertFalse(s.hasColor());
-        s.setColor("r");
+        s.setColor("red");
         assertTrue(s.hasColor());
     }
 }
