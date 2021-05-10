@@ -9,11 +9,11 @@ import java.io.File;
 import java.io.FileInputStream;
 
 public class GridFactory {
-    private static final String gridFileName = "grid.txt";
-    private static final String gridSquareTypeField = "tileType";
-    private static final String gridSquareValueField = "value";
+    private static final String GRID_FILE_NAME = "grid.txt";
+    private static final String GRID_SQUARE_TYPE_FIELD = "tileType";
+    private static final String GRID_SQUARE_VALUE_FIELD = "value";
     protected Grid createGridFromJSON(String filename) {
-        File file = new File(gridFileName);
+        File file = new File(GRID_FILE_NAME);
         FileInputStream fis;
         try {
             fis = new FileInputStream(file);
@@ -54,9 +54,9 @@ public class GridFactory {
                 for (int currentX = 0; currentX < line.size(); currentX++) {
                     JSONObject descriptor = (JSONObject) line.get(currentX);
                     try {
-                        int tileType = Integer.parseInt(descriptor.get(gridSquareTypeField).toString());
-                        if(descriptor.containsKey(gridSquareValueField)) {
-                            int value = Integer.parseInt(descriptor.get(gridSquareValueField).toString());
+                        int tileType = Integer.parseInt(descriptor.get(GRID_SQUARE_TYPE_FIELD).toString());
+                        if(descriptor.containsKey(GRID_SQUARE_VALUE_FIELD)) {
+                            int value = Integer.parseInt(descriptor.get(GRID_SQUARE_VALUE_FIELD).toString());
                             grid[currentX][currentY] = new GridSquare(tileType, value);
                         } else {
                             grid[currentX][currentY] = new GridSquare(tileType);
