@@ -12,7 +12,7 @@ public class Painter {
     public Painter(int x, int y, String direction, int paint) {
         this.xLocation = x;
         this.yLocation = y;
-        this.direction = new Direction(direction);
+        this.direction = Direction.fromString(direction);
         this.remainingPaint = paint;
         this.grid = World.getInstance().getGrid();
         this.id = "Painter-" + lastId++;
@@ -21,7 +21,7 @@ public class Painter {
 
     // Turn the painter one compass direction left (i.e. North -> West)
     public void turnLeft() {
-        this.direction.turnLeft();
+        this.direction = this.direction.turnLeft();
     }
 
     // Move the painter one square forward in the direction the painter
@@ -114,7 +114,7 @@ public class Painter {
     // Returns True if there is no barrier one square ahead in the
     // requested direction.
     public boolean canMove(String direction) {
-        return validMovement(new Direction(direction));
+        return validMovement(Direction.fromString(direction));
     }
 
     // Returns the color of the square where the painter is standing

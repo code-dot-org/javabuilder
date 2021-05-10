@@ -1,6 +1,5 @@
 package org.code.neighborhood;
 
-import org.json.simple.JSONObject;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -13,9 +12,9 @@ public class GridTest {
         GridSquare[][] squares = new GridSquare[1][1];
         squares[0][0] = s;
         Grid grid = new Grid(squares);
-        assertEquals(grid.validLocation(0, 0), true);
-        assertEquals(grid.validLocation(0, 1), false);
-        assertEquals(grid.validLocation(1, 0), false);
+        assertTrue(grid.validLocation(0, 0));
+        assertFalse(grid.validLocation(0, 1));
+        assertFalse(grid.validLocation(1, 0));
     }
 
     @Test
@@ -24,11 +23,11 @@ public class GridTest {
         GridSquare[][] squares = new GridSquare[1][1];
         squares[0][0] = s;
         Grid grid = new Grid(squares);
-        assertEquals(grid.validLocation(0, 0), true);
-        assertEquals(grid.validLocation(0, 1), false);
-        assertEquals(grid.validLocation(1, 0), false);
-        assertEquals(grid.validLocation(0, -1), false);
-        assertEquals(grid.validLocation(-1, 0), false);
+        assertTrue(grid.validLocation(0, 0));
+        assertFalse(grid.validLocation(0, 1));
+        assertFalse(grid.validLocation(1, 0));
+        assertFalse(grid.validLocation(0, -1));
+        assertFalse(grid.validLocation(-1, 0));
     }
 
     @Test

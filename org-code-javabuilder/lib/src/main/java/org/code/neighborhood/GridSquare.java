@@ -1,5 +1,4 @@
 package org.code.neighborhood;
-import org.json.simple.JSONObject;
 
 public class GridSquare {
     private String color;
@@ -8,13 +7,13 @@ public class GridSquare {
     private enum SquareType{ WALL, OPEN, START, FINISH, OBSTACLE, STARTANDFINISH, UNKNOWN};
     private SquareType squareType;
 
-    public GridSquare(int tileType, int value) {
+    protected GridSquare(int tileType, int value) {
         this.setTileType(tileType);
         this.paintCount = value;
         this.color = "";
     }
 
-    public GridSquare(int tileType) {
+    protected GridSquare(int tileType) {
         this.setTileType(tileType);
         this.paintCount = 0;
         this.color = "";
