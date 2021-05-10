@@ -26,107 +26,61 @@ public class GridSquareTest {
 
     @Test
     void wallsNotPassable() {
-        JSONObject description = new JSONObject();
-        description.put("tileType", 0);
-        GridSquare s = new GridSquare(description);
+        GridSquare s = new GridSquare(0);
         assertEquals(s.isPassable(), false);
     }
 
     @Test
     void obstaclesNotPassable() {
-        JSONObject description = new JSONObject();
-        description.put("tileType", 4);
-        GridSquare s = new GridSquare(description);
+        GridSquare s = new GridSquare(4);
         assertEquals(s.isPassable(), false);
     }
 
     @Test
     void unknownTileTypeNotPassable() {
-        JSONObject description = new JSONObject();
-        description.put("tileType", -1);
-        GridSquare s = new GridSquare(description);
+        GridSquare s = new GridSquare(-1);
         assertEquals(s.isPassable(), false);
     }
 
     @Test
     void openTileTypePassable() {
-        JSONObject description = new JSONObject();
-        description.put("tileType", 1);
-        GridSquare s = new GridSquare(description);
+        GridSquare s = new GridSquare(1);
         assertEquals(s.isPassable(), true);
     }
 
     @Test
     void startTileTypePassable() {
-        JSONObject description = new JSONObject();
-        description.put("tileType", 2);
-        GridSquare s = new GridSquare(description);
+        GridSquare s = new GridSquare(2);
         assertEquals(s.isPassable(), true);
     }
 
     @Test
     void finishTileTypePassable() {
-        JSONObject description = new JSONObject();
-        description.put("tileType", 3);
-        GridSquare s = new GridSquare(description);
+        GridSquare s = new GridSquare(3);
         assertEquals(s.isPassable(), true);
     }
 
     @Test
     void startAndFinishTileTypePassable() {
-        JSONObject description = new JSONObject();
-        description.put("tileType", 5);
-        GridSquare s = new GridSquare(description);
+        GridSquare s = new GridSquare(5);
         assertEquals(s.isPassable(), true);
     }
 
     @Test
     void constructorWithValueProvidedSetsPaintCount() {
-        JSONObject description = new JSONObject();
-        description.put("tileType", 1);
-        description.put("value", 4);
-        GridSquare s = new GridSquare(description);
+        GridSquare s = new GridSquare(1, 4);
         assertEquals(s.containsPaint(), true);
     }
 
     @Test
     void defaultPaintCountIsNoPaint() {
-        JSONObject description = new JSONObject();
-        description.put("tileType", 1);
-        GridSquare s = new GridSquare(description);
+        GridSquare s = new GridSquare(1);
         assertEquals(s.containsPaint(), false);
     }
 
     @Test
-    void constructorWithInvalidTileTypeThrowsError() {
-        JSONObject description = new JSONObject();
-        description.put("tileType", "not a tile");
-        Exception exception = assertThrows(UnsupportedOperationException.class, () -> {
-            GridSquare s = new GridSquare(description);
-        });
-        String expectedMessage = "Please check the format of your grid.txt file, especially the tileType";
-        String actualMessage = exception.getMessage();
-        assertTrue(actualMessage.contains(expectedMessage));
-    }
-
-    @Test
-    void constructorWithInvalidValueThrowsError() {
-        JSONObject description = new JSONObject();
-        description.put("tileType", 1);
-        description.put("value", "not a value");
-        Exception exception = assertThrows(UnsupportedOperationException.class, () -> {
-            GridSquare s = new GridSquare(description);
-        });
-        String expectedMessage = "Please check the format of your grid.txt file, especially the value";
-        String actualMessage = exception.getMessage();
-        assertTrue(actualMessage.contains(expectedMessage));
-    }
-
-    @Test
     void setColorChecksColorFormatBeforeSettingColor() {
-        JSONObject description = new JSONObject();
-        description.put("tileType", 1);
-        GridSquare s = new GridSquare(description);
+        GridSquare s = new GridSquare(1);
         s.setColor("red");
         assertEquals(s.getColor(), "");
         assertTrue(outputStreamCaptor.toString().trim().contains("use a 1 letter character to set your color"));
@@ -138,19 +92,14 @@ public class GridSquareTest {
 
     @Test
     void setColorDoesNotChangeColorIfThereIsPaint() {
-        JSONObject description = new JSONObject();
-        description.put("tileType", 1);
-        description.put("value", 4);
-        GridSquare s = new GridSquare(description);
+        GridSquare s = new GridSquare(1, 4);
         s.setColor("r");
         assertEquals(s.getColor(), "");
     }
 
     @Test
     void removePaint() {
-        JSONObject description = new JSONObject();
-        description.put("tileType", 1);
-        GridSquare s = new GridSquare(description);
+        GridSquare s = new GridSquare(1);
         s.setColor("r");
         assertEquals(s.getColor(), "r");
         s.removePaint();
@@ -159,9 +108,7 @@ public class GridSquareTest {
 
     @Test
     void removePaintPrintsErrorWhenNoPaint() {
-        JSONObject description = new JSONObject();
-        description.put("tileType", 1);
-        GridSquare s = new GridSquare(description);
+        GridSquare s = new GridSquare(1);
         assertEquals(s.getColor(), "");
         s.removePaint();
         assertTrue(outputStreamCaptor.toString().trim().contains("There's no paint to remove here"));
@@ -169,22 +116,17 @@ public class GridSquareTest {
 
     @Test
     void containsPaint() {
-        JSONObject description = new JSONObject();
-        description.put("tileType", 1);
-        GridSquare noPaint = new GridSquare(description);
+        GridSquare noPaint = new GridSquare(1);
         assertEquals(noPaint.containsPaint(), false);
-        description.put("value", 2);
-        GridSquare withPaint = new GridSquare(description);
+
+        GridSquare withPaint = new GridSquare(1, 2);
         assertEquals(withPaint.containsPaint(), true);
     }
 
 
     @Test
     void collectPaint() {
-        JSONObject description = new JSONObject();
-        description.put("tileType", 1);
-        description.put("value", 2);
-        GridSquare s = new GridSquare(description);
+        GridSquare s = new GridSquare(1, 2);
         assertEquals(s.containsPaint(), true);
         s.collectPaint();
         // paintCount should be 1
@@ -200,18 +142,14 @@ public class GridSquareTest {
 
     @Test
     void getPrintableDescriptionReturnsXForNotPassable() {
-        JSONObject description = new JSONObject();
-        description.put("tileType", 0);
-        GridSquare s = new GridSquare(description);
+        GridSquare s = new GridSquare(0);
         assertEquals(s.isPassable(), false);
         assertEquals(s.getPrintableDescription(), "x");
     }
 
     @Test
     void getPrintableDescriptionReturnsColorForPassableWithColor() {
-        JSONObject description = new JSONObject();
-        description.put("tileType", 1);
-        GridSquare s = new GridSquare(description);
+        GridSquare s = new GridSquare(1);
         assertEquals(s.isPassable(), true);
         s.setColor("r");
         assertEquals(s.getPrintableDescription(), "r");
@@ -219,19 +157,14 @@ public class GridSquareTest {
 
     @Test
     void getPrintableDescriptionReturnsPaintCountForPassableWithoutColor() {
-        JSONObject description = new JSONObject();
-        description.put("tileType", 1);
-        description.put("value", 4);
-        GridSquare s = new GridSquare(description);
+        GridSquare s = new GridSquare(1, 4);
         assertEquals(s.isPassable(), true);
         assertEquals(s.getPrintableDescription(), "4");
     }
 
     @Test
     void hasColor() {
-        JSONObject description = new JSONObject();
-        description.put("tileType", 1);
-        GridSquare s = new GridSquare(description);
+        GridSquare s = new GridSquare(1);
         assertEquals(s.hasColor(), false);
         s.setColor("r");
         assertEquals(s.hasColor(), true);

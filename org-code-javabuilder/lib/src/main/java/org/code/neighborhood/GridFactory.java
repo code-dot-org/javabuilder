@@ -45,7 +45,17 @@ public class GridFactory {
                 }
                 for (int currentX = 0; currentX < line.size(); currentX++) {
                     JSONObject descriptor = (JSONObject) line.get(currentX);
-                    grid[currentX][currentY] = new GridSquare(descriptor);
+                    try {
+                        int tileType = Integer.parseInt(descriptor.get("tileType").toString());
+                        if(descriptor.containsKey("value")) {
+                            int value = Integer.parseInt(descriptor.get("value").toString());
+                            grid[currentX][currentY] = new GridSquare(tileType, value);
+                        } else {
+                            grid[currentX][currentY] = new GridSquare(tileType);
+                        }
+                    } catch (NumberFormatException e) {
+                        throw new UnsupportedOperationException("Please check the format of your grid.txt file");
+                    }
                 }
             }
             return new Grid(grid);

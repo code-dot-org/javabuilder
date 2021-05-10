@@ -8,49 +8,47 @@ public class GridSquare {
     private enum SquareType{ WALL, OPEN, START, FINISH, OBSTACLE, STARTANDFINISH, UNKNOWN};
     private SquareType squareType;
 
-    public GridSquare(JSONObject descriptor) {
+    public GridSquare(int tileType, int value) {
+        this.setTileType(tileType);
+        this.paintCount = value;
         this.color = "";
-        try {
-            switch(Integer.parseInt(descriptor.get("tileType").toString())) {
-                case 0:
-                    this.squareType = SquareType.WALL;
-                    this.passable = false;
-                    break;
-                case 1:
-                    this.squareType = SquareType.OPEN;
-                    this.passable = true;
-                    break;
-                case 2:
-                    this.squareType = SquareType.START;
-                    this.passable = true;
-                    break;
-                case 3:
-                    this.squareType = SquareType.FINISH;
-                    this.passable = true;
-                    break;
-                case 4:
-                    this.squareType = SquareType.OBSTACLE;
-                    this.passable = false;
-                    break;
-                case 5:
-                    this.squareType = SquareType.STARTANDFINISH;
-                    this.passable = true;
-                    break;
-                default:
-                    this.squareType = SquareType.UNKNOWN;
-                    this.passable = false;
-            }
-        } catch (NumberFormatException e) {
-            throw new UnsupportedOperationException("Please check the format of your grid.txt file, especially the tileType");
-        }
-        if(descriptor.containsKey("value")) {
-            try {
-                this.paintCount = Integer.parseInt(descriptor.get("value").toString());
-            } catch (NumberFormatException e) {
-                throw new UnsupportedOperationException("Please check the format of your grid.txt file, especially the value");
-            }
-        } else {
-            this.paintCount = 0;
+    }
+
+    public GridSquare(int tileType) {
+        this.setTileType(tileType);
+        this.paintCount = 0;
+        this.color = "";
+    }
+
+    private void setTileType(int tileType) {
+        switch(tileType) {
+            case 0:
+                this.squareType = SquareType.WALL;
+                this.passable = false;
+                break;
+            case 1:
+                this.squareType = SquareType.OPEN;
+                this.passable = true;
+                break;
+            case 2:
+                this.squareType = SquareType.START;
+                this.passable = true;
+                break;
+            case 3:
+                this.squareType = SquareType.FINISH;
+                this.passable = true;
+                break;
+            case 4:
+                this.squareType = SquareType.OBSTACLE;
+                this.passable = false;
+                break;
+            case 5:
+                this.squareType = SquareType.STARTANDFINISH;
+                this.passable = true;
+                break;
+            default:
+                this.squareType = SquareType.UNKNOWN;
+                this.passable = false;
         }
     }
 

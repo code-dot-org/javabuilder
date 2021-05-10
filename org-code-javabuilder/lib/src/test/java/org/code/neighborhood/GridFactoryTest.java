@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class GridFactoryTest {
-    String sampleGrid = "[[\n{\"tileType\": 1}, {\"tileType\": 1}], \n[{\"tileType\": 1}, {\"tileType\": 1}]]";
+    String sampleGrid = "[[\n{\"tileType\": 1}, {\"tileType\": 1}], \n[{\"tileType\": 1}, {\"tileType\": 1, \"value\": 4}]]";
 
     @Test
     void createGridFromString() {
@@ -33,6 +33,26 @@ public class GridFactoryTest {
             gridFactory.createGridFromString("[[\n{\"tileType\": 1}, {\"tileType\": 1}], \n[{\"tileType\": 1}]]");
         });
         String expectedMessage = "width of line 1 does not match others. Cannot create grid.";
+        assertEquals(exception.getMessage(), expectedMessage);
+    }
+
+    @Test
+    void createGridFromStringWithInvalidTileTypeThrowsException() {
+        GridFactory gridFactory = new GridFactory();
+        Exception exception = assertThrows(UnsupportedOperationException.class, () -> {
+            gridFactory.createGridFromString("[[\n{\"tileType\": \"invalid\"}]]");
+        });
+        String expectedMessage = "Please check the format of your grid.txt file";
+        assertEquals(exception.getMessage(), expectedMessage);
+    }
+
+    @Test
+    void createGridFromStringWithInvalidValueThrowsException() {
+        GridFactory gridFactory = new GridFactory();
+        Exception exception = assertThrows(UnsupportedOperationException.class, () -> {
+            gridFactory.createGridFromString("[[\n{\"tileType\": 1, \"value\": \"invalid\"}]]");
+        });
+        String expectedMessage = "Please check the format of your grid.txt file";
         assertEquals(exception.getMessage(), expectedMessage);
     }
 
