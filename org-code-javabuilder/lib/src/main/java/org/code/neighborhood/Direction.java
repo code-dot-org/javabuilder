@@ -1,50 +1,59 @@
 package org.code.neighborhood;
 
-public class Direction {
-    private enum CompassDirection{NORTH, EAST, SOUTH, WEST};
-    private CompassDirection direction;
-
-    public Direction(String startingDirection) {
-        if(startingDirection.equalsIgnoreCase("north")) {
-            this.direction = CompassDirection.NORTH;
-        } else if(startingDirection.equalsIgnoreCase("east")) {
-            this.direction = CompassDirection.EAST;
-        } else if(startingDirection.equalsIgnoreCase("south")) {
-            this.direction = CompassDirection.SOUTH;
-        } else if(startingDirection.equalsIgnoreCase("west")) {
-            this.direction = CompassDirection.WEST;
-        } else  {
-            System.out.println("bad direction");
-        }
+public enum Direction {
+    NORTH ("north"), EAST ("east"), SOUTH ("south"), WEST ("west");
+    private String directionString;
+    Direction(String directionString) {
+        this.directionString = directionString;
     }
 
-    //Changes the direction one compassDirection left (i.e. NORTH -> WEST)
-    public void turnLeft() {
-        if (this.direction == CompassDirection.NORTH) {
-            this.direction = CompassDirection.WEST;
+    public Direction turnLeft() {
+        Direction newDir;
+        if (this == NORTH) {
+            newDir = WEST;
         } else {
-            this.direction = CompassDirection.values() [this.direction.ordinal() - 1];
+            newDir = this.values()[this.ordinal() -1];
         }
-        System.out.println("pointing " + this.direction);
+        System.out.println("pointing " + newDir.getDirectionString());
+        return newDir;
+    }
+
+    public String getDirectionString() {
+        return directionString;
     }
 
     //Returns true if the current direction is north
     public boolean isNorth() {
-        return this.direction == CompassDirection.NORTH;
+        return this == NORTH;
     }
 
     //Returns true if the current direction is south
     public boolean isSouth() {
-        return this.direction == CompassDirection.SOUTH;
+        return this == SOUTH;
     }
 
     // Returns true if the current direction is east
     public boolean isEast() {
-        return this.direction == CompassDirection.EAST;
+        return this == EAST;
     }
 
     // Returns true if the current direction is west
     public boolean isWest() {
-        return this.direction == CompassDirection.WEST;
+        return this == WEST;
+    }
+
+    public static Direction fromString(String text) {
+        if(text.equalsIgnoreCase("north")) {
+            return NORTH;
+        } else if(text.equalsIgnoreCase("east")) {
+            return EAST;
+        } else if(text.equalsIgnoreCase("south")) {
+            return SOUTH;
+        } else if(text.equalsIgnoreCase("west")) {
+            return WEST;
+        } else {
+            System.out.println("bad direction");
+            return null;
+        }
     }
 }

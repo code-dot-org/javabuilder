@@ -25,24 +25,30 @@ public class DirectionTest {
     }
 
     @Test
-    void facesWestAfterTurningLeftFromNorth() {
-        Direction dir = new Direction("North");
-        dir.turnLeft();
-        assertEquals(dir.isWest(), true);
-        assertTrue(outputStreamCaptor.toString().trim().contains("pointing WEST"));
-    }
-
-    @Test
-    void facesNorthAfterTurningLeftFromEast() {
-        Direction dir = new Direction("East");
-        dir.turnLeft();
-        assertEquals(dir.isNorth(), true);
-        assertTrue(outputStreamCaptor.toString().trim().contains("pointing NORTH"));
+    void constructorIgnoresCase() {
+        Direction dir = Direction.fromString("NoRtH");
+        assertEquals(dir, Direction.NORTH);
     }
 
     @Test
     void printsErrorMessageIfBadDirectionGiven() {
-        Direction dir = new Direction("not a direction");
+        Direction dir = Direction.fromString("not a direction");
         assertTrue(outputStreamCaptor.toString().trim().contains("bad direction"));
+    }
+
+    @Test
+    void facesWestAfterTurningLeftFromNorth() {
+        Direction dir = Direction.fromString("North");
+        dir = dir.turnLeft();
+        assertTrue(dir.isWest());
+        assertTrue(outputStreamCaptor.toString().trim().contains("pointing west"));
+    }
+
+    @Test
+    void facesNorthAfterTurningLeftFromEast() {
+        Direction dir = Direction.fromString("East");
+        dir = dir.turnLeft();
+        assertTrue(dir.isNorth());
+        assertTrue(outputStreamCaptor.toString().trim().contains("pointing north"));
     }
 }

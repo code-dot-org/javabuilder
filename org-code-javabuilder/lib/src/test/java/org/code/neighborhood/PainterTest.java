@@ -48,7 +48,8 @@ public class PainterTest {
     void movePrintsNewLocationIfValidMovement() {
         World w = new World(multiSquareGrid);
         World.setInstance(w);
-        Painter painter = new Painter(0, 0, "North", 5);
+        Painter painter = new Painter(0, 0, "East", 5);
+        painter.turnLeft();
         assertTrue(painter.canMove("North"));
         painter.move();
         assertTrue(outputStreamCaptor.toString().trim().contains("New (x,y) : (0,1)"));
