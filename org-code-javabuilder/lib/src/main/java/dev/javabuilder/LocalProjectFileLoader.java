@@ -17,7 +17,7 @@ public class LocalProjectFileLoader implements ProjectFileLoader {
               Paths.get(getClass().getClassLoader().getResource("main_painter.json").toURI()));
       return new UserProjectFileParser().parseFileJson(mainJson);
     } catch (IOException | URISyntaxException e) {
-      throw new UserFacingException(UserFacingExceptionKey.internalException, e);
+      throw new UserFacingException(UserFacingExceptionKey.INTERNAL_EXCEPTION, e);
     }
   }
 }

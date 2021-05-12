@@ -37,7 +37,7 @@ public class UserProjectFileParser {
       }
       return userProjectFiles;
     } catch (IOException io) {
-      throw new UserFacingException(UserFacingExceptionKey.internalException, io);
+      throw new UserFacingException(UserFacingExceptionKey.INTERNAL_EXCEPTION, io);
     }
   }
 }

@@ -40,7 +40,7 @@ public class UserCodeCompiler {
       outputAdapter.sendMessage(new SystemOutMessage(diagnostic.toString()));
     }
     if (!success) {
-      throw new UserInitiatedException(UserInitiatedExceptionKey.compilerError);
+      throw new UserInitiatedException(UserInitiatedExceptionKey.COMPILER_ERROR);
     }
   }
 
@@ -56,7 +56,7 @@ public class UserCodeCompiler {
     } catch (IOException e) {
       e.printStackTrace();
       // if we can't set the file location we won't be able to run the class properly.
-      throw new UserFacingException(UserFacingExceptionKey.internalCompilerException, e);
+      throw new UserFacingException(UserFacingExceptionKey.INTERNAL_COMPILER_EXCEPTION, e);
     }
     // create file for user-provided code
     List<JavaFileObject> files = new ArrayList<>();
