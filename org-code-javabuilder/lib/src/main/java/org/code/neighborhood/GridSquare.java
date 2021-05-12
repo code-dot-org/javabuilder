@@ -53,7 +53,7 @@ public class GridSquare {
 
     // Sets the color of the square to the given color
     public void setColor(String color) {
-        if (!Helpers.isColor(color)) {
+        if (!ColorHelpers.isColor(color)) {
             System.out.println("Invalid color, please check your color format");
             return;
         }
