@@ -1,7 +1,6 @@
 package org.code.neighborhood;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -30,9 +29,16 @@ public class DirectionTest {
   }
 
   @Test
-  void printsErrorMessageIfBadDirectionGiven() {
-    Direction dir = Direction.fromString("not a direction");
-    assertTrue(outputStreamCaptor.toString().trim().contains("bad direction"));
+  void throwsErrorIfBadDirectionGiven() {
+    Exception exception =
+        assertThrows(
+            UnsupportedOperationException.class,
+            () -> {
+              Direction.fromString("not a direction");
+            });
+    String expectedMessage = "bad direction";
+    String actualMessage = exception.getMessage();
+    assertTrue(actualMessage.contains(expectedMessage));
   }
 
   @Test

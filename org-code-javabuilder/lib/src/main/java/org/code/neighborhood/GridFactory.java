@@ -2,6 +2,7 @@ package org.code.neighborhood;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -21,7 +22,7 @@ public class GridFactory {
       fis.read(data);
       fis.close();
       return createGridFromString(new String(data, "UTF-8"));
-    } catch (Exception e) {
+    } catch (IOException e) {
       throw new UnsupportedOperationException("Try adding a grid.txt file.");
     }
   }
@@ -41,6 +42,9 @@ public class GridFactory {
         throw new UnsupportedOperationException("Please check the format of your grid.txt file");
       }
       int width = ((JSONArray) gridSquares.get(0)).size();
+      if (width != height) {
+        throw new UnsupportedOperationException("Grids must be square. Cannot create grid.");
+      }
       GridSquare[][] grid = new GridSquare[width][height];
 
       // We start at the maximum height because we're reading the grid from top to bottom in the
