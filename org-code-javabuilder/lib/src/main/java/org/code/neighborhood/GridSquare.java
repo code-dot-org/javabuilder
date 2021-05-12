@@ -20,13 +20,69 @@ public class GridSquare {
   protected GridSquare(int tileType, int value) {
     this.setTileType(tileType);
     this.paintCount = value;
-    this.color = "";
   }
 
   protected GridSquare(int tileType) {
     this.setTileType(tileType);
     this.paintCount = 0;
-    this.color = "";
+  }
+
+  // Sets the color of the square to the given color
+  public void setColor(String color) {
+    if (!ColorHelpers.isColor(color)) {
+      throw new UnsupportedOperationException(ExceptionKeys.INVALID_COLOR.toString());
+    }
+    if (this.passable && this.paintCount == 0) {
+      this.color = color;
+    }
+  }
+
+  // Determines whether the given coordinate can be moved into
+  public boolean isPassable() {
+    return this.passable;
+  }
+
+  // Decreases the paintCount by 1 if there is available paint
+  public void collectPaint() {
+    if (this.containsPaint()) {
+      this.paintCount--;
+    } else {
+      System.out.println("There's no paint to collect here");
+    }
+  }
+
+  // Returns the square to a non-painted state
+  public void removePaint() {
+    if (this.color != null) {
+      this.color = null;
+    } else {
+      System.out.println("There's no paint to remove here");
+    }
+  }
+
+  // Returns true if the square has paint available to collect
+  public boolean containsPaint() {
+    return this.paintCount > 0;
+  }
+
+  public String getPrintableDescription() {
+    if (!this.passable) {
+      return "x";
+    } else if (this.color != null) {
+      return this.color;
+    } else {
+      return String.valueOf(this.paintCount);
+    }
+  }
+
+  // Returns true if the color variable is populated
+  public boolean hasColor() {
+    return this.color != null;
+  }
+
+  // Returns the color of the square
+  public String getColor() {
+    return this.color;
   }
 
   private void setTileType(int tileType) {
@@ -59,64 +115,5 @@ public class GridSquare {
         this.squareType = SquareType.UNKNOWN;
         this.passable = false;
     }
-  }
-
-  // Sets the color of the square to the given color
-  public void setColor(String color) {
-    if (!ColorHelpers.isColor(color)) {
-      System.out.println("Invalid color, please check your color format");
-      return;
-    }
-    if (this.passable && this.paintCount == 0) {
-      this.color = color;
-    }
-  }
-
-  // Determines whether the given coordinate can be moved into
-  public boolean isPassable() {
-    return this.passable;
-  }
-
-  // Decreases the paintCount by 1 if there is available paint
-  public void collectPaint() {
-    if (this.containsPaint()) {
-      this.paintCount--;
-    } else {
-      System.out.println("There's no paint to collect here");
-    }
-  }
-
-  // Returns the square to a non-painted state
-  public void removePaint() {
-    if (!this.color.equals("")) {
-      this.color = "";
-    } else {
-      System.out.println("There's no paint to remove here");
-    }
-  }
-
-  // Returns true if the square has paint available to collect
-  public boolean containsPaint() {
-    return this.paintCount > 0;
-  }
-
-  public String getPrintableDescription() {
-    if (!this.passable) {
-      return "x";
-    } else if (!this.color.equals("")) {
-      return this.color;
-    } else {
-      return String.valueOf(this.paintCount);
-    }
-  }
-
-  // Returns true if the color variable is populated
-  public boolean hasColor() {
-    return !this.color.equals("");
-  }
-
-  // Returns the color of the square
-  public String getColor() {
-    return this.color;
   }
 }

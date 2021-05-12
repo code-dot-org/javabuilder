@@ -12,9 +12,6 @@ public class GridTest {
     GridSquare[][] squares = new GridSquare[1][1];
     squares[0][0] = s;
     Grid grid = new Grid(squares);
-    assertTrue(grid.validLocation(0, 0));
-    assertFalse(grid.validLocation(0, 1));
-    assertFalse(grid.validLocation(1, 0));
   }
 
   @Test
@@ -53,8 +50,7 @@ public class GridTest {
               GridSquare sq = grid.getSquare(-1, -1);
             });
 
-    String expectedMessage = "failed to get square";
-    String actualMessage = exception.getMessage();
-    assertTrue(actualMessage.contains(expectedMessage));
+    String expectedMessage = ExceptionKeys.GET_SQUARE_FAILED.toString();
+    assertEquals(exception.getMessage(), expectedMessage);
   }
 }

@@ -36,9 +36,8 @@ public class DirectionTest {
             () -> {
               Direction.fromString("not a direction");
             });
-    String expectedMessage = "bad direction";
-    String actualMessage = exception.getMessage();
-    assertTrue(actualMessage.contains(expectedMessage));
+    String expectedMessage = ExceptionKeys.INVALID_DIRECTION.toString();
+    assertEquals(exception.getMessage(), expectedMessage);
   }
 
   @Test

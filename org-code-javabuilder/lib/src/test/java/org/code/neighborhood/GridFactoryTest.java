@@ -2,6 +2,7 @@ package org.code.neighborhood;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.io.IOException;
 import org.junit.jupiter.api.Test;
 
 public class GridFactoryTest {
@@ -11,7 +12,12 @@ public class GridFactoryTest {
   @Test
   void createGridFromString() {
     GridFactory gridFactory = new GridFactory();
-    Grid grid = gridFactory.createGridFromString(sampleGrid);
+    Grid grid = null;
+    try {
+      grid = gridFactory.createGridFromString(sampleGrid);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
     assertTrue(grid instanceof Grid);
     assertTrue(grid.validLocation(1, 1));
   }
@@ -21,11 +27,11 @@ public class GridFactoryTest {
     GridFactory gridFactory = new GridFactory();
     Exception exception =
         assertThrows(
-            UnsupportedOperationException.class,
+            IOException.class,
             () -> {
               gridFactory.createGridFromString("not valid json here:");
             });
-    String expectedMessage = "Please check the format of your grid.txt file";
+    String expectedMessage = ExceptionKeys.INVALID_GRID.toString();
     String actualMessage = exception.getMessage();
     assertTrue(actualMessage.contains(expectedMessage));
   }
@@ -35,12 +41,12 @@ public class GridFactoryTest {
     GridFactory gridFactory = new GridFactory();
     Exception exception =
         assertThrows(
-            UnsupportedOperationException.class,
+            IOException.class,
             () -> {
               gridFactory.createGridFromString(
                   "[[\n{\"tileType\": 1}, {\"tileType\": 1}], \n[{\"tileType\": 1}]]");
             });
-    String expectedMessage = "width of line 1 does not match others. Cannot create grid.";
+    String expectedMessage = ExceptionKeys.INVALID_GRID.toString();
     assertEquals(exception.getMessage(), expectedMessage);
   }
 
@@ -49,11 +55,11 @@ public class GridFactoryTest {
     GridFactory gridFactory = new GridFactory();
     Exception exception =
         assertThrows(
-            UnsupportedOperationException.class,
+            IOException.class,
             () -> {
               gridFactory.createGridFromString("[[\n{\"tileType\": 1}], \n[{\"tileType\": 1}]]");
             });
-    String expectedMessage = "Grids must be square. Cannot create grid.";
+    String expectedMessage = ExceptionKeys.INVALID_GRID.toString();
     assertEquals(exception.getMessage(), expectedMessage);
   }
 
@@ -62,11 +68,11 @@ public class GridFactoryTest {
     GridFactory gridFactory = new GridFactory();
     Exception exception =
         assertThrows(
-            UnsupportedOperationException.class,
+            IOException.class,
             () -> {
               gridFactory.createGridFromString("[[\n{\"tileType\": \"invalid\"}]]");
             });
-    String expectedMessage = "Please check the format of your grid.txt file";
+    String expectedMessage = ExceptionKeys.INVALID_GRID.toString();
     assertEquals(exception.getMessage(), expectedMessage);
   }
 
@@ -75,11 +81,11 @@ public class GridFactoryTest {
     GridFactory gridFactory = new GridFactory();
     Exception exception =
         assertThrows(
-            UnsupportedOperationException.class,
+            IOException.class,
             () -> {
               gridFactory.createGridFromString("[[\n{\"tileType\": 1, \"value\": \"invalid\"}]]");
             });
-    String expectedMessage = "Please check the format of your grid.txt file";
+    String expectedMessage = ExceptionKeys.INVALID_GRID.toString();
     assertEquals(exception.getMessage(), expectedMessage);
   }
 
@@ -88,11 +94,11 @@ public class GridFactoryTest {
     GridFactory gridFactory = new GridFactory();
     Exception exception =
         assertThrows(
-            UnsupportedOperationException.class,
+            IOException.class,
             () -> {
               gridFactory.createGridFromString("[]");
             });
-    String expectedMessage = "Please check the format of your grid.txt file";
+    String expectedMessage = ExceptionKeys.INVALID_GRID.toString();
     assertEquals(exception.getMessage(), expectedMessage);
   }
 }
