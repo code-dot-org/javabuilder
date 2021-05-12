@@ -24,6 +24,8 @@ public class Grid {
   }
 
   // Determines whether the given coordinate can be moved into
+  // A coordinate cannot be moved into if it is out of the range of the grid
+  // or if the tile is not passable (wall, obstacle, or unknown tile)
   public boolean validLocation(int x, int y) {
     return x >= 0 && y >= 0 && x < width && y < height && grid[x][y].isPassable();
   }

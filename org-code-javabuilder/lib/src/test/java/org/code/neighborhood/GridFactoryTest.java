@@ -45,6 +45,19 @@ public class GridFactoryTest {
   }
 
   @Test
+  void createGridFromNotSquareGridThrowsException() {
+    GridFactory gridFactory = new GridFactory();
+    Exception exception =
+        assertThrows(
+            UnsupportedOperationException.class,
+            () -> {
+              gridFactory.createGridFromString("[[\n{\"tileType\": 1}], \n[{\"tileType\": 1}]]");
+            });
+    String expectedMessage = "Grids must be square. Cannot create grid.";
+    assertEquals(exception.getMessage(), expectedMessage);
+  }
+
+  @Test
   void createGridFromStringWithInvalidTileTypeThrowsException() {
     GridFactory gridFactory = new GridFactory();
     Exception exception =
