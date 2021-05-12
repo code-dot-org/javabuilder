@@ -38,9 +38,9 @@ public class JavaRunner {
       mainMethod.invoke(null, new Object[] {null});
     } catch (IllegalAccessException e) {
       // TODO: this error message may not be not very friendly
-      throw new UserInitiatedException(UserInitiatedExceptionKey.illegalMethodAccess, e);
+      throw new UserInitiatedException(UserInitiatedExceptionKey.ILLEGAL_METHOD_ACCESS, e);
     } catch (InvocationTargetException e) {
-      throw new UserInitiatedException(UserInitiatedExceptionKey.runtimeError, e);
+      throw new UserInitiatedException(UserInitiatedExceptionKey.RUNTIME_ERROR, e);
     }
     try {
       urlClassLoader.close();
@@ -73,19 +73,19 @@ public class JavaRunner {
               && parameterTypes.length == 1
               && parameterTypes[0].equals(String[].class)) {
             if (mainMethod != null) {
-              throw new UserInitiatedException(UserInitiatedExceptionKey.twoMainMethods);
+              throw new UserInitiatedException(UserInitiatedExceptionKey.TWO_MAIN_METHODS);
             }
             mainMethod = method;
           }
         }
       } catch (ClassNotFoundException e) {
         // this should be caught earlier in compilation
-        throw new UserFacingException(UserFacingExceptionKey.internalRuntimeException, e);
+        throw new UserFacingException(UserFacingExceptionKey.INTERNAL_RUNTIME_EXCEPTION, e);
       }
     }
 
     if (mainMethod == null) {
-      throw new UserInitiatedException(UserInitiatedExceptionKey.noMainMethod);
+      throw new UserInitiatedException(UserInitiatedExceptionKey.NO_MAIN_METHOD);
     }
     return mainMethod;
   }

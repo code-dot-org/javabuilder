@@ -3,9 +3,9 @@ package org.code.javabuilder;
 /** These keys map to client-side strings that are translatable. */
 public enum UserFacingExceptionKey {
   // We caused an error while executing the user's program.
-  internalRuntimeException,
+  INTERNAL_RUNTIME_EXCEPTION,
   // We caused an error while compiling the user's program.
-  internalCompilerException,
+  INTERNAL_COMPILER_EXCEPTION,
   // We caused an error.
-  internalException
+  INTERNAL_EXCEPTION
 }

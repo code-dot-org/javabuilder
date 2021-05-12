@@ -27,7 +27,7 @@ public class CodeBuilder implements AutoCloseable {
     try {
       this.tempFolder = Files.createTempDirectory("tmpdir").toFile();
     } catch (IOException e) {
-      throw new UserFacingException(UserFacingExceptionKey.internalException, e);
+      throw new UserFacingException(UserFacingExceptionKey.INTERNAL_EXCEPTION, e);
     }
   }
 
@@ -57,7 +57,7 @@ public class CodeBuilder implements AutoCloseable {
       runner =
           new JavaRunner(this.tempFolder.toURI().toURL(), this.userProjectFiles.getJavaFiles());
     } catch (MalformedURLException e) {
-      throw new UserFacingException(UserFacingExceptionKey.internalRuntimeException, e);
+      throw new UserFacingException(UserFacingExceptionKey.INTERNAL_RUNTIME_EXCEPTION, e);
     }
     runner.runCode();
   }
@@ -94,7 +94,7 @@ public class CodeBuilder implements AutoCloseable {
       try {
         Files.writeString(Path.of(filePath), projectFile.getFileContents());
       } catch (IOException e) {
-        throw new UserFacingException(UserFacingExceptionKey.internalCompilerException, e);
+        throw new UserFacingException(UserFacingExceptionKey.INTERNAL_COMPILER_EXCEPTION, e);
       }
     }
   }

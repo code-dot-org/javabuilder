@@ -11,7 +11,7 @@ public class JavaProjectFile implements ProjectFile {
     if (fileName.endsWith(".java")) {
       this.className = fileName.substring(0, fileName.indexOf(".java"));
     } else {
-      throw new UserInitiatedException(UserInitiatedExceptionKey.javaExtensionMissing);
+      throw new UserInitiatedException(UserInitiatedExceptionKey.JAVA_EXTENSION_MISSING);
     }
   }
 
