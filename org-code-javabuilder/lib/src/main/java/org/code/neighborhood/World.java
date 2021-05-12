@@ -1,30 +1,31 @@
 package org.code.neighborhood;
 
 public class World {
-    private static World worldInstance;
-    private Grid grid;
-    private World() {
-        GridFactory gridFactory = new GridFactory();
-        this.grid = gridFactory.createGridFromJSON("grid.txt");
-    }
+  private static World worldInstance;
+  private Grid grid;
 
-    protected World(String s) {
-        GridFactory gridFactory = new GridFactory();
-        this.grid = gridFactory.createGridFromString(s);
-    }
+  private World() {
+    GridFactory gridFactory = new GridFactory();
+    this.grid = gridFactory.createGridFromJSON("grid.txt");
+  }
 
-    protected static void setInstance(World world) {
-        worldInstance = world;
-    }
+  protected World(String s) {
+    GridFactory gridFactory = new GridFactory();
+    this.grid = gridFactory.createGridFromString(s);
+  }
 
-    public static World getInstance() {
-        if (worldInstance == null) {
-            worldInstance = new World();
-        }
-        return worldInstance;
-    }
+  protected static void setInstance(World world) {
+    worldInstance = world;
+  }
 
-    public Grid getGrid() {
-        return this.grid;
+  public static World getInstance() {
+    if (worldInstance == null) {
+      worldInstance = new World();
     }
+    return worldInstance;
+  }
+
+  public Grid getGrid() {
+    return this.grid;
+  }
 }
