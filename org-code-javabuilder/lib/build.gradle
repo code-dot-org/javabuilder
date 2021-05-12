@@ -25,7 +25,7 @@ dependencies {
     implementation group: 'com.amazonaws', name: 'aws-java-sdk-apigatewaymanagementapi', version: '1.11.978'
     // https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-sqs
     implementation group: 'com.amazonaws', name: 'aws-java-sdk-sqs', version: '1.11.978'
-    // https://mvnrepository.com/artifact/org.json/json
+    // https://mvnrepository.com/artifact/com.googlecode.json-simple/json-simple
     implementation group: 'com.googlecode.json-simple', name: 'json-simple', version: '1.1.1'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
     // https://mvnrepository.com/artifact/org.mockito/mockito-core
