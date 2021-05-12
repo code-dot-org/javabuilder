@@ -56,7 +56,7 @@ public enum Direction {
     } else if (text.equalsIgnoreCase("west")) {
       return WEST;
     } else {
-      throw new UnsupportedOperationException("bad direction");
+      throw new UnsupportedOperationException(ExceptionKeys.INVALID_DIRECTION.toString());
     }
   }
 }

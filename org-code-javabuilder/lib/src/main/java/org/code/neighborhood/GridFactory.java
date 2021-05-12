@@ -13,7 +13,7 @@ public class GridFactory {
   private static final String GRID_SQUARE_TYPE_FIELD = "tileType";
   private static final String GRID_SQUARE_VALUE_FIELD = "value";
 
-  protected Grid createGridFromJSON(String filename) {
+  protected Grid createGridFromJSON(String filename) throws IOException {
     File file = new File(GRID_FILE_NAME);
     FileInputStream fis;
     try {
@@ -23,14 +23,14 @@ public class GridFactory {
       fis.close();
       return createGridFromString(new String(data, "UTF-8"));
     } catch (IOException e) {
-      throw new UnsupportedOperationException("Try adding a grid.txt file.");
+      throw new IOException(ExceptionKeys.INVALID_GRID.toString());
     }
   }
 
   // Creates a grid from a string, assuming that the string is a 2D JSONArray of JSONObjects
   // with each JSONObject containing an integer tileType and optionally an integer value
   // corresponding with the paintCount for that tile.
-  protected Grid createGridFromString(String description) {
+  protected Grid createGridFromString(String description) throws IOException {
     String[] lines = description.split("\n");
     String parseLine = String.join("", lines);
     JSONParser jsonParser = new JSONParser();
@@ -39,11 +39,11 @@ public class GridFactory {
       JSONArray gridSquares = (JSONArray) obj;
       int height = gridSquares.size();
       if (height == 0) {
-        throw new UnsupportedOperationException("Please check the format of your grid.txt file");
+        throw new IOException(ExceptionKeys.INVALID_GRID.toString());
       }
       int width = ((JSONArray) gridSquares.get(0)).size();
       if (width != height) {
-        throw new UnsupportedOperationException("Grids must be square. Cannot create grid.");
+        throw new IOException(ExceptionKeys.INVALID_GRID.toString());
       }
       GridSquare[][] grid = new GridSquare[width][height];
 
@@ -54,8 +54,7 @@ public class GridFactory {
         currentHeight--;
         JSONArray line = (JSONArray) gridSquares.get(currentHeight);
         if (line.size() != width) {
-          throw new UnsupportedOperationException(
-              "width of line " + currentHeight + " does not match others. Cannot create grid.");
+          throw new IOException(ExceptionKeys.INVALID_GRID.toString());
         }
         for (int currentX = 0; currentX < line.size(); currentX++) {
           JSONObject descriptor = (JSONObject) line.get(currentX);
@@ -68,14 +67,13 @@ public class GridFactory {
               grid[currentX][currentY] = new GridSquare(tileType);
             }
           } catch (NumberFormatException e) {
-            throw new UnsupportedOperationException(
-                "Please check the format of your grid.txt file");
+            throw new IOException(ExceptionKeys.INVALID_GRID.toString());
           }
         }
       }
       return new Grid(grid);
     } catch (ParseException e) {
-      throw new UnsupportedOperationException("Please check the format of your grid.txt file");
+      throw new IOException(ExceptionKeys.INVALID_GRID.toString());
     }
   }
 }

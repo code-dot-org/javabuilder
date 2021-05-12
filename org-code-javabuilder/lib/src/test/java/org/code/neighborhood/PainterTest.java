@@ -35,9 +35,20 @@ public class PainterTest {
             () -> {
               new Painter(0, 0, "not a direction", 5);
             });
-    String expectedMessage = "Invalid direction given to painter";
-    String actualMessage = exception.getMessage();
-    assertTrue(actualMessage.contains(expectedMessage));
+    String expectedMessage = ExceptionKeys.INVALID_DIRECTION.toString();
+    assertEquals(exception.getMessage(), expectedMessage);
+  }
+
+  @Test
+  void constructorThrowsErrorIfStartLocationInvalid() {
+    Exception exception =
+        assertThrows(
+            UnsupportedOperationException.class,
+            () -> {
+              new Painter(-1, -1, "West", 5);
+            });
+    String expectedMessage = ExceptionKeys.INVALID_LOCATION.toString();
+    assertEquals(exception.getMessage(), expectedMessage);
   }
 
   @Test
@@ -50,10 +61,16 @@ public class PainterTest {
   }
 
   @Test
-  void movePrintsErrorIfInvalidMovement() {
+  void moveThrowsErrorIfInvalidMovement() {
     Painter painter = new Painter(0, 0, "North", 5);
-    painter.move();
-    assertTrue(outputStreamCaptor.toString().trim().contains("You can't go that way"));
+    Exception exception =
+        assertThrows(
+            UnsupportedOperationException.class,
+            () -> {
+              painter.move();
+            });
+    String expectedMessage = ExceptionKeys.INVALID_MOVE.toString();
+    assertEquals(exception.getMessage(), expectedMessage);
   }
 
   @Test

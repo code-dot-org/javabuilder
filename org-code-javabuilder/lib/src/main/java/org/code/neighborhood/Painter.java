@@ -13,11 +13,12 @@ public class Painter {
     this.xLocation = x;
     this.yLocation = y;
     this.direction = Direction.fromString(direction);
-    if (this.direction == null) {
-      throw new UnsupportedOperationException("Invalid direction given to painter");
-    }
     this.remainingPaint = paint;
     this.grid = World.getInstance().getGrid();
+    int gridSize = this.grid.getSize();
+    if (x < 0 || y < 0 || x >= gridSize || y >= gridSize) {
+      throw new UnsupportedOperationException(ExceptionKeys.INVALID_LOCATION.toString());
+    }
     this.id = "painter-" + lastId++;
   }
 
@@ -40,7 +41,7 @@ public class Painter {
         this.xLocation--;
       }
     } else {
-      System.out.println("You can't go that way");
+      throw new UnsupportedOperationException(ExceptionKeys.INVALID_MOVE.toString());
     }
     System.out.println("New (x,y) : (" + this.xLocation + "," + this.yLocation + ")");
   }
@@ -101,22 +102,10 @@ public class Painter {
     return this.remainingPaint > 0;
   }
 
-  private boolean isValidMovement(Direction direction) {
-    if (direction.isNorth()) {
-      return this.grid.validLocation(this.xLocation, this.yLocation + 1);
-    } else if (this.direction.isSouth()) {
-      return this.grid.validLocation(this.xLocation, this.yLocation - 1);
-    } else if (this.direction.isEast()) {
-      return this.grid.validLocation(this.xLocation + 1, this.yLocation);
-    } else {
-      return this.grid.validLocation(this.xLocation - 1, this.yLocation);
-    }
-  }
-
   // Returns True if there is no barrier one square ahead in the
   // requested direction.
   public boolean canMove(String direction) {
-    return isValidMovement(Direction.fromString(direction));
+    return this.isValidMovement(Direction.fromString(direction));
   }
 
   // Returns the color of the square where the painter is standing
@@ -142,5 +131,17 @@ public class Painter {
   // returns True if facing West.
   public boolean facingWest() {
     return this.direction.isWest();
+  }
+
+  private boolean isValidMovement(Direction movementDirection) {
+    if (movementDirection.isNorth()) {
+      return this.grid.validLocation(this.xLocation, this.yLocation + 1);
+    } else if (movementDirection.isSouth()) {
+      return this.grid.validLocation(this.xLocation, this.yLocation - 1);
+    } else if (movementDirection.isEast()) {
+      return this.grid.validLocation(this.xLocation + 1, this.yLocation);
+    } else {
+      return this.grid.validLocation(this.xLocation - 1, this.yLocation);
+    }
   }
 }

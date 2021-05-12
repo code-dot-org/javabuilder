@@ -79,24 +79,23 @@ public class GridSquareTest {
   @Test
   void setColorChecksColorFormatBeforeSettingColor() {
     GridSquare s = new GridSquare(1);
-    s.setColor("r");
-    assertEquals(s.getColor(), "");
-    assertTrue(
-        outputStreamCaptor
-            .toString()
-            .trim()
-            .contains("Invalid color, please check your color format"));
     s.setColor("red");
     assertEquals(s.getColor(), "red");
-    s.setColor("green");
-    assertEquals(s.getColor(), "green");
+    Exception exception =
+        assertThrows(
+            UnsupportedOperationException.class,
+            () -> {
+              s.setColor("r");
+            });
+    String expectedMessage = ExceptionKeys.INVALID_COLOR.toString();
+    assertEquals(exception.getMessage(), expectedMessage);
   }
 
   @Test
   void setColorDoesNotChangeColorIfThereIsPaint() {
     GridSquare s = new GridSquare(1, 4);
     s.setColor("red");
-    assertEquals(s.getColor(), "");
+    assertEquals(s.getColor(), null);
   }
 
   @Test
@@ -105,13 +104,13 @@ public class GridSquareTest {
     s.setColor("red");
     assertEquals(s.getColor(), "red");
     s.removePaint();
-    assertEquals(s.getColor(), "");
+    assertEquals(s.getColor(), null);
   }
 
   @Test
   void removePaintPrintsErrorWhenNoPaint() {
     GridSquare s = new GridSquare(1);
-    assertEquals(s.getColor(), "");
+    assertEquals(s.getColor(), null);
     s.removePaint();
     assertTrue(outputStreamCaptor.toString().trim().contains("There's no paint to remove here"));
   }
@@ -139,28 +138,6 @@ public class GridSquareTest {
     assertTrue(outputStreamCaptor.toString().trim().contains("There's no paint to collect here"));
     // paintCount should be 0
     assertFalse(s.containsPaint());
-  }
-
-  @Test
-  void getPrintableDescriptionReturnsXForNotPassable() {
-    GridSquare s = new GridSquare(0);
-    assertFalse(s.isPassable());
-    assertEquals(s.getPrintableDescription(), "x");
-  }
-
-  @Test
-  void getPrintableDescriptionReturnsColorForPassableWithColor() {
-    GridSquare s = new GridSquare(1);
-    assertTrue(s.isPassable());
-    s.setColor("red");
-    assertEquals(s.getPrintableDescription(), "red");
-  }
-
-  @Test
-  void getPrintableDescriptionReturnsPaintCountForPassableWithoutColor() {
-    GridSquare s = new GridSquare(1, 4);
-    assertTrue(s.isPassable());
-    assertEquals(s.getPrintableDescription(), "4");
   }
 
   @Test

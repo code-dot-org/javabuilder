@@ -17,7 +17,7 @@ public class Grid {
     for (int y = height - 1; y >= 0; y--) {
       ArrayList<String> squares = new ArrayList<String>();
       for (int x = 0; x < width; x++) {
-        squares.add(grid[x][y].getPrintableDescription());
+        squares.add(this.grid[x][y].getPrintableDescription());
       }
       System.out.println(String.join(",", squares));
     }
@@ -27,15 +27,15 @@ public class Grid {
   // A coordinate cannot be moved into if it is out of the range of the grid
   // or if the tile is not passable (wall, obstacle, or unknown tile)
   public boolean validLocation(int x, int y) {
-    return x >= 0 && y >= 0 && x < width && y < height && grid[x][y].isPassable();
+    return x >= 0 && y >= 0 && x < width && y < height && this.grid[x][y].isPassable();
   }
 
   // Returns the GridSquare at the given position
   public GridSquare getSquare(int x, int y) {
     if (validLocation(x, y)) {
-      return grid[x][y];
+      return this.grid[x][y];
     } else {
-      throw new UnsupportedOperationException("failed to get square");
+      throw new UnsupportedOperationException(ExceptionKeys.GET_SQUARE_FAILED.toString());
     }
   }
 
@@ -47,5 +47,9 @@ public class Grid {
   // Displays all buckets on the screen
   public void showBuckets() {
     System.out.println("You displayed the buckets");
+  }
+
+  protected int getSize() {
+    return this.grid.length;
   }
 }
