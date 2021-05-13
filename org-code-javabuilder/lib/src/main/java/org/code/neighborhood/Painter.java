@@ -9,6 +9,14 @@ public class Painter {
   private Grid grid;
   private String id;
 
+  /**
+   * Creates a Painter object
+   *
+   * @param x the x location of the painter on the grid
+   * @param y the y location of the painter on the grid
+   * @param direction the direction the painter is facing
+   * @param paint the amount of paint the painter has to start
+   */
   public Painter(int x, int y, String direction, int paint) {
     this.xLocation = x;
     this.yLocation = y;
@@ -22,13 +30,12 @@ public class Painter {
     this.id = "painter-" + lastId++;
   }
 
-  // Turn the painter one compass direction left (i.e. North -> West)
+  /** Turns the painter one compass direction left (i.e. North -> West). */
   public void turnLeft() {
     this.direction = this.direction.turnLeft();
   }
 
-  // Move the painter one square forward in the direction the painter
-  // is facing
+  /** Move the painter one square forward in the direction the painter is facing. */
   public void move() {
     if (this.isValidMovement(this.direction)) {
       if (this.direction.isNorth()) {
@@ -46,36 +53,48 @@ public class Painter {
     System.out.println("New (x,y) : (" + this.xLocation + "," + this.yLocation + ")");
   }
 
-  // Add paint of the given color to the grid at the location where the
-  // painter currently is
+  /**
+   * Add paint to the grid at the painter's location.
+   *
+   * @param color the color of the paint being added
+   */
   public void paint(String color) {
-    this.grid.getSquare(this.xLocation, this.yLocation).setColor(color);
+    if (this.remainingPaint > 0) {
+      this.grid.getSquare(this.xLocation, this.yLocation).setColor(color);
+      this.remainingPaint--;
+    } else {
+      System.out.println("There is no more paint in the painter's bucket");
+    }
   }
 
-  // removes all paint on the square where the painter is standing
+  /** Removes all paint on the square where the painter is standing. */
   public void scrapePaint() {
     this.grid.getSquare(this.xLocation, this.yLocation).removePaint();
   }
 
-  // Returns how many units of paint are in the painter's personal
-  // bucket
+  /**
+   * Returns how many units of paint are in the painter's personal bucket.
+   *
+   * @return the units of paint in the painter's bucket
+   */
   public int getMyPaint() {
     return this.remainingPaint;
   }
 
-  // Hides the painter on the screen
+  /** Hides the painter on the screen. */
   public void hidePainter() {
     System.out.println("You hid the painter");
   }
 
-  // Shows the painter on the screen
+  /** Shows the painter on the screen. */
   public void showPainter() {
     System.out.println("You displayed the painter");
   }
 
-  // Painter adds a single unit of paint to their personal bucket
-  // Counter on the bucket on the screen goes down. If the painter
-  // is not standing on a paint bucket, nothing happens
+  /**
+   * The Painter adds a single unit of paint to their personal bucket. The counter on the bucket on
+   * the screen goes down. If the painter is not standing on a paint bucket, nothing happens.
+   */
   public void takePaint() {
     if (this.grid.getSquare(this.xLocation, this.yLocation).containsPaint()) {
       this.grid.getSquare(this.xLocation, this.yLocation).collectPaint();
@@ -85,54 +104,57 @@ public class Painter {
     }
   }
 
-  // Returns True if there is paint in the square where the painter
-  // is standing.
+  /** @return True if there is paint in the square where the painter is standing. */
   public boolean isOnPaint() {
     return this.grid.getSquare(this.xLocation, this.yLocation).hasColor();
   }
 
-  // Returns True if there is a paint bucket in the square where the
-  // painter is standing.
+  /** @return True if there is a paint bucket in the square where the painter is standing. */
   public boolean isOnBucket() {
     return this.grid.getSquare(this.xLocation, this.yLocation).containsPaint();
   }
 
-  // Returns True if remainingPaint > 0
+  /** @return True if the painter's personal bucket has paint in it. */
   public boolean hasPaint() {
     return this.remainingPaint > 0;
   }
 
-  // Returns True if there is no barrier one square ahead in the
-  // requested direction.
+  /** @return True if there is no barrier one square ahead in the requested direction. */
   public boolean canMove(String direction) {
     return this.isValidMovement(Direction.fromString(direction));
   }
 
-  // Returns the color of the square where the painter is standing
+  /** @return the color of the square where the painter is standing. */
   public String getColor() {
     return this.grid.getSquare(this.xLocation, this.yLocation).getColor();
   }
 
-  // returns True if facing North.
+  /** @return True if facing North */
   public boolean facingNorth() {
     return this.direction.isNorth();
   }
 
-  // returns True if facing East.
+  /** @return True if facing East */
   public boolean facingEast() {
     return this.direction.isEast();
   }
 
-  // returns True if facing South.
+  /** @return True if facing South */
   public boolean facingSouth() {
     return this.direction.isSouth();
   }
 
-  // returns True if facing West.
+  /** @return True if facing West */
   public boolean facingWest() {
     return this.direction.isWest();
   }
 
+  /**
+   * Helper function to check if the painter can move in the specified direction.
+   *
+   * @param movementDirection the direction of movement
+   * @return True if the painter can move in that direction
+   */
   private boolean isValidMovement(Direction movementDirection) {
     if (movementDirection.isNorth()) {
       return this.grid.validLocation(this.xLocation, this.yLocation + 1);

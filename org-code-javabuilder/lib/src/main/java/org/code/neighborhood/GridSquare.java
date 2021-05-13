@@ -15,15 +15,19 @@ public class GridSquare {
     UNKNOWN
   };
 
+  private int assetId;
+
   private SquareType squareType;
 
-  protected GridSquare(int tileType, int value) {
+  protected GridSquare(int tileType, int assetId, int value) {
     this.setTileType(tileType);
+    this.assetId = assetId;
     this.paintCount = value;
   }
 
-  protected GridSquare(int tileType) {
+  protected GridSquare(int tileType, int assetId) {
     this.setTileType(tileType);
+    this.assetId = assetId;
     this.paintCount = 0;
   }
 

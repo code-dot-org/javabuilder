@@ -8,7 +8,7 @@ public class GridTest {
 
   @Test
   void constructorBuildsGrid() {
-    GridSquare s = new GridSquare(1);
+    GridSquare s = new GridSquare(1, 0);
     GridSquare[][] squares = new GridSquare[1][1];
     squares[0][0] = s;
     Grid grid = new Grid(squares);
@@ -16,7 +16,7 @@ public class GridTest {
 
   @Test
   void validLocationReturnsFalseForInvalidLocations() {
-    GridSquare s = new GridSquare(1);
+    GridSquare s = new GridSquare(1, 0);
     GridSquare[][] squares = new GridSquare[1][1];
     squares[0][0] = s;
     Grid grid = new Grid(squares);
@@ -29,7 +29,7 @@ public class GridTest {
 
   @Test
   void getSquareReturnsSquareForValidLocation() {
-    GridSquare s = new GridSquare(1);
+    GridSquare s = new GridSquare(1, 0);
     GridSquare[][] squares = new GridSquare[1][1];
     squares[0][0] = s;
     Grid grid = new Grid(squares);
@@ -39,7 +39,7 @@ public class GridTest {
 
   @Test
   void getSquareThrowsErrorForInvalidLocation() {
-    GridSquare s = new GridSquare(1);
+    GridSquare s = new GridSquare(1, 0);
     GridSquare[][] squares = new GridSquare[1][1];
     squares[0][0] = s;
     Grid grid = new Grid(squares);

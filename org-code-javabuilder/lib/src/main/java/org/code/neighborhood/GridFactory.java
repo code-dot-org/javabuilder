@@ -11,6 +11,7 @@ import org.json.simple.parser.ParseException;
 public class GridFactory {
   private static final String GRID_FILE_NAME = "grid.txt";
   private static final String GRID_SQUARE_TYPE_FIELD = "tileType";
+  private static final String GRID_SQUARE_ASSET_ID_FIELD = "assetId";
   private static final String GRID_SQUARE_VALUE_FIELD = "value";
 
   protected Grid createGridFromJSON(String filename) throws IOException {
@@ -60,11 +61,12 @@ public class GridFactory {
           JSONObject descriptor = (JSONObject) line.get(currentX);
           try {
             int tileType = Integer.parseInt(descriptor.get(GRID_SQUARE_TYPE_FIELD).toString());
+            int assetId = Integer.parseInt(descriptor.get(GRID_SQUARE_ASSET_ID_FIELD).toString());
             if (descriptor.containsKey(GRID_SQUARE_VALUE_FIELD)) {
               int value = Integer.parseInt(descriptor.get(GRID_SQUARE_VALUE_FIELD).toString());
-              grid[currentX][currentY] = new GridSquare(tileType, value);
+              grid[currentX][currentY] = new GridSquare(tileType, assetId, value);
             } else {
-              grid[currentX][currentY] = new GridSquare(tileType);
+              grid[currentX][currentY] = new GridSquare(tileType, assetId);
             }
           } catch (NumberFormatException e) {
             throw new IOException(ExceptionKeys.INVALID_GRID.toString());
