@@ -22,7 +22,7 @@ public class UserInitiatedException extends Exception {
   public UserInitiatedExceptionMessage getExceptionMessage() {
     HashMap<String, String> detail = new HashMap<>();
     if (getCause() != null) {
-      detail.put("cause", getCause().getMessage());
+      detail.put("cause", getLoggingString());
     }
     if (getMessage() != null) {
       detail.put("message", getMessage());

@@ -56,6 +56,8 @@ public class WebSocketServer {
                 outputAdapter.sendMessage(new DebuggingMessage("\n" + e.getLoggingString()));
               } catch (InternalFacingException e) {
                 outputAdapter.sendMessage(new DebuggingMessage("\n" + e.getLoggingString()));
+              } catch (Exception e) {
+                outputAdapter.sendMessage(new DebuggingMessage("\n" + e.getMessage()));
               } finally {
                 try {
                   session.close();
