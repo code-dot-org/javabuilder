@@ -1,7 +1,7 @@
 package org.code.javabuilder;
 
 import java.util.HashMap;
-import org.json.JSONObject;
+import org.json.simple.JSONObject;
 
 /**
  * This ensures all messages passed to the client match the client-server contract for messages
@@ -48,11 +48,11 @@ public abstract class ClientMessage {
   /** @return A stringified JSON blob representing the client message */
   public String getFormattedMessage() {
     JSONObject formattedMessage = new JSONObject();
-    formattedMessage.put("type", this.type);
+    formattedMessage.put("type", this.type.toString());
     formattedMessage.put("value", this.value);
     if (this.detail.size() > 0) {
       formattedMessage.put("detail", this.detail);
     }
-    return formattedMessage.toString();
+    return formattedMessage.toJSONString();
   }
 }

@@ -25,7 +25,7 @@ public class UserFacingException extends Exception {
     HashMap<String, String> detail = new HashMap<>();
     detail.put("connectionId", Properties.getConnectionId());
     if (getCause() != null) {
-      detail.put("cause", getCause().getMessage());
+      detail.put("cause", getLoggingString());
     }
     return new UserFacingExceptionMessage(this.key, detail);
   }
