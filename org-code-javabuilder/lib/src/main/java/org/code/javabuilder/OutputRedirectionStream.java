@@ -60,7 +60,7 @@ public class OutputRedirectionStream extends OutputStream {
     if (buffer.length() == 0) {
       return;
     }
-    outputAdapter.sendMessage(buffer.toString());
+    outputAdapter.sendMessage(new SystemOutMessage(buffer.toString()));
     buffer.delete(0, buffer.length());
   }
 }

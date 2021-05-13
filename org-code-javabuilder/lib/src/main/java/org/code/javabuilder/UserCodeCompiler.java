@@ -37,11 +37,10 @@ public class UserCodeCompiler {
 
     // diagnostics will include any compiler errors
     for (Diagnostic<? extends JavaFileObject> diagnostic : diagnostics.getDiagnostics()) {
-      outputAdapter.sendMessage(diagnostic.toString());
+      outputAdapter.sendMessage(new SystemOutMessage(diagnostic.toString()));
     }
     if (!success) {
-      throw new UserInitiatedException(
-          "We couldn't compile your program. Look for bugs in your program and try again.");
+      throw new UserInitiatedException(UserInitiatedExceptionKey.COMPILER_ERROR);
     }
   }
 
@@ -57,8 +56,7 @@ public class UserCodeCompiler {
     } catch (IOException e) {
       e.printStackTrace();
       // if we can't set the file location we won't be able to run the class properly.
-      throw new UserFacingException(
-          "We hit an error on our side while compiling your program. Try again.", e);
+      throw new UserFacingException(UserFacingExceptionKey.INTERNAL_COMPILER_EXCEPTION, e);
     }
     // create file for user-provided code
     List<JavaFileObject> files = new ArrayList<>();

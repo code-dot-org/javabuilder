@@ -27,8 +27,7 @@ public class CodeBuilder implements AutoCloseable {
     try {
       this.tempFolder = Files.createTempDirectory("tmpdir").toFile();
     } catch (IOException e) {
-      throw new UserFacingException(
-          "We hit an error on our side while loading your program. Try again.", e);
+      throw new UserFacingException(UserFacingExceptionKey.INTERNAL_EXCEPTION, e);
     }
   }
 
@@ -58,8 +57,7 @@ public class CodeBuilder implements AutoCloseable {
       runner =
           new JavaRunner(this.tempFolder.toURI().toURL(), this.userProjectFiles.getJavaFiles());
     } catch (MalformedURLException e) {
-      throw new UserFacingException(
-          "We hit an error on our side while running your program. Try Again", e);
+      throw new UserFacingException(UserFacingExceptionKey.INTERNAL_RUNTIME_EXCEPTION, e);
     }
     runner.runCode();
   }
@@ -96,8 +94,7 @@ public class CodeBuilder implements AutoCloseable {
       try {
         Files.writeString(Path.of(filePath), projectFile.getFileContents());
       } catch (IOException e) {
-        throw new UserFacingException(
-            "We hit an error on our side while compiling your program. Try again.", e);
+        throw new UserFacingException(UserFacingExceptionKey.INTERNAL_COMPILER_EXCEPTION, e);
       }
     }
   }

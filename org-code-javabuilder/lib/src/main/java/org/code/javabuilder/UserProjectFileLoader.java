@@ -37,14 +37,11 @@ public class UserProjectFileLoader implements ProjectFileLoader {
     try {
       response = client.send(request, HttpResponse.BodyHandlers.ofString());
     } catch (IOException | InterruptedException e) {
-      throw new UserFacingException(
-          "We hit an error on our side while loading your files. Try again. \n", e);
+      throw new UserFacingException(UserFacingExceptionKey.INTERNAL_EXCEPTION, e);
     }
     String body = response.body();
     if (response.statusCode() > 299) {
-      throw new UserFacingException(
-          "We hit an error on our side while loading your files. Try again. \n",
-          new Exception(body));
+      throw new UserFacingException(UserFacingExceptionKey.INTERNAL_EXCEPTION, new Exception(body));
     }
     return this.projectFileParser.parseFileJson(body);
   }

@@ -2,22 +2,39 @@ package org.code.javabuilder;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.HashMap;
 
-/** Exception with a message intended to be seen by the user */
+/**
+ * An exception caused by us that is intended to be seen by the user. These are the conceptual
+ * equivalent of HTTP 500 errors.
+ */
 public class UserFacingException extends Exception {
-  public UserFacingException(String errorMessage) {
-    super(errorMessage);
+  private final UserFacingExceptionKey key;
+
+  public UserFacingException(UserFacingExceptionKey key) {
+    super(key.toString());
+    this.key = key;
   }
 
-  public UserFacingException(String errorMessage, Exception cause) {
-    super(errorMessage, cause);
+  public UserFacingException(UserFacingExceptionKey key, Exception cause) {
+    super(key.toString(), cause);
+    this.key = key;
+  }
+
+  public UserFacingExceptionMessage getExceptionMessage() {
+    HashMap<String, String> detail = new HashMap<>();
+    detail.put("connectionId", Properties.getConnectionId());
+    if (this.getCause() != null) {
+      detail.put("cause", this.getLoggingString());
+    }
+    return new UserFacingExceptionMessage(this.key, detail);
   }
 
   /** @return A pretty version of the exception and stack trace. */
   public String getLoggingString() {
     StringWriter stringWriter = new StringWriter();
     PrintWriter printWriter = new PrintWriter(stringWriter);
-    printStackTrace(printWriter);
+    this.printStackTrace(printWriter);
     return stringWriter.toString();
   }
 }
