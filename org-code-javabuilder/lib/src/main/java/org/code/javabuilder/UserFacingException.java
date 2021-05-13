@@ -24,8 +24,8 @@ public class UserFacingException extends Exception {
   public UserFacingExceptionMessage getExceptionMessage() {
     HashMap<String, String> detail = new HashMap<>();
     detail.put("connectionId", Properties.getConnectionId());
-    if (getCause() != null) {
-      detail.put("cause", getLoggingString());
+    if (this.getCause() != null) {
+      detail.put("cause", this.getLoggingString());
     }
     return new UserFacingExceptionMessage(this.key, detail);
   }
@@ -34,7 +34,7 @@ public class UserFacingException extends Exception {
   public String getLoggingString() {
     StringWriter stringWriter = new StringWriter();
     PrintWriter printWriter = new PrintWriter(stringWriter);
-    printStackTrace(printWriter);
+    this.printStackTrace(printWriter);
     return stringWriter.toString();
   }
 }

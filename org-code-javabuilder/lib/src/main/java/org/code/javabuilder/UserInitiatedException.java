@@ -21,8 +21,8 @@ public class UserInitiatedException extends Exception {
   // TODO: Correctly print error messages.
   public UserInitiatedExceptionMessage getExceptionMessage() {
     HashMap<String, String> detail = new HashMap<>();
-    if (getCause() != null) {
-      detail.put("cause", getLoggingString());
+    if (this.getCause() != null) {
+      detail.put("cause", this.getLoggingString());
     }
 
     return new UserInitiatedExceptionMessage(this.key, detail.size() > 0 ? detail : null);
@@ -32,7 +32,7 @@ public class UserInitiatedException extends Exception {
   public String getLoggingString() {
     StringWriter stringWriter = new StringWriter();
     PrintWriter printWriter = new PrintWriter(stringWriter);
-    printStackTrace(printWriter);
+    this.printStackTrace(printWriter);
     return stringWriter.toString();
   }
 }
