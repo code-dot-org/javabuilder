@@ -11,9 +11,9 @@ import org.junit.jupiter.api.Test;
 public class PainterTest {
   private final PrintStream standardOut = System.out;
   private final ByteArrayOutputStream outputStreamCaptor = new ByteArrayOutputStream();
-  String singleSquareGrid = "[[\n{\"tileType\": 1}]]";
+  String singleSquareGrid = "[[\n{\"tileType\": 1, \"assetId\": 0}]]";
   String multiSquareGrid =
-      "[[\n{\"tileType\": 1}, {\"tileType\": 1}], \n[{\"tileType\": 1}, {\"tileType\": 1}]]";
+      "[[\n{\"tileType\": 1, \"value\": 1, \"assetId\": 0}, {\"tileType\": 1, \"value\": 1, \"assetId\": 0}], \n[{\"tileType\": 1, \"value\": 1, \"assetId\": 0}, {\"tileType\": 1, \"value\": 1, \"assetId\": 0}]]";
 
   @BeforeEach
   public void setUp() {
@@ -89,5 +89,34 @@ public class PainterTest {
     Painter painter = new Painter(0, 0, "North", 5);
     painter.takePaint();
     assertTrue(outputStreamCaptor.toString().trim().contains("There is no paint to collect here"));
+  }
+
+  @Test
+  void takePaintIncrementsPaint() {
+    World w = new World(multiSquareGrid);
+    World.setInstance(w);
+    Painter painter = new Painter(0, 0, "North", 5);
+    assertEquals(painter.getMyPaint(), 5);
+    painter.takePaint();
+    assertEquals(painter.getMyPaint(), 6);
+  }
+
+  @Test
+  void paintPrintsErrorIfNoPaint() {
+    Painter painter = new Painter(0, 0, "North", 0);
+    painter.paint("red");
+    assertTrue(
+        outputStreamCaptor
+            .toString()
+            .trim()
+            .contains("There is no more paint in the painter's bucket"));
+  }
+
+  @Test
+  void paintDecrementsPaint() {
+    Painter painter = new Painter(0, 0, "North", 1);
+    assertEquals(painter.getMyPaint(), 1);
+    painter.paint("red");
+    assertEquals(painter.getMyPaint(), 0);
   }
 }

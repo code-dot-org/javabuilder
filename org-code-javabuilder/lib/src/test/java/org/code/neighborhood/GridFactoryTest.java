@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 
 public class GridFactoryTest {
   String sampleGrid =
-      "[[\n{\"tileType\": 1}, {\"tileType\": 1}], \n[{\"tileType\": 1}, {\"tileType\": 1, \"value\": 4}]]";
+      "[[\n{\"tileType\": 1, \"assetId\": 0}, {\"tileType\": 1, \"assetId\": 0}], \n[{\"tileType\": 1, \"assetId\": 0}, {\"tileType\": 1, \"value\": 4, \"assetId\": 0}]]";
 
   @Test
   void createGridFromString() {
@@ -44,7 +44,7 @@ public class GridFactoryTest {
             IOException.class,
             () -> {
               gridFactory.createGridFromString(
-                  "[[\n{\"tileType\": 1}, {\"tileType\": 1}], \n[{\"tileType\": 1}]]");
+                  "[[\n{\"tileType\": 1, \"assetId\": 0}, {\"tileType\": 1, \"assetId\": 0}], \n[{\"tileType\": 1, \"assetId\": 0}]]");
             });
     String expectedMessage = ExceptionKeys.INVALID_GRID.toString();
     assertEquals(exception.getMessage(), expectedMessage);
@@ -57,7 +57,8 @@ public class GridFactoryTest {
         assertThrows(
             IOException.class,
             () -> {
-              gridFactory.createGridFromString("[[\n{\"tileType\": 1}], \n[{\"tileType\": 1}]]");
+              gridFactory.createGridFromString(
+                  "[[\n{\"tileType\": 1, \"assetId\": 0}], \n[{\"tileType\": 1, \"assetId\": 0}]]");
             });
     String expectedMessage = ExceptionKeys.INVALID_GRID.toString();
     assertEquals(exception.getMessage(), expectedMessage);
@@ -70,7 +71,20 @@ public class GridFactoryTest {
         assertThrows(
             IOException.class,
             () -> {
-              gridFactory.createGridFromString("[[\n{\"tileType\": \"invalid\"}]]");
+              gridFactory.createGridFromString("[[\n{\"tileType\": \"invalid\", \"assetId\": 0}]]");
+            });
+    String expectedMessage = ExceptionKeys.INVALID_GRID.toString();
+    assertEquals(exception.getMessage(), expectedMessage);
+  }
+
+  @Test
+  void createGridFromStringWithInvalidAssetIdThrowsException() {
+    GridFactory gridFactory = new GridFactory();
+    Exception exception =
+        assertThrows(
+            IOException.class,
+            () -> {
+              gridFactory.createGridFromString("[[\n{\"assetId\": \"invalid\", \"tileType\": 1}]]");
             });
     String expectedMessage = ExceptionKeys.INVALID_GRID.toString();
     assertEquals(exception.getMessage(), expectedMessage);
@@ -83,7 +97,8 @@ public class GridFactoryTest {
         assertThrows(
             IOException.class,
             () -> {
-              gridFactory.createGridFromString("[[\n{\"tileType\": 1, \"value\": \"invalid\"}]]");
+              gridFactory.createGridFromString(
+                  "[[\n{\"tileType\": 1, \"value\": \"invalid\", \"assetId\": 0}]]");
             });
     String expectedMessage = ExceptionKeys.INVALID_GRID.toString();
     assertEquals(exception.getMessage(), expectedMessage);
