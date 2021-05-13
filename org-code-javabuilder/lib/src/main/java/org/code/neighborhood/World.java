@@ -6,10 +6,10 @@ public class World {
   private static World worldInstance;
   private Grid grid;
 
-  private World() {
+  public World(String s) {
     GridFactory gridFactory = new GridFactory();
     try {
-      this.grid = gridFactory.createGridFromJSON("grid.txt");
+      this.grid = gridFactory.createGridFromString(s);
     } catch (IOException e) {
       e.printStackTrace();
       System.out.println("Something went wrong with reading the grid.");
@@ -17,10 +17,10 @@ public class World {
     }
   }
 
-  protected World(String s) {
+  private World() {
     GridFactory gridFactory = new GridFactory();
     try {
-      this.grid = gridFactory.createGridFromString(s);
+      this.grid = gridFactory.createGridFromJSON("grid.txt");
     } catch (IOException e) {
       e.printStackTrace();
       System.out.println("Something went wrong with reading the grid.");
