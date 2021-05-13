@@ -24,9 +24,6 @@ public class UserInitiatedException extends Exception {
     if (getCause() != null) {
       detail.put("cause", getLoggingString());
     }
-    if (getMessage() != null) {
-      detail.put("message", getMessage());
-    }
 
     return new UserInitiatedExceptionMessage(this.key, detail.size() > 0 ? detail : null);
   }
