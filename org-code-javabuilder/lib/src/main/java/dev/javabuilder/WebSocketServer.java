@@ -33,6 +33,7 @@ public class WebSocketServer {
   @OnOpen
   public void onOpen(Session session) {
     String projectUrl = session.getQueryString().replaceFirst("projectUrl=", "");
+    Properties.setConnectionId("LocalhostWebSocketConnection");
 
     outputAdapter = new WebSocketOutputAdapter(session);
     inputAdapter = new WebSocketInputAdapter();
@@ -48,13 +49,15 @@ public class WebSocketServer {
                   codeBuilder.runUserCode();
                 }
               } catch (UserFacingException e) {
-                outputAdapter.sendMessage(e.getMessage());
-                outputAdapter.sendMessage("\n" + e.getLoggingString());
+                outputAdapter.sendMessage(e.getExceptionMessage());
+                outputAdapter.sendMessage(new DebuggingMessage("\n" + e.getLoggingString()));
               } catch (UserInitiatedException e) {
-                outputAdapter.sendMessage(e.getMessage());
-                outputAdapter.sendMessage("\n" + e.getLoggingString());
+                outputAdapter.sendMessage(e.getExceptionMessage());
+                outputAdapter.sendMessage(new DebuggingMessage("\n" + e.getLoggingString()));
               } catch (InternalFacingException e) {
-                outputAdapter.sendMessage("\n" + e.getLoggingString());
+                outputAdapter.sendMessage(new DebuggingMessage("\n" + e.getLoggingString()));
+              } catch (Exception e) {
+                outputAdapter.sendMessage(new DebuggingMessage("\n" + e.getMessage()));
               } finally {
                 try {
                   session.close();
@@ -83,11 +86,11 @@ public class WebSocketServer {
 
   @OnMessage
   public void byteMessage(ByteBuffer b) {
-    outputAdapter.sendMessage("Got a byte array message. Doing nothing.");
+    outputAdapter.sendMessage(new SystemOutMessage("Got a byte array message. Doing nothing."));
   }
 
   @OnMessage
   public void pongMessage(PongMessage p) {
-    outputAdapter.sendMessage("Got a pong message. Doing nothing.");
+    outputAdapter.sendMessage(new SystemOutMessage("Got a pong message. Doing nothing."));
   }
 }

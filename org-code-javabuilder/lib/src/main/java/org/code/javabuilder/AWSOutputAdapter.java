@@ -19,14 +19,15 @@ public class AWSOutputAdapter implements OutputAdapter {
    *
    * @param message The message to send to API Gateway from the user's program.
    */
-  public void sendMessage(String message) {
+  @Override
+  public void sendMessage(ClientMessage message) {
     PostToConnectionRequest post = new PostToConnectionRequest();
     post.setConnectionId(connectionId);
-    post.setData(ByteBuffer.wrap((message).getBytes()));
+    post.setData(ByteBuffer.wrap((message.getFormattedMessage()).getBytes()));
     api.postToConnection(post);
   }
 
-  public void sendDebuggingMessage(String message) {
+  public void sendDebuggingMessage(ClientMessage message) {
     String time = String.valueOf(java.time.Clock.systemUTC().instant());
     PostToConnectionRequest post = new PostToConnectionRequest();
     post.setConnectionId(connectionId);

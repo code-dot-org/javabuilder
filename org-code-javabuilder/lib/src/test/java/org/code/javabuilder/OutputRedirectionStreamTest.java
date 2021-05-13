@@ -1,10 +1,12 @@
 package org.code.javabuilder;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 public class OutputRedirectionStreamTest {
   OutputAdapter outputAdapter;
@@ -19,14 +21,16 @@ public class OutputRedirectionStreamTest {
   @Test
   public void flushDoesNothingIfNoBytesArePresent() {
     stream.flush();
-    verify(outputAdapter, times(0)).sendMessage(anyString());
+    verify(outputAdapter, times(0)).sendMessage(any(SystemOutMessage.class));
   }
 
   @Test
   public void writeAddsASingleCharToBuffer() {
     stream.write('a');
     stream.flush();
-    verify(outputAdapter, times(1)).sendMessage("a");
+    ArgumentCaptor<SystemOutMessage> message = ArgumentCaptor.forClass(SystemOutMessage.class);
+    verify(outputAdapter, times(1)).sendMessage(message.capture());
+    assertEquals(message.getValue().getValue(), "a");
   }
 
   @Test
@@ -36,7 +40,9 @@ public class OutputRedirectionStreamTest {
     stream.write('c');
     stream.flush();
     stream.flush();
-    verify(outputAdapter, times(1)).sendMessage("abc");
+    ArgumentCaptor<SystemOutMessage> message = ArgumentCaptor.forClass(SystemOutMessage.class);
+    verify(outputAdapter, times(1)).sendMessage(message.capture());
+    assertEquals(message.getValue().getValue(), "abc");
   }
 
   @Test
@@ -44,6 +50,8 @@ public class OutputRedirectionStreamTest {
     byte[] arr = "hello world".getBytes(StandardCharsets.UTF_8);
     stream.write(arr, 1, 4);
     stream.flush();
-    verify(outputAdapter, times(1)).sendMessage("ello");
+    ArgumentCaptor<SystemOutMessage> message = ArgumentCaptor.forClass(SystemOutMessage.class);
+    verify(outputAdapter, times(1)).sendMessage(message.capture());
+    assertEquals(message.getValue().getValue(), "ello");
   }
 }
