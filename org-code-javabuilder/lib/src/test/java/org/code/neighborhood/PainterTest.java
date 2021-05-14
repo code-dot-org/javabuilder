@@ -28,6 +28,13 @@ public class PainterTest {
   }
 
   @Test
+  void defaultConstructorMakesPainterWithNoPaintFacingEast() {
+    Painter p = new Painter();
+    assertEquals(p.getMyPaint(), 0);
+    assertTrue(p.facingEast());
+  }
+
+  @Test
   void constructorThrowsErrorIfDirectionInvalid() {
     Exception exception =
         assertThrows(
