@@ -83,7 +83,7 @@ Resources:
                 Action:
                   - "lambda:InvokeFunction"
                 Resource:
-                  - 'arn:aws:lambda:::function:javabuilder*' #TODO: Restrict this further to just Lambda Authorizers?
+                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:javabuilder*" #TODO: Restrict this further to just Lambda Authorizers?
               # Grant API Gateway permission to publish CloudWatch Logs
               - Effect: Allow
                 Action:
