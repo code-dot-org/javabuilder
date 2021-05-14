@@ -1,7 +1,6 @@
 AWSTemplateFormatVersion: 2010-09-09
 Transform: AWS::Serverless-2016-10-31
 Description: Provision an instance of the Javabuilder service.
-
 Parameters:
   BaseDomainName:
     Type: String
@@ -10,128 +9,197 @@ Parameters:
   SubDomainName:
     Type: String
     Description: Sub domain name for javabuilder service.
-    Default: javabuilderpilot
+    Default: javabuilderpilot3
   LogBucket:
     Type: String
     Default: cdo-logs.s3.amazonaws.com
-
 Globals:
   Function:
     Runtime: ruby2.5
     Timeout: 30
     MemorySize: 3008
     Tracing: Active
-
 Resources:
   APIGatewayCloudWatchLogs:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub "/aws/apigateway/${SubDomainName}.${BaseDomainName}"
-  Certificate:
-    Type: AWS::CertificateManager::Certificate
-    Properties:
-      DomainName: !Sub "${SubDomainName}.${BaseDomainName}"
-      ValidationMethod: DNS # TODO: Automate validation instead of manually creating the validation DNS records in Route53.
+      LogGroupName:
+        Fn::Sub: /aws/apigateway/${SubDomainName}.${BaseDomainName}
   JavabuilderWebSocketAPI:
-    Type: AWS::Serverless::HttpApi
+    Type: AWS::ApiGatewayV2::Api
     Properties:
-      AccessLogSettings:
-        DestinationArn: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/apigateway/${SubDomainName}.${BaseDomainName}"
-        Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "caller":"$context.identity.caller", "user":"$context.identity.user","requestTime":"$context.requestTime","routeKey":"$context.routeKey", "status":"$context.status" }'
-      Auth:
-        Authorizers:
-          LambdaAuthorizer:
-            AuthorizerPayloadFormatVersion: 2.0
-            FunctionArn: !GetAtt JavabuilderAuthorizerLambda.Arn
-            FunctionInvokeRole: !ImportValue JavabuilderLambdaExecutionRole
-            Identity:
-              QueryStrings:
-                - "$request.querystring.Authorization"
-        DefaultAuthorizer: LambdaAuthorizer
-      # CorsConfiguration: String | HttpApiCorsConfiguration
+      Name:
+        Fn::Sub: ${SubDomainName}.${BaseDomainName}
       Description: Javabuilder service.
-      # TODO: Enable this feature and always invoke this API via its custom domain name.
-      # DisableExecuteApiEndpoint: Boolean
-      Domain:
-        CertificateArn: !Ref Certificate
-        DomainName: !Sub "${SubDomainName}.${BaseDomainName}"
-        Route53:
-          HostedZoneName: !Sub "${BaseDomainName}."
+      ProtocolType: WEBSOCKET
+      RouteSelectionExpression: $request.body.action
+      DisableExecuteApiEndpoint: true
+  WebSocketAuthorizer:
+    Type: AWS::ApiGatewayV2::Authorizer
+    Properties:
+      ApiId:
+        Ref: JavabuilderWebSocketAPI
+      AuthorizerType: REQUEST
+      AuthorizerCredentialsArn:
+        Fn::ImportValue: JavabuilderAPIGatewayRole
+      AuthorizerUri:
+        Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${JavabuilderAuthorizerLambda.Arn}/invocations
+      IdentitySource:
+        - route.request.querystring.Authorization
+      Name: WebSocketAuthorizer
+  WebSocketConnectRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId:
+        Ref: JavabuilderWebSocketAPI
+      RouteKey: $connect
+      AuthorizationType: CUSTOM
+      AuthorizerId:
+        Ref: WebSocketAuthorizer
+      OperationName: WebSocketConnectRoute
+      Target:
+        Fn::Join:
+          - /
+          - - integrations
+            - Ref: WebSocketConnectIntegration
+  WebSocketConnectIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId:
+        Ref: JavabuilderWebSocketAPI
+      Description: Lambda Proxy Integration
+      IntegrationType: AWS_PROXY
+      IntegrationUri:
+        Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${StartSessionAndRelayMessagesLambda.Arn}/invocations
+      CredentialsArn:
+        Fn::ImportValue: JavabuilderLambdaExecutionRole
+  WebSocketDisconnectRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId:
+        Ref: JavabuilderWebSocketAPI
+      RouteKey: $disconnect
+      AuthorizationType: NONE
+      OperationName: WebSocketDisconnectRoute
+      Target:
+        Fn::Join:
+          - /
+          - - integrations
+            - Ref: WebSocketDisconnectIntegration
+  WebSocketDisconnectIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId:
+        Ref: JavabuilderWebSocketAPI
+      Description: Lambda Proxy Integration
+      IntegrationType: AWS_PROXY
+      IntegrationUri:
+        Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${StartSessionAndRelayMessagesLambda.Arn}/invocations
+  WebSocketDefaultRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId:
+        Ref: JavabuilderWebSocketAPI
+      RouteKey: $default
+      AuthorizationType: NONE
+      OperationName: WebSocketDefaultRoute
+      Target:
+        Fn::Join:
+          - /
+          - - integrations
+            - Ref: WebSocketDefaultIntegration
+  WebSocketDefaultIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId:
+        Ref: JavabuilderWebSocketAPI
+      Description: Lambda Proxy Integration
+      IntegrationType: AWS_PROXY
+      IntegrationUri:
+        Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${StartSessionAndRelayMessagesLambda.Arn}/invocations
+      CredentialsArn:
+        Fn::ImportValue: JavabuilderLambdaExecutionRole
+  Deployment:
+    Type: AWS::ApiGatewayV2::Deployment
+    DependsOn:
+      - WebSocketConnectRoute
+      - WebSocketDefaultRoute
+      - WebSocketDisconnectRoute
+    Properties:
+      ApiId:
+        Ref: JavabuilderWebSocketAPI
+  Stage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      StageName: Prod
+      Description: Prod Stage
+      DeploymentId:
+        Ref: Deployment
+      ApiId:
+        Ref: JavabuilderWebSocketAPI
+      DefaultRouteSettings:
+        DetailedMetricsEnabled: true
+        LoggingLevel: INFO
+        DataTraceEnabled: true
+      AccessLogSettings:
+        DestinationArn:
+          Fn::Sub: arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/apigateway/${SubDomainName}.${BaseDomainName}
+        Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp",
+          "caller":"$context.identity.caller", "user":"$context.identity.user","requestTime":"$context.requestTime",
+          "eventType":"$context.eventType","routeKey":"$context.routeKey", "status":"$context.status","connectionId":"$context.connectionId"
+          }'
   JavabuilderAuthorizerLambda:
-    Type: 'AWS::Serverless::Function'
+    Type: AWS::Serverless::Function
     Properties:
       Handler: lambda_function.lambda_handler
       Runtime: ruby2.5
-      CodeUri: ./javabuilder-authorizer
+      CodeUri: s3://cf-templates-18voktsbke3mi-us-east-1/4bf74614836861eca14cdd4079bcb472
       Description: ''
       MemorySize: 128
       Timeout: 3
-      Role: !ImportValue JavabuilderLambdaExecutionRole
+      Role:
+        Fn::ImportValue: JavabuilderLambdaExecutionRole
       Environment:
         Variables:
-          #TODO: Pass these in as configuration settings (via Parameters?).
-          rsa_pub_development: >-
-            -----BEGIN RSA PUBLIC KEY-----\n
-            MIIBigKCAYEAsAThWFxY9BsbUNQDhpMu+KrhClJTmNLxvcDhQEH0Q9XnixcWJ+/c\n
-            3LP2FEhigh4s8Q1JK7QufZy6MbOYb4tt1zyuoy+3/gBd0H4g2CJv/M1kU4+hxmsf\n
-            VDa0JfYftwEm0mh2gPG1tqh+kGLHavy7ucZQ1pKZt2u8VJkAvccZai+GkPia8hEk\n
-            UKL+N1/czTcl6Hk5jZ49iRBkwqkDcA4mkVEjNSvQuv+XnK/82+501+HH3gW3+u8X\n
-            dqp6ByG33qSgkc6Q7IuzPo3huNUmg/I9pv2UmnUwMuYwg0OLIA+n2vnptfHZiysK\n
-            pH7am13oDai/Ym5OXvkgYLvxpKdm4dspsHFEhqcLpAi6/a9r3/j8eOe1OovRYS9F\n
-            D93FWO/R/WVPf4y6ivWABv8m9kdIkON7jX8mFtxU1QmLrKEMQrJ7kLHaWTyO4Aa3\n
-            +pVMuC5D6l9s30vvv42aYRUaevCoxYJWckkrawulrKCLLAS/jr+HWvtRebOMDfVa\n
-            Q6kmTDXoCz5RAgMBAAE=\n -----END RSA PUBLIC KEY-----
-          rsa_pub_levelbuilder: >-
-            -----BEGIN RSA PUBLIC KEY-----\n
-            MIIBigKCAYEAsI0yli9nfrWQwCSfNgqyZr58YZdzPF4+loo4tJ+E0+dCLw98g8V2\n
-            WP5KhSlii9+HqOeUT6qrm+pyHWpbdLyu1TV+Ni9Ge0vBVFNEkeCcSygqtUYc0UDg\n
-            Q0jsEQpOEc1OxgoM2IyPgJA7P8ZKNT53n5eKitZyqjbjOPNzrrp3RnkQatKndPju\n
-            dIDIuuFASalSngYZAZ3UUwX0spjsghevdRZtX+WGJspusFlPCH2uMOPlHy9M9eXq\n
-            CBcnodnmKKOGGTsVzxLsBMiiy6KsxUzw4h0hXoQzJQ1ekroIhkA/kez6jkaT6oPU\n
-            AyPv2X1ISmjedWpEA24kEtpJ0/f6yZYQnbuV+XUoij4zzGBCIaOv9xM5UDxC/OYB\n
-            yiDi37gTB4wDjoLOcegTVmofLqtXoglPPbvWak1zfNsM1B2rPOvIBHqXlwTh5cV1\n
-            rvW6Xm31/uN2LFhGzNU1YT4g816UZGeY2jgAgtluQFcw5lVgWHIOf/qGdwRjKmE0\n
-            0hKh01Y/DqJDAgMBAAE=\n -----END RSA PUBLIC KEY-----
-          rsa_pub_production: >-
-            -----BEGIN RSA PUBLIC KEY-----\n
-            MIIBigKCAYEA0crU7JS0T8U3n4rRKRbWuKqM3vLbUdUKk+SY3EPXUE6LGRBSKApK\n
-            olFNE9eFfzwQUiIhwC43ORWVWckMrb8+C4GLqR5R+c8MWjhVcGNv9gdVDvPH8pUx\n
-            14rDMrHCgafVW7gmSOwOCFtv5RZeDTGRNroWHFNhx61trlPxutN6vP4qB1zJGutY\n
-            UVnLxwTVcMbbhFwFlj6g+CjnTChqSH7+hyfLf/jRKh4yKi7+IrngzkuX9DY1Vj9n\n
-            Zub0GmPKTIAcxW6ZKQ39qJ7Wzw1gqo+Yaa6Wge+7/lPY0J23jItGda0VNTwzi3dl\n
-            +M3D4/sKi9Jhb3FbP7PY1ODzxpEUQHHlbY2g0RMEdUi2w42zoUxEL1rUGMsUqQUO\n
-            nq+VZqNdaFvH8G92xmKr+Tzva9kH1izEHMhEmW/KSpXDd3s+xGztzLI+zOLhuv61\n
-            RI4Dv8EugxWsABZt1y0fEBxkc74FIirKPOpqZKSjrquCnVsAxJslCfW7Yh7IEkqd\n
-            paVaB7WFPFIjAgMBAAE=\n -----END RSA PUBLIC KEY-----
-          rsa_pub_staging: >-
-            -----BEGIN RSA PUBLIC KEY-----\n
-            MIIBigKCAYEAqlwz8q7LHMB2PoQF5+HcuZBecWF259clP3CN6gl465Z83KUQmdLq\n
-            9riok1KSzP2+LlkPsbeqSpc7H5DJBydkMHItJXmDF3lpfVWOiHNuiW5KrPCD8BrU\n
-            SYgPViqAqR1Vt3SaOFwoi0QAYtDhz15L9JubRXXiTcIKsvd8Nhiwz1CA0fWtUDfD\n
-            OQDowrhLJrHEtn+TWOjHBxPHMnzmTPKaWiktBTMWetHnAPuWprziBmLS+yN1N83A\n
-            RxdlfLvgT/bWQNn3BVB53bzxawzyGNv+OVlBauVlnrBQfhTU2dasx8h+7lSXHZzW\n
-            SrC/8oPWN4q/IMGA6kiuao+LrqDqyhwoZzKOoeZtn+1xda8v2qLWxpSKmgIdXCeD\n
-            5mAhk2ybrIXo5vwlizKjCO+zwWECf4uKtWWXBKKqqnz7hZN75E3NX5QQEK6tuzQF\n
-            HCEalY6cg+q12QzaQjV6XM5OV+1fYMwPLNVv1Ocjc/oPpfA+WqPbOd8/OM3bq4f4\n
-            Bp4+XTzk0hDTAgMBAAE=\n -----END RSA PUBLIC KEY-----
-          rsa_pub_test: >-
-            -----BEGIN RSA PUBLIC KEY-----\n
-            MIIBigKCAYEAuZNRSIeapdlDcD0i/lLfw6o7MHTRow5umZyDW8DQ75LcFwbDvOcP\n
-            GD5oSMPuPA6Yc7OYXB08JvHUq1llrxJNP0UGgBwVFZ0Fl1mpzb9Fp0pklw5Q3/tS\n
-            yVH4WCVnFhF0QEFcWJ4WU00DGzrFbVUJw4hHIays0TOmUtCVD4pe6BAz89wf80cy\n
-            SKb+2ABiqC5Qbc9Ki6CLXiOMlXEpG8uYzcmVtFUrA3gyz1Ux+oT+xQ8G2CjL+7Au\n
-            LhBd9Na7zPEsB5sAwHzzZHCPx+/wTKbrT0FfKJRqc0vYOvWFFkeoBcZcx9/+DnGs\n
-            82lnuUHekrW+j3sCimbhFPM+HDXJI03g5Uv698oiSXp8+dqB7VzGD4ux9lwlB6Dr\n
-            3+8Pz/c7t8me0CJquotr7p7kYtoPo6kK9NL74zu4KsAcotDvRw8tHRs3cZ/X3KEl\n
-            vb2YtSsq4ecf7sZeQgSbeZ6PdwEIBp0dl5AG6SgIWPcweNwmZmJg917i0lSGgWxW\n
-            OlIo9VurlVd3AgMBAAE=\n -----END RSA PUBLIC KEY-----
+          rsa_pub_development: '-----BEGIN RSA PUBLIC KEY-----\n MIIBigKCAYEAsAThWFxY9BsbUNQDhpMu+KrhClJTmNLxvcDhQEH0Q9XnixcWJ+/c\n
+            3LP2FEhigh4s8Q1JK7QufZy6MbOYb4tt1zyuoy+3/gBd0H4g2CJv/M1kU4+hxmsf\n VDa0JfYftwEm0mh2gPG1tqh+kGLHavy7ucZQ1pKZt2u8VJkAvccZai+GkPia8hEk\n
+            UKL+N1/czTcl6Hk5jZ49iRBkwqkDcA4mkVEjNSvQuv+XnK/82+501+HH3gW3+u8X\n dqp6ByG33qSgkc6Q7IuzPo3huNUmg/I9pv2UmnUwMuYwg0OLIA+n2vnptfHZiysK\n
+            pH7am13oDai/Ym5OXvkgYLvxpKdm4dspsHFEhqcLpAi6/a9r3/j8eOe1OovRYS9F\n D93FWO/R/WVPf4y6ivWABv8m9kdIkON7jX8mFtxU1QmLrKEMQrJ7kLHaWTyO4Aa3\n
+            +pVMuC5D6l9s30vvv42aYRUaevCoxYJWckkrawulrKCLLAS/jr+HWvtRebOMDfVa\n Q6kmTDXoCz5RAgMBAAE=\n
+            -----END RSA PUBLIC KEY-----'
+          rsa_pub_levelbuilder: '-----BEGIN RSA PUBLIC KEY-----\n MIIBigKCAYEAsI0yli9nfrWQwCSfNgqyZr58YZdzPF4+loo4tJ+E0+dCLw98g8V2\n
+            WP5KhSlii9+HqOeUT6qrm+pyHWpbdLyu1TV+Ni9Ge0vBVFNEkeCcSygqtUYc0UDg\n Q0jsEQpOEc1OxgoM2IyPgJA7P8ZKNT53n5eKitZyqjbjOPNzrrp3RnkQatKndPju\n
+            dIDIuuFASalSngYZAZ3UUwX0spjsghevdRZtX+WGJspusFlPCH2uMOPlHy9M9eXq\n CBcnodnmKKOGGTsVzxLsBMiiy6KsxUzw4h0hXoQzJQ1ekroIhkA/kez6jkaT6oPU\n
+            AyPv2X1ISmjedWpEA24kEtpJ0/f6yZYQnbuV+XUoij4zzGBCIaOv9xM5UDxC/OYB\n yiDi37gTB4wDjoLOcegTVmofLqtXoglPPbvWak1zfNsM1B2rPOvIBHqXlwTh5cV1\n
+            rvW6Xm31/uN2LFhGzNU1YT4g816UZGeY2jgAgtluQFcw5lVgWHIOf/qGdwRjKmE0\n 0hKh01Y/DqJDAgMBAAE=\n
+            -----END RSA PUBLIC KEY-----'
+          rsa_pub_production: '-----BEGIN RSA PUBLIC KEY-----\n MIIBigKCAYEA0crU7JS0T8U3n4rRKRbWuKqM3vLbUdUKk+SY3EPXUE6LGRBSKApK\n
+            olFNE9eFfzwQUiIhwC43ORWVWckMrb8+C4GLqR5R+c8MWjhVcGNv9gdVDvPH8pUx\n 14rDMrHCgafVW7gmSOwOCFtv5RZeDTGRNroWHFNhx61trlPxutN6vP4qB1zJGutY\n
+            UVnLxwTVcMbbhFwFlj6g+CjnTChqSH7+hyfLf/jRKh4yKi7+IrngzkuX9DY1Vj9n\n Zub0GmPKTIAcxW6ZKQ39qJ7Wzw1gqo+Yaa6Wge+7/lPY0J23jItGda0VNTwzi3dl\n
+            +M3D4/sKi9Jhb3FbP7PY1ODzxpEUQHHlbY2g0RMEdUi2w42zoUxEL1rUGMsUqQUO\n nq+VZqNdaFvH8G92xmKr+Tzva9kH1izEHMhEmW/KSpXDd3s+xGztzLI+zOLhuv61\n
+            RI4Dv8EugxWsABZt1y0fEBxkc74FIirKPOpqZKSjrquCnVsAxJslCfW7Yh7IEkqd\n paVaB7WFPFIjAgMBAAE=\n
+            -----END RSA PUBLIC KEY-----'
+          rsa_pub_staging: '-----BEGIN RSA PUBLIC KEY-----\n MIIBigKCAYEAqlwz8q7LHMB2PoQF5+HcuZBecWF259clP3CN6gl465Z83KUQmdLq\n
+            9riok1KSzP2+LlkPsbeqSpc7H5DJBydkMHItJXmDF3lpfVWOiHNuiW5KrPCD8BrU\n SYgPViqAqR1Vt3SaOFwoi0QAYtDhz15L9JubRXXiTcIKsvd8Nhiwz1CA0fWtUDfD\n
+            OQDowrhLJrHEtn+TWOjHBxPHMnzmTPKaWiktBTMWetHnAPuWprziBmLS+yN1N83A\n RxdlfLvgT/bWQNn3BVB53bzxawzyGNv+OVlBauVlnrBQfhTU2dasx8h+7lSXHZzW\n
+            SrC/8oPWN4q/IMGA6kiuao+LrqDqyhwoZzKOoeZtn+1xda8v2qLWxpSKmgIdXCeD\n 5mAhk2ybrIXo5vwlizKjCO+zwWECf4uKtWWXBKKqqnz7hZN75E3NX5QQEK6tuzQF\n
+            HCEalY6cg+q12QzaQjV6XM5OV+1fYMwPLNVv1Ocjc/oPpfA+WqPbOd8/OM3bq4f4\n Bp4+XTzk0hDTAgMBAAE=\n
+            -----END RSA PUBLIC KEY-----'
+          rsa_pub_test: '-----BEGIN RSA PUBLIC KEY-----\n MIIBigKCAYEAuZNRSIeapdlDcD0i/lLfw6o7MHTRow5umZyDW8DQ75LcFwbDvOcP\n
+            GD5oSMPuPA6Yc7OYXB08JvHUq1llrxJNP0UGgBwVFZ0Fl1mpzb9Fp0pklw5Q3/tS\n yVH4WCVnFhF0QEFcWJ4WU00DGzrFbVUJw4hHIays0TOmUtCVD4pe6BAz89wf80cy\n
+            SKb+2ABiqC5Qbc9Ki6CLXiOMlXEpG8uYzcmVtFUrA3gyz1Ux+oT+xQ8G2CjL+7Au\n LhBd9Na7zPEsB5sAwHzzZHCPx+/wTKbrT0FfKJRqc0vYOvWFFkeoBcZcx9/+DnGs\n
+            82lnuUHekrW+j3sCimbhFPM+HDXJI03g5Uv698oiSXp8+dqB7VzGD4ux9lwlB6Dr\n 3+8Pz/c7t8me0CJquotr7p7kYtoPo6kK9NL74zu4KsAcotDvRw8tHRs3cZ/X3KEl\n
+            vb2YtSsq4ecf7sZeQgSbeZ6PdwEIBp0dl5AG6SgIWPcweNwmZmJg917i0lSGgWxW\n OlIo9VurlVd3AgMBAAE=\n
+            -----END RSA PUBLIC KEY-----'
   StartSessionAndRelayMessagesLambda:
-    Type: 'AWS::Serverless::Function'
+    Type: AWS::Serverless::Function
     Properties:
       Handler: api_gateway_proxy_function.lambda_handler
-      CodeUri: ./api-gateway-routes
-      Description: 'Starts the long-running Lambda that compiles and runs a JavaLab project and relays messages to it from the JavaLab client.'
-      Role: !ImportValue JavabuilderLambdaExecutionRole
+      CodeUri: s3://cf-templates-18voktsbke3mi-us-east-1/0fbe468ee7be37ece9c6f93a078052cb
+      Description: Starts the long-running Lambda that compiles and runs a JavaLab
+        project and relays messages to it from the JavaLab client.
+      Role:
+        Fn::ImportValue: JavabuilderLambdaExecutionRole
       Events:
         Api1:
           Type: Api
@@ -144,33 +212,21 @@ Resources:
       - JavabuilderWebSocketAPI
     Properties:
       Action: lambda:InvokeFunction
-      FunctionName: !Ref StartSessionAndRelayMessagesLambda
+      FunctionName:
+        Ref: StartSessionAndRelayMessagesLambda
       Principal: apigateway.amazonaws.com
   BuildAndRunJavaProject:
-    Type: 'AWS::Serverless::Function'
+    Type: AWS::Serverless::Function
     Properties:
-      Handler: 'org.code.javabuilder.LambdaRequestHandler::handleRequest'
+      Handler: org.code.javabuilder.LambdaRequestHandler::handleRequest
       Runtime: java11
-      CodeUri: ./org-code-javabuilder
-      Description: 'Compile and execute a JavaLab project.'
+      CodeUri: s3://cf-templates-18voktsbke3mi-us-east-1/33907bf2a5b97875df6d9a84ca4d8ec7
+      Description: Compile and execute a JavaLab project.
       MemorySize: 512
       Timeout: 300
-      Role: !ImportValue JavabuilderLambdaExecutionRole
-#      Environment:
-#        Variables:
-#          AWS_LAMBDA_EXEC_WRAPPER: /opt/change_runtime_directory
-#      Layers:
-#        - >-
-#          arn:aws:lambda:us-east-1:165336972514:layer:changeRuntimeDirectoryToTmp:2
-#  ChangeLambdaRuntimeDirectoryLayer:
-#    Type: AWS::Lambda::LayerVersion
-#    Properties:
-#      CompatibleRuntimes:
-#        - java11
-#      Content:
-#        # TODO: Deploy script may need to zip and upload the layer code to S3.
-#      Description: 'Change Lambda runtime directory to /tmp so that student project code can read/write files.'
-#      LayerName: changeRuntimeDirectoryToTmp
+      Role:
+        Fn::ImportValue: JavabuilderLambdaExecutionRole
 Outputs:
   JavabuilderURL:
-    Value: !Sub "https://${SubDomainName}.${BaseDomainName}"
+    Value:
+      Fn::Sub: https://${SubDomainName}.${BaseDomainName}
