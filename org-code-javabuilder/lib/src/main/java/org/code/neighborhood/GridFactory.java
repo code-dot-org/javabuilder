@@ -75,4 +75,16 @@ public class GridFactory {
       throw new IOException(ExceptionKeys.INVALID_GRID.toString());
     }
   }
+
+  // Creates an empty size x size grid with every square being open
+  // and having assetId 0.
+  protected Grid createEmptyGrid(int size) {
+    GridSquare[][] grid = new GridSquare[size][size];
+    for (int i = 0; i < size; i++) {
+      for (int j = 0; j < size; j++) {
+        grid[i][j] = new GridSquare(1, 0);
+      }
+    }
+    return new Grid(grid);
+  }
 }
