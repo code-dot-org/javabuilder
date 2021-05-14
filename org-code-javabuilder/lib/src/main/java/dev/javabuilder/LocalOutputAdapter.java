@@ -1,6 +1,7 @@
 package dev.javabuilder;
 
 import java.io.PrintStream;
+import org.code.javabuilder.ClientMessage;
 import org.code.javabuilder.OutputAdapter;
 
 /** Intended for local testing only. Passes output to the provided PrintStream */
@@ -12,7 +13,7 @@ public class LocalOutputAdapter implements OutputAdapter {
   }
 
   @Override
-  public void sendMessage(String message) {
-    outputStream.print(message);
+  public void sendMessage(ClientMessage message) {
+    outputStream.print(message.getFormattedMessage());
   }
 }
