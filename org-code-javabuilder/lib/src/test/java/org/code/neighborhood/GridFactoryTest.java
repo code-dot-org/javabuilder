@@ -23,6 +23,14 @@ public class GridFactoryTest {
   }
 
   @Test
+  void createEmptyGrid() {
+    GridFactory gridFactory = new GridFactory();
+    Grid grid = gridFactory.createEmptyGrid(2);
+    assertTrue(grid instanceof Grid);
+    assertTrue(grid.validLocation(1, 1));
+  }
+
+  @Test
   void createGridFromStringWithInvalidJSONThrowsException() {
     GridFactory gridFactory = new GridFactory();
     Exception exception =
