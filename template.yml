@@ -24,7 +24,7 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName:
-        Fn::Sub: /aws/apigateway/${SubDomainName}.${BaseDomainName}
+        Fn::Sub: ${SubDomainName}.${BaseDomainName}
   JavabuilderWebSocketAPI:
     Type: AWS::ApiGatewayV2::Api
     Properties:
@@ -145,7 +145,7 @@ Resources:
         DataTraceEnabled: true
       AccessLogSettings:
         DestinationArn:
-          Fn::Sub: arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/apigateway/${SubDomainName}.${BaseDomainName}
+          Fn::Sub: arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:${SubDomainName}.${BaseDomainName}
         Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp",
           "caller":"$context.identity.caller", "user":"$context.identity.user","requestTime":"$context.requestTime",
           "eventType":"$context.eventType","routeKey":"$context.routeKey", "status":"$context.status","connectionId":"$context.connectionId"
