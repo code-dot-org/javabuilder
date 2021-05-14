@@ -9,6 +9,16 @@ public class Painter {
   private Grid grid;
   private String id;
 
+  /** Creates a Painter object at (0, 0), facing East, with no paint. */
+  public Painter() {
+    this.xLocation = 0;
+    this.yLocation = 0;
+    this.direction = Direction.EAST;
+    this.remainingPaint = 0;
+    this.grid = World.getInstance().getGrid();
+    this.id = "painter-" + lastId++;
+  }
+
   /**
    * Creates a Painter object
    *
