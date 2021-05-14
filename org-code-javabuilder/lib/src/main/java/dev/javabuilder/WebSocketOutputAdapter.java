@@ -3,6 +3,7 @@ package dev.javabuilder;
 import java.io.IOException;
 import javax.websocket.RemoteEndpoint;
 import javax.websocket.Session;
+import org.code.javabuilder.ClientMessage;
 import org.code.javabuilder.OutputAdapter;
 
 /**
@@ -16,9 +17,17 @@ public class WebSocketOutputAdapter implements OutputAdapter {
   }
 
   @Override
-  public void sendMessage(String message) {
+  public void sendMessage(ClientMessage message) {
     try {
-      endpoint.sendText(message);
+      endpoint.sendText(message.getFormattedMessage());
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+  public void sendDebuggingMessage(ClientMessage message) {
+    try {
+      endpoint.sendText(message.getFormattedMessage());
     } catch (IOException e) {
       e.printStackTrace();
     }

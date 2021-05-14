@@ -37,8 +37,7 @@ public class UserProjectFileParser {
       }
       return userProjectFiles;
     } catch (IOException io) {
-      throw new UserFacingException(
-          "We hit an error trying to load your files. Please try again.\n", io);
+      throw new UserFacingException(UserFacingExceptionKey.INTERNAL_EXCEPTION, io);
     }
   }
 }

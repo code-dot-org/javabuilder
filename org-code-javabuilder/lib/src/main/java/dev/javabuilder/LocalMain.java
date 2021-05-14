@@ -21,13 +21,13 @@ public class LocalMain {
         codeBuilder.runUserCode();
       }
     } catch (UserFacingException e) {
-      outputAdapter.sendMessage(e.getMessage());
-      outputAdapter.sendMessage("\n" + e.getLoggingString());
+      outputAdapter.sendMessage(e.getExceptionMessage());
+      System.out.println("\n" + e.getLoggingString());
     } catch (UserInitiatedException e) {
-      outputAdapter.sendMessage(e.getMessage());
-      outputAdapter.sendMessage("\n" + e.getLoggingString());
+      outputAdapter.sendMessage(e.getExceptionMessage());
+      System.out.println("\n" + e.getLoggingString());
     } catch (InternalFacingException e) {
-      outputAdapter.sendMessage("\n" + e.getLoggingString());
+      System.out.println("\n" + e.getLoggingString());
     }
   }
 }
