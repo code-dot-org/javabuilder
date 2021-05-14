@@ -3,10 +3,9 @@ package org.code.neighborhood;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class GridFactory {
   private static final String GRID_FILE_NAME = "grid.txt";
@@ -34,15 +33,13 @@ public class GridFactory {
   protected Grid createGridFromString(String description) throws IOException {
     String[] lines = description.split("\n");
     String parseLine = String.join("", lines);
-    JSONParser jsonParser = new JSONParser();
     try {
-      Object obj = jsonParser.parse(parseLine);
-      JSONArray gridSquares = (JSONArray) obj;
-      int height = gridSquares.size();
+      JSONArray gridSquares = new JSONArray(parseLine);
+      int height = gridSquares.length();
       if (height == 0) {
         throw new IOException(ExceptionKeys.INVALID_GRID.toString());
       }
-      int width = ((JSONArray) gridSquares.get(0)).size();
+      int width = ((JSONArray) gridSquares.get(0)).length();
       if (width != height) {
         throw new IOException(ExceptionKeys.INVALID_GRID.toString());
       }
@@ -54,15 +51,15 @@ public class GridFactory {
       for (int currentY = 0; currentY < height; currentY++) {
         currentHeight--;
         JSONArray line = (JSONArray) gridSquares.get(currentHeight);
-        if (line.size() != width) {
+        if (line.length() != width) {
           throw new IOException(ExceptionKeys.INVALID_GRID.toString());
         }
-        for (int currentX = 0; currentX < line.size(); currentX++) {
+        for (int currentX = 0; currentX < line.length(); currentX++) {
           JSONObject descriptor = (JSONObject) line.get(currentX);
           try {
             int tileType = Integer.parseInt(descriptor.get(GRID_SQUARE_TYPE_FIELD).toString());
             int assetId = Integer.parseInt(descriptor.get(GRID_SQUARE_ASSET_ID_FIELD).toString());
-            if (descriptor.containsKey(GRID_SQUARE_VALUE_FIELD)) {
+            if (descriptor.has(GRID_SQUARE_VALUE_FIELD)) {
               int value = Integer.parseInt(descriptor.get(GRID_SQUARE_VALUE_FIELD).toString());
               grid[currentX][currentY] = new GridSquare(tileType, assetId, value);
             } else {
@@ -74,7 +71,7 @@ public class GridFactory {
         }
       }
       return new Grid(grid);
-    } catch (ParseException e) {
+    } catch (JSONException e) {
       throw new IOException(ExceptionKeys.INVALID_GRID.toString());
     }
   }
