@@ -1,6 +1,8 @@
-package org.code.javabuilder;
+package org.code.messaging;
 
 import java.util.HashMap;
+
+import org.code.javabuilder.ClientMessageType;
 import org.json.JSONObject;
 
 /**
@@ -47,6 +49,8 @@ public abstract class ClientMessage {
 
   /** @return A stringified JSON blob representing the client message */
   public String getFormattedMessage() {
+    //    GridFactory gridFactory = new GridFactory();
+    //    World world = new World("test");
     JSONObject formattedMessage = new JSONObject();
     formattedMessage.put("type", this.type);
     formattedMessage.put("value", this.value);
