@@ -1,7 +1,7 @@
 package dev.javabuilder;
 
 import java.io.PrintStream;
-import org.code.javabuilder.ClientMessage;
+import org.code.messaging.ClientMessage;
 import org.code.javabuilder.OutputAdapter;
 
 /** Intended for local testing only. Passes output to the provided PrintStream */

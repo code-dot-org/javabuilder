@@ -3,6 +3,7 @@ package org.code.javabuilder;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import javax.tools.*;
@@ -64,8 +65,12 @@ public class UserCodeCompiler {
       files.add(
           new JavaSourceFromString(projectFile.getClassName(), projectFile.getFileContents()));
     }
-
+    List<String> optionList = new ArrayList<String>();
+    optionList.add("-classpath");
+//    System.out.println(System.getProperty("java.class.path"));
+    optionList.add(System.getProperty("java.class.path") + File.pathSeparator + "C:\\Users\\jmkul\\IdeaProjects\\java-ide\\org-code-javabuilder\\lib\\build\\libs\\lib-uber.jar");
+//            "C:\\Users\\jmkul\\IdeaProjects\\java-ide\\org-code-javabuilder\\lib\\build\\libs\\"));
     // create compilation task
-    return compiler.getTask(null, fileManager, diagnostics, null, null, files);
+    return compiler.getTask(null, fileManager, diagnostics, optionList, null, files);
   }
 }

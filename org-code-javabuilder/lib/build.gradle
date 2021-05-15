@@ -31,7 +31,9 @@ dependencies {
     // https://mvnrepository.com/artifact/org.mockito/mockito-core
     testImplementation group: 'org.mockito', name: 'mockito-core', version: '3.9.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.6.0'
-    compile 'javax.websocket:javax.websocket-api:1.1'
+    // https://mvnrepository.com/artifact/javax.websocket/javax.websocket-api
+    compileOnly group: 'javax.websocket', name: 'javax.websocket-api', version: '1.1'
+
 }
 
 test {
@@ -62,3 +64,15 @@ task buildZip(type: Zip) {
         from configurations.runtimeClasspath
     }
 }
+
+//sourceSets {
+//    neighborhood {
+//        java {
+//            srcDir 'src/main/java'
+//        }
+//    }
+//}
+//
+//task buildNeighborhood (type: Jar) {
+//    from sourceSets.neighborhood
+//}
