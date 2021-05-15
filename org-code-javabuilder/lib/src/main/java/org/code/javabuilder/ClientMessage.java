@@ -1,4 +1,4 @@
-package org.code.messaging;
+package org.code.javabuilder;
 
 import java.util.HashMap;
 

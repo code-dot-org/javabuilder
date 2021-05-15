@@ -1,7 +1,5 @@
 package org.code.javabuilder;
 
-import org.code.messaging.ClientMessage;
-
 import java.util.HashMap;
 
 /** An error message directed to the user, caused by the user. */

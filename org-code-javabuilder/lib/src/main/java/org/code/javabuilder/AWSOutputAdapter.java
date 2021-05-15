@@ -2,7 +2,6 @@ package org.code.javabuilder;
 
 import com.amazonaws.services.apigatewaymanagementapi.AmazonApiGatewayManagementApi;
 import com.amazonaws.services.apigatewaymanagementapi.model.PostToConnectionRequest;
-import org.code.messaging.ClientMessage;
 
 import java.nio.ByteBuffer;
 

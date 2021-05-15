@@ -3,7 +3,7 @@ package dev.javabuilder;
 import java.io.IOException;
 import javax.websocket.RemoteEndpoint;
 import javax.websocket.Session;
-import org.code.messaging.ClientMessage;
+import org.code.javabuilder.ClientMessage;
 import org.code.javabuilder.OutputAdapter;
 
 /**
