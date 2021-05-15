@@ -2,7 +2,6 @@ package org.code.javabuilder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.code.messaging.ClientMessage;
 import org.junit.jupiter.api.Test;
 
 public class SystemOutMessageTest {
