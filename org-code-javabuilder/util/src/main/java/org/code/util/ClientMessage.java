@@ -1,4 +1,4 @@
-package org.code.javabuilder;
+package org.code.util;
 
 import java.util.HashMap;
 import org.json.JSONObject;
