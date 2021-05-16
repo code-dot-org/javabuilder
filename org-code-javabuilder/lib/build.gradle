@@ -33,9 +33,6 @@ dependencies {
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.6.0'
     // https://mvnrepository.com/artifact/javax.websocket/javax.websocket-api
     compileOnly group: 'javax.websocket', name: 'javax.websocket-api', version: '1.1'
-
-    implementation group: 'org.code', name: 'neighborhood'
-
 }
 
 test {
@@ -60,6 +57,7 @@ gretty {
 build.dependsOn packageSmall
 
 task buildZip(type: Zip) {
+    from project(':neighborhood').getTasksByName('buildNeighborhood', false)
     from compileJava
     from processResources
     into('lib') {

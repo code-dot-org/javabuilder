@@ -2,7 +2,6 @@ package org.code.javabuilder;
 
 import com.amazonaws.services.apigatewaymanagementapi.AmazonApiGatewayManagementApi;
 import com.amazonaws.services.apigatewaymanagementapi.model.PostToConnectionRequest;
-
 import java.nio.ByteBuffer;
 
 /** Sends messages to Amazon API Gateway from the user's program. */
