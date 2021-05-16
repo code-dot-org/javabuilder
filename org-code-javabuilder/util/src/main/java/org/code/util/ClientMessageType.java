@@ -1,4 +1,4 @@
-package org.code.javabuilder;
+package org.code.util;
 
 /** Message keys that map 1:1 to client-side usages. */
 public enum ClientMessageType {
