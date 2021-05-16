@@ -1,8 +1,6 @@
 package org.code.javabuilder;
 
 import java.util.HashMap;
-
-import org.code.javabuilder.ClientMessageType;
 import org.json.JSONObject;
 
 /**

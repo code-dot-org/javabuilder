@@ -1,12 +1,8 @@
 package org.code.javabuilder;
 
-import org.code.neighborhood.World;
-
-import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.List;
@@ -32,18 +28,15 @@ public class JavaRunner {
   public void runCode()
       throws UserFacingException, InternalFacingException, UserInitiatedException {
     URL[] classLoaderUrls = new URL[0];
-    try {
-      classLoaderUrls = new URL[] {this.executableLocation, new File("C:\\Users\\jmkul\\IdeaProjects\\java-ide\\org-code-javabuilder\\lib\\build\\libs\\lib-uber.jar").toURI().toURL()};
-    } catch (MalformedURLException e) {
-      throw new UserFacingException(UserFacingExceptionKey.INTERNAL_EXCEPTION, e);
-    }
+    classLoaderUrls =
+        new URL[] {
+          this.executableLocation, getClass().getClassLoader().getResource("neighborhood-full.jar")
+        };
 
     // Create a new URLClassLoader
     URLClassLoader urlClassLoader = new URLClassLoader(classLoaderUrls);
 
     try {
-      World world = new World(5);
-      World.setInstance(world);
       // load and run the main method of the class
       Method mainMethod = this.findMainMethod(urlClassLoader);
       mainMethod.invoke(null, new Object[] {null});
