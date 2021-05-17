@@ -34,28 +34,29 @@ Resources:
       ProtocolType: WEBSOCKET
       RouteSelectionExpression: $request.body.action
       DisableExecuteApiEndpoint: true
-  WebSocketAuthorizer:
-    Type: AWS::ApiGatewayV2::Authorizer
-    Properties:
-      ApiId:
-        Ref: JavabuilderWebSocketAPI
-      AuthorizerType: REQUEST
-      AuthorizerCredentialsArn:
-        Fn::ImportValue: JavabuilderAPIGatewayRole
-      AuthorizerUri:
-        Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${JavabuilderAuthorizerLambda.Arn}/invocations
-      IdentitySource:
-        - route.request.querystring.Authorization
-      Name: WebSocketAuthorizer
+#  WebSocketAuthorizer:
+#    Type: AWS::ApiGatewayV2::Authorizer
+#    Properties:
+#      ApiId:
+#        Ref: JavabuilderWebSocketAPI
+#      AuthorizerType: REQUEST
+#      AuthorizerCredentialsArn:
+#        Fn::ImportValue: JavabuilderAPIGatewayRole
+#      AuthorizerUri:
+#        Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${JavabuilderAuthorizerLambda.Arn}/invocations
+#      IdentitySource:
+#        - route.request.querystring.Authorization
+#      Name: WebSocketAuthorizer
   WebSocketConnectRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
       ApiId:
         Ref: JavabuilderWebSocketAPI
       RouteKey: $connect
-      AuthorizationType: CUSTOM
-      AuthorizerId:
-        Ref: WebSocketAuthorizer
+      AuthorizationType: NONE
+#      AuthorizationType: CUSTOM
+#      AuthorizerId:
+#        Ref: WebSocketAuthorizer
       OperationName: WebSocketConnectRoute
       Target:
         Fn::Join:
