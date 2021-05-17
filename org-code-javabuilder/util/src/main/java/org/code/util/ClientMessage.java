@@ -47,8 +47,6 @@ public abstract class ClientMessage {
 
   /** @return A stringified JSON blob representing the client message */
   public String getFormattedMessage() {
-    //    GridFactory gridFactory = new GridFactory();
-    //    World world = new World("test");
     JSONObject formattedMessage = new JSONObject();
     formattedMessage.put("type", this.type);
     formattedMessage.put("value", this.value);
