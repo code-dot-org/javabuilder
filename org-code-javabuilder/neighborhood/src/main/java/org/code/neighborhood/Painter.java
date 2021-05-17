@@ -1,5 +1,7 @@
 package org.code.neighborhood;
 
+import java.util.HashMap;
+
 public class Painter {
   private static int lastId = 0;
   private int xLocation;
@@ -60,7 +62,10 @@ public class Painter {
     } else {
       throw new UnsupportedOperationException(ExceptionKeys.INVALID_MOVE.toString());
     }
-    System.out.println("New (x,y) : (" + this.xLocation + "," + this.yLocation + ")");
+    HashMap<String, String> details = new HashMap<>();
+    details.put("id", this.id);
+    details.put("direction", this.direction.getDirectionString());
+    NeighborhoodOutputHandler.sendMessage(new NeighborhoodSignalMessage(NeighborhoodSignalKey.MOVE, details));
   }
 
   /**
