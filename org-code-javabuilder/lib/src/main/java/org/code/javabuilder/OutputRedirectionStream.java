@@ -1,7 +1,6 @@
 package org.code.javabuilder;
 
 import java.io.OutputStream;
-import org.code.util.ClientMessage;
 import org.code.util.FormattedClientMessage;
 
 /**
@@ -63,7 +62,7 @@ public class OutputRedirectionStream extends OutputStream {
       return;
     }
 
-    ClientMessage message = FormattedClientMessage.buildClientMessage(buffer.toString());
+    FormattedClientMessage message = FormattedClientMessage.buildClientMessage(buffer.toString());
     if (message != null) {
       // This is a hack that we are temporarily using while we design a better system to handle
       // passing signals from Javabuilder mini apps to Java Lab
