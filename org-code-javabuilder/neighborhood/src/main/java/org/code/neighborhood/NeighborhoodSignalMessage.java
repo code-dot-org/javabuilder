@@ -1,7 +1,7 @@
 package org.code.neighborhood;
 
-import org.code.util.ClientMessage;
-import org.code.util.ClientMessageType;
+import org.code.protocol.ClientMessage;
+import org.code.protocol.ClientMessageType;
 
 import java.util.HashMap;
 

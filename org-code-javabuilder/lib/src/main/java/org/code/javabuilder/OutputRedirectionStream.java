@@ -1,7 +1,7 @@
 package org.code.javabuilder;
 
 import java.io.OutputStream;
-import org.code.util.FormattedClientMessage;
+import org.code.protocol.FormattedClientMessage;
 
 /**
  * An OutputStream that passes output to an OutputAdapter. It is intended to redirect output from
