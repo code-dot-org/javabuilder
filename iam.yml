@@ -48,7 +48,10 @@ Resources:
                 Action:
                   - "logs:CreateLogStream"
                   - "logs:PutLogEvents"
-                Resource: 'arn:aws:logs:::log-group:/aws/lambda/javabuilder*'
+                Resource:
+                  - 'arn:aws:logs:::log-group:/aws/lambda/javabuilder*'
+                  # TODO: Suresh remove this temporary expansion of permissions.
+                  - '*'
               - Effect: Allow
                 Action:
                   - "xray:PutTraceSegments"
@@ -84,6 +87,8 @@ Resources:
                   - "lambda:InvokeFunction"
                 Resource:
                   - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:javabuilder*" #TODO: Restrict this further to just Lambda Authorizers?
+                  # TODO: Suresh remove this temporary expansion of permission.
+                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:*"
               # Grant API Gateway permission to publish CloudWatch Logs
               - Effect: Allow
                 Action:
