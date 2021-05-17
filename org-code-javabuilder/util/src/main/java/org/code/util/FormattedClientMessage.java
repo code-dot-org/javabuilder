@@ -10,7 +10,8 @@ public class FormattedClientMessage extends ClientMessage {
   }
 
   /**
-   * Create a client message from a formatted message. This only supports Neighborhood messages now as this exists specifically as a short-term hack to unblock neighborhood level writing.
+   * Create a client message from a formatted message. This only supports Neighborhood messages now as this exists
+   * specifically as a short-term hack to unblock neighborhood level writing.
    * @deprecated
    * This method is only here as a workaround until we have designed a more formal method for client-facing communication
    * from sub-projects of javabuilder.
