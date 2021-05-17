@@ -11,6 +11,6 @@ public class UserInitiatedExceptionTest {
         new UserInitiatedException(
             UserInitiatedExceptionKey.COMPILER_ERROR, new Exception("the cause of the exception"));
     UserInitiatedExceptionMessage message = exception.getExceptionMessage();
-    assertTrue(message.getDetail().get("cause").contains("the cause of the exception"));
+    assertTrue(message.getDetail().getString("cause").contains("the cause of the exception"));
   }
 }
