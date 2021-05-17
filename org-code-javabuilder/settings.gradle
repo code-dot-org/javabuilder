@@ -9,3 +9,5 @@
 
 rootProject.name = 'org-code-javabuilder'
 include('lib')
+include('neighborhood')
+include('protocol')
