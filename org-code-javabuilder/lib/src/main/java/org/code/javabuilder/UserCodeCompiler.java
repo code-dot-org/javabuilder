@@ -7,6 +7,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import javax.tools.*;
 import javax.tools.JavaCompiler.CompilationTask;
 
@@ -68,12 +69,11 @@ public class UserCodeCompiler {
     }
     List<String> optionList = new ArrayList<String>();
     optionList.add("-classpath");
+    // Include the neighborhood jar in the student code classpath so the student code can access neighborhood classes.
     try {
-      optionList.add(
-          Paths.get(getClass().getClassLoader().getResource("neighborhood-full.jar").toURI())
-              .toString());
+      optionList.add(Paths.get(Objects.requireNonNull(getClass().getClassLoader().getResource("neighborhood-full.jar")).toURI()).toString());
     } catch (URISyntaxException e) {
-      e.printStackTrace();
+      throw new UserFacingException(UserFacingExceptionKey.INTERNAL_COMPILER_EXCEPTION, e);
     }
 
     // create compilation task

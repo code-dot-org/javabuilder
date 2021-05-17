@@ -25,11 +25,12 @@ dependencies {
     implementation group: 'org.json', name: 'json', version: '20210307'
 }
 
+// Builds the Neighborhood fat-jar (i.e. jar with all dependencies) and copies it to the resources
+// folder in the javabuilder sub-project (currently named 'lib'). This will allow student code to
+// access the Neighborhood package.
 task buildNeighborhood(type: Jar) {
     archiveClassifier = 'full'
-
     from sourceSets.main.output
-
     dependsOn configurations.runtimeClasspath
     from {
         configurations.runtimeClasspath.findAll { it.name.endsWith('jar') }.collect { zipTree(it) }
