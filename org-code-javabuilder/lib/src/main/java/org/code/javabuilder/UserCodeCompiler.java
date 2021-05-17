@@ -73,11 +73,7 @@ public class UserCodeCompiler {
     // neighborhood classes.
     try {
       optionList.add(
-          Paths.get(
-                  Objects.requireNonNull(
-                          getClass().getClassLoader().getResource("neighborhood-full.jar"))
-                      .toURI())
-              .toString());
+          Paths.get(Objects.requireNonNull(Util.getNeighborhoodJar()).toURI()).toString());
     } catch (URISyntaxException e) {
       throw new UserFacingException(UserFacingExceptionKey.INTERNAL_COMPILER_EXCEPTION, e);
     }
