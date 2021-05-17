@@ -25,12 +25,24 @@ import org.json.JSONObject;
 public abstract class ClientMessage {
   private final ClientMessageType type;
   private final String value;
-  private final HashMap<String, String> detail;
+  private final JSONObject detail;
 
   protected ClientMessage(ClientMessageType type, String value, HashMap<String, String> detail) {
     this.type = type;
     this.value = value;
-    this.detail = detail == null ? new HashMap<>() : detail;
+    this.detail = new JSONObject(detail);
+  }
+
+  protected ClientMessage(ClientMessageType type, String value) {
+    this.type = type;
+    this.value = value;
+    this.detail = new JSONObject();
+  }
+
+  protected ClientMessage(ClientMessageType type, String value, JSONObject detail) {
+    this.type = type;
+    this.value = value;
+    this.detail = detail;
   }
 
   public ClientMessageType getType() {
@@ -41,7 +53,7 @@ public abstract class ClientMessage {
     return value;
   }
 
-  public HashMap<String, String> getDetail() {
+  public JSONObject getDetail() {
     return detail;
   }
 
@@ -50,7 +62,7 @@ public abstract class ClientMessage {
     JSONObject formattedMessage = new JSONObject();
     formattedMessage.put("type", this.type);
     formattedMessage.put("value", this.value);
-    if (this.detail.size() > 0) {
+    if (this.detail.length() > 0) {
       formattedMessage.put("detail", this.detail);
     }
     return formattedMessage.toString();
