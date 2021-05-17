@@ -4,7 +4,7 @@ import java.io.IOException;
 import javax.websocket.RemoteEndpoint;
 import javax.websocket.Session;
 import org.code.javabuilder.OutputAdapter;
-import org.code.util.ClientMessage;
+import org.code.protocol.ClientMessage;
 
 /**
  * Intended for local testing with dashboard only. Passes output to the provided WebSocket session
