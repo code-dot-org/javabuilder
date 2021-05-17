@@ -1,7 +1,7 @@
 package dev.javabuilder;
 
-import org.code.util.ClientMessage;
-import org.code.util.ClientMessageType;
+import org.code.protocol.ClientMessage;
+import org.code.protocol.ClientMessageType;
 
 /** A message directed to the client's terminal. Equivalent to System.out.print. */
 public class DebuggingMessage extends ClientMessage {
