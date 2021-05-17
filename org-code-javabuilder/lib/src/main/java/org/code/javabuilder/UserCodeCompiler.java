@@ -69,9 +69,15 @@ public class UserCodeCompiler {
     }
     List<String> optionList = new ArrayList<String>();
     optionList.add("-classpath");
-    // Include the neighborhood jar in the student code classpath so the student code can access neighborhood classes.
+    // Include the neighborhood jar in the student code classpath so the student code can access
+    // neighborhood classes.
     try {
-      optionList.add(Paths.get(Objects.requireNonNull(getClass().getClassLoader().getResource("neighborhood-full.jar")).toURI()).toString());
+      optionList.add(
+          Paths.get(
+                  Objects.requireNonNull(
+                          getClass().getClassLoader().getResource("neighborhood-full.jar"))
+                      .toURI())
+              .toString());
     } catch (URISyntaxException e) {
       throw new UserFacingException(UserFacingExceptionKey.INTERNAL_COMPILER_EXCEPTION, e);
     }

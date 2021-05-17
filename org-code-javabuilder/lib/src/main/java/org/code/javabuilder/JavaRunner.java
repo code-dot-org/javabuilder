@@ -28,9 +28,10 @@ public class JavaRunner {
   public void runCode()
       throws UserFacingException, InternalFacingException, UserInitiatedException {
     // Include the neighborhood classes in the code we are loading so student code can access them.
-    URL[] classLoaderUrls = new URL[]{
-        this.executableLocation, getClass().getClassLoader().getResource("neighborhood-full.jar")
-    };
+    URL[] classLoaderUrls =
+        new URL[] {
+          this.executableLocation, getClass().getClassLoader().getResource("neighborhood-full.jar")
+        };
 
     // Create a new URLClassLoader
     URLClassLoader urlClassLoader = new URLClassLoader(classLoaderUrls);
