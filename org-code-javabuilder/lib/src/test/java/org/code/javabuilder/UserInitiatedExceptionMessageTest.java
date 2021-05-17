@@ -3,6 +3,7 @@ package org.code.javabuilder;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.HashMap;
+import org.code.protocol.ClientMessage;
 import org.junit.jupiter.api.Test;
 
 public class UserInitiatedExceptionMessageTest {
