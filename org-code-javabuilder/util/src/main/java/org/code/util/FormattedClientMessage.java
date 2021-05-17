@@ -16,7 +16,7 @@ public class FormattedClientMessage extends ClientMessage {
    * from sub-projects of javabuilder.
    * @param formattedMessage a message created by ClientMessage.getFormattedMessage
    */
-  public static ClientMessage buildClientMessage(String formattedMessage) {
+  public static FormattedClientMessage buildClientMessage(String formattedMessage) {
     JSONObject message;
     try {
       message = new JSONObject(formattedMessage);
