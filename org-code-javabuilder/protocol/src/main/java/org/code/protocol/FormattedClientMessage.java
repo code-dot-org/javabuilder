@@ -1,4 +1,4 @@
-package org.code.util;
+package org.code.protocol;
 
 import org.json.JSONException;
 import org.json.JSONObject;
