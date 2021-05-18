@@ -47,6 +47,9 @@ public class Painter {
   /** Turns the painter one compass direction left (i.e. North -> West). */
   public void turnLeft() {
     this.direction = this.direction.turnLeft();
+    HashMap<String, String> details = this.getSignalDetails();
+    details.put("direction", this.direction.getDirectionString());
+    this.sendOutputMessage(NeighborhoodSignalKey.TURN_LEFT, details);
   }
 
   /** Move the painter one square forward in the direction the painter is facing. */
@@ -203,6 +206,6 @@ public class Painter {
     initDetails.put("direction", this.direction.getDirectionString());
     initDetails.put("x", Integer.toString(this.xLocation));
     initDetails.put("y", Integer.toString(this.yLocation));
-    this.sendOutputMessage(NeighborhoodSignalKey.INITIALIZE, initDetails);
+    this.sendOutputMessage(NeighborhoodSignalKey.INITIALIZE_PAINTER, initDetails);
   }
 }
