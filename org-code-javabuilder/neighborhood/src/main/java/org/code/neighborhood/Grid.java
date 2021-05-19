@@ -1,6 +1,7 @@
 package org.code.neighborhood;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class Grid {
   private GridSquare[][] grid;
@@ -41,12 +42,16 @@ public class Grid {
 
   // Hides all buckets from the screen
   public void hideBuckets() {
-    System.out.println("You hid the buckets");
+    NeighborhoodOutputHandler.sendMessage(
+            new NeighborhoodSignalMessage(NeighborhoodSignalKey.HIDE_BUCKETS, new HashMap<>())
+    );
   }
 
   // Displays all buckets on the screen
   public void showBuckets() {
-    System.out.println("You displayed the buckets");
+    NeighborhoodOutputHandler.sendMessage(
+            new NeighborhoodSignalMessage(NeighborhoodSignalKey.SHOW_BUCKETS, new HashMap<>())
+    );
   }
 
   protected int getSize() {
