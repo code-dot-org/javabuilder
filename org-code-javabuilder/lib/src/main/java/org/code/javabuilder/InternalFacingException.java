@@ -8,7 +8,7 @@ import java.io.StringWriter;
  * These should generally be used after the user's code has finished running.
  */
 public class InternalFacingException extends Exception {
-  public InternalFacingException(String errorMessage, Exception cause) {
+  public InternalFacingException(String errorMessage, Throwable cause) {
     super(errorMessage, cause);
   }
 

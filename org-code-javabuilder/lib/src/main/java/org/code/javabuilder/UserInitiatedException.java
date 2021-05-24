@@ -13,7 +13,7 @@ public class UserInitiatedException extends Exception {
     this.key = key;
   }
 
-  public UserInitiatedException(UserInitiatedExceptionKey key, Exception cause) {
+  public UserInitiatedException(UserInitiatedExceptionKey key, Throwable cause) {
     super(key.toString(), cause);
     this.key = key;
   }
