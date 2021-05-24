@@ -44,7 +44,7 @@ def on_connect(event, context)
     :projectUrl => authorizer["project_url"]
   }
   response = lambda_client.invoke({
-    function_name: 'javaBuilderExecuteCode:6',
+    function_name: 'javaBuilderExecuteCode:7',
     invocation_type: 'Event',
     payload: JSON.generate(payload)
   })
