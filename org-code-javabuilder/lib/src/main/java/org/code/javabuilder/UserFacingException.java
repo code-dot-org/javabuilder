@@ -16,7 +16,7 @@ public class UserFacingException extends Exception {
     this.key = key;
   }
 
-  public UserFacingException(UserFacingExceptionKey key, Exception cause) {
+  public UserFacingException(UserFacingExceptionKey key, Throwable cause) {
     super(key.toString(), cause);
     this.key = key;
   }
