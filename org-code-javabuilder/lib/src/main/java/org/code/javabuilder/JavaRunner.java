@@ -31,8 +31,10 @@ public class JavaRunner {
     // Include the neighborhood classes in the code we are loading so student code can access them.
     URL[] classLoaderUrls = new URL[] {this.executableLocation, Util.getNeighborhoodJar()};
 
-    // Create a new URLClassLoader
-    URLClassLoader urlClassLoader = new URLClassLoader(classLoaderUrls);
+    // Create a new URLClassLoader. Use the current class loader as the parent so IO settings are
+    // preserved.
+    URLClassLoader urlClassLoader =
+        new URLClassLoader(classLoaderUrls, JavaRunner.class.getClassLoader());
 
     try {
       // load and run the main method of the class
