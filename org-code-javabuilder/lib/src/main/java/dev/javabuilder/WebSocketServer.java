@@ -2,6 +2,8 @@ package dev.javabuilder;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.List;
+import java.util.Map;
 import javax.websocket.OnClose;
 import javax.websocket.OnMessage;
 import javax.websocket.OnOpen;
@@ -32,12 +34,20 @@ public class WebSocketServer {
    */
   @OnOpen
   public void onOpen(Session session) {
-    String projectUrl = session.getQueryString().replaceFirst("projectUrl=", "");
+    Map<String, List<String>> params = session.getRequestParameterMap();
+    String projectUrl = params.get("projectUrl").get(0);
+    boolean useNeighborhood = false;
+    if (params.containsKey("options[useNeighborhood]")) {
+      useNeighborhood = Boolean.parseBoolean(params.get("options[useNeighborhood]").get(0));
+    }
+    String levelId = params.get("levelId").get(0);
     Properties.setConnectionId("LocalhostWebSocketConnection");
 
     outputAdapter = new WebSocketOutputAdapter(session);
     inputAdapter = new WebSocketInputAdapter();
-    final UserProjectFileLoader fileLoader = new UserProjectFileLoader(projectUrl);
+    final UserProjectFileLoader fileLoader =
+        new UserProjectFileLoader(
+            projectUrl, levelId, "http://localhost-studio.code.org:3000", useNeighborhood);
     Thread codeExecutor =
         new Thread(
             () -> {
