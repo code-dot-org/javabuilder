@@ -1,7 +1,7 @@
-package org.code.javabuilder;
+package org.code.protocol;
 
 /** These keys map to client-side strings that are translatable. */
-public enum UserFacingExceptionKey {
+public enum InternalErrorKey {
   // We caused an error while executing the user's program.
   INTERNAL_RUNTIME_EXCEPTION,
   // We caused an error while compiling the user's program.

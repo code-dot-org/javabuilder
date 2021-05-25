@@ -11,6 +11,7 @@ import javax.websocket.PongMessage;
 import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
 import org.code.javabuilder.*;
+import org.code.protocol.GlobalProtocol;
 import org.code.protocol.JavabuilderException;
 import org.code.protocol.JavabuilderRuntimeException;
 import org.code.protocol.Properties;
@@ -58,9 +59,10 @@ public class WebSocketServer {
         new Thread(
             () -> {
               try {
+                GlobalProtocol.create(outputAdapter, inputAdapter);
                 UserProjectFiles userProjectFiles = fileLoader.loadFiles();
                 try (CodeBuilder codeBuilder =
-                    new CodeBuilder(inputAdapter, outputAdapter, userProjectFiles)) {
+                    new CodeBuilder(GlobalProtocol.getInstance(), userProjectFiles)) {
                   codeBuilder.buildUserCode();
                   codeBuilder.runUserCode();
                 }

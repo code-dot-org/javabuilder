@@ -40,20 +40,6 @@ public class Grid {
     }
   }
 
-  // Hides all buckets from the screen
-  public void hideBuckets() {
-    NeighborhoodOutputHandler.sendMessage(
-            new NeighborhoodSignalMessage(NeighborhoodSignalKey.HIDE_BUCKETS, new HashMap<>())
-    );
-  }
-
-  // Displays all buckets on the screen
-  public void showBuckets() {
-    NeighborhoodOutputHandler.sendMessage(
-            new NeighborhoodSignalMessage(NeighborhoodSignalKey.SHOW_BUCKETS, new HashMap<>())
-    );
-  }
-
   protected int getSize() {
     return this.grid.length;
   }

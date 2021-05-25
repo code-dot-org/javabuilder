@@ -6,6 +6,7 @@ import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import org.code.protocol.InputAdapter;
 
 /** Accesses Amazon SQS to get user input for the currently running program. */
 public class AWSInputAdapter implements InputAdapter {
