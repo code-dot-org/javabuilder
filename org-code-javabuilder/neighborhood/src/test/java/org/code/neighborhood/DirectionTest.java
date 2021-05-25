@@ -32,7 +32,7 @@ public class DirectionTest {
   void throwsErrorIfBadDirectionGiven() {
     Exception exception =
         assertThrows(
-            UnsupportedOperationException.class,
+            NeighborhoodRuntimeException.class,
             () -> {
               Direction.fromString("not a direction");
             });
