@@ -22,7 +22,7 @@ public class World {
     }
   }
 
-  private World() {
+  public World() {
     GridFactory gridFactory = new GridFactory();
     try {
       this.grid = gridFactory.createGridFromJSON("grid.txt");

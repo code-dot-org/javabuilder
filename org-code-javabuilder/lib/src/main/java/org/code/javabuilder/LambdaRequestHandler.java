@@ -8,6 +8,7 @@ import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import java.util.Map;
+import org.json.JSONObject;
 
 /**
  * This is the entry point for the lambda function. This should be thought of as similar to a main
@@ -33,6 +34,8 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     final String apiEndpoint = lambdaInput.get("apiEndpoint");
     final String queueUrl = lambdaInput.get("queueUrl");
     final String projectUrl = lambdaInput.get("projectUrl");
+    final String levelId = lambdaInput.get("levelId");
+    final JSONObject options = new JSONObject(lambdaInput.get("options"));
 
     Properties.setConnectionId(connectionId);
 
@@ -49,7 +52,8 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     final AWSInputAdapter inputAdapter = new AWSInputAdapter(sqsClient, queueUrl);
 
     // Create file loader
-    final UserProjectFileLoader userProjectFileLoader = new UserProjectFileLoader(projectUrl);
+    final UserProjectFileLoader userProjectFileLoader =
+        new UserProjectFileLoader(projectUrl, levelId, "", false);
 
     // Load files to memory and create and invoke the code execution environment
     try {
