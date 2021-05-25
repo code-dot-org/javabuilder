@@ -10,7 +10,7 @@ public class GlobalProtocol {
     this.inputAdapter = inputAdapter;
   }
 
-  public static void create(OutputAdapter outputAdapter, InputAdapter inputAdapter) throws InternalJavabuilderError {
+  public static void create(OutputAdapter outputAdapter, InputAdapter inputAdapter) {
     GlobalProtocol.protocolInstance = new GlobalProtocol(outputAdapter, inputAdapter);
   }
 
