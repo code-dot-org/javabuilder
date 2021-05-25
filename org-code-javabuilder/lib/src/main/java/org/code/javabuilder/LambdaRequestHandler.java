@@ -8,6 +8,7 @@ import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import java.util.Map;
+import org.code.protocol.JavabuilderError;
 import org.code.protocol.JavabuilderException;
 import org.code.protocol.Properties;
 import org.json.JSONObject;
@@ -71,7 +72,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
         codeBuilder.buildUserCode();
         codeBuilder.runUserCode();
       }
-    } catch (JavabuilderException e) {
+    } catch (JavabuilderException | JavabuilderError e) {
       // Send user-facing exceptions to the user and log the stack trace to CloudWatch
       outputAdapter.sendMessage(e.getExceptionMessage());
       context.getLogger().log(e.getLoggingString());

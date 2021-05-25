@@ -1,6 +1,7 @@
 package dev.javabuilder;
 
 import org.code.javabuilder.*;
+import org.code.protocol.JavabuilderError;
 import org.code.protocol.JavabuilderException;
 
 /**
@@ -21,7 +22,7 @@ public class LocalMain {
         codeBuilder.buildUserCode();
         codeBuilder.runUserCode();
       }
-    } catch (JavabuilderException e) {
+    } catch (JavabuilderException | JavabuilderError e) {
       outputAdapter.sendMessage(e.getExceptionMessage());
       System.out.println("\n" + e.getLoggingString());
     } catch (InternalFacingException e) {
