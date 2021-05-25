@@ -1,5 +1,7 @@
 package org.code.neighborhood;
 
+import org.code.protocol.OutputAdapter;
+
 import java.util.HashMap;
 
 public class Painter {
@@ -8,8 +10,9 @@ public class Painter {
   private int yLocation;
   private Direction direction;
   private int remainingPaint;
-  private Grid grid;
-  private String id;
+  private final Grid grid;
+  private final String id;
+  private final OutputAdapter outputAdapter;
 
   /** Creates a Painter object at (0, 0), facing East, with no paint. */
   public Painter() {
@@ -17,7 +20,9 @@ public class Painter {
     this.yLocation = 0;
     this.direction = Direction.EAST;
     this.remainingPaint = 0;
-    this.grid = World.getInstance().getGrid();
+    World worldInstance = World.getInstance();
+    this.grid = worldInstance.getGrid();
+    this.outputAdapter = worldInstance.getOutputAdapter();
     this.id = "painter-" + lastId++;
     this.sendInitializationMessage();
   }
@@ -35,7 +40,9 @@ public class Painter {
     this.yLocation = y;
     this.direction = Direction.fromString(direction);
     this.remainingPaint = paint;
-    this.grid = World.getInstance().getGrid();
+    World worldInstance = World.getInstance();
+    this.grid = worldInstance.getGrid();
+    this.outputAdapter = worldInstance.getOutputAdapter();
     int gridSize = this.grid.getSize();
     if (x < 0 || y < 0 || x >= gridSize || y >= gridSize) {
       throw new NeighborhoodRuntimeException(ExceptionKeys.INVALID_LOCATION);
@@ -173,6 +180,25 @@ public class Painter {
     return this.direction.isWest();
   }
 
+
+  /**
+   * Hides all buckets from the screen
+   */
+  public void hideBuckets() {
+    this.outputAdapter.sendMessage(
+        new NeighborhoodSignalMessage(NeighborhoodSignalKey.HIDE_BUCKETS, new HashMap<>())
+    );
+  }
+
+  /**
+   * Displays all buckets on the screen
+   */
+  public void showBuckets() {
+    this.outputAdapter.sendMessage(
+        new NeighborhoodSignalMessage(NeighborhoodSignalKey.SHOW_BUCKETS, new HashMap<>())
+    );
+  }
+
   /**
    * Helper function to check if the painter can move in the specified direction.
    *
@@ -198,7 +224,7 @@ public class Painter {
   }
 
   private void sendOutputMessage(NeighborhoodSignalKey signalKey, HashMap<String, String> details) {
-    NeighborhoodOutputHandler.sendMessage(new NeighborhoodSignalMessage(signalKey, details));
+    this.outputAdapter.sendMessage(new NeighborhoodSignalMessage(signalKey, details));
   }
 
   private void sendInitializationMessage() {

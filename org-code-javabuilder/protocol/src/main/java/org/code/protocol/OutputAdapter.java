@@ -1,4 +1,4 @@
-package org.code.javabuilder;
+package org.code.protocol;
 
 import org.code.protocol.ClientMessage;
 
