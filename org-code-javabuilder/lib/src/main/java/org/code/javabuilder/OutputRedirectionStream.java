@@ -1,6 +1,7 @@
 package org.code.javabuilder;
 
 import java.io.OutputStream;
+import org.code.protocol.FormattedClientMessage;
 
 /**
  * An OutputStream that passes output to an OutputAdapter. It is intended to redirect output from
@@ -60,7 +61,15 @@ public class OutputRedirectionStream extends OutputStream {
     if (buffer.length() == 0) {
       return;
     }
-    outputAdapter.sendMessage(new SystemOutMessage(buffer.toString()));
+
+    FormattedClientMessage message = FormattedClientMessage.buildClientMessage(buffer.toString());
+    if (message != null) {
+      // This is a hack that we are temporarily using while we design a better system to handle
+      // passing signals from Javabuilder mini apps to Java Lab
+      outputAdapter.sendMessage(message);
+    } else {
+      outputAdapter.sendMessage(new SystemOutMessage(buffer.toString()));
+    }
     buffer.delete(0, buffer.length());
   }
 }

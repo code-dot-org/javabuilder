@@ -20,6 +20,6 @@ public class UserFacingExceptionTest {
         new UserFacingException(
             UserFacingExceptionKey.INTERNAL_EXCEPTION, new Exception("the cause of the exception"));
     UserFacingExceptionMessage message = exception.getExceptionMessage();
-    assertTrue(message.getDetail().get("cause").contains("the cause of the exception"));
+    assertTrue(message.getDetail().getString("cause").contains("the cause of the exception"));
   }
 }

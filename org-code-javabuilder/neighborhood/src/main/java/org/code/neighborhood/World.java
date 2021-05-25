@@ -44,7 +44,7 @@ public class World {
     return this.grid;
   }
 
-  protected static void setInstance(World world) {
+  public static void setInstance(World world) {
     worldInstance = world;
   }
 }
