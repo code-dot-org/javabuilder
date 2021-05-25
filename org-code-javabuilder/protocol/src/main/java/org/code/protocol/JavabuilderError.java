@@ -5,17 +5,17 @@ import java.io.StringWriter;
 import java.util.HashMap;
 
 /**
- * Parent exception for all exceptions that will be displayed to the user.
+ * Parent error for all errors that will be displayed to the user.
  */
-public abstract class JavabuilderException extends Exception implements JavabuilderThrowableProtocol {
+public abstract class JavabuilderError extends Error implements JavabuilderThrowableProtocol {
   private final Enum key;
 
-  protected JavabuilderException(Enum key) {
+  protected JavabuilderError(Enum key) {
     super(key.toString());
     this.key = key;
   }
 
-  protected JavabuilderException(Enum key, Throwable cause) {
+  protected JavabuilderError(Enum key, Throwable cause) {
     super(key.toString(), cause);
     this.key = key;
   }
