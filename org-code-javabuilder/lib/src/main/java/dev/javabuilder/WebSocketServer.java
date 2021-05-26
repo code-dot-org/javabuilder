@@ -37,10 +37,13 @@ public class WebSocketServer {
     Map<String, List<String>> params = session.getRequestParameterMap();
     String projectUrl = params.get("projectUrl").get(0);
     boolean useNeighborhood = false;
-    if (params.containsKey("options[useNeighborhood]")) {
-      useNeighborhood = Boolean.parseBoolean(params.get("options[useNeighborhood]").get(0));
+    if (params.containsKey("useNeighborhood")) {
+      useNeighborhood = Boolean.parseBoolean(params.get("useNeighborhood").get(0));
     }
-    String levelId = params.get("levelId").get(0);
+    String levelId = "";
+    if (params.containsKey("levelId")) {
+      levelId = params.get("levelId").get(0);
+    }
     Properties.setConnectionId("LocalhostWebSocketConnection");
 
     outputAdapter = new WebSocketOutputAdapter(session);

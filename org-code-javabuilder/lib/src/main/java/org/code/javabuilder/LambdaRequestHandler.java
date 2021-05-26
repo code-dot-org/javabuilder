@@ -35,7 +35,13 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     final String queueUrl = lambdaInput.get("queueUrl");
     final String projectUrl = lambdaInput.get("projectUrl");
     final String levelId = lambdaInput.get("levelId");
+    final String dashboardHostname = "https://" + lambdaInput.get("iss");
     final JSONObject options = new JSONObject(lambdaInput.get("options"));
+    boolean useNeighborhood = false;
+    if (options.has("useNeighborhood")) {
+      String useNeighborhoodStr = options.getString("useNeighborhood");
+      useNeighborhood = Boolean.parseBoolean(useNeighborhoodStr);
+    }
 
     Properties.setConnectionId(connectionId);
 
@@ -53,7 +59,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
 
     // Create file loader
     final UserProjectFileLoader userProjectFileLoader =
-        new UserProjectFileLoader(projectUrl, levelId, "", false);
+        new UserProjectFileLoader(projectUrl, levelId, dashboardHostname, useNeighborhood);
 
     // Load files to memory and create and invoke the code execution environment
     try {
