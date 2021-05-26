@@ -8,6 +8,8 @@ import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import java.util.Map;
+import org.code.protocol.JavabuilderException;
+import org.code.protocol.Properties;
 
 /**
  * This is the entry point for the lambda function. This should be thought of as similar to a main
@@ -59,18 +61,14 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
         codeBuilder.buildUserCode();
         codeBuilder.runUserCode();
       }
-    } catch (UserFacingException e) {
-      // Send user-facing exceptions to the user and log the stack trace to CloudWatch
-      outputAdapter.sendMessage(e.getExceptionMessage());
-      context.getLogger().log(e.getLoggingString());
-    } catch (UserInitiatedException e) {
+    } catch (JavabuilderException e) {
       // Send user-facing exceptions to the user and log the stack trace to CloudWatch
       outputAdapter.sendMessage(e.getExceptionMessage());
       context.getLogger().log(e.getLoggingString());
     } catch (InternalFacingException e) {
       // Send internal-facing exceptions to CloudWatch
       context.getLogger().log(e.getLoggingString());
-    } catch (Exception e) {
+    } catch (Throwable e) {
       e.printStackTrace();
     }
 
