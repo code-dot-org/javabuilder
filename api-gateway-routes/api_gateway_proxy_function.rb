@@ -43,7 +43,8 @@ def on_connect(event, context)
     :connectionId => request_context["connectionId"],
     :projectUrl => authorizer["project_url"],
     :levelId => authorizer["level_id"],
-    :options => authorizer["options"]
+    :options => authorizer["options"],
+    :iss => authorizer["iss"]
   }
   response = lambda_client.invoke({
     function_name: 'javaBuilderExecuteCode:7',
