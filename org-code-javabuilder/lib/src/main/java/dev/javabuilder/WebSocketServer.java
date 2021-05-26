@@ -11,6 +11,8 @@ import javax.websocket.PongMessage;
 import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
 import org.code.javabuilder.*;
+import org.code.protocol.JavabuilderException;
+import org.code.protocol.Properties;
 
 /**
  * This sets up a simple WebSocket server for local development when interactions between dashboard
@@ -61,15 +63,12 @@ public class WebSocketServer {
                   codeBuilder.buildUserCode();
                   codeBuilder.runUserCode();
                 }
-              } catch (UserFacingException e) {
-                outputAdapter.sendMessage(e.getExceptionMessage());
-                outputAdapter.sendMessage(new DebuggingMessage("\n" + e.getLoggingString()));
-              } catch (UserInitiatedException e) {
+              } catch (JavabuilderException e) {
                 outputAdapter.sendMessage(e.getExceptionMessage());
                 outputAdapter.sendMessage(new DebuggingMessage("\n" + e.getLoggingString()));
               } catch (InternalFacingException e) {
                 outputAdapter.sendMessage(new DebuggingMessage("\n" + e.getLoggingString()));
-              } catch (Exception e) {
+              } catch (Throwable e) {
                 outputAdapter.sendMessage(new DebuggingMessage("\n" + e.getMessage()));
               } finally {
                 try {

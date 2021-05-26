@@ -1,4 +1,4 @@
-package org.code.javabuilder;
+package org.code.protocol;
 
 public class Properties {
   private static String connectionId = "localhost";
