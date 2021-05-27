@@ -10,6 +10,7 @@ import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import java.util.Map;
 import org.code.protocol.JavabuilderException;
 import org.code.protocol.Properties;
+import org.json.JSONObject;
 
 /**
  * This is the entry point for the lambda function. This should be thought of as similar to a main
@@ -35,6 +36,14 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     final String apiEndpoint = lambdaInput.get("apiEndpoint");
     final String queueUrl = lambdaInput.get("queueUrl");
     final String projectUrl = lambdaInput.get("projectUrl");
+    final String levelId = lambdaInput.get("levelId");
+    final String dashboardHostname = "https://" + lambdaInput.get("iss");
+    final JSONObject options = new JSONObject(lambdaInput.get("options"));
+    boolean useNeighborhood = false;
+    if (options.has("useNeighborhood")) {
+      String useNeighborhoodStr = options.getString("useNeighborhood");
+      useNeighborhood = Boolean.parseBoolean(useNeighborhoodStr);
+    }
 
     Properties.setConnectionId(connectionId);
 
@@ -51,7 +60,8 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     final AWSInputAdapter inputAdapter = new AWSInputAdapter(sqsClient, queueUrl);
 
     // Create file loader
-    final UserProjectFileLoader userProjectFileLoader = new UserProjectFileLoader(projectUrl);
+    final UserProjectFileLoader userProjectFileLoader =
+        new UserProjectFileLoader(projectUrl, levelId, dashboardHostname, useNeighborhood);
 
     // Load files to memory and create and invoke the code execution environment
     try {

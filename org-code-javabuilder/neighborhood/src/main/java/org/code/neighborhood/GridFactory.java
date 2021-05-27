@@ -58,7 +58,10 @@ public class GridFactory {
           JSONObject descriptor = (JSONObject) line.get(currentX);
           try {
             int tileType = Integer.parseInt(descriptor.get(GRID_SQUARE_TYPE_FIELD).toString());
-            int assetId = Integer.parseInt(descriptor.get(GRID_SQUARE_ASSET_ID_FIELD).toString());
+            int assetId = 0;
+            if (!descriptor.isNull(GRID_SQUARE_ASSET_ID_FIELD)) {
+              assetId = Integer.parseInt(descriptor.get(GRID_SQUARE_ASSET_ID_FIELD).toString());
+            }
             if (descriptor.has(GRID_SQUARE_VALUE_FIELD)) {
               int value = Integer.parseInt(descriptor.get(GRID_SQUARE_VALUE_FIELD).toString());
               grid[currentX][currentY] = new GridSquare(tileType, assetId, value);
