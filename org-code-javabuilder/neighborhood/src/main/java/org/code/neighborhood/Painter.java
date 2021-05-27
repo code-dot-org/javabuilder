@@ -1,5 +1,7 @@
 package org.code.neighborhood;
 
+import java.util.HashMap;
+
 public class Painter {
   private static int lastId = 0;
   private int xLocation;
@@ -17,6 +19,7 @@ public class Painter {
     this.remainingPaint = 0;
     this.grid = World.getInstance().getGrid();
     this.id = "painter-" + lastId++;
+    this.sendInitializationMessage();
   }
 
   /**
@@ -38,11 +41,15 @@ public class Painter {
       throw new UnsupportedOperationException(ExceptionKeys.INVALID_LOCATION.toString());
     }
     this.id = "painter-" + lastId++;
+    this.sendInitializationMessage();
   }
 
   /** Turns the painter one compass direction left (i.e. North -> West). */
   public void turnLeft() {
     this.direction = this.direction.turnLeft();
+    HashMap<String, String> details = this.getSignalDetails();
+    details.put("direction", this.direction.getDirectionString());
+    this.sendOutputMessage(NeighborhoodSignalKey.TURN_LEFT, details);
   }
 
   /** Move the painter one square forward in the direction the painter is facing. */
@@ -60,7 +67,9 @@ public class Painter {
     } else {
       throw new UnsupportedOperationException(ExceptionKeys.INVALID_MOVE.toString());
     }
-    System.out.println("New (x,y) : (" + this.xLocation + "," + this.yLocation + ")");
+    HashMap<String, String> details = this.getSignalDetails();
+    details.put("direction", this.direction.getDirectionString());
+    this.sendOutputMessage(NeighborhoodSignalKey.MOVE, details);
   }
 
   /**
@@ -72,6 +81,9 @@ public class Painter {
     if (this.remainingPaint > 0) {
       this.grid.getSquare(this.xLocation, this.yLocation).setColor(color);
       this.remainingPaint--;
+      HashMap<String, String> details = this.getSignalDetails();
+      details.put("color", color);
+      this.sendOutputMessage(NeighborhoodSignalKey.PAINT, details);
     } else {
       System.out.println("There is no more paint in the painter's bucket");
     }
@@ -80,6 +92,7 @@ public class Painter {
   /** Removes all paint on the square where the painter is standing. */
   public void scrapePaint() {
     this.grid.getSquare(this.xLocation, this.yLocation).removePaint();
+    this.sendOutputMessage(NeighborhoodSignalKey.REMOVE_PAINT, this.getSignalDetails());
   }
 
   /**
@@ -93,12 +106,12 @@ public class Painter {
 
   /** Hides the painter on the screen. */
   public void hidePainter() {
-    System.out.println("You hid the painter");
+    this.sendOutputMessage(NeighborhoodSignalKey.HIDE_PAINTER, this.getSignalDetails());
   }
 
   /** Shows the painter on the screen. */
   public void showPainter() {
-    System.out.println("You displayed the painter");
+    this.sendOutputMessage(NeighborhoodSignalKey.SHOW_PAINTER, this.getSignalDetails());
   }
 
   /**
@@ -109,6 +122,7 @@ public class Painter {
     if (this.grid.getSquare(this.xLocation, this.yLocation).containsPaint()) {
       this.grid.getSquare(this.xLocation, this.yLocation).collectPaint();
       this.remainingPaint++;
+      this.sendOutputMessage(NeighborhoodSignalKey.TAKE_PAINT, this.getSignalDetails());
     } else {
       System.out.println("There is no paint to collect here");
     }
@@ -175,5 +189,23 @@ public class Painter {
     } else {
       return this.grid.validLocation(this.xLocation - 1, this.yLocation);
     }
+  }
+
+  private HashMap<String, String> getSignalDetails() {
+    HashMap<String, String> details = new HashMap<>();
+    details.put("id", this.id);
+    return details;
+  }
+
+  private void sendOutputMessage(NeighborhoodSignalKey signalKey, HashMap<String, String> details) {
+    NeighborhoodOutputHandler.sendMessage(new NeighborhoodSignalMessage(signalKey, details));
+  }
+
+  private void sendInitializationMessage() {
+    HashMap<String, String> initDetails = this.getSignalDetails();
+    initDetails.put("direction", this.direction.getDirectionString());
+    initDetails.put("x", Integer.toString(this.xLocation));
+    initDetails.put("y", Integer.toString(this.yLocation));
+    this.sendOutputMessage(NeighborhoodSignalKey.INITIALIZE_PAINTER, initDetails);
   }
 }

@@ -58,7 +58,10 @@ public class GridFactory {
           JSONObject descriptor = (JSONObject) line.get(currentX);
           try {
             int tileType = Integer.parseInt(descriptor.get(GRID_SQUARE_TYPE_FIELD).toString());
-            int assetId = Integer.parseInt(descriptor.get(GRID_SQUARE_ASSET_ID_FIELD).toString());
+            int assetId = 0;
+            if (!descriptor.isNull(GRID_SQUARE_ASSET_ID_FIELD)) {
+              assetId = Integer.parseInt(descriptor.get(GRID_SQUARE_ASSET_ID_FIELD).toString());
+            }
             if (descriptor.has(GRID_SQUARE_VALUE_FIELD)) {
               int value = Integer.parseInt(descriptor.get(GRID_SQUARE_VALUE_FIELD).toString());
               grid[currentX][currentY] = new GridSquare(tileType, assetId, value);
@@ -74,5 +77,17 @@ public class GridFactory {
     } catch (JSONException e) {
       throw new IOException(ExceptionKeys.INVALID_GRID.toString());
     }
+  }
+
+  // Creates an empty size x size grid with every square being open
+  // and having assetId 0.
+  protected Grid createEmptyGrid(int size) {
+    GridSquare[][] grid = new GridSquare[size][size];
+    for (int i = 0; i < size; i++) {
+      for (int j = 0; j < size; j++) {
+        grid[i][j] = new GridSquare(1, 0);
+      }
+    }
+    return new Grid(grid);
   }
 }
