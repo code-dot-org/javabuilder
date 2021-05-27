@@ -2,6 +2,8 @@ package dev.javabuilder;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.List;
+import java.util.Map;
 import javax.websocket.OnClose;
 import javax.websocket.OnMessage;
 import javax.websocket.OnOpen;
@@ -9,6 +11,8 @@ import javax.websocket.PongMessage;
 import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
 import org.code.javabuilder.*;
+import org.code.protocol.JavabuilderException;
+import org.code.protocol.Properties;
 
 /**
  * This sets up a simple WebSocket server for local development when interactions between dashboard
@@ -32,12 +36,23 @@ public class WebSocketServer {
    */
   @OnOpen
   public void onOpen(Session session) {
-    String projectUrl = session.getQueryString().replaceFirst("projectUrl=", "");
+    Map<String, List<String>> params = session.getRequestParameterMap();
+    String projectUrl = params.get("projectUrl").get(0);
+    boolean useNeighborhood = false;
+    if (params.containsKey("useNeighborhood")) {
+      useNeighborhood = Boolean.parseBoolean(params.get("useNeighborhood").get(0));
+    }
+    String levelId = "";
+    if (params.containsKey("levelId")) {
+      levelId = params.get("levelId").get(0);
+    }
     Properties.setConnectionId("LocalhostWebSocketConnection");
 
     outputAdapter = new WebSocketOutputAdapter(session);
     inputAdapter = new WebSocketInputAdapter();
-    final UserProjectFileLoader fileLoader = new UserProjectFileLoader(projectUrl);
+    final UserProjectFileLoader fileLoader =
+        new UserProjectFileLoader(
+            projectUrl, levelId, "http://localhost-studio.code.org:3000", useNeighborhood);
     Thread codeExecutor =
         new Thread(
             () -> {
@@ -48,15 +63,12 @@ public class WebSocketServer {
                   codeBuilder.buildUserCode();
                   codeBuilder.runUserCode();
                 }
-              } catch (UserFacingException e) {
-                outputAdapter.sendMessage(e.getExceptionMessage());
-                outputAdapter.sendMessage(new DebuggingMessage("\n" + e.getLoggingString()));
-              } catch (UserInitiatedException e) {
+              } catch (JavabuilderException e) {
                 outputAdapter.sendMessage(e.getExceptionMessage());
                 outputAdapter.sendMessage(new DebuggingMessage("\n" + e.getLoggingString()));
               } catch (InternalFacingException e) {
                 outputAdapter.sendMessage(new DebuggingMessage("\n" + e.getLoggingString()));
-              } catch (Exception e) {
+              } catch (Throwable e) {
                 outputAdapter.sendMessage(new DebuggingMessage("\n" + e.getMessage()));
               } finally {
                 try {

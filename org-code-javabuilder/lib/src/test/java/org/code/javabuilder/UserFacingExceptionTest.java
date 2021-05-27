@@ -3,6 +3,8 @@ package org.code.javabuilder;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import org.code.protocol.JavabuilderThrowableMessage;
+import org.code.protocol.Properties;
 import org.junit.jupiter.api.Test;
 
 public class UserFacingExceptionTest {
@@ -10,7 +12,7 @@ public class UserFacingExceptionTest {
   public void getExceptionMessageIncludesConnectionId() {
     UserFacingException exception =
         new UserFacingException(UserFacingExceptionKey.INTERNAL_EXCEPTION);
-    UserFacingExceptionMessage message = exception.getExceptionMessage();
+    JavabuilderThrowableMessage message = exception.getExceptionMessage();
     assertEquals(message.getDetail().get("connectionId"), Properties.getConnectionId());
   }
 
@@ -19,7 +21,7 @@ public class UserFacingExceptionTest {
     UserFacingException exception =
         new UserFacingException(
             UserFacingExceptionKey.INTERNAL_EXCEPTION, new Exception("the cause of the exception"));
-    UserFacingExceptionMessage message = exception.getExceptionMessage();
-    assertTrue(message.getDetail().get("cause").contains("the cause of the exception"));
+    JavabuilderThrowableMessage message = exception.getExceptionMessage();
+    assertTrue(message.getDetail().getString("cause").contains("the cause of the exception"));
   }
 }

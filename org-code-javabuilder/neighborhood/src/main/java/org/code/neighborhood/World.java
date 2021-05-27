@@ -6,6 +6,11 @@ public class World {
   private static World worldInstance;
   private Grid grid;
 
+  public World(int size) {
+    GridFactory gridFactory = new GridFactory();
+    this.grid = gridFactory.createEmptyGrid(size);
+  }
+
   public World(String s) {
     GridFactory gridFactory = new GridFactory();
     try {
@@ -39,7 +44,7 @@ public class World {
     return this.grid;
   }
 
-  protected static void setInstance(World world) {
+  public static void setInstance(World world) {
     worldInstance = world;
   }
 }
