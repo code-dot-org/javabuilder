@@ -38,70 +38,149 @@ public class CatImage {
 
   public void playSound() {
     // Next up: Look into this: https://docs.oracle.com/javase/tutorial/sound/SPI-providing-MIDI.html
-    try {
-      synth = MidiSystem.getSynthesizer();
-      synth.open();
-      soundbank = synth.getDefaultSoundbank();
-      if (soundbank != null) {
-        synth.loadAllInstruments(soundbank);
-      }
-      channels = synth.getChannels();
-      channel = channels[0];
-    } catch (Exception e) {
-      e.printStackTrace();
-      throw new RuntimeException(e);
-    }
-    int[] songNotes = new int[]{86, 85, 88, 91};
+    // and this: https://docs.oracle.com/javase/tutorial/sound/converters.html
+    try
+    {
+//****  Create a new MIDI sequence with 24 ticks per beat  ****
+      Sequence s = new Sequence(javax.sound.midi.Sequence.PPQ,24);
 
-    playNote(songNotes[0], 1000);
-    rest(500);
+//****  Obtain a MIDI track from the sequence  ****
+      Track t = s.createTrack();
 
-    playNote(songNotes[0], 300);
-    playNote(songNotes[1], 300);
-    playNote(songNotes[0], 1000);
-    rest(500);
+//****  General MIDI sysex -- turn on General MIDI sound set  ****
+      byte[] b = {(byte)0xF0, 0x7E, 0x7F, 0x09, 0x01, (byte)0xF7};
+      SysexMessage sm = new SysexMessage();
+      sm.setMessage(b, 6);
+      MidiEvent me = new MidiEvent(sm,(long)0);
+      t.add(me);
 
-    playNote(songNotes[0], 300);
-    playNote(songNotes[1], 300);
-    playNote(songNotes[0], 1000);
-    playNote(songNotes[2], 300);
-    playNote(songNotes[2], 300);
-    playNote(songNotes[3], 300);
-    playNote(songNotes[3], 600);
+//****  set tempo (meta event)  ****
+      MetaMessage mt = new MetaMessage();
+      byte[] bt = {0x02, (byte)0x00, 0x00};
+      mt.setMessage(0x51 ,bt, 3);
+      me = new MidiEvent(mt,(long)0);
+      t.add(me);
 
-    songNotes = new int[]{43, 46, 48, 41, 42};
-    playNote(songNotes[0], 200);
-    playNote(songNotes[0], 500);
-    playNote(songNotes[1], 200);
-    playNote(songNotes[2], 200);
-    rest(200);
+//****  set track name (meta event)  ****
+      mt = new MetaMessage();
+      String TrackName = new String("midifile track");
+      mt.setMessage(0x03 ,TrackName.getBytes(), TrackName.length());
+      me = new MidiEvent(mt,(long)0);
+      t.add(me);
 
-    playNote(songNotes[0], 200);
-    playNote(songNotes[0], 500);
-    playNote(songNotes[3], 200);
-    playNote(songNotes[4], 200);
-    rest(200);
+//****  set omni on  ****
+      ShortMessage mm = new ShortMessage();
+      mm.setMessage(0xB0, 0x7D,0x00);
+      me = new MidiEvent(mm,(long)0);
+      t.add(me);
 
-    int[] verse1 = {60, 67, 69};
-    int[] verse2 = {65, 64, 62, 60};
+//****  set poly on  ****
+      mm = new ShortMessage();
+      mm.setMessage(0xB0, 0x7F,0x00);
+      me = new MidiEvent(mm,(long)0);
+      t.add(me);
 
-    playNote(verse1[0], 400);
-    playNote(verse1[0], 400);
-    playNote(verse1[1], 400);
-    playNote(verse1[1], 400);
-    playNote(verse1[2], 400);
-    playNote(verse1[2], 400);
-    playNote(verse1[1], 800);
-    rest(200);
+//****  set instrument to Piano  ****
+      mm = new ShortMessage();
+      mm.setMessage(0xC0, 0x00, 0x00);
+      me = new MidiEvent(mm,(long)0);
+      t.add(me);
 
-    playNote(verse2[0], 400);
-    playNote(verse2[0], 400);
-    playNote(verse2[1], 400);
-    playNote(verse2[1], 400);
-    playNote(verse2[2], 400);
-    playNote(verse2[2], 400);
-    playNote(verse2[3], 800);
-    rest(200);
+//****  note on - middle C  ****
+      mm = new ShortMessage();
+      mm.setMessage(0x90,0x3C,0x60);
+      me = new MidiEvent(mm,(long)1);
+      t.add(me);
+
+//****  note off - middle C - 120 ticks later  ****
+      mm = new ShortMessage();
+      mm.setMessage(0x80,0x3C,0x40);
+      me = new MidiEvent(mm,(long)121);
+      t.add(me);
+
+//****  set end of track (meta event) 19 ticks later  ****
+      mt = new MetaMessage();
+      byte[] bet = {}; // empty array
+      mt.setMessage(0x2F,bet,0);
+      me = new MidiEvent(mt, (long)140);
+      t.add(me);
+
+//****  write the MIDI sequence to a MIDI file  ****
+      File f = new File("C:\\Users\\jmkul\\Downloads\\midifile.mid");
+      MidiSystem.write(s,1,f);
+    } //try
+    catch(Exception e)
+    {
+      System.out.println("Exception caught " + e.toString());
+    } //catch
+
+
+
+
+//    try {
+//      synth = MidiSystem.getSynthesizer();
+//      synth.open();
+//      soundbank = synth.getDefaultSoundbank();
+//      if (soundbank != null) {
+//        synth.loadAllInstruments(soundbank);
+//      }
+//      channels = synth.getChannels();
+//      channel = channels[0];
+//    } catch (Exception e) {
+//      e.printStackTrace();
+//      throw new RuntimeException(e);
+//    }
+//    int[] songNotes = new int[]{86, 85, 88, 91};
+//
+//    playNote(songNotes[0], 1000);
+//    rest(500);
+//
+//    playNote(songNotes[0], 300);
+//    playNote(songNotes[1], 300);
+//    playNote(songNotes[0], 1000);
+//    rest(500);
+//
+//    playNote(songNotes[0], 300);
+//    playNote(songNotes[1], 300);
+//    playNote(songNotes[0], 1000);
+//    playNote(songNotes[2], 300);
+//    playNote(songNotes[2], 300);
+//    playNote(songNotes[3], 300);
+//    playNote(songNotes[3], 600);
+//
+//    songNotes = new int[]{43, 46, 48, 41, 42};
+//    playNote(songNotes[0], 200);
+//    playNote(songNotes[0], 500);
+//    playNote(songNotes[1], 200);
+//    playNote(songNotes[2], 200);
+//    rest(200);
+//
+//    playNote(songNotes[0], 200);
+//    playNote(songNotes[0], 500);
+//    playNote(songNotes[3], 200);
+//    playNote(songNotes[4], 200);
+//    rest(200);
+//
+//    int[] verse1 = {60, 67, 69};
+//    int[] verse2 = {65, 64, 62, 60};
+//
+//    playNote(verse1[0], 400);
+//    playNote(verse1[0], 400);
+//    playNote(verse1[1], 400);
+//    playNote(verse1[1], 400);
+//    playNote(verse1[2], 400);
+//    playNote(verse1[2], 400);
+//    playNote(verse1[1], 800);
+//    rest(200);
+//
+//    playNote(verse2[0], 400);
+//    playNote(verse2[0], 400);
+//    playNote(verse2[1], 400);
+//    playNote(verse2[1], 400);
+//    playNote(verse2[2], 400);
+//    playNote(verse2[2], 400);
+//    playNote(verse2[3], 800);
+//    rest(200);
   }
 
   public void playNote(int note, int duration) {
