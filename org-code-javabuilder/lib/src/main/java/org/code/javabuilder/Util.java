@@ -8,4 +8,8 @@ public class Util {
   public static URL getNeighborhoodJar() {
     return Util.class.getClassLoader().getResource("neighborhood-full.jar");
   }
+  /** @return a URL describing the location of the theater jar */
+  public static URL getTheaterJar() {
+    return Util.class.getClassLoader().getResource("theater-full.jar");
+  }
 }

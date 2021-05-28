@@ -29,6 +29,11 @@ public class AWSOutputAdapter implements OutputAdapter {
     api.postToConnection(post);
   }
 
+  @Override
+  public void sendBinaryMessage(ByteBuffer bytes) {
+
+  }
+
   public void sendDebuggingMessage(ClientMessage message) {
     String time = String.valueOf(java.time.Clock.systemUTC().instant());
     PostToConnectionRequest post = new PostToConnectionRequest();

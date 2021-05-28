@@ -75,7 +75,7 @@ public class UserCodeCompiler {
     // neighborhood classes.
     try {
       optionList.add(
-          Paths.get(Objects.requireNonNull(Util.getNeighborhoodJar()).toURI()).toString());
+          Paths.get(Objects.requireNonNull(Util.getTheaterJar()).toURI()).toString());
     } catch (URISyntaxException e) {
       throw new UserFacingException(InternalErrorKey.INTERNAL_COMPILER_EXCEPTION, e);
     }
