@@ -108,6 +108,7 @@ Resources:
     Properties:
       CodeUri: api-gateway-routes/
       Handler: api_gateway_proxy_function.lambda_handler
+      Role: !ImportValue JavabuilderLambdaExecutionRole
   OnConnectPermission:
     Type: AWS::Lambda::Permission
     DependsOn:
