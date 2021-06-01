@@ -48,6 +48,25 @@ Resources:
       IntegrationUri:
         Fn::Sub:
           arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${OnConnectFunction.Arn}/invocations
+  DefaultRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref SimpleChatWebSocket
+      RouteKey: $default
+      AuthorizationType: NONE
+      OperationName: DefaultRoute
+      Target:
+        Fn::Join:
+          - /
+          - - integrations
+            - Ref: DefaultIntegration
+  DefaultIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref SimpleChatWebSocketJavabuilderWebSocketAPI
+      Description: Lambda Proxy Integration
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${OnConnectFunction.Arn}/invocations"
   DisconnectRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
@@ -92,6 +111,7 @@ Resources:
     Type: AWS::ApiGatewayV2::Deployment
     DependsOn:
       - ConnectRoute
+      - DefaultRoute
       - SendRoute
       - DisconnectRoute
     Properties:
@@ -106,6 +126,7 @@ Resources:
   OnConnectFunction:
     Type: AWS::Serverless::Function
     Properties:
+      Description: Starts the long-running Lambda that compiles and runs a JavaLab project and relays messages to it from the JavaLab client.
       CodeUri: api-gateway-routes/
       Handler: api_gateway_proxy_function.lambda_handler
       Role: !ImportValue JavabuilderLambdaExecutionRole
