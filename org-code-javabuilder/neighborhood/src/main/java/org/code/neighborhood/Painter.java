@@ -56,9 +56,9 @@ public class Painter {
   public void move() {
     if (this.isValidMovement(this.direction)) {
       if (this.direction.isNorth()) {
-        this.yLocation++;
-      } else if (this.direction.isSouth()) {
         this.yLocation--;
+      } else if (this.direction.isSouth()) {
+        this.yLocation++;
       } else if (this.direction.isEast()) {
         this.xLocation++;
       } else {
@@ -181,9 +181,9 @@ public class Painter {
    */
   private boolean isValidMovement(Direction movementDirection) {
     if (movementDirection.isNorth()) {
-      return this.grid.validLocation(this.xLocation, this.yLocation + 1);
-    } else if (movementDirection.isSouth()) {
       return this.grid.validLocation(this.xLocation, this.yLocation - 1);
+    } else if (movementDirection.isSouth()) {
+      return this.grid.validLocation(this.xLocation, this.yLocation + 1);
     } else if (movementDirection.isEast()) {
       return this.grid.validLocation(this.xLocation + 1, this.yLocation);
     } else {

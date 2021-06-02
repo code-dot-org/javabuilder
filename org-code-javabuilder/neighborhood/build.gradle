@@ -31,6 +31,10 @@ dependencies {
     implementation project(':protocol')
 }
 
+test {
+    useJUnitPlatform()
+}
+
 // Builds the Neighborhood fat-jar (i.e. jar with all dependencies) and copies it to the resources
 // folder in the javabuilder sub-project (currently named 'lib'). This will allow student code to
 // access the Neighborhood package.
