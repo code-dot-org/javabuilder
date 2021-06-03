@@ -15,7 +15,7 @@ public class Grid {
   }
 
   public void printGrid() {
-    for (int y = height - 1; y >= 0; y--) {
+    for (int y = 0; y < height; y++) {
       ArrayList<String> squares = new ArrayList<String>();
       for (int x = 0; x < width; x++) {
         squares.add(this.grid[x][y].getPrintableDescription());
