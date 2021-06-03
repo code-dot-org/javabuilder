@@ -45,12 +45,9 @@ public class GridFactory {
       }
       GridSquare[][] grid = new GridSquare[width][height];
 
-      // We start at the maximum height because we're reading the grid from top to bottom in the
-      // file.
-      int currentHeight = height;
+      // Read the grid from top to bottom
       for (int currentY = 0; currentY < height; currentY++) {
-        currentHeight--;
-        JSONArray line = (JSONArray) gridSquares.get(currentHeight);
+        JSONArray line = (JSONArray) gridSquares.get(currentY);
         if (line.length() != width) {
           throw new IOException(ExceptionKeys.INVALID_GRID.toString());
         }
