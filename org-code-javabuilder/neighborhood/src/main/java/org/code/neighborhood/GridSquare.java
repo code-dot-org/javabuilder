@@ -34,7 +34,7 @@ public class GridSquare {
   // Sets the color of the square to the given color
   public void setColor(String color) {
     if (!ColorHelpers.isColor(color)) {
-      throw new UnsupportedOperationException(ExceptionKeys.INVALID_COLOR.toString());
+      throw new NeighborhoodRuntimeException(ExceptionKeys.INVALID_COLOR);
     }
     if (this.passable && this.paintCount == 0) {
       this.color = color;

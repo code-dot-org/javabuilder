@@ -38,7 +38,7 @@ public class PainterTest {
   void constructorThrowsErrorIfDirectionInvalid() {
     Exception exception =
         assertThrows(
-            UnsupportedOperationException.class,
+            NeighborhoodRuntimeException.class,
             () -> {
               new Painter(0, 0, "not a direction", 5);
             });
@@ -50,7 +50,7 @@ public class PainterTest {
   void constructorThrowsErrorIfStartLocationInvalid() {
     Exception exception =
         assertThrows(
-            UnsupportedOperationException.class,
+            NeighborhoodRuntimeException.class,
             () -> {
               new Painter(-1, -1, "West", 5);
             });
@@ -72,7 +72,7 @@ public class PainterTest {
     Painter painter = new Painter(0, 0, "North", 5);
     Exception exception =
         assertThrows(
-            UnsupportedOperationException.class,
+            NeighborhoodRuntimeException.class,
             () -> {
               painter.move();
             });

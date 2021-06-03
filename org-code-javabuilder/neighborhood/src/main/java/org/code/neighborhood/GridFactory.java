@@ -23,7 +23,7 @@ public class GridFactory {
       fis.close();
       return createGridFromString(new String(data, "UTF-8"));
     } catch (IOException e) {
-      throw new IOException(ExceptionKeys.INVALID_GRID.toString());
+      throw new NeighborhoodRuntimeException(ExceptionKeys.INVALID_GRID);
     }
   }
 
@@ -37,11 +37,11 @@ public class GridFactory {
       JSONArray gridSquares = new JSONArray(parseLine);
       int height = gridSquares.length();
       if (height == 0) {
-        throw new IOException(ExceptionKeys.INVALID_GRID.toString());
+        throw new NeighborhoodRuntimeException(ExceptionKeys.INVALID_GRID);
       }
       int width = ((JSONArray) gridSquares.get(0)).length();
       if (width != height) {
-        throw new IOException(ExceptionKeys.INVALID_GRID.toString());
+        throw new NeighborhoodRuntimeException(ExceptionKeys.INVALID_GRID);
       }
       GridSquare[][] grid = new GridSquare[width][height];
 
@@ -49,7 +49,7 @@ public class GridFactory {
       for (int currentY = 0; currentY < height; currentY++) {
         JSONArray line = (JSONArray) gridSquares.get(currentY);
         if (line.length() != width) {
-          throw new IOException(ExceptionKeys.INVALID_GRID.toString());
+          throw new NeighborhoodRuntimeException(ExceptionKeys.INVALID_GRID);
         }
         for (int currentX = 0; currentX < line.length(); currentX++) {
           JSONObject descriptor = (JSONObject) line.get(currentX);
@@ -66,13 +66,13 @@ public class GridFactory {
               grid[currentX][currentY] = new GridSquare(tileType, assetId);
             }
           } catch (NumberFormatException e) {
-            throw new IOException(ExceptionKeys.INVALID_GRID.toString());
+            throw new NeighborhoodRuntimeException(ExceptionKeys.INVALID_GRID);
           }
         }
       }
       return new Grid(grid);
     } catch (JSONException e) {
-      throw new IOException(ExceptionKeys.INVALID_GRID.toString());
+      throw new NeighborhoodRuntimeException(ExceptionKeys.INVALID_GRID);
     }
   }
 
