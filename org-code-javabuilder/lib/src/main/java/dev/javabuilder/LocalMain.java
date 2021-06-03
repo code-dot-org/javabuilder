@@ -2,6 +2,7 @@ package dev.javabuilder;
 
 import org.code.javabuilder.*;
 import org.code.protocol.JavabuilderException;
+import org.code.protocol.JavabuilderRuntimeException;
 
 /**
  * Intended for local testing only. This is a local version of the Javabuilder lambda function. The
@@ -21,7 +22,7 @@ public class LocalMain {
         codeBuilder.buildUserCode();
         codeBuilder.runUserCode();
       }
-    } catch (JavabuilderException e) {
+    } catch (JavabuilderException | JavabuilderRuntimeException e) {
       outputAdapter.sendMessage(e.getExceptionMessage());
       System.out.println("\n" + e.getLoggingString());
     } catch (InternalFacingException e) {

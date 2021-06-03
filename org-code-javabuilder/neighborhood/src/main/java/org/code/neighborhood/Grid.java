@@ -36,7 +36,7 @@ public class Grid {
     if (validLocation(x, y)) {
       return this.grid[x][y];
     } else {
-      throw new UnsupportedOperationException(ExceptionKeys.GET_SQUARE_FAILED.toString());
+      throw new NeighborhoodRuntimeException(ExceptionKeys.GET_SQUARE_FAILED);
     }
   }
 

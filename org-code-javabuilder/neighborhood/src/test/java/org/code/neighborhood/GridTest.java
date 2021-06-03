@@ -45,7 +45,7 @@ public class GridTest {
     Grid grid = new Grid(squares);
     Exception exception =
         assertThrows(
-            UnsupportedOperationException.class,
+            NeighborhoodRuntimeException.class,
             () -> {
               GridSquare sq = grid.getSquare(-1, -1);
             });
