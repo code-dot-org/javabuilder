@@ -1,5 +1,13 @@
 package org.code.protocol;
 
+/**
+ * This sets up the protocols that are used across jars in Javabuilder. It allows the input
+ * and output adapters to be set at the entrypoint of the system (i.e. LambdaRequestHandler,
+ * LocalMain, and WebSocketServer) so they can be used by the various disconnected jars.
+ * This allows us to expose our Neighborhood, Theater, and Park APIs to students without
+ * exposing all of our code. It also allows these APIs to communicate with their
+ * Client-side counterparts while using the correct IO adapters.
+ */
 public class GlobalProtocol {
   private static GlobalProtocol protocolInstance;
   private final OutputAdapter outputAdapter;
