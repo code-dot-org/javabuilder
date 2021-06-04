@@ -180,25 +180,6 @@ public class Painter {
     return this.direction.isWest();
   }
 
-
-  /**
-   * Hides all buckets from the screen
-   */
-  public void hideBuckets() {
-    this.outputAdapter.sendMessage(
-        new NeighborhoodSignalMessage(NeighborhoodSignalKey.HIDE_BUCKETS, new HashMap<>())
-    );
-  }
-
-  /**
-   * Displays all buckets on the screen
-   */
-  public void showBuckets() {
-    this.outputAdapter.sendMessage(
-        new NeighborhoodSignalMessage(NeighborhoodSignalKey.SHOW_BUCKETS, new HashMap<>())
-    );
-  }
-
   /**
    * Helper function to check if the painter can move in the specified direction.
    *

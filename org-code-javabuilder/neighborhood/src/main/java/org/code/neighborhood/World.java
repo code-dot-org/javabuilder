@@ -14,13 +14,13 @@ public class World {
 
   public World(int size) {
     this.outputAdapter = GlobalProtocol.getInstance().getOutputAdapter();
-    GridFactory gridFactory = new GridFactory();
+    GridFactory gridFactory = new GridFactory(this.outputAdapter);
     this.grid = gridFactory.createEmptyGrid(size);
   }
 
   public World(String s) {
     this.outputAdapter = GlobalProtocol.getInstance().getOutputAdapter();
-    GridFactory gridFactory = new GridFactory();
+    GridFactory gridFactory = new GridFactory(this.outputAdapter);
     try {
       this.grid = gridFactory.createGridFromString(s);
     } catch (IOException e) {
@@ -30,7 +30,7 @@ public class World {
 
   private World() {
     this.outputAdapter = GlobalProtocol.getInstance().getOutputAdapter();
-    GridFactory gridFactory = new GridFactory();
+    GridFactory gridFactory = new GridFactory(this.outputAdapter);
     try {
       this.grid = gridFactory.createGridFromJSON("grid.txt");
     } catch (IOException e) {
