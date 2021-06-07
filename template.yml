@@ -215,7 +215,7 @@ Resources:
   StartSessionAndRelayMessagesLambdaPermission:
     Type: AWS::Lambda::Permission
     DependsOn:
-      - JavabuilderWebSocketAPI
+      - SimpleChatWebSocket
     Properties:
       Action: lambda:InvokeFunction
       FunctionName:
@@ -226,7 +226,7 @@ Resources:
     Properties:
       Handler: org.code.javabuilder.LambdaRequestHandler::handleRequest
       Runtime: java11
-      CodeUri: s3://cf-templates-18voktsbke3mi-us-east-1/33907bf2a5b97875df6d9a84ca4d8ec7
+      CodeUri: org-code-javabuilder/
       Description: Compile and execute a JavaLab project.
       MemorySize: 512
       Timeout: 300
