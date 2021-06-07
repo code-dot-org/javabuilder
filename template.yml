@@ -201,7 +201,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: api_gateway_proxy_function.lambda_handler
-      CodeUri: s3://cf-templates-18voktsbke3mi-us-east-1/0fbe468ee7be37ece9c6f93a078052cb
+      CodeUri: org-code-javabuilder/
       Description: Starts the long-running Lambda that compiles and runs a JavaLab
         project and relays messages to it from the JavaLab client.
       Role:
