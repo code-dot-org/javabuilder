@@ -33,12 +33,23 @@ Resources:
     Properties:
       ApiId: !Ref SimpleChatWebSocket
       RouteKey: $connect
-      AuthorizationType: NONE
+      #AuthorizationType: NONE
+      AuthorizationType: CUSTOM
+      AuthorizerId: !Ref WebSocketAuthorizer
       OperationName: ConnectRoute
       Target: !Join
         - '/'
         - - 'integrations'
           - !Ref ConnectInteg
+  WebSocketAuthorizer:
+    Type: AWS::ApiGatewayV2::Authorizer
+    Properties:
+      ApiId: !Ref SimpleChatWebSocket
+      AuthorizerType: REQUEST
+      AuthorizerUri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${JavabuilderAuthorizerLambda.Arn}/invocations"
+      IdentitySource:
+        - route.request.querystring.Authorization
+      Name: WebSocketAuthorizer
   ConnectInteg:
     Type: AWS::ApiGatewayV2::Integration
     Properties:
@@ -292,6 +303,15 @@ Resources:
             82lnuUHekrW+j3sCimbhFPM+HDXJI03g5Uv698oiSXp8+dqB7VzGD4ux9lwlB6Dr\n 3+8Pz/c7t8me0CJquotr7p7kYtoPo6kK9NL74zu4KsAcotDvRw8tHRs3cZ/X3KEl\n
             vb2YtSsq4ecf7sZeQgSbeZ6PdwEIBp0dl5AG6SgIWPcweNwmZmJg917i0lSGgWxW\n OlIo9VurlVd3AgMBAAE=\n
             -----END RSA PUBLIC KEY-----'
+  WebSocketAuthorizerPermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - WebSocketAuthorizer
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref JavabuilderAuthorizerLambda
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${SimpleChatWebSocket}/authorizers/${WebSocketAuthorizer}"
   StartSessionAndRelayMessagesLambda:
     Type: AWS::Serverless::Function
     Properties:
