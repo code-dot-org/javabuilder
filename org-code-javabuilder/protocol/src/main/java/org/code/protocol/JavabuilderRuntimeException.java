@@ -4,10 +4,9 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.HashMap;
 
-/**
- * Parent error for all errors that will be displayed to the user.
- */
-public abstract class JavabuilderRuntimeException extends RuntimeException implements JavabuilderThrowableProtocol {
+/** Parent error for all errors that will be displayed to the user. */
+public abstract class JavabuilderRuntimeException extends RuntimeException
+    implements JavabuilderThrowableProtocol {
   private final Enum key;
 
   protected JavabuilderRuntimeException(Enum key) {

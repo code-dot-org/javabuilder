@@ -1,9 +1,8 @@
 package org.code.neighborhood;
 
-import org.code.protocol.OutputAdapter;
-
 import java.util.ArrayList;
 import java.util.HashMap;
+import org.code.protocol.OutputAdapter;
 
 public class Grid {
   private final GridSquare[][] grid;
@@ -44,22 +43,16 @@ public class Grid {
     }
   }
 
-  /**
-   * Hides all buckets from the screen
-   */
+  /** Hides all buckets from the screen */
   public void hideBuckets() {
     this.outputAdapter.sendMessage(
-        new NeighborhoodSignalMessage(NeighborhoodSignalKey.HIDE_BUCKETS, new HashMap<>())
-    );
+        new NeighborhoodSignalMessage(NeighborhoodSignalKey.HIDE_BUCKETS, new HashMap<>()));
   }
 
-  /**
-   * Displays all buckets on the screen
-   */
+  /** Displays all buckets on the screen */
   public void showBuckets() {
     this.outputAdapter.sendMessage(
-        new NeighborhoodSignalMessage(NeighborhoodSignalKey.SHOW_BUCKETS, new HashMap<>())
-    );
+        new NeighborhoodSignalMessage(NeighborhoodSignalKey.SHOW_BUCKETS, new HashMap<>()));
   }
 
   protected int getSize() {

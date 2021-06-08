@@ -1,17 +1,14 @@
 package org.code.neighborhood;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-
 import org.code.protocol.GlobalProtocol;
 import org.code.protocol.InputAdapter;
 import org.code.protocol.OutputAdapter;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -96,7 +93,8 @@ public class PainterTest {
     World.setInstance(w);
     Painter painter = new Painter(0, 0, "West", 5);
     painter.turnLeft();
-    ArgumentCaptor<NeighborhoodSignalMessage> message = ArgumentCaptor.forClass(NeighborhoodSignalMessage.class);
+    ArgumentCaptor<NeighborhoodSignalMessage> message =
+        ArgumentCaptor.forClass(NeighborhoodSignalMessage.class);
     verify(outputAdapter, times(2)).sendMessage(message.capture());
     assertEquals(message.getValue().getValue(), "TURN_LEFT");
     assertTrue(message.getValue().getDetail().toString().contains("\"direction\":\"south\""));
