@@ -35,7 +35,7 @@ public class GridFactoryTest {
     GridFactory gridFactory = new GridFactory();
     Exception exception =
         assertThrows(
-            IOException.class,
+            NeighborhoodRuntimeException.class,
             () -> {
               gridFactory.createGridFromString("not valid json here:");
             });
@@ -49,7 +49,7 @@ public class GridFactoryTest {
     GridFactory gridFactory = new GridFactory();
     Exception exception =
         assertThrows(
-            IOException.class,
+            NeighborhoodRuntimeException.class,
             () -> {
               gridFactory.createGridFromString(
                   "[[\n{\"tileType\": 1, \"assetId\": 0}, {\"tileType\": 1, \"assetId\": 0}], \n[{\"tileType\": 1, \"assetId\": 0}]]");
@@ -63,7 +63,7 @@ public class GridFactoryTest {
     GridFactory gridFactory = new GridFactory();
     Exception exception =
         assertThrows(
-            IOException.class,
+            NeighborhoodRuntimeException.class,
             () -> {
               gridFactory.createGridFromString(
                   "[[\n{\"tileType\": 1, \"assetId\": 0}], \n[{\"tileType\": 1, \"assetId\": 0}]]");
@@ -77,7 +77,7 @@ public class GridFactoryTest {
     GridFactory gridFactory = new GridFactory();
     Exception exception =
         assertThrows(
-            IOException.class,
+            NeighborhoodRuntimeException.class,
             () -> {
               gridFactory.createGridFromString("[[\n{\"tileType\": \"invalid\", \"assetId\": 0}]]");
             });
@@ -90,7 +90,7 @@ public class GridFactoryTest {
     GridFactory gridFactory = new GridFactory();
     Exception exception =
         assertThrows(
-            IOException.class,
+            NeighborhoodRuntimeException.class,
             () -> {
               gridFactory.createGridFromString("[[\n{\"assetId\": \"invalid\", \"tileType\": 1}]]");
             });
@@ -103,7 +103,7 @@ public class GridFactoryTest {
     GridFactory gridFactory = new GridFactory();
     Exception exception =
         assertThrows(
-            IOException.class,
+            NeighborhoodRuntimeException.class,
             () -> {
               gridFactory.createGridFromString(
                   "[[\n{\"tileType\": 1, \"value\": \"invalid\", \"assetId\": 0}]]");
@@ -117,7 +117,7 @@ public class GridFactoryTest {
     GridFactory gridFactory = new GridFactory();
     Exception exception =
         assertThrows(
-            IOException.class,
+            NeighborhoodRuntimeException.class,
             () -> {
               gridFactory.createGridFromString("[]");
             });

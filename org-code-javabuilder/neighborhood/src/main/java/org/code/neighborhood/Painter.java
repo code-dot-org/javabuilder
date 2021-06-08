@@ -38,7 +38,7 @@ public class Painter {
     this.grid = World.getInstance().getGrid();
     int gridSize = this.grid.getSize();
     if (x < 0 || y < 0 || x >= gridSize || y >= gridSize) {
-      throw new UnsupportedOperationException(ExceptionKeys.INVALID_LOCATION.toString());
+      throw new NeighborhoodRuntimeException(ExceptionKeys.INVALID_LOCATION);
     }
     this.id = "painter-" + lastId++;
     this.sendInitializationMessage();
@@ -56,16 +56,16 @@ public class Painter {
   public void move() {
     if (this.isValidMovement(this.direction)) {
       if (this.direction.isNorth()) {
-        this.yLocation++;
-      } else if (this.direction.isSouth()) {
         this.yLocation--;
+      } else if (this.direction.isSouth()) {
+        this.yLocation++;
       } else if (this.direction.isEast()) {
         this.xLocation++;
       } else {
         this.xLocation--;
       }
     } else {
-      throw new UnsupportedOperationException(ExceptionKeys.INVALID_MOVE.toString());
+      throw new NeighborhoodRuntimeException(ExceptionKeys.INVALID_MOVE);
     }
     HashMap<String, String> details = this.getSignalDetails();
     details.put("direction", this.direction.getDirectionString());
@@ -181,9 +181,9 @@ public class Painter {
    */
   private boolean isValidMovement(Direction movementDirection) {
     if (movementDirection.isNorth()) {
-      return this.grid.validLocation(this.xLocation, this.yLocation + 1);
-    } else if (movementDirection.isSouth()) {
       return this.grid.validLocation(this.xLocation, this.yLocation - 1);
+    } else if (movementDirection.isSouth()) {
+      return this.grid.validLocation(this.xLocation, this.yLocation + 1);
     } else if (movementDirection.isEast()) {
       return this.grid.validLocation(this.xLocation + 1, this.yLocation);
     } else {
