@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
-
 import org.code.protocol.OutputAdapter;
 import org.junit.jupiter.api.Test;
 
