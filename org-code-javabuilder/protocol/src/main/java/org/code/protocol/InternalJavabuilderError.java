@@ -1,6 +1,6 @@
 package org.code.protocol;
 
-public class InternalJavabuilderError extends JavabuilderRuntimeException{
+public class InternalJavabuilderError extends JavabuilderRuntimeException {
   public InternalJavabuilderError(InternalErrorKey key) {
     super(key);
   }

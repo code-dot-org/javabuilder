@@ -1,8 +1,7 @@
 package org.code.neighborhood;
 
-import org.code.protocol.OutputAdapter;
-
 import java.util.HashMap;
+import org.code.protocol.OutputAdapter;
 
 public class Painter {
   private static int lastId = 0;
