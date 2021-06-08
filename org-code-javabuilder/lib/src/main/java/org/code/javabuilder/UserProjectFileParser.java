@@ -3,6 +3,7 @@ package org.code.javabuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.Map;
+import org.code.protocol.InternalErrorKey;
 
 public class UserProjectFileParser {
   private final ObjectMapper objectMapper;
@@ -37,7 +38,7 @@ public class UserProjectFileParser {
       }
       return userProjectFiles;
     } catch (IOException io) {
-      throw new UserFacingException(UserFacingExceptionKey.INTERNAL_EXCEPTION, io);
+      throw new UserFacingException(InternalErrorKey.INTERNAL_EXCEPTION, io);
     }
   }
 }
