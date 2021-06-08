@@ -6,6 +6,7 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.List;
+import org.code.protocol.InternalErrorKey;
 
 /** The class that executes the student's code */
 public class JavaRunner {
@@ -30,8 +31,10 @@ public class JavaRunner {
     // Include the neighborhood classes in the code we are loading so student code can access them.
     URL[] classLoaderUrls = new URL[] {this.executableLocation, Util.getNeighborhoodJar()};
 
-    // Create a new URLClassLoader
-    URLClassLoader urlClassLoader = new URLClassLoader(classLoaderUrls);
+    // Create a new URLClassLoader. Use the current class loader as the parent so IO settings are
+    // preserved.
+    URLClassLoader urlClassLoader =
+        new URLClassLoader(classLoaderUrls, JavaRunner.class.getClassLoader());
 
     try {
       // load and run the main method of the class
@@ -81,7 +84,7 @@ public class JavaRunner {
         }
       } catch (ClassNotFoundException e) {
         // this should be caught earlier in compilation
-        throw new UserFacingException(UserFacingExceptionKey.INTERNAL_RUNTIME_EXCEPTION, e);
+        throw new UserFacingException(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e);
       }
     }
 

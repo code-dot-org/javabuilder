@@ -1,5 +1,6 @@
 package org.code.javabuilder;
 
+import org.code.protocol.InternalErrorKey;
 import org.code.protocol.JavabuilderException;
 
 /**
@@ -7,11 +8,11 @@ import org.code.protocol.JavabuilderException;
  * equivalent of HTTP 500 errors.
  */
 public class UserFacingException extends JavabuilderException {
-  public UserFacingException(UserFacingExceptionKey key) {
+  public UserFacingException(InternalErrorKey key) {
     super(key);
   }
 
-  public UserFacingException(UserFacingExceptionKey key, Throwable cause) {
+  public UserFacingException(InternalErrorKey key, Throwable cause) {
     super(key, cause);
   }
 }

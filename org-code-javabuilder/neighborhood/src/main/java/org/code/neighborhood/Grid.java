@@ -1,17 +1,21 @@
 package org.code.neighborhood;
 
+import org.code.protocol.OutputAdapter;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Grid {
-  private GridSquare[][] grid;
-  private int width;
-  private int height;
+  private final GridSquare[][] grid;
+  private final int width;
+  private final int height;
+  private final OutputAdapter outputAdapter;
 
-  protected Grid(GridSquare[][] squares) {
+  protected Grid(GridSquare[][] squares, OutputAdapter outputAdapter) {
     this.grid = squares;
     this.height = squares.length;
     this.width = squares[0].length;
+    this.outputAdapter = outputAdapter;
   }
 
   public void printGrid() {
@@ -40,17 +44,21 @@ public class Grid {
     }
   }
 
-  // Hides all buckets from the screen
+  /**
+   * Hides all buckets from the screen
+   */
   public void hideBuckets() {
-    NeighborhoodOutputHandler.sendMessage(
-            new NeighborhoodSignalMessage(NeighborhoodSignalKey.HIDE_BUCKETS, new HashMap<>())
+    this.outputAdapter.sendMessage(
+        new NeighborhoodSignalMessage(NeighborhoodSignalKey.HIDE_BUCKETS, new HashMap<>())
     );
   }
 
-  // Displays all buckets on the screen
+  /**
+   * Displays all buckets on the screen
+   */
   public void showBuckets() {
-    NeighborhoodOutputHandler.sendMessage(
-            new NeighborhoodSignalMessage(NeighborhoodSignalKey.SHOW_BUCKETS, new HashMap<>())
+    this.outputAdapter.sendMessage(
+        new NeighborhoodSignalMessage(NeighborhoodSignalKey.SHOW_BUCKETS, new HashMap<>())
     );
   }
 
