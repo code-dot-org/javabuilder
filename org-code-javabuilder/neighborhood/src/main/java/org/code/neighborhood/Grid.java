@@ -15,7 +15,7 @@ public class Grid {
   }
 
   public void printGrid() {
-    for (int y = height - 1; y >= 0; y--) {
+    for (int y = 0; y < height; y++) {
       ArrayList<String> squares = new ArrayList<String>();
       for (int x = 0; x < width; x++) {
         squares.add(this.grid[x][y].getPrintableDescription());
@@ -36,7 +36,7 @@ public class Grid {
     if (validLocation(x, y)) {
       return this.grid[x][y];
     } else {
-      throw new UnsupportedOperationException(ExceptionKeys.GET_SQUARE_FAILED.toString());
+      throw new NeighborhoodRuntimeException(ExceptionKeys.GET_SQUARE_FAILED);
     }
   }
 

@@ -83,7 +83,7 @@ public class GridSquareTest {
     assertEquals(s.getColor(), "red");
     Exception exception =
         assertThrows(
-            UnsupportedOperationException.class,
+            NeighborhoodRuntimeException.class,
             () -> {
               s.setColor("r");
             });

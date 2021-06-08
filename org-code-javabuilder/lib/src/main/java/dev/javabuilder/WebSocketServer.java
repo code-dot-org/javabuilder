@@ -12,6 +12,7 @@ import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
 import org.code.javabuilder.*;
 import org.code.protocol.JavabuilderException;
+import org.code.protocol.JavabuilderRuntimeException;
 import org.code.protocol.Properties;
 
 /**
@@ -63,7 +64,7 @@ public class WebSocketServer {
                   codeBuilder.buildUserCode();
                   codeBuilder.runUserCode();
                 }
-              } catch (JavabuilderException e) {
+              } catch (JavabuilderException | JavabuilderRuntimeException e) {
                 outputAdapter.sendMessage(e.getExceptionMessage());
                 outputAdapter.sendMessage(new DebuggingMessage("\n" + e.getLoggingString()));
               } catch (InternalFacingException e) {
