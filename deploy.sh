@@ -8,6 +8,8 @@ STACK=${STACK-'javabuilder'}
 TEMPLATE=template.yml
 OUTPUT_TEMPLATE=$(mktemp)
 
+./javabuilder-authorizer/build.sh
+
 aws cloudformation package \
   --template-file ${TEMPLATE} \
   --s3-bucket ${S3_BUCKET} \
