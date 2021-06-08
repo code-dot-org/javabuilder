@@ -3,7 +3,6 @@ package org.code.neighborhood;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-
 import org.code.protocol.OutputAdapter;
 import org.json.JSONArray;
 import org.json.JSONException;

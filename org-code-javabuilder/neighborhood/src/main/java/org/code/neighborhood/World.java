@@ -1,11 +1,10 @@
 package org.code.neighborhood;
 
+import java.io.IOException;
 import org.code.protocol.GlobalProtocol;
 import org.code.protocol.InternalErrorKey;
 import org.code.protocol.InternalJavabuilderError;
 import org.code.protocol.OutputAdapter;
-
-import java.io.IOException;
 
 public class World {
   private static World worldInstance;
