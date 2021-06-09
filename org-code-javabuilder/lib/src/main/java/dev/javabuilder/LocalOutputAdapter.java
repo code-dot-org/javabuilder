@@ -2,7 +2,6 @@ package dev.javabuilder;
 
 import java.io.PrintStream;
 import java.nio.ByteBuffer;
-
 import org.code.protocol.ClientMessage;
 import org.code.protocol.OutputAdapter;
 
@@ -20,7 +19,5 @@ public class LocalOutputAdapter implements OutputAdapter {
   }
 
   @Override
-  public void sendBinaryMessage(ByteBuffer bytes) {
-
-  }
+  public void sendBinaryMessage(ByteBuffer bytes) {}
 }

@@ -28,8 +28,10 @@ public class JavaRunner {
    */
   public void runCode()
       throws UserFacingException, InternalFacingException, UserInitiatedException {
-    // Include the neighborhood and theater classes in the code we are loading so student code can access them.
-    URL[] classLoaderUrls = new URL[] {this.executableLocation, Util.getNeighborhoodJar(), Util.getTheaterJar()};
+    // Include the neighborhood and theater classes in the code we are loading so student code can
+    // access them.
+    URL[] classLoaderUrls =
+        new URL[] {this.executableLocation, Util.getNeighborhoodJar(), Util.getTheaterJar()};
 
     // Create a new URLClassLoader. Use the current class loader as the parent so IO settings are
     // preserved.

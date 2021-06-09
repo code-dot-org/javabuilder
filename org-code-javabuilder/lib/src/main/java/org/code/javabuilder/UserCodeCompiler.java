@@ -74,8 +74,7 @@ public class UserCodeCompiler {
     // Include the neighborhood jar in the student code classpath so the student code can access
     // neighborhood classes.
     try {
-      optionList.add(
-          Paths.get(Objects.requireNonNull(Util.getTheaterJar()).toURI()).toString());
+      optionList.add(Paths.get(Objects.requireNonNull(Util.getTheaterJar()).toURI()).toString());
     } catch (URISyntaxException e) {
       throw new UserFacingException(InternalErrorKey.INTERNAL_COMPILER_EXCEPTION, e);
     }
