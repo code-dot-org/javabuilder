@@ -1,7 +1,6 @@
 package dev.javabuilder;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import javax.websocket.RemoteEndpoint;
 import javax.websocket.Session;
 import org.code.protocol.ClientMessage;
@@ -21,16 +20,6 @@ public class WebSocketOutputAdapter implements OutputAdapter {
   public void sendMessage(ClientMessage message) {
     try {
       endpoint.sendText(message.getFormattedMessage());
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-  }
-
-  @Override
-  public void sendBinaryMessage(ByteBuffer bytes) {
-    try {
-      endpoint.sendBinary(bytes);
-      bytes.clear();
     } catch (IOException e) {
       e.printStackTrace();
     }
