@@ -46,5 +46,5 @@ task buildNeighborhood(type: Jar) {
     from {
         configurations.runtimeClasspath.findAll { it.name.endsWith('jar') }.collect { zipTree(it) }
     }
-    destinationDirectory = project(':lib').project.layout.projectDirectory.dir('src/main/resources')
+    destinationDirectory = project(':lib').project.layout.projectDirectory.dir('src/main/resources/jars')
 }
