@@ -12,5 +12,3 @@ include('lib')
 include('neighborhood')
 include('protocol')
 include('theater')
-include('theater')
-

@@ -35,6 +35,10 @@ dependencies {
     compile 'commons-io:commons-io:2.9.0'
 }
 
+test {
+    useJUnitPlatform()
+}
+
 // Builds the Theater fat-jar (i.e. jar with all dependencies) and copies it to the resources
 // folder in the javabuilder sub-project (currently named 'lib'). This will allow student code to
 // access the Theater package.
