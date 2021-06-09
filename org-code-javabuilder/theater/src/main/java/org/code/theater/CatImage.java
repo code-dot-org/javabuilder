@@ -111,7 +111,7 @@ public class CatImage {
 
     //    try {
     //      synth = MidiSystem.getSynthesizer();
-    //      synth.open();
+    //      synth.open()
     //      soundbank = synth.getDefaultSoundbank();
     //      if (soundbank != null) {
     //        synth.loadAllInstruments(soundbank);

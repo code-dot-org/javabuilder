@@ -59,6 +59,7 @@ build.dependsOn packageSmall
 
 task buildZip(type: Zip) {
     from project(':neighborhood').getTasksByName('buildNeighborhood', false)
+    from project(':theater').getTasksByName('buildTheater', false)
     from compileJava
     from processResources
     into('lib') {
