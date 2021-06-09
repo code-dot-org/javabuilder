@@ -10,6 +10,13 @@ import org.code.protocol.InternalErrorKey;
 import org.code.protocol.InternalJavabuilderError;
 
 public class ImageEncoder {
+  /**
+   * Takes a buffered image and converts it to an encoding that can be passed across the WebSocket
+   * connection. We expect visual elements to be gifs in a base64 encoding
+   *
+   * @param image the image to encode
+   * @return a TheaterMessage with Value "VISUAL" and detail set to {image: "base64EncodedImage"}
+   */
   public static TheaterMessage encodeImageToMessage(BufferedImage image) {
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     try {

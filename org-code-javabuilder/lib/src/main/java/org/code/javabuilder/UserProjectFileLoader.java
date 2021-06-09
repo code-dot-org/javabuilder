@@ -56,7 +56,6 @@ public class UserProjectFileLoader implements ProjectFileLoader {
         HttpRequest.newBuilder().uri(URI.create(url)).timeout(Duration.ofSeconds(10)).build();
     HttpResponse<String> response;
     try {
-      System.out.println(String.join("/", baseUrl, MAIN_SOURCE_FILE_NAME));
       response = client.send(request, HttpResponse.BodyHandlers.ofString());
     } catch (IOException | InterruptedException e) {
       throw new UserFacingException(InternalErrorKey.INTERNAL_EXCEPTION, e);
