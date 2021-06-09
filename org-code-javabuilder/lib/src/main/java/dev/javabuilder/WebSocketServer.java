@@ -68,10 +68,13 @@ public class WebSocketServer {
                 }
               } catch (JavabuilderException | JavabuilderRuntimeException e) {
                 outputAdapter.sendMessage(e.getExceptionMessage());
+                outputAdapter.sendMessage(new DebuggingMessage("\nexternal" + e.getMessage()));
                 outputAdapter.sendMessage(new DebuggingMessage("\n" + e.getLoggingString()));
               } catch (InternalFacingException e) {
+                outputAdapter.sendMessage(new DebuggingMessage("\ninternal" + e.getMessage()));
                 outputAdapter.sendMessage(new DebuggingMessage("\n" + e.getLoggingString()));
               } catch (Throwable e) {
+                outputAdapter.sendMessage(new DebuggingMessage("\nthrowable" + e.getMessage()));
                 outputAdapter.sendMessage(new DebuggingMessage("\n" + e.getMessage()));
               } finally {
                 try {

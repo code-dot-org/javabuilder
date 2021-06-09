@@ -53,7 +53,7 @@ public class CodeBuilder implements AutoCloseable {
    */
   public void runUserCode()
       throws UserFacingException, InternalFacingException, UserInitiatedException {
-//    System.setOut(new OutputPrintStream(this.outputAdapter));
+    //    System.setOut(new OutputPrintStream(this.outputAdapter));
     System.setIn(new InputRedirectionStream(this.inputAdapter));
     JavaRunner runner;
     try {

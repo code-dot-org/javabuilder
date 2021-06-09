@@ -30,9 +30,7 @@ public class AWSOutputAdapter implements OutputAdapter {
   }
 
   @Override
-  public void sendBinaryMessage(ByteBuffer bytes) {
-
-  }
+  public void sendBinaryMessage(ByteBuffer bytes) {}
 
   public void sendDebuggingMessage(ClientMessage message) {
     String time = String.valueOf(java.time.Clock.systemUTC().instant());
