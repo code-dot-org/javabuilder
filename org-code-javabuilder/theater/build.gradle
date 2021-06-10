@@ -30,16 +30,19 @@ dependencies {
     // https://mvnrepository.com/artifact/org.json/json
     implementation group: 'org.json', name: 'json', version: '20210307'
     implementation project(':protocol')
+    // https://mvnrepository.com/artifact/net.imagej/ij
+    implementation group: 'net.imagej', name: 'ij', version: '1.53j'
+    compile 'commons-io:commons-io:2.9.0'
 }
 
 test {
     useJUnitPlatform()
 }
 
-// Builds the Neighborhood fat-jar (i.e. jar with all dependencies) and copies it to the resources
+// Builds the Theater fat-jar (i.e. jar with all dependencies) and copies it to the resources
 // folder in the javabuilder sub-project (currently named 'lib'). This will allow student code to
-// access the Neighborhood package.
-task buildNeighborhood(type: Jar) {
+// access the Theater package.
+task buildTheater(type: Jar) {
     archiveClassifier = 'full'
     from sourceSets.main.output
     dependsOn configurations.runtimeClasspath

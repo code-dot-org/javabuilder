@@ -2,12 +2,9 @@ package org.code.javabuilder;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import javax.tools.*;
 import javax.tools.JavaCompiler.CompilationTask;
 import org.code.protocol.InternalErrorKey;
@@ -69,16 +66,12 @@ public class UserCodeCompiler {
       files.add(
           new JavaSourceFromString(projectFile.getClassName(), projectFile.getFileContents()));
     }
+
+    // Include the user-facing api jars in the student code classpath so the student code can use
+    // them.
     List<String> optionList = new ArrayList<String>();
     optionList.add("-classpath");
-    // Include the neighborhood jar in the student code classpath so the student code can access
-    // neighborhood classes.
-    try {
-      optionList.add(
-          Paths.get(Objects.requireNonNull(Util.getNeighborhoodJar()).toURI()).toString());
-    } catch (URISyntaxException e) {
-      throw new UserFacingException(InternalErrorKey.INTERNAL_COMPILER_EXCEPTION, e);
-    }
+    optionList.add(Util.getAllJarPaths());
 
     // create compilation task
     return compiler.getTask(null, fileManager, diagnostics, optionList, null, files);
