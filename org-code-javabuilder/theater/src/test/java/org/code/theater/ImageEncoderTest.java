@@ -21,6 +21,7 @@ public class ImageEncoderTest {
         message
             .getDetail()
             .toString()
+            // This is the base 64 encoded string of the buffered image
             .contains("R0lGODlhAQABAPAAAAAAAAAAACwAAAAAAQABAEAIBAABBAQAOw=="));
   }
 }
