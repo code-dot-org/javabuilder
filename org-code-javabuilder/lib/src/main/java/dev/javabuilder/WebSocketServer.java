@@ -73,6 +73,9 @@ public class WebSocketServer {
                 outputAdapter.sendMessage(new DebuggingMessage("\n" + e.getLoggingString()));
               } catch (Throwable e) {
                 outputAdapter.sendMessage(new DebuggingMessage("\n" + e.getMessage()));
+                outputAdapter.sendMessage(new DebuggingMessage("\n" + e.toString()));
+                // Throw here to ensure we always get local logging
+                throw e;
               } finally {
                 try {
                   session.close();
