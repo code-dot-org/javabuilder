@@ -58,7 +58,7 @@ Resources:
       IntegrationType: AWS_PROXY
       IntegrationUri:
         Fn::Sub:
-          arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${OnConnectFunction.Arn}/invocations
+          arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${StartSessionAndRelayMessagesFunction.Arn}/invocations
   DefaultRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
@@ -77,7 +77,7 @@ Resources:
       ApiId: !Ref SimpleChatWebSocket
       Description: Lambda Proxy Integration
       IntegrationType: AWS_PROXY
-      IntegrationUri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${OnConnectFunction.Arn}/invocations"
+      IntegrationUri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${StartSessionAndRelayMessagesFunction.Arn}/invocations"
   DisconnectRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
@@ -97,7 +97,7 @@ Resources:
       IntegrationType: AWS_PROXY
       IntegrationUri:
         Fn::Sub:
-          arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${OnConnectFunction.Arn}/invocations
+          arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${StartSessionAndRelayMessagesFunction.Arn}/invocations
   SimpleChatWebSocketDeployment:
     Type: AWS::ApiGatewayV2::Deployment
     DependsOn:
@@ -123,20 +123,20 @@ Resources:
           "caller":"$context.identity.caller", "user":"$context.identity.user","requestTime":"$context.requestTime",
           "eventType":"$context.eventType","routeKey":"$context.routeKey", "status":"$context.status","connectionId":"$context.connectionId"
           }'
-  OnConnectFunction:
+  StartSessionAndRelayMessagesFunction:
     Type: AWS::Serverless::Function
     Properties:
       Description: Starts the long-running Lambda that compiles and runs a JavaLab project and relays messages to it from the JavaLab client.
       CodeUri: api-gateway-routes/
       Handler: api_gateway_proxy_function.lambda_handler
       Role: !ImportValue JavabuilderLambdaExecutionRole
-  OnConnectPermission:
+  StartSessionAndRelayMessagesPermission:
     Type: AWS::Lambda::Permission
     DependsOn:
       - SimpleChatWebSocket
     Properties:
       Action: lambda:InvokeFunction
-      FunctionName: !Ref OnConnectFunction
+      FunctionName: !Ref StartSessionAndRelayMessagesFunction
       Principal: apigateway.amazonaws.com
 # END - Example WebSocket API Gateway template
 
