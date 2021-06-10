@@ -20,18 +20,16 @@ Globals:
     MemorySize: 3008
     Tracing: Active
 Resources:
-
-# EXAMPLE WEBSOCKET API Gateway API
-  SimpleChatWebSocket:
+  WebSocketAPI:
     Type: AWS::ApiGatewayV2::Api
     Properties:
-      Name: SimpleChatWebSocket
+      Name: WebSocketAPI
       ProtocolType: WEBSOCKET
       RouteSelectionExpression: "$request.body.action"
   ConnectRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
-      ApiId: !Ref SimpleChatWebSocket
+      ApiId: !Ref WebSocketAPI
       RouteKey: $connect
       #AuthorizationType: NONE
       AuthorizationType: CUSTOM
@@ -44,7 +42,7 @@ Resources:
   WebSocketAuthorizer:
     Type: AWS::ApiGatewayV2::Authorizer
     Properties:
-      ApiId: !Ref SimpleChatWebSocket
+      ApiId: !Ref WebSocketAPI
       AuthorizerType: REQUEST
       AuthorizerUri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${JavabuilderAuthorizerLambda.Arn}/invocations"
       IdentitySource:
@@ -53,7 +51,7 @@ Resources:
   ConnectInteg:
     Type: AWS::ApiGatewayV2::Integration
     Properties:
-      ApiId: !Ref SimpleChatWebSocket
+      ApiId: !Ref WebSocketAPI
       Description: Connect Integration
       IntegrationType: AWS_PROXY
       IntegrationUri:
@@ -62,7 +60,7 @@ Resources:
   DefaultRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
-      ApiId: !Ref SimpleChatWebSocket
+      ApiId: !Ref WebSocketAPI
       RouteKey: $default
       AuthorizationType: NONE
       OperationName: DefaultRoute
@@ -74,14 +72,14 @@ Resources:
   DefaultIntegration:
     Type: AWS::ApiGatewayV2::Integration
     Properties:
-      ApiId: !Ref SimpleChatWebSocket
+      ApiId: !Ref WebSocketAPI
       Description: Lambda Proxy Integration
       IntegrationType: AWS_PROXY
       IntegrationUri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${StartSessionAndRelayMessagesFunction.Arn}/invocations"
   DisconnectRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
-      ApiId: !Ref SimpleChatWebSocket
+      ApiId: !Ref WebSocketAPI
       RouteKey: $disconnect
       AuthorizationType: NONE
       OperationName: DisconnectRoute
@@ -92,27 +90,27 @@ Resources:
   DisconnectInteg:
     Type: AWS::ApiGatewayV2::Integration
     Properties:
-      ApiId: !Ref SimpleChatWebSocket
+      ApiId: !Ref WebSocketAPI
       Description: Disconnect Integration
       IntegrationType: AWS_PROXY
       IntegrationUri:
         Fn::Sub:
           arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${StartSessionAndRelayMessagesFunction.Arn}/invocations
-  SimpleChatWebSocketDeployment:
+  WebSocketDeployment:
     Type: AWS::ApiGatewayV2::Deployment
     DependsOn:
       - ConnectRoute
       - DefaultRoute
       - DisconnectRoute
     Properties:
-      ApiId: !Ref SimpleChatWebSocket
-  SimpleChatWebSocketStage:
+      ApiId: !Ref WebSocketAPI
+  WebSocketStage:
     Type: AWS::ApiGatewayV2::Stage
     Properties:
       StageName: Prod
       Description: Prod Stage
-      DeploymentId: !Ref SimpleChatWebSocketDeployment
-      ApiId: !Ref SimpleChatWebSocket
+      DeploymentId: !Ref WebSocketDeployment
+      ApiId: !Ref WebSocketAPI
       DefaultRouteSettings:
         DetailedMetricsEnabled: true
         LoggingLevel: INFO
@@ -133,21 +131,16 @@ Resources:
   StartSessionAndRelayMessagesPermission:
     Type: AWS::Lambda::Permission
     DependsOn:
-      - SimpleChatWebSocket
+      - WebSocketAPI
     Properties:
       Action: lambda:InvokeFunction
       FunctionName: !Ref StartSessionAndRelayMessagesFunction
       Principal: apigateway.amazonaws.com
-# END - Example WebSocket API Gateway template
-
-
-
   APIGatewayCloudWatchLogs:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName:
         Fn::Sub: ${SubDomainName}.${BaseDomainName}
-
   JavabuilderAuthorizerLambda:
     Type: AWS::Serverless::Function
     Properties:
@@ -196,31 +189,7 @@ Resources:
       Action: lambda:InvokeFunction
       FunctionName: !Ref JavabuilderAuthorizerLambda
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${SimpleChatWebSocket}/authorizers/${WebSocketAuthorizer}"
-  StartSessionAndRelayMessagesLambda:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: api_gateway_proxy_function.lambda_handler
-      CodeUri: org-code-javabuilder/
-      Description: Starts the long-running Lambda that compiles and runs a JavaLab
-        project and relays messages to it from the JavaLab client.
-      Role:
-        Fn::ImportValue: JavabuilderLambdaExecutionRole
-      Events:
-        Api1:
-          Type: Api
-          Properties:
-            Path: /MyResource
-            Method: ANY
-  StartSessionAndRelayMessagesLambdaPermission:
-    Type: AWS::Lambda::Permission
-    DependsOn:
-      - SimpleChatWebSocket
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName:
-        Ref: StartSessionAndRelayMessagesLambda
-      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${WebSocketAPI}/authorizers/${WebSocketAuthorizer}"
   BuildAndRunJavaProject:
     Type: AWS::Serverless::Function
     Properties:
