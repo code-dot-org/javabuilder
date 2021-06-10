@@ -67,7 +67,8 @@ public class UserCodeCompiler {
           new JavaSourceFromString(projectFile.getClassName(), projectFile.getFileContents()));
     }
 
-    // Include the user-facing api jars in the student code classpath so the student code can them.
+    // Include the user-facing api jars in the student code classpath so the student code can use
+    // them.
     List<String> optionList = new ArrayList<String>();
     optionList.add("-classpath");
     optionList.add(Util.getAllJarPaths());
