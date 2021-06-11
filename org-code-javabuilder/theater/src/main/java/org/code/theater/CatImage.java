@@ -6,7 +6,6 @@ import ij.process.ImageProcessor;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import org.code.protocol.GlobalProtocol;
@@ -22,11 +21,11 @@ public class CatImage {
   private final GifWriter gifWriter;
   private final ByteArrayOutputStream outputStream;
 
-  public CatImage() throws IOException {
+  public CatImage() {
     this(GlobalProtocol.getInstance().getOutputAdapter());
   }
 
-  public CatImage(OutputAdapter outputAdapter) throws IOException {
+  public CatImage(OutputAdapter outputAdapter) {
     this.outputStream = new ByteArrayOutputStream();
     this.gifWriter = new GifWriter(this.outputStream);
     this.outputAdapter = outputAdapter;
@@ -52,7 +51,8 @@ public class CatImage {
     this.gifWriter.writeToGif(bufferedImage, delay);
   }
 
-  public void play() throws IOException {
+  // Play the created gif (close gif writer and send message).
+  public void play() {
     this.gifWriter.close();
     outputAdapter.sendMessage(ImageEncoder.encodeStreamToMessage(this.outputStream));
   }

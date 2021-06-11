@@ -11,9 +11,10 @@ import javax.imageio.stream.ImageOutputStream;
 import org.code.protocol.InternalErrorKey;
 import org.code.protocol.InternalJavabuilderError;
 
-// Writer to generate a gif from a set of images. The gif will be stored in the given
-// ByteArrayOutputStream.
-// Adapted from https://memorynotfound.com/generate-gif-image-java-delay-infinite-loop-example/
+/**
+ * Writer to generate a gif from a set of images. The gif will be stored in the given
+ * ByteArrayOutputStream.
+ */
 public class GifWriter {
   private ImageWriter writer;
   private ImageWriteParam params;
@@ -31,6 +32,12 @@ public class GifWriter {
     }
   }
 
+  /**
+   * Write the given image as the next frame of the gif.
+   *
+   * @param img BufferedImage
+   * @param delay delay in milliseconds until the next frame of the gif.
+   */
   public void writeToGif(BufferedImage img, int delay) {
     try {
       this.writer.writeToSequence(
@@ -40,6 +47,10 @@ public class GifWriter {
     }
   }
 
+  /**
+   * Close the gif stream and flush any remaining bytes. Any updates after close will throw an
+   * exception because the writer has been closed.
+   */
   public void close() {
     try {
       this.writer.endWriteSequence();
@@ -49,6 +60,15 @@ public class GifWriter {
     }
   }
 
+  /**
+   * Update the metadata for the next frame with the given delay and image type. See Gif metadata
+   * specification here:
+   * https://javadoc.scijava.org/Java7/javax/imageio/metadata/doc-files/gif_metadata.html
+   *
+   * @param delay int delay in milliseconds after this frame
+   * @param imageType int
+   * @return Updated IIOMetadata for the next frame
+   */
   private IIOMetadata getMetadataForFrame(int delay, int imageType) {
     IIOMetadata metadata =
         this.writer.getDefaultImageMetadata(
@@ -60,6 +80,7 @@ public class GifWriter {
     graphicsControlExtensionNode.setAttribute("disposalMethod", "none");
     graphicsControlExtensionNode.setAttribute("userInputFlag", "FALSE");
     graphicsControlExtensionNode.setAttribute("transparentColorFlag", "FALSE");
+    // delay is expected in hundredths of a second, divide milliseconds by 10
     graphicsControlExtensionNode.setAttribute("delayTime", Integer.toString(delay / 10));
     graphicsControlExtensionNode.setAttribute("transparentColorIndex", "0");
 
@@ -71,6 +92,13 @@ public class GifWriter {
     return metadata;
   }
 
+  /**
+   * Find metadata node with the given name from the rootNode
+   *
+   * @param rootNode
+   * @param nodeName
+   * @return Requested IIOMetadataNode
+   */
   private static IIOMetadataNode getNode(IIOMetadataNode rootNode, String nodeName) {
     int nNodes = rootNode.getLength();
     for (int i = 0; i < nNodes; i++) {
