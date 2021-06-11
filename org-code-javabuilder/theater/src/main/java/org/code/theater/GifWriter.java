@@ -25,6 +25,16 @@ public class GifWriter {
     this.writer.prepareWriteSequence(null);
   }
 
+  public void writeToGif(BufferedImage img, int delay) throws IOException {
+    this.writer.writeToSequence(
+        new IIOImage(img, null, getMetadataForFrame(delay, img.getType())), params);
+  }
+
+  public void close() throws IOException {
+    this.writer.endWriteSequence();
+    this.imageOutputStream.flush();
+  }
+
   private IIOMetadata getMetadataForFrame(int delay, int imageType) throws IIOInvalidTreeException {
     IIOMetadata metadata =
         this.writer.getDefaultImageMetadata(
@@ -53,15 +63,5 @@ public class GifWriter {
     IIOMetadataNode node = new IIOMetadataNode(nodeName);
     rootNode.appendChild(node);
     return (node);
-  }
-
-  public void writeToSequence(BufferedImage img, int delay) throws IOException {
-    this.writer.writeToSequence(
-        new IIOImage(img, null, getMetadataForFrame(delay, img.getType())), params);
-  }
-
-  public void close() throws IOException {
-    this.writer.endWriteSequence();
-    this.imageOutputStream.flush();
   }
 }

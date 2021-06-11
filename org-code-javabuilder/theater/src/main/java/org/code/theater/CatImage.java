@@ -49,7 +49,7 @@ public class CatImage {
 
     ImageProcessor ip = image.getProcessor();
     BufferedImage bufferedImage = (BufferedImage) ip.createImage();
-    this.gifWriter.writeToSequence(bufferedImage, 1000);
+    this.gifWriter.writeToGif(bufferedImage, 1000);
     // outputAdapter.sendMessage(ImageEncoder.encodeImageToMessage(bufferedImage));
   }
 
@@ -87,7 +87,7 @@ public class CatImage {
     // IJ.save(image, "<my local directory>\beach.gif");
 
     BufferedImage bufferedImage = (BufferedImage) ip.createImage();
-    this.gifWriter.writeToSequence(bufferedImage, 1000);
+    this.gifWriter.writeToGif(bufferedImage, 1000);
     // outputAdapter.sendMessage(ImageEncoder.encodeImageToMessage(bufferedImage));
   }
 }
