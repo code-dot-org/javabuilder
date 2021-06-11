@@ -103,8 +103,9 @@ public static class Theater {
     * @param color  the color to draw the text, using any CSS color string (e.g. #234 or green)
     * @param font   the name of the font to draw the text in
     * @param height the height of the text in pixels.
+    * @param rotation the rotation or tilt of the text, in degrees
     */
-   public static void drawText(String text, double x, double y, String color, String font, double height) {
+   public static void drawText(String text, double x, double y, String color, String font, double height, double rotation) {
    }
 
    /**
@@ -121,12 +122,12 @@ public static class Theater {
    /**
     * Draw a regular polygon on the canvas.
     * 
-    * @param x     the center X coordinate of the polygon
-    * @param y     the center Y coordinate of the polygon
-    * @param sides the number of sides of the polygon
-    * @param size  the distance from the center to each point on the polyon
+    * @param x      the center X coordinate of the polygon
+    * @param y      the center Y coordinate of the polygon
+    * @param sides  the number of sides of the polygon
+    * @param radius the distance from the center to each point on the polyon
     */
-   public static void drawPolygon(double x, double y, int sides, double size) {
+   public static void drawRegularPolygon(double x, double y, int sides, double radius) {
    }
 
    /**
@@ -164,9 +165,9 @@ public static class Theater {
    }
 
    /**
-    * Sets the thickness of lines drawn
+    * Sets the thickness of lines drawn.
     * 
-    * @param width
+    * @param width width in pixels of the line to draw. Zero means no line.
     */
    public static void setStrokeWidth(double width) {
    }
@@ -182,10 +183,15 @@ public static class Theater {
    /**
     * Sets the fill color for all shapes drawn
     * 
-    * @param color CSS color string to fill any shape. Defaults to "none", and 
-    *              setting it to "none" ensures that any shapes are not filled.
+    * @param color CSS color string to fill any shape.
     */
    public static void setFillColor(String color) {
+   }
+ 
+   /**
+    * Removes the fill color so any shapes have no fill.
+    */
+   public static void removeFill() {
    }
 
    /**
