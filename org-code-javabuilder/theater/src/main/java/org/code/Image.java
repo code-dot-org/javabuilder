@@ -7,8 +7,9 @@ public class Image {
      * 
      * @param filename the name of the image loaded into the asset manager for the
      *                 project
+     * @throws FileNotFoundException if the file doesn't exist in the asset manager.
      */
-    public Image(String filename) throws ImageException;
+    public Image(String filename) throws FileNotFoundException;
 
     /**
      * Create a new image object from the pixels provided. If the number of pixels
@@ -24,7 +25,7 @@ public class Image {
     }
 
     /**
-     * Creates an empty image filled with black pixels.
+     * Creates an empty image filled with white pixels.
      * 
      * @param width  the width of the image to create.
      * @param height the height of the image to create.
