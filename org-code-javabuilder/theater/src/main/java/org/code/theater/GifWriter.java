@@ -8,34 +8,48 @@ import javax.imageio.metadata.IIOInvalidTreeException;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
 import javax.imageio.stream.ImageOutputStream;
+import org.code.protocol.InternalErrorKey;
+import org.code.protocol.InternalJavabuilderError;
 
-// Writer to generate a gif from a set of images.
+// Writer to generate a gif from a set of images. The gif will be stored in the given
+// ByteArrayOutputStream.
 // Adapted from https://memorynotfound.com/generate-gif-image-java-delay-infinite-loop-example/
 public class GifWriter {
   private ImageWriter writer;
   private ImageWriteParam params;
   private ImageOutputStream imageOutputStream;
 
-  public GifWriter(ByteArrayOutputStream out) throws IOException {
-    this.imageOutputStream = ImageIO.createImageOutputStream(out);
-    this.writer = ImageIO.getImageWritersBySuffix("gif").next();
-    this.params = writer.getDefaultWriteParam();
-
-    this.writer.setOutput(this.imageOutputStream);
-    this.writer.prepareWriteSequence(null);
+  public GifWriter(ByteArrayOutputStream out) {
+    try {
+      this.imageOutputStream = ImageIO.createImageOutputStream(out);
+      this.writer = ImageIO.getImageWritersBySuffix("gif").next();
+      this.params = writer.getDefaultWriteParam();
+      this.writer.setOutput(this.imageOutputStream);
+      this.writer.prepareWriteSequence(null);
+    } catch (IOException e) {
+      throw new InternalJavabuilderError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e.getCause());
+    }
   }
 
-  public void writeToGif(BufferedImage img, int delay) throws IOException {
-    this.writer.writeToSequence(
-        new IIOImage(img, null, getMetadataForFrame(delay, img.getType())), params);
+  public void writeToGif(BufferedImage img, int delay) {
+    try {
+      this.writer.writeToSequence(
+          new IIOImage(img, null, getMetadataForFrame(delay, img.getType())), params);
+    } catch (IOException e) {
+      throw new InternalJavabuilderError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e.getCause());
+    }
   }
 
-  public void close() throws IOException {
-    this.writer.endWriteSequence();
-    this.imageOutputStream.flush();
+  public void close() {
+    try {
+      this.writer.endWriteSequence();
+      this.imageOutputStream.flush();
+    } catch (IOException e) {
+      throw new InternalJavabuilderError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e.getCause());
+    }
   }
 
-  private IIOMetadata getMetadataForFrame(int delay, int imageType) throws IIOInvalidTreeException {
+  private IIOMetadata getMetadataForFrame(int delay, int imageType) {
     IIOMetadata metadata =
         this.writer.getDefaultImageMetadata(
             ImageTypeSpecifier.createFromBufferedImageType(imageType), params);
@@ -49,7 +63,11 @@ public class GifWriter {
     graphicsControlExtensionNode.setAttribute("delayTime", Integer.toString(delay / 10));
     graphicsControlExtensionNode.setAttribute("transparentColorIndex", "0");
 
-    metadata.setFromTree(metaFormatName, root);
+    try {
+      metadata.setFromTree(metaFormatName, root);
+    } catch (IIOInvalidTreeException e) {
+      throw new InternalJavabuilderError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e.getCause());
+    }
     return metadata;
   }
 

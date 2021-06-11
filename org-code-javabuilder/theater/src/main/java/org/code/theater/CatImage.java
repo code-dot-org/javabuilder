@@ -32,7 +32,7 @@ public class CatImage {
     this.outputAdapter = outputAdapter;
   }
 
-  public void buildImageFilter() throws IOException {
+  public void buildImageFilter(int delay) {
     ImagePlus image = null;
     try {
       image =
@@ -49,8 +49,7 @@ public class CatImage {
 
     ImageProcessor ip = image.getProcessor();
     BufferedImage bufferedImage = (BufferedImage) ip.createImage();
-    this.gifWriter.writeToGif(bufferedImage, 1000);
-    // outputAdapter.sendMessage(ImageEncoder.encodeImageToMessage(bufferedImage));
+    this.gifWriter.writeToGif(bufferedImage, delay);
   }
 
   public void play() throws IOException {
@@ -58,7 +57,7 @@ public class CatImage {
     outputAdapter.sendMessage(ImageEncoder.encodeStreamToMessage(this.outputStream));
   }
 
-  public void buildCanvas() throws IOException {
+  public void buildCanvas(int delay) {
     ImagePlus image = IJ.createImage("test", 300, 150, 1, 24);
     ImageProcessor ip = image.getProcessor();
 
@@ -87,7 +86,6 @@ public class CatImage {
     // IJ.save(image, "<my local directory>\beach.gif");
 
     BufferedImage bufferedImage = (BufferedImage) ip.createImage();
-    this.gifWriter.writeToGif(bufferedImage, 1000);
-    // outputAdapter.sendMessage(ImageEncoder.encodeImageToMessage(bufferedImage));
+    this.gifWriter.writeToGif(bufferedImage, delay);
   }
 }
