@@ -2,10 +2,12 @@ package org.code.theater;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.Base64;
 import java.util.HashMap;
 import javax.imageio.ImageIO;
+import org.apache.commons.io.FileUtils;
 import org.code.protocol.InternalErrorKey;
 import org.code.protocol.InternalJavabuilderError;
 
@@ -26,6 +28,22 @@ public class ImageEncoder {
     }
 
     String encodedString = Base64.getEncoder().encodeToString(out.toByteArray());
+    HashMap<String, String> message = new HashMap<>();
+    message.put("image", encodedString);
+    return new TheaterMessage(TheaterSignalKey.VISUAL, message);
+  }
+
+  public static TheaterMessage encodeStreamToMessage(ByteArrayOutputStream stream) {
+    System.out.println("stream size: " + stream.size());
+    String encodedString = Base64.getEncoder().encodeToString(stream.toByteArray());
+    HashMap<String, String> message = new HashMap<>();
+    message.put("image", encodedString);
+    return new TheaterMessage(TheaterSignalKey.VISUAL, message);
+  }
+
+  public static TheaterMessage encodeFileToMessage(String filePath) throws IOException {
+    byte[] fileContent = FileUtils.readFileToByteArray(new File(filePath));
+    String encodedString = Base64.getEncoder().encodeToString(fileContent);
     HashMap<String, String> message = new HashMap<>();
     message.put("image", encodedString);
     return new TheaterMessage(TheaterSignalKey.VISUAL, message);

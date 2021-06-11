@@ -5,6 +5,8 @@ import ij.ImagePlus;
 import ij.process.ImageProcessor;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import org.code.protocol.GlobalProtocol;
@@ -17,16 +19,20 @@ import org.code.protocol.OutputAdapter;
  */
 public class CatImage {
   private final OutputAdapter outputAdapter;
+  private final GifWriter gifWriter;
+  private final ByteArrayOutputStream outputStream;
 
-  public CatImage() {
-    this.outputAdapter = GlobalProtocol.getInstance().getOutputAdapter();
+  public CatImage() throws IOException {
+    this(GlobalProtocol.getInstance().getOutputAdapter());
   }
 
-  public CatImage(OutputAdapter outputAdapter) {
+  public CatImage(OutputAdapter outputAdapter) throws IOException {
+    this.outputStream = new ByteArrayOutputStream();
+    this.gifWriter = new GifWriter(this.outputStream);
     this.outputAdapter = outputAdapter;
   }
 
-  public void buildImageFilter() {
+  public void buildImageFilter() throws IOException {
     ImagePlus image = null;
     try {
       image =
@@ -43,10 +49,16 @@ public class CatImage {
 
     ImageProcessor ip = image.getProcessor();
     BufferedImage bufferedImage = (BufferedImage) ip.createImage();
-    outputAdapter.sendMessage(ImageEncoder.encodeImageToMessage(bufferedImage));
+    this.gifWriter.writeToSequence(bufferedImage, 1000);
+    // outputAdapter.sendMessage(ImageEncoder.encodeImageToMessage(bufferedImage));
   }
 
-  public void buildCanvas() {
+  public void play() throws IOException {
+    this.gifWriter.close();
+    outputAdapter.sendMessage(ImageEncoder.encodeStreamToMessage(this.outputStream));
+  }
+
+  public void buildCanvas() throws IOException {
     ImagePlus image = IJ.createImage("test", 300, 150, 1, 24);
     ImageProcessor ip = image.getProcessor();
 
@@ -75,6 +87,7 @@ public class CatImage {
     // IJ.save(image, "<my local directory>\beach.gif");
 
     BufferedImage bufferedImage = (BufferedImage) ip.createImage();
-    outputAdapter.sendMessage(ImageEncoder.encodeImageToMessage(bufferedImage));
+    this.gifWriter.writeToSequence(bufferedImage, 1000);
+    // outputAdapter.sendMessage(ImageEncoder.encodeImageToMessage(bufferedImage));
   }
 }
