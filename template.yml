@@ -116,10 +116,21 @@ Resources:
         LoggingLevel: INFO
         DataTraceEnabled: true
       AccessLogSettings:
-        DestinationArn: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:${SubDomainName}.${BaseDomainName}"
-        Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp",
-          "caller":"$context.identity.caller", "user":"$context.identity.user","requestTime":"$context.requestTime",
-          "eventType":"$context.eventType","routeKey":"$context.routeKey", "status":"$context.status","connectionId":"$context.connectionId"
+        DestinationArn: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/apigateway/accesslog/${SubDomainName}.${BaseDomainName}"
+        # TODO: Also log authorizer status code, authorizer error message, Javabuilder session id, and Origin.
+        Format: '{
+            "host": "$context.domainName",
+            "requestId": "$context.requestId",
+            "ip": "$context.identity.sourceIp",
+            "requestTime": "$context.requestTime",
+            "method": "$context.httpMethod",
+            "caller": "$context.identity.caller",
+            "eventType": "$context.eventType",
+            "routeKey": "$context.routeKey",
+            "status": "$context.status",
+            "connectionId": "$context.connectionId",
+            "protocol": "$context.protocol",
+            "userAgent": "$context.identity.userAgent"
           }'
   StartSessionAndRelayMessagesFunction:
     Type: AWS::Serverless::Function
