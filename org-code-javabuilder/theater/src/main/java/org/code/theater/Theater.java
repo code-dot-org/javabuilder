@@ -6,6 +6,20 @@ public enum Instrument {
 
 public static class Theater {
    /**
+    * Returns the width of the theater canvas. Right now this will always be
+    * 400 pixels.
+    */
+   public static double getWidth() {
+   }
+   
+   /**
+    * Returns the height of the theater canvas. Right now this will always be
+    * 400 pixels.
+    */
+   public static double getHeight() {
+   }
+   
+   /**
     * Plays the array of samples provided.
     * 
     * @param sound an array of samples to play.
@@ -16,10 +30,10 @@ public static class Theater {
    /**
     * Plays the sound referenced by the file name.
     * 
-    * @param filename an array of samples to play.
-    * @throws SoundException if the file can't be found in the project.
+    * @param filename the file to play in the asset manager.
+    * @throws FileNotFoundException if the file can't be found in the project.
     */
-   public static void playSound(String filename) throws SoundException {
+   public static void playSound(String filename) throws FileNotFoundException {
    }
 
    /**
@@ -60,9 +74,10 @@ public static class Theater {
     * @param width    the width to draw the image on the canvas
     * @param height   the height to draw the image on the canvas
     * @param rotation the amount to rotate the image
+    * @throws FileNotFoundException if the file can't be found in the project.
     */
    public static void drawImage(String filename, double x, double y, double width, double height, double rotation)
-         throws ImageException {
+         throws FileNotFoundException {
    }
 
    /**
@@ -85,7 +100,7 @@ public static class Theater {
     * @param text   the text to draw
     * @param x      the distance from the left side of the image to draw the text.
     * @param y      the distance from the top of the image to draw the text.
-    * @param color  the color to draw the text.
+    * @param color  the color to draw the text, using any CSS color string (e.g. #234 or green)
     * @param font   the name of the font to draw the text in
     * @param height the height of the text in pixels.
     */
@@ -159,7 +174,7 @@ public static class Theater {
    /**
     * Sets the color of lines drawn.
     * 
-    * @param color
+    * @param CSS color string 
     */
    public static void setStrokeColor(String color) {
    }
@@ -167,8 +182,8 @@ public static class Theater {
    /**
     * Sets the fill color for all shapes drawn
     * 
-    * @param color the color to fill any shape. Defaults to "none", and setting it
-    *              back to "none" ensures that any shapes are not filled.
+    * @param color CSS color string to fill any shape. Defaults to "none", and 
+    *              setting it to "none" ensures that any shapes are not filled.
     */
    public static void setFillColor(String color) {
    }
