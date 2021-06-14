@@ -36,7 +36,7 @@ public class GifWriter {
    * Write the given image as the next frame of the gif.
    *
    * @param img BufferedImage
-   * @param delay delay in milliseconds until the next frame of the gif.
+   * @param delay delay in milliseconds after this frame of the gif.
    */
   public void writeToGif(BufferedImage img, int delay) {
     try {
@@ -61,13 +61,13 @@ public class GifWriter {
   }
 
   /**
-   * Update the metadata for the next frame with the given delay and image type. See Gif metadata
+   * Get the metadata for the next frame with the given delay and image type. See Gif metadata
    * specification here:
    * https://javadoc.scijava.org/Java7/javax/imageio/metadata/doc-files/gif_metadata.html
    *
    * @param delay int delay in milliseconds after this frame
    * @param imageType int
-   * @return Updated IIOMetadata for the next frame
+   * @return IIOMetadata for the next frame
    */
   private IIOMetadata getMetadataForFrame(int delay, int imageType) {
     IIOMetadata metadata =
