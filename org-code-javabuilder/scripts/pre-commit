@@ -1,4 +1,5 @@
 org-code-javabuilder/gradlew verGJF -p org-code-javabuilder
+org-code-javabuilder/gradlew test -p org-code-javabuilder
 RESULT=$?
 
 RED='\033[0;31m'
