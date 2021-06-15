@@ -75,6 +75,19 @@ public class PainterTest {
   }
 
   @Test
+  void canMoveReturnsFalseIfCurrentDirectionInvalid() {
+    Painter painter = new Painter(0, 0, "North", 5);
+    assertFalse(painter.canMove());
+  }
+
+  @Test
+  void canMoveReturnsTrueIfCurrentDirectionValid() {
+    World.setInstance(new World(multiSquareGrid));
+    Painter painter = new Painter(0, 0, "South", 5);
+    assertTrue(painter.canMove());
+  }
+
+  @Test
   void moveThrowsErrorIfInvalidMovement() {
     Painter painter = new Painter(0, 0, "North", 5);
     Exception exception =
