@@ -154,6 +154,11 @@ public class Painter {
     return this.isValidMovement(Direction.fromString(direction));
   }
 
+  /** @return True if there is no barrier one square ahead in the current direction. */
+  public boolean canMove() {
+    return this.isValidMovement(this.direction);
+  }
+
   /** @return the color of the square where the painter is standing. */
   public String getColor() {
     return this.grid.getSquare(this.xLocation, this.yLocation).getColor();
