@@ -9,6 +9,7 @@
 plugins {
     // Apply the java-library plugin for API and implementation separation.
     id 'java-library'
+    id 'com.github.sherter.google-java-format' version '0.8'
 }
 
 repositories {
@@ -45,5 +46,5 @@ task buildNeighborhood(type: Jar) {
     from {
         configurations.runtimeClasspath.findAll { it.name.endsWith('jar') }.collect { zipTree(it) }
     }
-    destinationDirectory = project(':lib').project.layout.projectDirectory.dir('src/main/resources')
+    destinationDirectory = project(':lib').project.layout.projectDirectory.dir('src/main/resources/jars')
 }

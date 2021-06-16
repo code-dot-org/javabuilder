@@ -2,14 +2,13 @@ package org.code.javabuilder;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import javax.tools.*;
 import javax.tools.JavaCompiler.CompilationTask;
+import org.code.protocol.InternalErrorKey;
+import org.code.protocol.OutputAdapter;
 
 /**
  * Compiles all user code managed by the ProjectFileManager. Any compiler output will be passed
@@ -59,7 +58,7 @@ public class UserCodeCompiler {
     } catch (IOException e) {
       e.printStackTrace();
       // if we can't set the file location we won't be able to run the class properly.
-      throw new UserFacingException(UserFacingExceptionKey.INTERNAL_COMPILER_EXCEPTION, e);
+      throw new UserFacingException(InternalErrorKey.INTERNAL_COMPILER_EXCEPTION, e);
     }
     // create file for user-provided code
     List<JavaFileObject> files = new ArrayList<>();
@@ -67,16 +66,12 @@ public class UserCodeCompiler {
       files.add(
           new JavaSourceFromString(projectFile.getClassName(), projectFile.getFileContents()));
     }
+
+    // Include the user-facing api jars in the student code classpath so the student code can use
+    // them.
     List<String> optionList = new ArrayList<String>();
     optionList.add("-classpath");
-    // Include the neighborhood jar in the student code classpath so the student code can access
-    // neighborhood classes.
-    try {
-      optionList.add(
-          Paths.get(Objects.requireNonNull(Util.getNeighborhoodJar()).toURI()).toString());
-    } catch (URISyntaxException e) {
-      throw new UserFacingException(UserFacingExceptionKey.INTERNAL_COMPILER_EXCEPTION, e);
-    }
+    optionList.add(Util.getAllJarPaths());
 
     // create compilation task
     return compiler.getTask(null, fileManager, diagnostics, optionList, null, files);

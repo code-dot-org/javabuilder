@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.Queue;
+import org.code.protocol.InputAdapter;
 
 /**
  * An InputStream that queries an InputAdapter for new bytes. This is intended to redirect system.in

@@ -3,8 +3,8 @@ package dev.javabuilder;
 import java.io.IOException;
 import javax.websocket.RemoteEndpoint;
 import javax.websocket.Session;
-import org.code.javabuilder.OutputAdapter;
 import org.code.protocol.ClientMessage;
+import org.code.protocol.OutputAdapter;
 
 /**
  * Intended for local testing with dashboard only. Passes output to the provided WebSocket session
