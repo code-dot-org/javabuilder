@@ -6,6 +6,10 @@ Parameters:
     Type: String
     Description: Base domain name.
     Default: dev-code.org
+  BaseDomainNameHostedZonedID:
+    Type: String
+    Description: AWS Route53 Hosted Zone ID for base domain name.
+    Default: Z07248463JGJ44FME5BZ5
   SubDomainName:
     Type: String
     Description: Sub domain name for javabuilder service.
@@ -20,10 +24,43 @@ Globals:
     MemorySize: 3008
     Tracing: Active
 Resources:
+  Domain:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneName: !Sub "${BaseDomainName}."
+      Name: !Sub "${SubDomainName}.${BaseDomainName}"
+      Type: A
+      AliasTarget:
+        DNSName: !GetAtt DomainName.RegionalDomainName
+        HostedZoneId: !GetAtt DomainName.RegionalHostedZoneId
+  DomainName:
+    Type: AWS::ApiGatewayV2::DomainName
+    Properties:
+      DomainName: !Sub "${SubDomainName}.${BaseDomainName}"
+      DomainNameConfigurations:
+        - EndpointType: REGIONAL
+          CertificateArn: !Ref Certificate
+          CertificateName: !Sub "${SubDomainName}.${BaseDomainName}"
+  Certificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Sub "${SubDomainName}.${BaseDomainName}"
+      ValidationMethod: DNS
+      DomainValidationOptions:
+        - DomainName: !Sub "${SubDomainName}.${BaseDomainName}"
+          HostedZoneId: !Ref BaseDomainNameHostedZonedID
+  DomainNameAPIMapping:
+    Type: AWS::ApiGatewayV2::ApiMapping
+    DependsOn:
+      - Domain
+    Properties:
+      ApiId: !Ref WebSocketAPI
+      DomainName: !Sub "${SubDomainName}.${BaseDomainName}"
+      Stage: !Ref WebSocketStage
   WebSocketAPI:
     Type: AWS::ApiGatewayV2::Api
     Properties:
-      Name: WebSocketAPI
+      Name: !Sub "${SubDomainName}.${BaseDomainName}"
       ProtocolType: WEBSOCKET
       RouteSelectionExpression: "$request.body.action"
   ConnectRoute:
