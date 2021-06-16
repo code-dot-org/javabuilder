@@ -1,6 +1,63 @@
-package org.code;
+package org.code.media;
 
 public class Pixel {
+    /**
+     * Private constructor as this will only be used when a getPixel or getPixels
+     * method is called on an image class
+     * 
+     * @param image
+     * @param x
+     * @param y
+     */
+    private Pixel(Image image, int x, int y) {
+    }
+
+    /**
+     * Get the X position of this pixel in the image
+     * 
+     * @return the x position of the pixel
+     */
+    public int getX() {
+
+    }
+
+    /**
+     * Get the Y position of this pixel in the image
+     * 
+     * @return the y position of the pixel
+     */
+    public int getY() {
+
+    }
+
+    /**
+     * Get the image that this pixel is part of
+     * 
+     * @return the image that this pixel part of
+     */
+    public Image getSourceImage() {
+
+    }
+
+    /** */
+
+    /**
+     * Get the color of the pixel in the image
+     * 
+     * @return
+     */
+    public Color getColor() {
+    }
+
+    /**
+     * Set the color of the pixel
+     * 
+     * @param color the color to set the pixel
+     */
+    public void setColor(Color color) {
+
+    }
+
     /**
      * Returns the amount of red (ranging from 0 to 255) in the color of the pixel.
      * 
@@ -21,6 +78,8 @@ public class Pixel {
 
     /**
      * Returns the amount of blue (ranging from 0 to 255) in the color of the pixel.
+     * Values below 0 will be ignored and set to 0, and values above 255 with be
+     * ignored and set to 255.
      * 
      * @return a number representing the blue value (between 0 and 255) of the
      *         pixel.
@@ -30,6 +89,8 @@ public class Pixel {
 
     /**
      * Sets the amount of red (ranging from 0 to 255) in the color of the pixel.
+     * Values below 0 will be ignored and set to 0, and values above 255 with be
+     * ignored and set to 255.
      * 
      * @param value the amount of red (ranging from 0 to 255) in the color of the
      *              pixel.
@@ -39,6 +100,8 @@ public class Pixel {
 
     /**
      * Sets the amount of green (ranging from 0 to 255) in the color of the pixel.
+     * Values below 0 will be ignored and set to 0, and values above 255 with be
+     * ignored and set to 255.
      * 
      * @param value the amount of green (ranging from 0 to 255) in the color of the
      *              pixel.
