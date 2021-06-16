@@ -1,4 +1,4 @@
-package org.code;
+package org.code.media;
 
 public class Image {
     /**
@@ -9,19 +9,15 @@ public class Image {
      *                 project
      * @throws FileNotFoundException if the file doesn't exist in the asset manager.
      */
-    public Image(String filename) throws FileNotFoundException;
+    public Image(String filename) throws FileNotFoundException {    
+    }
 
     /**
-     * Create a new image object from the pixels provided. If the number of pixels
-     * is not equal to the width multiplied by the height, the remaining pixels will
-     * be filled with black. If there are too many pixels, the remaining pixels will
-     * be cut off in the image.
+     * Create a new image object, copying the source image provided. 
      * 
-     * @param pixels the pixels with which to create the image.
-     * @param width  the width of the image to create.
-     * @param height the height of the image to create.
+     * @param source the image to duplicate
      */
-    public Image(Pixel[] pixels, int width, int height) {
+    public Image(Image source) {
     }
 
     /**
@@ -40,6 +36,28 @@ public class Image {
      *         width multiplied by the height.
      */
     public Pixel[] getPixels() {
+    }
+
+    /**
+     * Get the color value at the pixel specified.
+     * 
+     * @param x the x position of the pixel
+     * @param y the y position of the pixel
+     * @return the color of the pixel
+     */
+    public Pixel getPixel(int x, int y) {
+
+    }
+
+    /**
+     * Set the color value at the pixel specified.
+     * 
+     * @param x     the x position of the pixel
+     * @param y     the y position of the pixel
+     * @param color the color to set the pixel
+     */
+    public void setPixel(int x, int y, Color color) {
+
     }
 
     /**
@@ -63,6 +81,6 @@ public class Image {
      * 
      * @param color the color with which to fill the image.
      */
-    public void clear(String color) {
+    public void clear(Color color) {
     }
 }
