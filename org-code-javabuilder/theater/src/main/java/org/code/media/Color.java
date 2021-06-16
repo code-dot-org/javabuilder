@@ -3,9 +3,18 @@ package org.code.media;
 public class Color {
 
     /**
-     * Create a new color with the provided red, green, and blue values. Values will
-     * be cut off at 0 and 255: values below 0 will be ignored and set to 0, and
-     * values above 255 with be ignored and set to 255.
+     * Creates a color from a string representation.
+     * 
+     * @param color the string name of the color
+     * @throws IllegalArgumentException if the value specifies an unsupported color
+     *                                  name or illegal hexadecimal value
+     */
+    public Color(String color) throws IllegalArgumentException {
+
+    }
+
+    /**
+     * Create a new color based on the red, green, and blue values provided.
      * 
      * @param red   the red value from 0 - 255
      * @param green the green value from 0 - 255
