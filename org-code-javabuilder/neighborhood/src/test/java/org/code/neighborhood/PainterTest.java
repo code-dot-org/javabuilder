@@ -1,14 +1,20 @@
 package org.code.neighborhood;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import org.code.protocol.GlobalProtocol;
+import org.code.protocol.InputAdapter;
+import org.code.protocol.OutputAdapter;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 public class PainterTest {
+  private final OutputAdapter outputAdapter = mock(OutputAdapter.class);
   private final PrintStream standardOut = System.out;
   private final ByteArrayOutputStream outputStreamCaptor = new ByteArrayOutputStream();
   String singleSquareGrid = "[[\n{\"tileType\": 1, \"assetId\": 0}]]";
@@ -17,6 +23,7 @@ public class PainterTest {
 
   @BeforeEach
   public void setUp() {
+    GlobalProtocol.create(outputAdapter, mock(InputAdapter.class));
     System.setOut(new PrintStream(outputStreamCaptor));
     World w = new World(singleSquareGrid);
     World.setInstance(w);
@@ -68,6 +75,19 @@ public class PainterTest {
   }
 
   @Test
+  void canMoveReturnsFalseIfCurrentDirectionInvalid() {
+    Painter painter = new Painter(0, 0, "North", 5);
+    assertFalse(painter.canMove());
+  }
+
+  @Test
+  void canMoveReturnsTrueIfCurrentDirectionValid() {
+    World.setInstance(new World(multiSquareGrid));
+    Painter painter = new Painter(0, 0, "South", 5);
+    assertTrue(painter.canMove());
+  }
+
+  @Test
   void moveThrowsErrorIfInvalidMovement() {
     Painter painter = new Painter(0, 0, "North", 5);
     Exception exception =
@@ -81,15 +101,18 @@ public class PainterTest {
   }
 
   @Test
-  void movePrintsNewLocationIfValidMovement() {
+  void moveSignalsNewLocationIfValidMovement() {
     World w = new World(multiSquareGrid);
     World.setInstance(w);
     Painter painter = new Painter(0, 0, "West", 5);
     painter.turnLeft();
+    ArgumentCaptor<NeighborhoodSignalMessage> message =
+        ArgumentCaptor.forClass(NeighborhoodSignalMessage.class);
+    verify(outputAdapter, times(2)).sendMessage(message.capture());
+    assertEquals(message.getValue().getValue(), "TURN_LEFT");
+    assertTrue(message.getValue().getDetail().toString().contains("\"direction\":\"south\""));
     assertTrue(painter.canMove("South"));
     painter.move();
-    assertTrue(outputStreamCaptor.toString().trim().contains("direction"));
-    assertTrue(outputStreamCaptor.toString().trim().contains("south"));
   }
 
   @Test

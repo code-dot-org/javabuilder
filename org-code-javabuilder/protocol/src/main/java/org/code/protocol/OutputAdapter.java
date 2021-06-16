@@ -1,6 +1,4 @@
-package org.code.javabuilder;
-
-import org.code.protocol.ClientMessage;
+package org.code.protocol;
 
 public interface OutputAdapter {
   /** @param message An output from the user program */

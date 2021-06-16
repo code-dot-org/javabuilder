@@ -5,6 +5,7 @@ import static org.mockito.Mockito.mock;
 
 import java.io.InputStream;
 import java.io.PrintStream;
+import org.code.protocol.GlobalProtocol;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -13,9 +14,7 @@ public class CodeBuilderTest {
 
   @BeforeEach
   public void setUp() throws Exception {
-    codeBuilder =
-        new CodeBuilder(
-            mock(InputAdapter.class), mock(OutputAdapter.class), mock(UserProjectFiles.class));
+    codeBuilder = new CodeBuilder(mock(GlobalProtocol.class), mock(UserProjectFiles.class));
   }
 
   @Test
