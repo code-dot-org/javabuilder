@@ -92,10 +92,16 @@ public class GridSquareTest {
   }
 
   @Test
-  void setColorDoesNotChangeColorIfThereIsPaint() {
+  void setColorThrowsExceptionIfThereIsPaint() {
     GridSquare s = new GridSquare(1, 0, 4);
-    s.setColor("red");
-    assertEquals(s.getColor(), null);
+    Exception exception =
+        assertThrows(
+            NeighborhoodRuntimeException.class,
+            () -> {
+              s.setColor("red");
+            });
+    String expectedMessage = ExceptionKeys.INVALID_PAINT_LOCATION.toString();
+    assertEquals(exception.getMessage(), expectedMessage);
   }
 
   @Test
