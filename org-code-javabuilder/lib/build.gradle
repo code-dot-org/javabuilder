@@ -40,11 +40,6 @@ test {
     useJUnitPlatform()
 }
 
-task packageSmall(type: Zip) {
-    from compileJava
-    from processResources
-}
-
 java {
     sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = JavaVersion.VERSION_11
@@ -55,13 +50,28 @@ gretty {
     contextPath = '/'
 }
 
-build.dependsOn packageSmall
-
 task buildZip(type: Zip) {
     from project(':neighborhood').getTasksByName('buildNeighborhood', false)
+    from project(':theater').getTasksByName('buildTheater', false)
     from compileJava
     from processResources
     into('lib') {
         from configurations.runtimeClasspath
     }
+}
+
+task installGitHook(type: Copy) {
+    from new File(rootProject.rootDir, 'scripts/pre-commit')
+    into { new File(rootProject.rootDir, '../.git/hooks') }
+    fileMode 0777
+}
+
+build.dependsOn buildZip
+build.dependsOn installGitHook
+
+afterEvaluate {
+    tasks.prepareInplaceWebAppFolder.dependsOn project(':neighborhood').getTasksByName('buildNeighborhood', false)
+    tasks.prepareInplaceWebAppFolder.dependsOn project(':theater').getTasksByName('buildTheater', false)
+    // This ensures updates to the githook will be installed
+    tasks.prepareInplaceWebAppFolder.dependsOn installGitHook
 }

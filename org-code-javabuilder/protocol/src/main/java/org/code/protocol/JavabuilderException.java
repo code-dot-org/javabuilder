@@ -4,10 +4,9 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.HashMap;
 
-/**
- * Parent exception for all exceptions that will be displayed to the user.
- */
-public abstract class JavabuilderException extends Exception implements JavabuilderThrowableProtocol {
+/** Parent exception for all exceptions that will be displayed to the user. */
+public abstract class JavabuilderException extends Exception
+    implements JavabuilderThrowableProtocol {
   private final Enum key;
 
   protected JavabuilderException(Enum key) {

@@ -8,6 +8,8 @@ public enum ClientMessageType {
   EXCEPTION,
   /** A neighborhood signal that directs the client-side Neighborhood program to take an action. */
   NEIGHBORHOOD,
+  /** A theater signal that directs the client-side Theater program to take an action. */
+  THEATER,
   /** An message directed to the client in local development mode */
   DEBUG
 }

@@ -74,7 +74,7 @@ public class CatImage {
 
     // Draw circle
     ip.setColor(Color.GREEN);
-    ip.fillOval(30, 50, 50, 30);
+    ip.fillOval(30, 20, 50, 30);
 
     // Draw text
     ip.setFontSize(30);

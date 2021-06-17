@@ -43,6 +43,7 @@ public class GifWriter {
     try {
       this.writer.writeToSequence(
           new IIOImage(img, null, getMetadataForFrame(delay, img.getType())), this.params);
+
     } catch (IOException e) {
       throw new InternalJavabuilderError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e.getCause());
     }
@@ -114,6 +115,7 @@ public class GifWriter {
 
   /**
    * Get overall metadata for the gif. Sets the width and height to be 400 px.
+   *
    * @return IIOMetadata
    */
   private IIOMetadata getMetadataForGif() {
