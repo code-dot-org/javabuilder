@@ -18,7 +18,6 @@ public enum Direction {
     } else {
       newDir = this.values()[this.ordinal() - 1];
     }
-    System.out.println("pointing " + newDir.getDirectionString());
     return newDir;
   }
 

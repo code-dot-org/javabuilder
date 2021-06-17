@@ -1,6 +1,7 @@
 package dev.javabuilder;
 
 import org.code.javabuilder.*;
+import org.code.protocol.GlobalProtocol;
 import org.code.protocol.JavabuilderException;
 import org.code.protocol.JavabuilderRuntimeException;
 
@@ -17,8 +18,9 @@ public class LocalMain {
     // Create and invoke the code execution environment
     try {
       UserProjectFiles userProjectFiles = fileLoader.loadFiles();
+      GlobalProtocol.create(outputAdapter, inputAdapter);
       try (CodeBuilder codeBuilder =
-          new CodeBuilder(inputAdapter, outputAdapter, userProjectFiles)) {
+          new CodeBuilder(GlobalProtocol.getInstance(), userProjectFiles)) {
         codeBuilder.buildUserCode();
         codeBuilder.runUserCode();
       }

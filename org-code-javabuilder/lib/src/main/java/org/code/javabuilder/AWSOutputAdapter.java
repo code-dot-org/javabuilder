@@ -4,6 +4,7 @@ import com.amazonaws.services.apigatewaymanagementapi.AmazonApiGatewayManagement
 import com.amazonaws.services.apigatewaymanagementapi.model.PostToConnectionRequest;
 import java.nio.ByteBuffer;
 import org.code.protocol.ClientMessage;
+import org.code.protocol.OutputAdapter;
 
 /** Sends messages to Amazon API Gateway from the user's program. */
 public class AWSOutputAdapter implements OutputAdapter {
