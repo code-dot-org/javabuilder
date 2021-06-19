@@ -33,6 +33,9 @@ dependencies {
     // https://mvnrepository.com/artifact/net.imagej/ij
     implementation group: 'net.imagej', name: 'ij', version: '1.53j'
     compile 'commons-io:commons-io:2.9.0'
+    // Turns out this package was neither needed nor helpful
+    // https://mvnrepository.com/artifact/com.itextpdf/io
+    implementation group: 'com.itextpdf', name: 'io', version: '7.1.15'
 }
 
 test {
