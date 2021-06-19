@@ -64,6 +64,38 @@ public class CatImage {
   }
 
   public void buildCanvas(int delay) {
+    // Challenges:
+    // * Getting font working
+    // * Keeping the gif size _small_
+    // * API gateway supports 128KB messages with websockets and 10MB with HTTP
+    // * We'll need to upload to S3 and access from there.
+    // * For fonts, we'll need to either re-package our lambda as a docker image with libfontconfig1 installed
+    //   or install our own fonts. https://stackoverflow.com/questions/61024955/how-do-i-configure-simple-java-fontconfig-properties-file-for-use-on-linux
+    final Canvas canvas = new Canvas()
+    {
+        public void paint(Graphics g)
+        {
+            Rectangle r = getBounds();
+            g.drawLine(0, 0, r.width - 1, r.height - 1);
+            // Colors work too.
+            g.setColor(new Color(255, 127, 0));
+            g.drawLine(0, r.height - 1, r.width - 1, 0);
+            // // And fonts
+            // GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+            // String fonts[] = ge.getAvailableFontFamilyNames();
+            // System.out.println(fonts[0]);
+            // g.setFont(new Font(fonts[0], Font.ITALIC, 30));
+            // g.drawString("Test", 100, 100);
+        }
+    };
+    // And all the operations work correctly.
+    canvas.setBounds(32, 32, 400, 400);
+    BufferedImage image=new BufferedImage(canvas.getWidth(), canvas.getHeight(),BufferedImage.TYPE_INT_RGB);
+    Graphics2D g2=(Graphics2D)image.getGraphics();
+    canvas.paint(g2);
+
+    this.gifWriter.writeToGif(image, delay);
+
 //    Canvas canvas = new Canvas();
 //    Image image = canvas.createImage(300, 300);
 //    image.
