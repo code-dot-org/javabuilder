@@ -1,5 +1,5 @@
 package org.code.theater;
 
 public final class Theater {
-  public static Stage stage;
+  public static final Stage stage = new Stage();
 }
