@@ -176,6 +176,9 @@ Resources:
       CodeUri: api-gateway-routes/
       Handler: api_gateway_proxy_function.lambda_handler
       Role: !ImportValue JavabuilderLambdaExecutionRole
+      Environment:
+        Variables:
+          BUILD_AND_RUN_PROJECT_LAMBDA_ARN: !GetAtt BuildAndRunJavaProjectFunction.Arn # "arn:aws:lambda:us-east-1:165336972514:function:javabuilder-BuildAndRunJavaProject-WWfhfIWmxAEV"
   StartSessionAndRelayMessagesPermission:
     Type: AWS::Lambda::Permission
     DependsOn:
@@ -238,12 +241,12 @@ Resources:
       FunctionName: !Ref JavabuilderAuthorizerLambda
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${WebSocketAPI}/authorizers/${WebSocketAuthorizer}"
-  BuildAndRunJavaProject:
+  BuildAndRunJavaProjectFunction:
     Type: AWS::Serverless::Function
     Properties:
       Handler: org.code.javabuilder.LambdaRequestHandler::handleRequest
       Runtime: java11
-      CodeUri: org-code-javabuilder/
+      CodeUri: org-code-javabuilder/lib/build/distributions/lib.zip
       Description: Compile and execute a JavaLab project.
       MemorySize: 512
       Timeout: 300

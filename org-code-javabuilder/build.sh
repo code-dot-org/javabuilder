@@ -4,4 +4,4 @@
 cd "${0%/*}"
 
 # Build a zip package that can be uploaded to AWS Lambda.
-bundle install
+./gradlew buildZip
