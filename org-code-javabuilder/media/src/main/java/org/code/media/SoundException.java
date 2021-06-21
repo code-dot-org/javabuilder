@@ -1,4 +1,3 @@
 package org.code.media;
 
-public class SoundException extends Exception {
-}
+public class SoundException extends Exception {}

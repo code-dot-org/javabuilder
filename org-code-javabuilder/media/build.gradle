@@ -1,6 +1,8 @@
 plugins {
     // Apply the java-library plugin for API and implementation separation.
     id 'java-library'
+    // enable the linter
+    id 'com.github.sherter.google-java-format' version '0.8'
 }
 
 java {
