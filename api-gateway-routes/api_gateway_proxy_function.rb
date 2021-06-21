@@ -47,7 +47,7 @@ def on_connect(event, context)
     :iss => authorizer["iss"]
   }
   response = lambda_client.invoke({
-    function_name: 'javaBuilderExecuteCode:10',
+    function_name: ENV['BUILD_AND_RUN_PROJECT_LAMBDA_ARN'],
     invocation_type: 'Event',
     payload: JSON.generate(payload)
   })
