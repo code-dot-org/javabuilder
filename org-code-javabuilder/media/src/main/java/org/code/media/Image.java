@@ -1,5 +1,7 @@
 package org.code.media;
 
+import java.io.FileNotFoundException;
+
 public class Image {
     /**
      * Creates a new image object, using the pixel information from the file
@@ -9,7 +11,7 @@ public class Image {
      *                 project
      * @throws FileNotFoundException if the file doesn't exist in the asset manager.
      */
-    public Image(String filename) throws FileNotFoundException {    
+    public Image(String filename) throws FileNotFoundException {
     }
 
     /**
@@ -36,6 +38,7 @@ public class Image {
      *         width multiplied by the height.
      */
     public Pixel[] getPixels() {
+        return null;
     }
 
     /**
@@ -46,7 +49,7 @@ public class Image {
      * @return the color of the pixel
      */
     public Pixel getPixel(int x, int y) {
-
+        return null;
     }
 
     /**
@@ -66,6 +69,7 @@ public class Image {
      * @return the width of the image in pixels.
      */
     public int getWidth() {
+        return -1;
     }
 
     /**
@@ -74,6 +78,7 @@ public class Image {
      * @return the height of the image in pixels.
      */
     public int getHeight() {
+        return -1;
     }
 
     /**

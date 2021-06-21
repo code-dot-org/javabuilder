@@ -1,6 +1,6 @@
 package org.code.media;
 
-public static class SoundLoader {
+public class SoundLoader {
   /**
    * Extracts audio samples from WAV or AU file into array
    * 
@@ -10,5 +10,6 @@ public static class SoundLoader {
    * @throws SoundException when the file cannot be found
    */
   public static double[] read(String filename) throws SoundException {
+    return null;
   }
 }

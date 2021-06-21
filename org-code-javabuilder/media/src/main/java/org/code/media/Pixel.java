@@ -18,7 +18,7 @@ public class Pixel {
      * @return the x position of the pixel
      */
     public int getX() {
-
+        return -1;
     }
 
     /**
@@ -27,7 +27,7 @@ public class Pixel {
      * @return the y position of the pixel
      */
     public int getY() {
-
+        return -1;
     }
 
     /**
@@ -36,7 +36,7 @@ public class Pixel {
      * @return the image that this pixel part of
      */
     public Image getSourceImage() {
-
+        return null;
     }
 
     /** */
@@ -47,6 +47,7 @@ public class Pixel {
      * @return
      */
     public Color getColor() {
+        return null;
     }
 
     /**
@@ -64,6 +65,7 @@ public class Pixel {
      * @return a number representing the red value (between 0 and 255) of the pixel.
      */
     public int getRed() {
+        return -1;
     }
 
     /**
@@ -74,6 +76,7 @@ public class Pixel {
      *         pixel.
      */
     public int getGreen() {
+        return -1;
     }
 
     /**
@@ -85,6 +88,7 @@ public class Pixel {
      *         pixel.
      */
     public int getBlue() {
+        return -1;
     }
 
     /**
