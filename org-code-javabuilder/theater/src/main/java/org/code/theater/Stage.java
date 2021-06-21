@@ -1,16 +1,18 @@
 package org.code.theater;
 
-public enum Instrument {
-  PIANO,
-  BASS
-}
+import java.io.FileNotFoundException;
+import org.code.media.*;
 
 public class Stage {
   /** Returns the width of the theater canvas. Right now this will always be 400 pixels. */
-  public double getWidth() {}
+  public double getWidth() {
+    return -1;
+  }
 
   /** Returns the height of the theater canvas. Right now this will always be 400 pixels. */
-  public double getHeight() {}
+  public double getHeight() {
+    return -1;
+  }
 
   /**
    * Plays the array of samples provided.
@@ -52,7 +54,7 @@ public class Stage {
    * Draw an image on the canvas at the given location, expanded or shunk to fit the width and
    * height provided
    *
-   * @param file the name of the file in the asset manager
+   * @param filename the name of the file in the asset manager
    * @param x the left side of the image in the canvas
    * @param y the top of the image in the canvas
    * @param width the width to draw the image on the canvas
@@ -93,7 +95,7 @@ public class Stage {
       String text, double x, double y, String color, String font, double height, double rotation) {}
 
   /**
-   * Draw a line on the cavas.
+   * Draw a line on the canvas.
    *
    * @param startX the beginning X coordinate of the line.
    * @param startY the beginning Y coordinate of the line.
@@ -108,7 +110,7 @@ public class Stage {
    * @param x the center X coordinate of the polygon
    * @param y the center Y coordinate of the polygon
    * @param sides the number of sides of the polygon
-   * @param radius the distance from the center to each point on the polyon
+   * @param radius the distance from the center to each point on the polygon
    */
   public void drawRegularPolygon(double x, double y, int sides, double radius) {}
 

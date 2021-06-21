@@ -30,6 +30,7 @@ public class Color {
      * @return a number representing the red value (between 0 and 255)
      */
     public int getRed() {
+        return -1;
     }
 
     /**
@@ -39,6 +40,7 @@ public class Color {
      *         pixel.
      */
     public int getGreen() {
+        return -1;
     }
 
     /**
@@ -47,6 +49,7 @@ public class Color {
      * @return a number representing the blue value (between 0 and 255)
      */
     public int getBlue() {
+        return -1;
     }
 
     /**
