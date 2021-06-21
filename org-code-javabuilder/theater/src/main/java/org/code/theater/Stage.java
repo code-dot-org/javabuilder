@@ -173,5 +173,7 @@ public class Stage {
   public void removeFillColor() {}
 
   /** Plays the instructions. */
-  public void play() {}
+  public void play() {
+    System.out.println("play");
+  }
 }
