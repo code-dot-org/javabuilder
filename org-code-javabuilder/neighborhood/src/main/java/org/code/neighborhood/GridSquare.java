@@ -36,6 +36,9 @@ public class GridSquare {
     if (!ColorHelpers.isColor(color)) {
       throw new NeighborhoodRuntimeException(ExceptionKeys.INVALID_COLOR);
     }
+    if (this.containsPaint()) {
+      throw new NeighborhoodRuntimeException(ExceptionKeys.INVALID_PAINT_LOCATION);
+    }
     if (this.passable && this.paintCount == 0) {
       this.color = color;
     }
