@@ -5,6 +5,7 @@ import ij.ImagePlus;
 import ij.process.ImageProcessor;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import org.code.protocol.GlobalProtocol;
@@ -17,16 +18,20 @@ import org.code.protocol.OutputAdapter;
  */
 public class CatImage {
   private final OutputAdapter outputAdapter;
+  private final GifWriter gifWriter;
+  private final ByteArrayOutputStream outputStream;
 
   public CatImage() {
-    this.outputAdapter = GlobalProtocol.getInstance().getOutputAdapter();
+    this(GlobalProtocol.getInstance().getOutputAdapter());
   }
 
   public CatImage(OutputAdapter outputAdapter) {
+    this.outputStream = new ByteArrayOutputStream();
+    this.gifWriter = new GifWriter(this.outputStream);
     this.outputAdapter = outputAdapter;
   }
 
-  public void buildImageFilter() {
+  public void buildImageFilter(int delay) {
     ImagePlus image = null;
     try {
       image =
@@ -43,10 +48,16 @@ public class CatImage {
 
     ImageProcessor ip = image.getProcessor();
     BufferedImage bufferedImage = (BufferedImage) ip.createImage();
-    outputAdapter.sendMessage(ImageEncoder.encodeImageToMessage(bufferedImage));
+    this.gifWriter.writeToGif(bufferedImage, delay);
   }
 
-  public void buildCanvas() {
+  // Play the created gif (close gif writer and send message).
+  public void play() {
+    this.gifWriter.close();
+    outputAdapter.sendMessage(ImageEncoder.encodeStreamToMessage(this.outputStream));
+  }
+
+  public void buildCanvas(int delay) {
     ImagePlus image = IJ.createImage("test", 300, 150, 1, 24);
     ImageProcessor ip = image.getProcessor();
 
@@ -75,6 +86,6 @@ public class CatImage {
     // IJ.save(image, "<my local directory>\beach.gif");
 
     BufferedImage bufferedImage = (BufferedImage) ip.createImage();
-    outputAdapter.sendMessage(ImageEncoder.encodeImageToMessage(bufferedImage));
+    this.gifWriter.writeToGif(bufferedImage, delay);
   }
 }
