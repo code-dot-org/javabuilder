@@ -109,5 +109,4 @@ public class Color {
     public static final Color violet = new Color(238, 130, 238);
     public static final Color beige = new Color(245, 245, 220);
     public static final Color ivory = new Color(255, 255, 240);
-
 }
