@@ -15,7 +15,7 @@ import org.code.protocol.InternalJavabuilderError;
  * Writer to generate a gif from a set of images. The gif will be stored in the given
  * ByteArrayOutputStream.
  */
-public class GifWriter {
+class GifWriter {
   private ImageWriter writer;
   private ImageWriteParam params;
   private ImageOutputStream imageOutputStream;
