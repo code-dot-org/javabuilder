@@ -241,9 +241,19 @@ Resources:
       FunctionName: !Ref JavabuilderAuthorizerLambda
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${WebSocketAPI}/authorizers/${WebSocketAuthorizer}"
+  ChangeJavaRuntimeDirectoryLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      CompatibleRuntimes:
+        - java11
+      ContentUri: org-code-javabuilder/change_runtime_directory
+      Description: Change AWS Lambda Java runtime directory to a temporary directory to enable student projects to read/write Files more easily.
+      LayerName: change-java-runtime-directory
   BuildAndRunJavaProjectFunction:
     Type: AWS::Serverless::Function
     Properties:
+      Layers:
+        - !Ref ChangeJavaRuntimeDirectoryLayer
       Handler: org.code.javabuilder.LambdaRequestHandler::handleRequest
       Runtime: java11
       CodeUri: org-code-javabuilder/lib/build/distributions/lib.zip
