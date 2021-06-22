@@ -1,13 +1,11 @@
 package org.code.theater;
 
-import ij.IJ;
-import ij.ImagePlus;
-import ij.process.ImageProcessor;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
-import java.net.URISyntaxException;
+import java.io.File;
 import java.nio.file.Paths;
+import javax.imageio.ImageIO;
 import org.code.protocol.GlobalProtocol;
 import org.code.protocol.OutputAdapter;
 
@@ -29,16 +27,20 @@ public class CatImage {
     this.outputStream = new ByteArrayOutputStream();
     this.gifWriter = new GifWriter(this.outputStream);
     this.outputAdapter = outputAdapter;
+    System.setProperty("java.awt.headless", "true");
   }
 
   public void buildImageFilter(int delay) {
-    ImagePlus image = null;
+    Toolkit tk = Toolkit.getDefaultToolkit();
+    File f = null;
+    BufferedImage image = null;
     try {
-      image =
-          IJ.openImage(
+      f =
+          new File(
               Paths.get(CatImage.class.getClassLoader().getResource("sampleImageBeach.jpg").toURI())
                   .toString());
-    } catch (URISyntaxException e) {
+      image = ImageIO.read(f);
+    } catch (Exception e) {
       e.printStackTrace();
     }
 
@@ -46,9 +48,7 @@ public class CatImage {
     // your local computer
     // IJ.save(image, "<my local directory>\beach.gif");
 
-    ImageProcessor ip = image.getProcessor();
-    BufferedImage bufferedImage = (BufferedImage) ip.createImage();
-    this.gifWriter.writeToGif(bufferedImage, delay);
+    this.gifWriter.writeToGif(image, delay);
   }
 
   // Play the created gif (close gif writer and send message).
@@ -58,34 +58,32 @@ public class CatImage {
   }
 
   public void buildCanvas(int delay) {
-    ImagePlus image = IJ.createImage("test", 300, 150, 1, 24);
-    ImageProcessor ip = image.getProcessor();
+    final Canvas canvas =
+        new Canvas() {
+          public void paint(Graphics g) {
+            // Draw rectangle
+            Rectangle r = getBounds();
+            // Draw line sample.
+            g.drawLine(0, 0, r.width - 1, r.height - 1);
+            g.setColor(new Color(255, 127, 0));
+            g.drawLine(0, r.height - 1, r.width - 1, 0);
+            // For fonts, we'll need to either re-package our lambda as a docker image with
+            // libfontconfig1 installed or install our own fonts. This will not work as-is.
+            // https://stackoverflow.com/questions/61024955/how-do-i-configure-simple-java-fontconfig-properties-file-for-use-on-linux
+            // GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+            // String fonts[] = ge.getAvailableFontFamilyNames();
+            // System.out.println(fonts[0]);
+            // g.setFont(new Font(fonts[0], Font.ITALIC, 30));
+            // g.drawString("Test", 100, 100);
+          }
+        };
 
-    // Draw rectangle
-    ip.setLineWidth(10);
-    ip.setColor(Color.BLUE);
-    ip.fillRect(50, 50, 100, 100);
+    canvas.setBounds(32, 32, 400, 400);
+    BufferedImage image =
+        new BufferedImage(canvas.getWidth(), canvas.getHeight(), BufferedImage.TYPE_INT_RGB);
+    Graphics2D g2 = (Graphics2D) image.getGraphics();
+    canvas.paint(g2);
 
-    // Draw square
-    int[] x = {10, 40, 25};
-    int[] y = {10, 10, 30};
-    ip.setColor(Color.RED);
-    ip.fillPolygon(new Polygon(x, y, 3));
-
-    // Draw circle
-    ip.setColor(Color.GREEN);
-    ip.fillOval(30, 20, 50, 30);
-
-    // Draw text
-    ip.setFontSize(30);
-    ip.setColor(Color.YELLOW);
-    ip.drawString("Hello World!", 100, 90);
-
-    // Uncommenting the following line and setting it to a local directory will save the image to
-    // your local computer
-    // IJ.save(image, "<my local directory>\beach.gif");
-
-    BufferedImage bufferedImage = (BufferedImage) ip.createImage();
-    this.gifWriter.writeToGif(bufferedImage, delay);
+    this.gifWriter.writeToGif(image, delay);
   }
 }
