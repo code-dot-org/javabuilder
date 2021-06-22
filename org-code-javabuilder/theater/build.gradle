@@ -30,6 +30,7 @@ dependencies {
     // https://mvnrepository.com/artifact/org.json/json
     implementation group: 'org.json', name: 'json', version: '20210307'
     implementation project(':protocol')
+    implementation project(':media')
     // https://mvnrepository.com/artifact/net.imagej/ij
     implementation group: 'net.imagej', name: 'ij', version: '1.53j'
     compile 'commons-io:commons-io:2.9.0'
