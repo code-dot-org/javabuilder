@@ -70,32 +70,31 @@ public class Color {
    */
   public void setBlue(int value) {}
 
-  public static final Color white = new Color(255, 255, 255);
-  public static final Color silver = new Color(192, 192, 192);
-  public static final Color gray = new Color(128, 128, 128);
-  public static final Color black = new Color(0, 0, 0);
-  public static final Color red = new Color(255, 0, 0);
-  public static final Color maroon = new Color(128, 0, 0);
-  public static final Color yellow = new Color(256, 256, 0);
-  public static final Color olive = new Color(128, 128, 0);
-  public static final Color lime = new Color(0, 256, 0);
-  public static final Color green = new Color(0, 128, 0);
-  public static final Color aqua = new Color(0, 255, 255);
-  public static final Color teal = new Color(0, 128, 128);
-  public static final Color blue = new Color(0, 0, 255);
-  public static final Color navy = new Color(0, 0, 128);
-  public static final Color fuchsia = new Color(255, 0, 255);
-  public static final Color purple = new Color(128, 0, 128);
-
-  public static final Color pink = new Color(255, 192, 203);
-  public static final Color orange = new Color(255, 165, 0);
-  public static final Color gold = new Color(255, 215, 0);
-  public static final Color brown = new Color(165, 42, 42);
-  public static final Color chocolate = new Color(210, 105, 30);
-  public static final Color tan = new Color(210, 180, 140);
-  public static final Color turquoise = new Color(64, 224, 208);
-  public static final Color indigo = new Color(75, 0, 130);
-  public static final Color violet = new Color(238, 130, 238);
-  public static final Color beige = new Color(245, 245, 220);
-  public static final Color ivory = new Color(255, 255, 240);
+  public static final Color WHITE = new Color(255, 255, 255);
+  public static final Color SILVER = new Color(192, 192, 192);
+  public static final Color GRAY = new Color(128, 128, 128);
+  public static final Color BLACK = new Color(0, 0, 0);
+  public static final Color RED = new Color(255, 0, 0);
+  public static final Color MAROON = new Color(128, 0, 0);
+  public static final Color YELLOW = new Color(256, 256, 0);
+  public static final Color OLIVE = new Color(128, 128, 0);
+  public static final Color LIME = new Color(0, 256, 0);
+  public static final Color GREEN = new Color(0, 128, 0);
+  public static final Color AQUA = new Color(0, 255, 255);
+  public static final Color TEAL = new Color(0, 128, 128);
+  public static final Color BLUE = new Color(0, 0, 255);
+  public static final Color NAVY = new Color(0, 0, 128);
+  public static final Color FUCHSIA = new Color(255, 0, 255);
+  public static final Color PURPLE = new Color(128, 0, 128);
+  public static final Color PINK = new Color(255, 192, 203);
+  public static final Color ORANGE = new Color(255, 165, 0);
+  public static final Color GOLD = new Color(255, 215, 0);
+  public static final Color BROWN = new Color(165, 42, 42);
+  public static final Color CHOCOLATE = new Color(210, 105, 30);
+  public static final Color TAN = new Color(210, 180, 140);
+  public static final Color TURQUOISE = new Color(64, 224, 208);
+  public static final Color INDIGO = new Color(75, 0, 130);
+  public static final Color VIOLET = new Color(238, 130, 238);
+  public static final Color BEIGE = new Color(245, 245, 220);
+  public static final Color IVORY = new Color(255, 255, 240);
 }
