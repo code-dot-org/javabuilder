@@ -3,15 +3,19 @@
  * ./gradlew goJF -> runs the linter and fixes files
  * ./gradlew verGJF -> just runs the linter
  * ./gradlew buildZip -> builds a zip package that is compatible with AWS Lambda
+ * ./gradlew appRun -> runs the WebSocket server for local development
+ * ./gradlew test -> runs the unit tests
  */
 
 plugins {
+    id "org.gretty" version "3.0.4"
+    id 'application'
     id 'com.github.sherter.google-java-format' version '0.8'
     id 'java'
 }
 
 repositories {
-    mavenCentral()
+    jcenter()
 }
 
 dependencies {
@@ -21,33 +25,53 @@ dependencies {
     implementation group: 'com.amazonaws', name: 'aws-java-sdk-apigatewaymanagementapi', version: '1.11.978'
     // https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-sqs
     implementation group: 'com.amazonaws', name: 'aws-java-sdk-sqs', version: '1.11.978'
+    // https://mvnrepository.com/artifact/org.json/json
+    implementation group: 'org.json', name: 'json', version: '20210307'
+    implementation project(':protocol')
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
     // https://mvnrepository.com/artifact/org.mockito/mockito-core
     testImplementation group: 'org.mockito', name: 'mockito-core', version: '3.9.0'
-
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.6.0'
+    // https://mvnrepository.com/artifact/javax.websocket/javax.websocket-api
+    compileOnly group: 'javax.websocket', name: 'javax.websocket-api', version: '1.1'
 }
 
 test {
     useJUnitPlatform()
 }
 
-task packageSmall(type: Zip) {
-    from compileJava
-    from processResources
-}
-
 java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
 }
 
-build.dependsOn packageSmall
+gretty {
+    servletContainer = 'tomcat9'
+    contextPath = '/'
+}
 
 task buildZip(type: Zip) {
+    from project(':neighborhood').getTasksByName('buildNeighborhood', false)
+    from project(':theater').getTasksByName('buildTheater', false)
     from compileJava
     from processResources
     into('lib') {
         from configurations.runtimeClasspath
     }
+}
+
+task installGitHook(type: Copy) {
+    from new File(rootProject.rootDir, 'scripts/pre-commit')
+    into { new File(rootProject.rootDir, '../.git/hooks') }
+    fileMode 0777
+}
+
+build.dependsOn buildZip
+build.dependsOn installGitHook
+
+afterEvaluate {
+    tasks.prepareInplaceWebAppFolder.dependsOn project(':neighborhood').getTasksByName('buildNeighborhood', false)
+    tasks.prepareInplaceWebAppFolder.dependsOn project(':theater').getTasksByName('buildTheater', false)
+    // This ensures updates to the githook will be installed
+    tasks.prepareInplaceWebAppFolder.dependsOn installGitHook
 }

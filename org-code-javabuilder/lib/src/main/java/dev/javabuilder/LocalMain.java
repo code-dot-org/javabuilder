@@ -1,9 +1,9 @@
 package dev.javabuilder;
 
-import org.code.javabuilder.CodeBuilder;
-import org.code.javabuilder.InternalFacingException;
-import org.code.javabuilder.UserFacingException;
-import org.code.javabuilder.UserInitiatedException;
+import org.code.javabuilder.*;
+import org.code.protocol.GlobalProtocol;
+import org.code.protocol.JavabuilderException;
+import org.code.protocol.JavabuilderRuntimeException;
 
 /**
  * Intended for local testing only. This is a local version of the Javabuilder lambda function. The
@@ -14,19 +14,21 @@ public class LocalMain {
   public static void main(String[] args) {
     final LocalInputAdapter inputAdapter = new LocalInputAdapter();
     final LocalOutputAdapter outputAdapter = new LocalOutputAdapter(System.out);
-    final LocalProjectFileManager fileManager = new LocalProjectFileManager();
+    final LocalProjectFileLoader fileLoader = new LocalProjectFileLoader();
     // Create and invoke the code execution environment
-    try (CodeBuilder codeBuilder = new CodeBuilder(inputAdapter, outputAdapter, fileManager)) {
-      codeBuilder.compileUserCode();
-      codeBuilder.runUserCode();
-    } catch (UserFacingException e) {
-      outputAdapter.sendMessage(e.getMessage());
-      outputAdapter.sendMessage("\n" + e.getLoggingString());
-    } catch (UserInitiatedException e) {
-      outputAdapter.sendMessage(e.getMessage());
-      outputAdapter.sendMessage("\n" + e.getLoggingString());
+    try {
+      UserProjectFiles userProjectFiles = fileLoader.loadFiles();
+      GlobalProtocol.create(outputAdapter, inputAdapter);
+      try (CodeBuilder codeBuilder =
+          new CodeBuilder(GlobalProtocol.getInstance(), userProjectFiles)) {
+        codeBuilder.buildUserCode();
+        codeBuilder.runUserCode();
+      }
+    } catch (JavabuilderException | JavabuilderRuntimeException e) {
+      outputAdapter.sendMessage(e.getExceptionMessage());
+      System.out.println("\n" + e.getLoggingString());
     } catch (InternalFacingException e) {
-      outputAdapter.sendMessage("\n" + e.getLoggingString());
+      System.out.println("\n" + e.getLoggingString());
     }
   }
 }

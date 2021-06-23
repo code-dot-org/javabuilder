@@ -1,0 +1,10 @@
+{
+  "source": {
+    "PainterSample.java": {
+      "text": "import org.code.neighborhood.Painter;\nimport org.code.neighborhood.World;\nimport java.util.Scanner;\n\npublic class PainterSample {\n\tpublic static void main(String[] args) {\n\t\tWorld world = new World(4);\n\t\tWorld.setInstance(world);\n\t\tPainter painter = new Painter();\n\t\tpainter.move();\n\t}\n}\n",
+      "visible": true
+    }
+  },
+  "animations": {}
+}
+

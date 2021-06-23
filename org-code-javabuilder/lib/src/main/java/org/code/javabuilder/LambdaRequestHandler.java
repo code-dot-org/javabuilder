@@ -8,6 +8,11 @@ import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import java.util.Map;
+import org.code.protocol.GlobalProtocol;
+import org.code.protocol.JavabuilderException;
+import org.code.protocol.JavabuilderRuntimeException;
+import org.code.protocol.Properties;
+import org.json.JSONObject;
 
 /**
  * This is the entry point for the lambda function. This should be thought of as similar to a main
@@ -33,7 +38,16 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     final String apiEndpoint = lambdaInput.get("apiEndpoint");
     final String queueUrl = lambdaInput.get("queueUrl");
     final String projectUrl = lambdaInput.get("projectUrl");
-    final String[] fileNames = lambdaInput.get("fileNames").split(",");
+    final String levelId = lambdaInput.get("levelId");
+    final String dashboardHostname = "https://" + lambdaInput.get("iss");
+    final JSONObject options = new JSONObject(lambdaInput.get("options"));
+    boolean useNeighborhood = false;
+    if (options.has("useNeighborhood")) {
+      String useNeighborhoodStr = options.getString("useNeighborhood");
+      useNeighborhood = Boolean.parseBoolean(useNeighborhoodStr);
+    }
+
+    Properties.setConnectionId(connectionId);
 
     // Create user-program output handlers
     AmazonApiGatewayManagementApi api =
@@ -47,27 +61,27 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     final AmazonSQS sqsClient = AmazonSQSClientBuilder.defaultClient();
     final AWSInputAdapter inputAdapter = new AWSInputAdapter(sqsClient, queueUrl);
 
-    // Create file manager
-    final UserProjectFileManager userProjectFileManager =
-        new UserProjectFileManager(projectUrl, fileNames);
+    // Create file loader
+    final UserProjectFileLoader userProjectFileLoader =
+        new UserProjectFileLoader(projectUrl, levelId, dashboardHostname, useNeighborhood);
 
-    // Create and invoke the code execution environment
-    try (CodeBuilder codeBuilder =
-        new CodeBuilder(inputAdapter, outputAdapter, userProjectFileManager)) {
-      codeBuilder.compileUserCode();
-      codeBuilder.runUserCode();
-    } catch (UserFacingException e) {
+    // Load files to memory and create and invoke the code execution environment
+    try {
+      GlobalProtocol.create(outputAdapter, inputAdapter);
+      UserProjectFiles userProjectFiles = userProjectFileLoader.loadFiles();
+      try (CodeBuilder codeBuilder =
+          new CodeBuilder(GlobalProtocol.getInstance(), userProjectFiles)) {
+        codeBuilder.buildUserCode();
+        codeBuilder.runUserCode();
+      }
+    } catch (JavabuilderException | JavabuilderRuntimeException e) {
       // Send user-facing exceptions to the user and log the stack trace to CloudWatch
-      outputAdapter.sendMessage(e.getMessage());
-      context.getLogger().log(e.getLoggingString());
-    } catch (UserInitiatedException e) {
-      // Send user-facing exceptions to the user and log the stack trace to CloudWatch
-      outputAdapter.sendMessage(e.getMessage());
+      outputAdapter.sendMessage(e.getExceptionMessage());
       context.getLogger().log(e.getLoggingString());
     } catch (InternalFacingException e) {
       // Send internal-facing exceptions to CloudWatch
       context.getLogger().log(e.getLoggingString());
-    } catch (Exception e) {
+    } catch (Throwable e) {
       e.printStackTrace();
     }
 
