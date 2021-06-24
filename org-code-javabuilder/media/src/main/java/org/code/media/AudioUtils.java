@@ -95,8 +95,12 @@ public class AudioUtils {
    *
    * @param samples
    * @return converted array of samples as bytes
+   * @throws SoundException
    */
-  public static byte[] convertDoubleArrayToByteArray(double[] samples) {
+  public static byte[] convertDoubleArrayToByteArray(double[] samples) throws SoundException {
+    if (samples == null) {
+      throw new SoundException("Cannot read audio data");
+    }
     final byte[] bytes = new byte[samples.length * 2];
     for (int i = 0; i < samples.length; i++) {
       final int b = samples[i] == 1.0 ? Short.MAX_VALUE : (short) (samples[i] * MAX_16_BIT_VALUE);
