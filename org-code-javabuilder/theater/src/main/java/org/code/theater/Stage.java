@@ -207,7 +207,7 @@ public class Stage {
       throw new TheaterRuntimeException(ExceptionKeys.INVALID_SHAPE);
     }
     if (close) {
-      // we can use the shape functions
+      // For a closed shape, use draw/fill shape functions
       if (this.strokeColor != null || this.fillColor != null) {
         int numPoints = points.length / 2;
         int[] xPoints = new int[numPoints];
@@ -227,7 +227,7 @@ public class Stage {
         }
       }
     } else if (this.strokeColor != null) {
-      // draw shape as a series of lines
+      // For an open shape, draw as a series of lines
       this.graphics.setColor(this.strokeColor);
       for (int i = 0; i <= points.length - 4; i += 2) {
         this.graphics.drawLine(points[i], points[i + 1], points[i + 2], points[i + 3]);

@@ -13,7 +13,9 @@ public class Color {
    * @throws IllegalArgumentException if the value specifies an unsupported color name or illegal
    *     hexadecimal value
    */
-  public Color(String color) throws IllegalArgumentException {}
+  public Color(String color) throws IllegalArgumentException {
+    // TODO: Implement this method
+  }
 
   /**
    * Create a new color based on the red, green, and blue values provided.
