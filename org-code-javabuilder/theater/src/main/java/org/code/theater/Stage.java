@@ -22,26 +22,42 @@ public class Stage {
   private static final int WIDTH = 400;
   private static final int HEIGHT = 400;
 
-  public Stage() {
+  /**
+   * Initialize Stage with a default image. Stage should be initialized outside of org.code.theater
+   * using Theater.stage.
+   */
+  protected Stage() {
+    this(new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB));
+  }
+
+  /**
+   * Initialize Stage with a specific BufferedImage. Used directly for testing. Stage should be
+   * initialized outside of org.code.theater using Theater.stage.
+   *
+   * @param image
+   */
+  protected Stage(BufferedImage image) {
+    this.image = image;
+    this.graphics = this.image.createGraphics();
     this.outputAdapter = GlobalProtocol.getInstance().getOutputAdapter();
     this.outputStream = new ByteArrayOutputStream();
     this.gifWriter = new GifWriter(this.outputStream);
-
-    // Set up image with white background and black stroke/fill color
-    this.reset();
     this.hasPlayed = false;
+
+    // set up the image for drawing (set a white background and black stroke/fill)
+    this.reset();
 
     System.setProperty("java.awt.headless", "true");
   }
 
-  /** Returns the width of the theater canvas. Right now this will always be 400 pixels. */
-  public double getWidth() {
-    return image.getWidth();
+  /** Returns the width of the theater canvas. */
+  public int getWidth() {
+    return this.image.getWidth();
   }
 
-  /** Returns the height of the theater canvas. Right now this will always be 400 pixels. */
-  public double getHeight() {
-    return image.getHeight();
+  /** Returns the height of the theater canvas. */
+  public int getHeight() {
+    return this.image.getHeight();
   }
 
   /**
@@ -81,11 +97,9 @@ public class Stage {
 
   /** Clear everything, starting from the beginning and emptying the canvas. */
   public void reset() {
-    this.image = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB);
-    this.graphics = this.image.createGraphics();
     this.graphics.setBackground(java.awt.Color.WHITE);
-    // clearRect removes the default black background
-    this.graphics.clearRect(0, 0, WIDTH, HEIGHT);
+    // clearRect resets the background with the new color
+    this.graphics.clearRect(0, 0, this.getWidth(), this.getHeight());
     this.strokeColor = java.awt.Color.BLACK;
     this.fillColor = java.awt.Color.BLACK;
   }
