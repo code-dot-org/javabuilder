@@ -2,6 +2,10 @@ package org.code.media;
 
 public class Color {
 
+  private int red;
+  private int green;
+  private int blue;
+
   /**
    * Creates a color from a string representation.
    *
@@ -18,7 +22,11 @@ public class Color {
    * @param green the green value from 0 - 255
    * @param blue the blue value from 0 - 255
    */
-  public Color(int red, int green, int blue) {}
+  public Color(int red, int green, int blue) {
+    this.red = red;
+    this.green = green;
+    this.blue = blue;
+  }
 
   /**
    * Returns the amount of red (ranging from 0 to 255).
@@ -26,7 +34,7 @@ public class Color {
    * @return a number representing the red value (between 0 and 255)
    */
   public int getRed() {
-    return -1;
+    return this.red;
   }
 
   /**
@@ -35,7 +43,7 @@ public class Color {
    * @return a number representing the green value (between 0 and 255) of the pixel.
    */
   public int getGreen() {
-    return -1;
+    return this.green;
   }
 
   /**
@@ -44,7 +52,7 @@ public class Color {
    * @return a number representing the blue value (between 0 and 255)
    */
   public int getBlue() {
-    return -1;
+    return this.blue;
   }
 
   /**
@@ -53,7 +61,9 @@ public class Color {
    *
    * @param value the amount of red (ranging from 0 to 255) in the color of the pixel.
    */
-  public void setRed(int value) {}
+  public void setRed(int value) {
+    this.red = value;
+  }
 
   /**
    * Sets the amount of green (ranging from 0 to 255). Values below 0 will be ignored and set to 0,
@@ -61,14 +71,18 @@ public class Color {
    *
    * @param value the amount of green (ranging from 0 to 255) in the color of the pixel.
    */
-  public void setGreen(int value) {}
+  public void setGreen(int value) {
+    this.green = value;
+  }
 
   /**
    * Sets the amount of blue (ranging from 0 to 255).
    *
    * @param value the amount of blue (ranging from 0 to 255) in the color of the pixel.
    */
-  public void setBlue(int value) {}
+  public void setBlue(int value) {
+    this.blue = value;
+  }
 
   public static final Color WHITE = new Color(255, 255, 255);
   public static final Color SILVER = new Color(192, 192, 192);
