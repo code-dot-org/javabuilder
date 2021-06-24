@@ -91,7 +91,7 @@ public class Stage {
    * @param seconds The number of seconds to wait. This can be a fraction of a second, but the
    *     smallest value can be .1 seconds.
    */
-  public void wait(double seconds) {
+  public void pause(double seconds) {
     this.gifWriter.writeToGif(this.image, (int) (seconds * 1000));
   }
 

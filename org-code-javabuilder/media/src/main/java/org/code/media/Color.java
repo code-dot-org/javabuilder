@@ -92,7 +92,7 @@ public class Color {
   public static final Color BLACK = new Color(0, 0, 0);
   public static final Color RED = new Color(255, 0, 0);
   public static final Color MAROON = new Color(128, 0, 0);
-  public static final Color YELLOW = new Color(256, 256, 0);
+  public static final Color YELLOW = new Color(255, 255, 0);
   public static final Color OLIVE = new Color(128, 128, 0);
   public static final Color LIME = new Color(0, 256, 0);
   public static final Color GREEN = new Color(0, 128, 0);
