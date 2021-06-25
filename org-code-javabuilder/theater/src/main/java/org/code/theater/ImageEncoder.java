@@ -4,7 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.util.Base64;
 import java.util.HashMap;
 
-public class ImageEncoder {
+class ImageEncoder {
   /**
    * Takes a ByteArrayOutputStream representing an image and convert it to an encoding that can be
    * passed across the WebSocket connection. We expect visual elements to be gifs in a base64

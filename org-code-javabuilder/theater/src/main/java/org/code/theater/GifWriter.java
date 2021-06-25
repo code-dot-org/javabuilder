@@ -15,7 +15,7 @@ import org.code.protocol.InternalJavabuilderError;
  * Writer to generate a gif from a set of images. The gif will be stored in the given
  * ByteArrayOutputStream.
  */
-public class GifWriter {
+class GifWriter {
   private ImageWriter writer;
   private ImageWriteParam params;
   private ImageOutputStream imageOutputStream;
@@ -26,7 +26,8 @@ public class GifWriter {
       this.writer = ImageIO.getImageWritersBySuffix("gif").next();
       this.params = writer.getDefaultWriteParam();
       this.writer.setOutput(this.imageOutputStream);
-      this.writer.prepareWriteSequence(null);
+      IIOMetadata streamData = this.getMetadataForGif();
+      this.writer.prepareWriteSequence(streamData);
     } catch (IOException e) {
       throw new InternalJavabuilderError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e.getCause());
     }
@@ -41,7 +42,8 @@ public class GifWriter {
   public void writeToGif(BufferedImage img, int delay) {
     try {
       this.writer.writeToSequence(
-          new IIOImage(img, null, getMetadataForFrame(delay, img.getType())), params);
+          new IIOImage(img, null, getMetadataForFrame(delay, img.getType())), this.params);
+
     } catch (IOException e) {
       throw new InternalJavabuilderError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e.getCause());
     }
@@ -76,7 +78,7 @@ public class GifWriter {
     String metaFormatName = metadata.getNativeMetadataFormatName();
     IIOMetadataNode root = (IIOMetadataNode) metadata.getAsTree(metaFormatName);
 
-    IIOMetadataNode graphicsControlExtensionNode = getNode(root, "GraphicControlExtension");
+    IIOMetadataNode graphicsControlExtensionNode = this.getNode(root, "GraphicControlExtension");
     graphicsControlExtensionNode.setAttribute("disposalMethod", "none");
     graphicsControlExtensionNode.setAttribute("userInputFlag", "FALSE");
     graphicsControlExtensionNode.setAttribute("transparentColorFlag", "FALSE");
@@ -99,7 +101,7 @@ public class GifWriter {
    * @param nodeName
    * @return Requested IIOMetadataNode
    */
-  private static IIOMetadataNode getNode(IIOMetadataNode rootNode, String nodeName) {
+  private IIOMetadataNode getNode(IIOMetadataNode rootNode, String nodeName) {
     int nNodes = rootNode.getLength();
     for (int i = 0; i < nNodes; i++) {
       if (rootNode.item(i).getNodeName().equalsIgnoreCase(nodeName)) {
@@ -109,5 +111,25 @@ public class GifWriter {
     IIOMetadataNode node = new IIOMetadataNode(nodeName);
     rootNode.appendChild(node);
     return (node);
+  }
+
+  /**
+   * Get overall metadata for the gif. Sets the width and height to be 400 px.
+   *
+   * @return IIOMetadata
+   */
+  private IIOMetadata getMetadataForGif() {
+    IIOMetadata streamData = this.writer.getDefaultStreamMetadata(this.params);
+    String metaFormatName = streamData.getNativeMetadataFormatName();
+    IIOMetadataNode root = (IIOMetadataNode) streamData.getAsTree(metaFormatName);
+    IIOMetadataNode screenDescriptor = this.getNode(root, "LogicalScreenDescriptor");
+    screenDescriptor.setAttribute("logicalScreenWidth", "400");
+    screenDescriptor.setAttribute("logicalScreenHeight", "400");
+    try {
+      streamData.setFromTree(metaFormatName, root);
+    } catch (IIOInvalidTreeException e) {
+      throw new InternalJavabuilderError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e.getCause());
+    }
+    return streamData;
   }
 }
