@@ -1,6 +1,7 @@
 package org.code.theater;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import org.code.media.AudioWriter;
@@ -35,7 +36,7 @@ public class CatMusic {
       final String audioFilename =
           Paths.get(CatMusic.class.getClassLoader().getResource("beatbox.wav").toURI()).toString();
       return SoundLoader.read(audioFilename);
-    } catch (URISyntaxException | SoundException e) {
+    } catch (URISyntaxException | SoundException | FileNotFoundException e) {
       e.printStackTrace();
     }
     return null;

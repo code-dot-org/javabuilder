@@ -1,6 +1,7 @@
 package org.code.media;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
@@ -14,9 +15,10 @@ public class SoundLoader {
    * @param filename the name of the audio file
    * @return the array of samples, at 44.1 kilohertz. This means that 441000 samples are played per
    *     second.
-   * @throws SoundException when the file cannot be found
+   * @throws SoundException if there is an error reading the file, or FileNotFoundException when the
+   *     file cannot be found
    */
-  public static double[] read(String filename) throws SoundException {
+  public static double[] read(String filename) throws SoundException, FileNotFoundException {
     // Acquire AudioInputStream
     final AudioInputStream audioInputStream = getAudioInputStream(filename);
     final AudioFormat audioFormat = audioInputStream.getFormat();
@@ -41,17 +43,19 @@ public class SoundLoader {
     return AudioUtils.convertByteArrayToDoubleArray(bytes, audioFormat.getChannels());
   }
 
-  private static AudioInputStream getAudioInputStream(String filename) throws SoundException {
+  private static AudioInputStream getAudioInputStream(String filename)
+      throws SoundException, FileNotFoundException {
     if (filename == null) {
-      throw new SoundException("Missing file name");
+      throw new FileNotFoundException("Missing file name");
+    }
+
+    final File file = new File(filename);
+    if (!file.exists()) {
+      throw new FileNotFoundException(filename);
     }
 
     try {
-      final File file = new File(filename);
-      if (file.exists()) {
-        return AudioSystem.getAudioInputStream(file);
-      }
-      throw new SoundException("File does not exist: " + filename);
+      return AudioSystem.getAudioInputStream(file);
     } catch (IOException | UnsupportedAudioFileException e) {
       throw new SoundException(e);
     }

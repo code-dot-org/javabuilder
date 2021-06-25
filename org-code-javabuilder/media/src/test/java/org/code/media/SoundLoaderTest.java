@@ -1,7 +1,9 @@
 package org.code.media;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.FileNotFoundException;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,7 +26,7 @@ class SoundLoaderTest {
   public void testNullFilenameThrowsException() {
     Exception exception =
         assertThrows(
-            SoundException.class,
+            FileNotFoundException.class,
             () -> {
               SoundLoader.read(null);
             });
@@ -35,19 +37,19 @@ class SoundLoaderTest {
 
   @Test
   public void testInvalidFileThrowsException() {
+    String invalidFile = "invalid.wav";
     Exception exception =
         assertThrows(
-            SoundException.class,
+            FileNotFoundException.class,
             () -> {
-              SoundLoader.read("invalid.wav");
+              SoundLoader.read(invalidFile);
             });
 
-    String expected = "File does not exist";
-    assertTrue(exception.getMessage().contains(expected));
+    assertTrue(exception.getMessage().contains(invalidFile));
   }
 
   @Test
-  public void testReadsValidFileCorrectly() throws SoundException {
+  public void testReadsValidFileCorrectly() throws SoundException, FileNotFoundException {
     double[] samples = SoundLoader.read(validFilepath);
 
     // Assert the full file was converted
