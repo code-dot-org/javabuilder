@@ -10,7 +10,7 @@ import org.code.protocol.GlobalProtocol;
 import org.code.protocol.OutputAdapter;
 
 public class Stage {
-  private BufferedImage image;
+  private final BufferedImage image;
   private final OutputAdapter outputAdapter;
   private final GifWriter gifWriter;
   private final ByteArrayOutputStream outputStream;
@@ -21,6 +21,7 @@ public class Stage {
 
   private static final int WIDTH = 400;
   private static final int HEIGHT = 400;
+  private static final java.awt.Color DEFAULT_COLOR = java.awt.Color.BLACK;
 
   /**
    * Initialize Stage with a default image. Stage should be initialized outside of org.code.theater
@@ -45,7 +46,7 @@ public class Stage {
     this.hasPlayed = false;
 
     // set up the image for drawing (set a white background and black stroke/fill)
-    this.reset();
+    this.clear(Color.WHITE);
 
     System.setProperty("java.awt.headless", "true");
   }
@@ -95,13 +96,17 @@ public class Stage {
     this.gifWriter.writeToGif(this.image, (int) (seconds * 1000));
   }
 
-  /** Clear everything, starting from the beginning and emptying the canvas. */
-  public void reset() {
-    this.graphics.setBackground(java.awt.Color.WHITE);
+  /**
+   * Clear the canvas and set the background to the given color
+   *
+   * @param color new background color
+   */
+  public void clear(Color color) {
+    this.graphics.setBackground(Color.convertToAWTColor(color));
     // clearRect resets the background with the new color
     this.graphics.clearRect(0, 0, this.getWidth(), this.getHeight());
-    this.strokeColor = java.awt.Color.BLACK;
-    this.fillColor = java.awt.Color.BLACK;
+    this.strokeColor = DEFAULT_COLOR;
+    this.fillColor = DEFAULT_COLOR;
   }
 
   /**
@@ -156,7 +161,8 @@ public class Stage {
    */
   public void drawLine(int startX, int startY, int endX, int endY) {
     if (this.strokeColor == null) {
-      this.graphics.setColor(java.awt.Color.BLACK);
+      // Lines will always be drawn even if strokeColor is null. Use default color in this case.
+      this.graphics.setColor(DEFAULT_COLOR);
     } else {
       this.graphics.setColor(this.strokeColor);
     }
@@ -172,22 +178,23 @@ public class Stage {
    * @param radius the distance from the center to each point on the polygon
    */
   public void drawRegularPolygon(int x, int y, int sides, int radius) {
-    if (this.strokeColor != null || this.fillColor != null) {
-      Polygon polygon = new Polygon();
-      double theta = 2 * Math.PI / sides;
-      for (int i = 0; i < sides; i++) {
-        int xCoordinate = (int) (Math.cos(theta * i) * radius) + x;
-        int yCoordinate = (int) (Math.sin(theta * i) * radius) + y;
-        polygon.addPoint(xCoordinate, yCoordinate);
-      }
-      if (this.strokeColor != null) {
-        this.graphics.setColor(this.strokeColor);
-        this.graphics.drawPolygon(polygon);
-      }
-      if (this.fillColor != null) {
-        this.graphics.setColor(this.fillColor);
-        this.graphics.fillPolygon(polygon);
-      }
+    if (this.strokeColor == null && this.fillColor == null) {
+      return;
+    }
+    Polygon polygon = new Polygon();
+    double theta = 2 * Math.PI / sides;
+    for (int i = 0; i < sides; i++) {
+      int xCoordinate = (int) (Math.cos(theta * i) * radius) + x;
+      int yCoordinate = (int) (Math.sin(theta * i) * radius) + y;
+      polygon.addPoint(xCoordinate, yCoordinate);
+    }
+    if (this.strokeColor != null) {
+      this.graphics.setColor(this.strokeColor);
+      this.graphics.drawPolygon(polygon);
+    }
+    if (this.fillColor != null) {
+      this.graphics.setColor(this.fillColor);
+      this.graphics.fillPolygon(polygon);
     }
   }
 
@@ -207,24 +214,25 @@ public class Stage {
       throw new TheaterRuntimeException(ExceptionKeys.INVALID_SHAPE);
     }
     if (close) {
+      if (this.strokeColor == null && this.fillColor == null) {
+        return;
+      }
       // For a closed shape, use draw/fill shape functions
-      if (this.strokeColor != null || this.fillColor != null) {
-        int numPoints = points.length / 2;
-        int[] xPoints = new int[numPoints];
-        int[] yPoints = new int[numPoints];
-        // split points into x and y arrays
-        for (int i = 0; i < points.length - 1; i += 2) {
-          xPoints[i / 2] = points[i];
-          yPoints[i / 2] = points[i + 1];
-        }
-        if (this.strokeColor != null) {
-          this.graphics.setColor(this.strokeColor);
-          this.graphics.drawPolygon(xPoints, yPoints, numPoints);
-        }
-        if (this.fillColor != null) {
-          this.graphics.setColor(this.fillColor);
-          this.graphics.fillPolygon(xPoints, yPoints, numPoints);
-        }
+      int numPoints = points.length / 2;
+      int[] xPoints = new int[numPoints];
+      int[] yPoints = new int[numPoints];
+      // split points into x and y arrays
+      for (int i = 0; i < points.length - 1; i += 2) {
+        xPoints[i / 2] = points[i];
+        yPoints[i / 2] = points[i + 1];
+      }
+      if (this.strokeColor != null) {
+        this.graphics.setColor(this.strokeColor);
+        this.graphics.drawPolygon(xPoints, yPoints, numPoints);
+      }
+      if (this.fillColor != null) {
+        this.graphics.setColor(this.fillColor);
+        this.graphics.fillPolygon(xPoints, yPoints, numPoints);
       }
     } else if (this.strokeColor != null) {
       // For an open shape, draw as a series of lines
@@ -288,7 +296,7 @@ public class Stage {
    * @param color the color to draw lines with.
    */
   public void setStrokeColor(Color color) {
-    this.strokeColor = this.convertColor(color);
+    this.strokeColor = Color.convertToAWTColor(color);
   }
 
   /** Removes the stroke color so any shapes have no outlines. */
@@ -302,7 +310,7 @@ public class Stage {
    * @param color the color value to fill any shape.
    */
   public void setFillColor(Color color) {
-    this.fillColor = this.convertColor(color);
+    this.fillColor = Color.convertToAWTColor(color);
   }
 
   /** Removes the fill color so any shapes have no fill. */
@@ -320,9 +328,5 @@ public class Stage {
       outputAdapter.sendMessage(ImageEncoder.encodeStreamToMessage(this.outputStream));
       this.hasPlayed = true;
     }
-  }
-
-  private java.awt.Color convertColor(Color color) {
-    return new java.awt.Color(color.getRed(), color.getGreen(), color.getBlue());
   }
 }

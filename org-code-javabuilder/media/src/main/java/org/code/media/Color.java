@@ -25,9 +25,9 @@ public class Color {
    * @param blue the blue value from 0 - 255
    */
   public Color(int red, int green, int blue) {
-    this.red = red;
-    this.green = green;
-    this.blue = blue;
+    this.red = this.sanitizeValue(red);
+    this.green = this.sanitizeValue(green);
+    this.blue = this.sanitizeValue(blue);
   }
 
   /**
@@ -59,31 +59,52 @@ public class Color {
 
   /**
    * Sets the amount of red (ranging from 0 to 255). Values below 0 will be ignored and set to 0,
-   * and values above 255 with be ignored and set to 255.
+   * and values above 255 will be ignored and set to 255.
    *
    * @param value the amount of red (ranging from 0 to 255) in the color of the pixel.
    */
   public void setRed(int value) {
-    this.red = value;
+    this.red = this.sanitizeValue(value);
   }
 
   /**
    * Sets the amount of green (ranging from 0 to 255). Values below 0 will be ignored and set to 0,
-   * and values above 255 with be ignored and set to 255.
+   * and values above 255 will be ignored and set to 255.
    *
    * @param value the amount of green (ranging from 0 to 255) in the color of the pixel.
    */
   public void setGreen(int value) {
-    this.green = value;
+    this.green = this.sanitizeValue(value);
   }
 
   /**
-   * Sets the amount of blue (ranging from 0 to 255).
+   * Sets the amount of blue (ranging from 0 to 255). Values below 0 will be ignored and set to 0, *
+   * and values above 255 will be ignored and set to 255.
    *
    * @param value the amount of blue (ranging from 0 to 255) in the color of the pixel.
    */
   public void setBlue(int value) {
-    this.blue = value;
+    this.blue = this.sanitizeValue(value);
+  }
+
+  /**
+   * Values below 0 will be set to 0, and values above 255 will be set to 255.
+   *
+   * @param value
+   * @return value if it was in the expected range, or a valid value based on the reset logic.
+   */
+  private int sanitizeValue(int value) {
+    if (value < 0) {
+      return 0;
+    }
+    if (value > 255) {
+      return 255;
+    }
+    return value;
+  }
+
+  public static java.awt.Color convertToAWTColor(Color c) {
+    return new java.awt.Color(c.getRed(), c.getGreen(), c.getBlue());
   }
 
   public static final Color WHITE = new Color(255, 255, 255);
