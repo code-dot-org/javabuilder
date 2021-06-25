@@ -7,6 +7,8 @@ import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
+import org.code.protocol.InternalErrorKey;
+import org.code.protocol.InternalJavabuilderError;
 
 public class AudioUtils {
   private static final int MONO_CHANNELS = 1;
@@ -56,7 +58,7 @@ public class AudioUtils {
   public static double[] convertByteArrayToDoubleArray(byte[] bytes, int numChannels)
       throws SoundException {
     if (bytes == null) {
-      throw new SoundException("Cannot read audio data");
+      throw new SoundException(SoundExceptionKeys.MISSING_AUDIO_DATA);
     }
     final int numBytes = bytes.length;
     final double[] samples;
@@ -83,7 +85,7 @@ public class AudioUtils {
         samples[i] = (left + right) / 2.0;
       }
     } else {
-      throw new SoundException("Invalid audio file format");
+      throw new SoundException(SoundExceptionKeys.INVALID_AUDIO_FILE_FORMAT);
     }
 
     return samples;
@@ -99,7 +101,7 @@ public class AudioUtils {
    */
   public static byte[] convertDoubleArrayToByteArray(double[] samples) throws SoundException {
     if (samples == null) {
-      throw new SoundException("Cannot read audio data");
+      throw new SoundException(SoundExceptionKeys.MISSING_AUDIO_DATA);
     }
     final byte[] bytes = new byte[samples.length * 2];
     for (int i = 0; i < samples.length; i++) {
@@ -119,7 +121,7 @@ public class AudioUtils {
    * @throws SoundException
    */
   public static void writeBytesToOutputStream(byte[] bytes, ByteArrayOutputStream outputStream)
-      throws SoundException {
+      throws InternalJavabuilderError {
     final ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
     final AudioInputStream audioInputStream =
         new AudioInputStream(inputStream, DEFAULT_AUDIO_FORMAT, bytes.length / 2);
@@ -127,7 +129,7 @@ public class AudioUtils {
     try {
       AudioSystem.write(audioInputStream, DEFAULT_AUDIO_FILE_FORMAT_TYPE, outputStream);
     } catch (IOException e) {
-      throw new SoundException(e);
+      throw new InternalJavabuilderError(InternalErrorKey.INTERNAL_EXCEPTION, e);
     }
   }
 
