@@ -39,7 +39,7 @@ class AudioUtilsTest {
               AudioUtils.convertByteArrayToDoubleArray(null, 1);
             });
 
-    assertTrue(exception.getMessage().contains("Cannot read audio data"));
+    assertEquals(exception.getMessage(), SoundExceptionKeys.MISSING_AUDIO_DATA.toString());
   }
 
   @Test
@@ -51,7 +51,7 @@ class AudioUtilsTest {
               AudioUtils.convertByteArrayToDoubleArray(BYTE_ARRAY_MONO, 6);
             });
 
-    assertTrue(exception.getMessage().contains("Invalid audio file format"));
+    assertEquals(exception.getMessage(), SoundExceptionKeys.INVALID_AUDIO_FILE_FORMAT.toString());
   }
 
   @Test
@@ -72,7 +72,7 @@ class AudioUtilsTest {
               AudioUtils.convertDoubleArrayToByteArray(null);
             });
 
-    assertTrue(exception.getMessage().contains("Cannot read audio data"));
+    assertEquals(exception.getMessage(), SoundExceptionKeys.MISSING_AUDIO_DATA.toString());
   }
 
   @Test
