@@ -1,6 +1,7 @@
 package org.code.media;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 /**
@@ -30,14 +31,14 @@ public class AudioWriter {
     }
   }
 
-  public void writeAudioFile(String filename) throws SoundException {
-    writeAudioSamples(SoundLoader.read(filename));
+  public void writeAudioFile(String filename) throws SoundException, FileNotFoundException {
+    this.writeAudioSamples(SoundLoader.read(filename));
   }
 
   public void addDelay(int delayMs) throws SoundException {
     final double[] emptySamples =
         new double[(int) (((double) delayMs / 1000.0) * AudioUtils.getDefaultSampleRate())];
-    writeAudioSamples(emptySamples);
+    this.writeAudioSamples(emptySamples);
   }
 
   /**
