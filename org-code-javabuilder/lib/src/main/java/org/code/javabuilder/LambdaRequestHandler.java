@@ -37,8 +37,8 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     final String connectionId = lambdaInput.get("connectionId");
     final String apiEndpoint = lambdaInput.get("apiEndpoint");
     final String queueUrl = lambdaInput.get("queueUrl");
-    final String projectUrl = lambdaInput.get("projectUrl");
     final String levelId = lambdaInput.get("levelId");
+    final String channelId = lambdaInput.get("channelId");
     final String dashboardHostname = "https://" + lambdaInput.get("iss");
     final JSONObject options = new JSONObject(lambdaInput.get("options"));
     boolean useNeighborhood = false;
@@ -61,13 +61,16 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     final AmazonSQS sqsClient = AmazonSQSClientBuilder.defaultClient();
     final AWSInputAdapter inputAdapter = new AWSInputAdapter(sqsClient, queueUrl);
 
-    // Create file loader
-    final UserProjectFileLoader userProjectFileLoader =
-        new UserProjectFileLoader(projectUrl, levelId, dashboardHostname, useNeighborhood);
-
     // Load files to memory and create and invoke the code execution environment
     try {
-      GlobalProtocol.create(outputAdapter, inputAdapter);
+      GlobalProtocol.create(outputAdapter, inputAdapter, dashboardHostname, channelId);
+      // Create file loader
+      final UserProjectFileLoader userProjectFileLoader =
+          new UserProjectFileLoader(
+              GlobalProtocol.getInstance().generateSourcesUrl(),
+              levelId,
+              dashboardHostname,
+              useNeighborhood);
       UserProjectFiles userProjectFiles = userProjectFileLoader.loadFiles();
       try (CodeBuilder codeBuilder =
           new CodeBuilder(GlobalProtocol.getInstance(), userProjectFiles)) {

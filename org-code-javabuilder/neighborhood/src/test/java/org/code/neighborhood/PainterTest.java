@@ -23,7 +23,7 @@ public class PainterTest {
 
   @BeforeEach
   public void setUp() {
-    GlobalProtocol.create(outputAdapter, mock(InputAdapter.class));
+    GlobalProtocol.create(outputAdapter, mock(InputAdapter.class), "", "");
     System.setOut(new PrintStream(outputStreamCaptor));
     World w = new World(singleSquareGrid);
     World.setInstance(w);

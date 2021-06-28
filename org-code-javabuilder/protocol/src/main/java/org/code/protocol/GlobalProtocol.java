@@ -12,14 +12,27 @@ public class GlobalProtocol {
   private static GlobalProtocol protocolInstance;
   private final OutputAdapter outputAdapter;
   private final InputAdapter inputAdapter;
+  private final String dashboardHostname;
+  private final String channelId;
 
-  private GlobalProtocol(OutputAdapter outputAdapter, InputAdapter inputAdapter) {
+  private GlobalProtocol(
+      OutputAdapter outputAdapter,
+      InputAdapter inputAdapter,
+      String dashboardHostname,
+      String channelId) {
     this.outputAdapter = outputAdapter;
     this.inputAdapter = inputAdapter;
+    this.dashboardHostname = dashboardHostname;
+    this.channelId = channelId;
   }
 
-  public static void create(OutputAdapter outputAdapter, InputAdapter inputAdapter) {
-    GlobalProtocol.protocolInstance = new GlobalProtocol(outputAdapter, inputAdapter);
+  public static void create(
+      OutputAdapter outputAdapter,
+      InputAdapter inputAdapter,
+      String dashboardHostname,
+      String channelId) {
+    GlobalProtocol.protocolInstance =
+        new GlobalProtocol(outputAdapter, inputAdapter, dashboardHostname, channelId);
   }
 
   public static GlobalProtocol getInstance() {
@@ -36,5 +49,13 @@ public class GlobalProtocol {
 
   public InputAdapter getInputAdapter() {
     return this.inputAdapter;
+  }
+
+  public String generateAssetUrl(String filename) {
+    return String.format("%s/v3/assets/%s/%s", this.dashboardHostname, this.channelId, filename);
+  }
+
+  public String generateSourcesUrl() {
+    return String.format("%s/v3/sources/%s", this.dashboardHostname, this.channelId);
   }
 }
