@@ -1,0 +1,12 @@
+version: 0.2
+phases:
+  install:
+    runtime-versions:
+      ruby: 2.5
+      java: corretto11
+  build:
+    commands:
+      - aws cloudformation package --template-file template.yml --s3-bucket cf-templates-18voktsbke3mi-us-east-1 --output-template-file packaged-template.yml
+artifacts:
+  files:
+    - packaged-template.yml
