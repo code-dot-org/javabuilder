@@ -1,8 +1,15 @@
 package org.code.media;
 
+import java.awt.image.BufferedImage;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URL;
+import javax.imageio.ImageIO;
+import org.code.protocol.GlobalProtocol;
 
 public class Image {
+  private BufferedImage bufferedImage;
+
   /**
    * Creates a new image object, using the pixel information from the file uploaded to the asset
    * manager.
@@ -10,7 +17,15 @@ public class Image {
    * @param filename the name of the image loaded into the asset manager for the project
    * @throws FileNotFoundException if the file doesn't exist in the asset manager.
    */
-  public Image(String filename) throws FileNotFoundException {}
+  public Image(String filename) throws FileNotFoundException {
+    try {
+      this.bufferedImage =
+          ImageIO.read(new URL(GlobalProtocol.getInstance().generateAssetUrl(filename)));
+    } catch (IOException e) {
+      // TODO: improve error handling
+      throw new FileNotFoundException();
+    }
+  }
 
   /**
    * Create a new image object, copying the source image provided.
@@ -63,7 +78,7 @@ public class Image {
    * @return the width of the image in pixels.
    */
   public int getWidth() {
-    return -1;
+    return this.bufferedImage.getWidth();
   }
 
   /**
@@ -72,7 +87,7 @@ public class Image {
    * @return the height of the image in pixels.
    */
   public int getHeight() {
-    return -1;
+    return this.bufferedImage.getHeight();
   }
 
   /**
@@ -81,4 +96,8 @@ public class Image {
    * @param color the color with which to fill the image.
    */
   public void clear(Color color) {}
+
+  public BufferedImage getBufferedImage() {
+    return this.bufferedImage;
+  }
 }
