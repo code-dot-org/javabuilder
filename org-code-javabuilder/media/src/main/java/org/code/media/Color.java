@@ -2,6 +2,10 @@ package org.code.media;
 
 public class Color {
 
+  private int red;
+  private int green;
+  private int blue;
+
   /**
    * Creates a color from a string representation.
    *
@@ -9,7 +13,9 @@ public class Color {
    * @throws IllegalArgumentException if the value specifies an unsupported color name or illegal
    *     hexadecimal value
    */
-  public Color(String color) throws IllegalArgumentException {}
+  public Color(String color) throws IllegalArgumentException {
+    // TODO: Implement this method
+  }
 
   /**
    * Create a new color based on the red, green, and blue values provided.
@@ -18,7 +24,11 @@ public class Color {
    * @param green the green value from 0 - 255
    * @param blue the blue value from 0 - 255
    */
-  public Color(int red, int green, int blue) {}
+  public Color(int red, int green, int blue) {
+    this.red = this.sanitizeValue(red);
+    this.green = this.sanitizeValue(green);
+    this.blue = this.sanitizeValue(blue);
+  }
 
   /**
    * Returns the amount of red (ranging from 0 to 255).
@@ -26,7 +36,7 @@ public class Color {
    * @return a number representing the red value (between 0 and 255)
    */
   public int getRed() {
-    return -1;
+    return this.red;
   }
 
   /**
@@ -35,7 +45,7 @@ public class Color {
    * @return a number representing the green value (between 0 and 255) of the pixel.
    */
   public int getGreen() {
-    return -1;
+    return this.green;
   }
 
   /**
@@ -44,31 +54,58 @@ public class Color {
    * @return a number representing the blue value (between 0 and 255)
    */
   public int getBlue() {
-    return -1;
+    return this.blue;
   }
 
   /**
    * Sets the amount of red (ranging from 0 to 255). Values below 0 will be ignored and set to 0,
-   * and values above 255 with be ignored and set to 255.
+   * and values above 255 will be ignored and set to 255.
    *
    * @param value the amount of red (ranging from 0 to 255) in the color of the pixel.
    */
-  public void setRed(int value) {}
+  public void setRed(int value) {
+    this.red = this.sanitizeValue(value);
+  }
 
   /**
    * Sets the amount of green (ranging from 0 to 255). Values below 0 will be ignored and set to 0,
-   * and values above 255 with be ignored and set to 255.
+   * and values above 255 will be ignored and set to 255.
    *
    * @param value the amount of green (ranging from 0 to 255) in the color of the pixel.
    */
-  public void setGreen(int value) {}
+  public void setGreen(int value) {
+    this.green = this.sanitizeValue(value);
+  }
 
   /**
-   * Sets the amount of blue (ranging from 0 to 255).
+   * Sets the amount of blue (ranging from 0 to 255). Values below 0 will be ignored and set to 0, *
+   * and values above 255 will be ignored and set to 255.
    *
    * @param value the amount of blue (ranging from 0 to 255) in the color of the pixel.
    */
-  public void setBlue(int value) {}
+  public void setBlue(int value) {
+    this.blue = this.sanitizeValue(value);
+  }
+
+  /**
+   * Values below 0 will be set to 0, and values above 255 will be set to 255.
+   *
+   * @param value
+   * @return value if it was in the expected range, or a valid value based on the reset logic.
+   */
+  private int sanitizeValue(int value) {
+    if (value < 0) {
+      return 0;
+    }
+    if (value > 255) {
+      return 255;
+    }
+    return value;
+  }
+
+  public static java.awt.Color convertToAWTColor(Color c) {
+    return new java.awt.Color(c.getRed(), c.getGreen(), c.getBlue());
+  }
 
   public static final Color WHITE = new Color(255, 255, 255);
   public static final Color SILVER = new Color(192, 192, 192);
@@ -76,7 +113,7 @@ public class Color {
   public static final Color BLACK = new Color(0, 0, 0);
   public static final Color RED = new Color(255, 0, 0);
   public static final Color MAROON = new Color(128, 0, 0);
-  public static final Color YELLOW = new Color(256, 256, 0);
+  public static final Color YELLOW = new Color(255, 255, 0);
   public static final Color OLIVE = new Color(128, 128, 0);
   public static final Color LIME = new Color(0, 256, 0);
   public static final Color GREEN = new Color(0, 128, 0);
