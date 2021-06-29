@@ -3,6 +3,7 @@ package org.code.media;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
@@ -10,7 +11,7 @@ import javax.sound.sampled.AudioSystem;
 import org.code.protocol.InternalErrorKey;
 import org.code.protocol.InternalJavabuilderError;
 
-public class AudioUtils {
+class AudioUtils {
   private static final int MONO_CHANNELS = 1;
   private static final int STEREO_CHANNELS = 2;
   private static final double MAX_16_BIT_VALUE = 32768; // Max signed 16-bit value
@@ -118,10 +119,8 @@ public class AudioUtils {
    *
    * @param bytes
    * @param outputStream
-   * @throws SoundException
    */
-  public static void writeBytesToOutputStream(byte[] bytes, ByteArrayOutputStream outputStream)
-      throws InternalJavabuilderError {
+  public static void writeBytesToOutputStream(byte[] bytes, ByteArrayOutputStream outputStream) {
     final ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
     final AudioInputStream audioInputStream =
         new AudioInputStream(inputStream, DEFAULT_AUDIO_FORMAT, bytes.length / 2);
@@ -131,6 +130,22 @@ public class AudioUtils {
     } catch (IOException e) {
       throw new InternalJavabuilderError(InternalErrorKey.INTERNAL_EXCEPTION, e);
     }
+  }
+
+  /**
+   * Truncates the array of audio samples to the desired duration in seconds provided. If the
+   * desired duration is greater than the duration of the samples, the samples are unchanged.
+   *
+   * @param samples
+   * @param lengthSeconds
+   * @return truncated samples
+   */
+  public static double[] truncateSamples(double[] samples, double lengthSeconds) {
+    final int newLength = (int) (lengthSeconds * (double) DEFAULT_SAMPLE_RATE);
+    if (newLength > samples.length) {
+      return samples;
+    }
+    return Arrays.copyOf(samples, newLength);
   }
 
   public static int getDefaultSampleRate() {

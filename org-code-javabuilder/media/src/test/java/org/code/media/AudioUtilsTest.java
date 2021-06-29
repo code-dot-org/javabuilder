@@ -2,6 +2,7 @@ package org.code.media;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.util.Arrays;
 import javax.sound.sampled.AudioFormat;
 import org.junit.jupiter.api.Test;
 
@@ -78,5 +79,23 @@ class AudioUtilsTest {
   @Test
   public void testConvertDoubleArrayConvertsCorrectly() throws SoundException {
     assertArrayEquals(BYTE_ARRAY_MONO, AudioUtils.convertDoubleArrayToByteArray(DOUBLE_ARRAY));
+  }
+
+  @Test
+  public void testTruncateSamplesTruncatesCorrectly() {
+    final double[] samples = new double[5 * 44100]; // 5 second audio
+    Arrays.fill(samples, 0.5);
+
+    final double[] expected = new double[3 * 44100];
+    Arrays.fill(expected, 0.5);
+    assertArrayEquals(expected, AudioUtils.truncateSamples(samples, 3.0));
+  }
+
+  @Test
+  public void testTruncateSamplesDoesNothingIfAudioShorterThanRequestedLength() {
+    final double[] samples = new double[5 * 44100]; // 5 second audio
+    Arrays.fill(samples, 0.5);
+
+    assertSame(samples, AudioUtils.truncateSamples(samples, 7.0));
   }
 }

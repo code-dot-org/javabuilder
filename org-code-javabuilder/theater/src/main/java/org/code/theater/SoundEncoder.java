@@ -4,7 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.util.Base64;
 import java.util.HashMap;
 
-public class SoundEncoder {
+class SoundEncoder {
 
   public static TheaterMessage encodeStreamToMessage(ByteArrayOutputStream stream) {
     final String encodedString = Base64.getEncoder().encodeToString(stream.toByteArray());

@@ -7,7 +7,9 @@ import static org.mockito.Mockito.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
 import java.io.PrintStream;
+import org.code.media.AudioWriter;
 import org.code.protocol.GlobalProtocol;
 import org.code.protocol.InputAdapter;
 import org.code.protocol.OutputAdapter;
@@ -22,6 +24,11 @@ public class StageTest {
   private final ByteArrayOutputStream outputStreamCaptor = new ByteArrayOutputStream();
   private BufferedImage bufferedImage;
   private Graphics2D graphics;
+  private AudioWriter.Factory audioWriterFactory;
+  private AudioWriter audioWriter;
+  private InstrumentSampleLoader instrumentSampleLoader;
+
+  private Stage s;
 
   @BeforeEach
   public void setUp() {
@@ -30,6 +37,13 @@ public class StageTest {
     bufferedImage = mock(BufferedImage.class);
     graphics = mock(Graphics2D.class);
     when(bufferedImage.createGraphics()).thenReturn(graphics);
+    audioWriterFactory = mock(AudioWriter.Factory.class);
+    audioWriter = mock(AudioWriter.class);
+    when(audioWriterFactory.createAudioWriter(any(ByteArrayOutputStream.class)))
+        .thenReturn(audioWriter);
+    instrumentSampleLoader = mock(InstrumentSampleLoader.class);
+
+    s = new Stage(bufferedImage, audioWriterFactory, instrumentSampleLoader);
   }
 
   @AfterEach
@@ -39,7 +53,6 @@ public class StageTest {
 
   @Test
   void drawLineDefaultsToBlack() {
-    Stage s = new Stage(bufferedImage);
     s.removeStrokeColor();
     s.drawLine(0, 0, 100, 100);
     verify(graphics).setColor(Color.BLACK);
@@ -48,7 +61,6 @@ public class StageTest {
 
   @Test
   void removingStrokeAndFillPreventsShapeDrawing() {
-    Stage s = new Stage(bufferedImage);
     s.removeFillColor();
     s.removeStrokeColor();
     s.drawRegularPolygon(0, 0, 5, 100);
@@ -58,7 +70,6 @@ public class StageTest {
 
   @Test
   void removingStrokeStillCallsFill() {
-    Stage s = new Stage(bufferedImage);
     s.removeStrokeColor();
     s.drawEllipse(5, 5, 100, 100);
     verify(graphics, never()).drawOval(5, 5, 100, 100);
@@ -67,14 +78,12 @@ public class StageTest {
 
   @Test
   void drawOpenShapeDrawsLines() {
-    Stage s = new Stage(bufferedImage);
     s.drawShape(new int[] {0, 0, 25, 30, 0, 100}, false);
     verify(graphics, Mockito.times(2)).drawLine(anyInt(), anyInt(), anyInt(), anyInt());
   }
 
   @Test
   void drawClosedShapeDrawsAndFillsShape() {
-    Stage s = new Stage(bufferedImage);
     s.drawShape(new int[] {0, 0, 25, 30, 0, 100}, true);
     int[] xPoints = new int[] {0, 25, 0};
     int[] yPoints = new int[] {0, 30, 100};
@@ -103,6 +112,44 @@ public class StageTest {
     int[] oddNumberOfPoints = new int[] {0, 0, 1, 1, 2};
     verifyInvalidShapeThrowsException(s, tooFewPoints, false);
     verifyInvalidShapeThrowsException(s, oddNumberOfPoints, true);
+  }
+
+  @Test
+  void testPlaySoundWithArrayCallsAudioWriter() {
+    final double[] testSamples = {1.0, -1.0, 0.0};
+    s.playSound(testSamples);
+    verify(audioWriter).writeAudioSamples(testSamples);
+  }
+
+  @Test
+  void testPlaySoundWithFilenameCallsAudioWriter() throws FileNotFoundException {
+    final String testFile = "test.wav";
+    s.playSound(testFile);
+    verify(audioWriter).writeAudioFile(testFile);
+  }
+
+  @Test
+  void testPlayNoteDoesNothingWhenFileNotFound() throws FileNotFoundException {
+    when(instrumentSampleLoader.getSampleFile(any(Instrument.class), anyInt())).thenReturn(null);
+
+    s.playNote(Instrument.PIANO, 60, 1);
+
+    verify(instrumentSampleLoader).getSampleFile(Instrument.PIANO, 60);
+    verify(audioWriter, never()).writeAudioFile(anyString(), anyDouble());
+  }
+
+  @Test
+  void testPlayNoteCallsAudioWriterIfFileExists() throws FileNotFoundException {
+    final String testSampleFile = "test.wav";
+    final int note = 60;
+    final double seconds = 2.0;
+    when(instrumentSampleLoader.getSampleFile(any(Instrument.class), anyInt()))
+        .thenReturn(testSampleFile);
+
+    s.playNote(Instrument.PIANO, note, seconds);
+
+    verify(instrumentSampleLoader).getSampleFile(Instrument.PIANO, note);
+    verify(audioWriter).writeAudioFile(testSampleFile, seconds);
   }
 
   private void verifyInvalidShapeThrowsException(Stage s, int[] points, boolean close) {

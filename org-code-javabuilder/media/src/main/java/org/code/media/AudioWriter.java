@@ -12,19 +12,21 @@ import org.code.protocol.InternalJavabuilderError;
  * complete.
  */
 public class AudioWriter {
+  public static class Factory {
+    public AudioWriter createAudioWriter(ByteArrayOutputStream audioOutputStream) {
+      return new AudioWriter(audioOutputStream, new ByteArrayOutputStream());
+    }
+  }
+
   private final ByteArrayOutputStream audioOutputStream;
   private final ByteArrayOutputStream rawOutputStream;
-
-  public AudioWriter(ByteArrayOutputStream audioOutputStream) {
-    this(audioOutputStream, new ByteArrayOutputStream());
-  }
 
   AudioWriter(ByteArrayOutputStream audioOutputStream, ByteArrayOutputStream rawOutputStream) {
     this.audioOutputStream = audioOutputStream;
     this.rawOutputStream = rawOutputStream;
   }
 
-  public void writeAudioSamples(double[] samples) throws InternalJavabuilderError {
+  public void writeAudioSamples(double[] samples) {
     final byte[] bytes = AudioUtils.convertDoubleArrayToByteArray(samples);
     try {
       this.rawOutputStream.write(bytes);
@@ -33,24 +35,30 @@ public class AudioWriter {
     }
   }
 
-  public void writeAudioFile(String filename)
-      throws SoundException, InternalJavabuilderError, FileNotFoundException {
+  public void writeAudioSamples(double[] samples, double lengthSeconds) {
+    this.writeAudioSamples(AudioUtils.truncateSamples(samples, lengthSeconds));
+  }
+
+  public void writeAudioFile(String filename) throws SoundException, FileNotFoundException {
     this.writeAudioSamples(SoundLoader.read(filename));
   }
 
-  public void addDelay(int delayMs) throws InternalJavabuilderError {
+  public void writeAudioFile(String filename, double lengthSeconds)
+      throws SoundException, FileNotFoundException {
+    this.writeAudioSamples(SoundLoader.read(filename), lengthSeconds);
+  }
+
+  public void addDelay(double delaySeconds) {
     final double[] emptySamples =
-        new double[(int) (((double) delayMs / 1000.0) * AudioUtils.getDefaultSampleRate())];
+        new double[(int) (delaySeconds * (double) AudioUtils.getDefaultSampleRate())];
     this.writeAudioSamples(emptySamples);
   }
 
   /**
    * Writes the raw audio data in rawOutputStream to audioOutputStream in a valid audio file format
    * and closes output streams.
-   *
-   * @throws InternalJavabuilderError
    */
-  public void writeToAudioStreamAndClose() throws InternalJavabuilderError {
+  public void writeToAudioStreamAndClose() {
     final byte[] bytes = this.rawOutputStream.toByteArray();
     AudioUtils.writeBytesToOutputStream(bytes, this.audioOutputStream);
 
