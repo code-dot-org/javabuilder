@@ -4,6 +4,9 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URL;
+import javax.imageio.ImageIO;
 import org.code.media.Color;
 import org.code.media.Image;
 import org.code.protocol.GlobalProtocol;
@@ -118,11 +121,19 @@ public class Stage {
    * @param y the top of the image in the canvas
    * @param width the width to draw the image on the canvas
    * @param height the height to draw the image on the canvas
-   * @param rotation the amount to rotate the image
+   * @param rotation the amount to rotate the image in degrees
    * @throws FileNotFoundException if the file can't be found in the project.
    */
   public void drawImage(String filename, int x, int y, int width, int height, double rotation)
-      throws FileNotFoundException {}
+      throws FileNotFoundException {
+    try {
+      BufferedImage imageToDraw =
+          ImageIO.read(new URL(GlobalProtocol.getInstance().generateAssetUrl(filename)));
+      this.drawImageHelper(imageToDraw, x, y, width, height, rotation);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
 
   /**
    * Draw an image on the canvas at the given location, expanded or shrunk to fit the width and
@@ -133,9 +144,11 @@ public class Stage {
    * @param y the top of the image in the canvas
    * @param width the width to draw the image on the canvas
    * @param height the height to draw the image on the canvas
-   * @param rotation the amount to rotate the image
+   * @param rotation the amount to rotate the image in degrees
    */
-  public void drawImage(Image image, int x, int y, int width, int height, double rotation) {}
+  public void drawImage(Image image, int x, int y, int width, int height, double rotation) {
+    this.drawImageHelper(image.getBufferedImage(), x, y, width, height, rotation);
+  }
 
   /**
    * Draws text on the image.
@@ -328,5 +341,14 @@ public class Stage {
       outputAdapter.sendMessage(ImageEncoder.encodeStreamToMessage(this.outputStream));
       this.hasPlayed = true;
     }
+  }
+
+  private void drawImageHelper(
+      BufferedImage image, int x, int y, int width, int height, double degrees) {
+    if (degrees != 0) {
+      Graphics2D rotatedGraphics = image.createGraphics();
+      rotatedGraphics.rotate(Math.toRadians(degrees));
+    }
+    this.graphics.drawImage(image, x, y, width, height, null);
   }
 }
