@@ -8,7 +8,9 @@ import javax.imageio.ImageIO;
 import org.code.protocol.GlobalProtocol;
 
 public class Image {
-  private BufferedImage bufferedImage;
+  private Pixel[] pixels;
+  private int width;
+  private int height;
 
   /**
    * Creates a new image object, using the pixel information from the file uploaded to the asset
@@ -19,8 +21,18 @@ public class Image {
    */
   public Image(String filename) throws FileNotFoundException {
     try {
-      this.bufferedImage =
+      BufferedImage bufferedImage =
           ImageIO.read(new URL(GlobalProtocol.getInstance().generateAssetUrl(filename)));
+      this.width = bufferedImage.getWidth();
+      this.height = bufferedImage.getHeight();
+      this.pixels = new Pixel[this.width * this.height];
+
+      for (int x = 0; x < this.width; x++) {
+        for (int y = 0; y < this.height; y++) {
+          int rgbColor = bufferedImage.getRGB(x, y);
+          this.pixels[this.getPixelIndex(x, y)] = new Pixel(this, x, y, new Color(rgbColor));
+        }
+      }
     } catch (IOException e) {
       // TODO: improve error handling
       throw new FileNotFoundException();
@@ -32,7 +44,22 @@ public class Image {
    *
    * @param source the image to duplicate
    */
-  public Image(Image source) {}
+  public Image(Image source) {
+    this.width = source.getWidth();
+    this.height = source.getHeight();
+    this.pixels = new Pixel[this.width * this.height];
+    for (int x = 0; x < this.width; x++) {
+      for (int y = 0; y < this.height; y++) {
+        Color sourceColor = source.getPixel(x, y).getColor();
+        this.pixels[this.getPixelIndex(x, y)] =
+            new Pixel(
+                this,
+                x,
+                y,
+                new Color(sourceColor.getRed(), sourceColor.getGreen(), sourceColor.getBlue()));
+      }
+    }
+  }
 
   /**
    * Creates an empty image filled with white pixels.
@@ -40,7 +67,16 @@ public class Image {
    * @param width the width of the image to create.
    * @param height the height of the image to create.
    */
-  public Image(int width, int height) {}
+  public Image(int width, int height) {
+    this.pixels = new Pixel[width * height];
+    this.width = width;
+    this.height = height;
+    for (int x = 0; x < this.width; x++) {
+      for (int y = 0; y < this.height; y++) {
+        this.pixels[this.getPixelIndex(x, y)] = new Pixel(this, x, y, Color.WHITE);
+      }
+    }
+  }
 
   /**
    * Get an array with all of the pixels of the image.
@@ -49,7 +85,7 @@ public class Image {
    *     by the height.
    */
   public Pixel[] getPixels() {
-    return null;
+    return this.pixels;
   }
 
   /**
@@ -60,7 +96,7 @@ public class Image {
    * @return the color of the pixel
    */
   public Pixel getPixel(int x, int y) {
-    return null;
+    return this.pixels[this.getPixelIndex(x, y)];
   }
 
   /**
@@ -70,7 +106,9 @@ public class Image {
    * @param y the y position of the pixel
    * @param color the color to set the pixel
    */
-  public void setPixel(int x, int y, Color color) {}
+  public void setPixel(int x, int y, Color color) {
+    this.pixels[this.getPixelIndex(x, y)].setColor(color);
+  }
 
   /**
    * Gets the width of the image in pixels.
@@ -78,7 +116,7 @@ public class Image {
    * @return the width of the image in pixels.
    */
   public int getWidth() {
-    return this.bufferedImage.getWidth();
+    return this.width;
   }
 
   /**
@@ -87,7 +125,7 @@ public class Image {
    * @return the height of the image in pixels.
    */
   public int getHeight() {
-    return this.bufferedImage.getHeight();
+    return this.height;
   }
 
   /**
@@ -95,9 +133,26 @@ public class Image {
    *
    * @param color the color with which to fill the image.
    */
-  public void clear(Color color) {}
+  public void clear(Color color) {
+    for (int x = 0; x < this.width; x++) {
+      for (int y = 0; y < this.height; y++) {
+        this.pixels[this.getPixelIndex(x, y)].setColor(color);
+      }
+    }
+  }
 
   public BufferedImage getBufferedImage() {
-    return this.bufferedImage;
+    BufferedImage bufferedImage =
+        new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_RGB);
+    for (int x = 0; x < this.width; x++) {
+      for (int y = 0; y < this.height; y++) {
+        bufferedImage.setRGB(x, y, this.pixels[this.getPixelIndex(x, y)].getColor().getRGB());
+      }
+    }
+    return bufferedImage;
+  }
+
+  private int getPixelIndex(int x, int y) {
+    return (x * this.width) + y;
   }
 }

@@ -30,6 +30,13 @@ public class Color {
     this.blue = this.sanitizeValue(blue);
   }
 
+  protected Color(int rgb) {
+    java.awt.Color awtColor = new java.awt.Color(rgb);
+    this.red = awtColor.getRed();
+    this.blue = awtColor.getBlue();
+    this.green = awtColor.getGreen();
+  }
+
   /**
    * Returns the amount of red (ranging from 0 to 255).
    *
@@ -85,6 +92,14 @@ public class Color {
    */
   public void setBlue(int value) {
     this.blue = this.sanitizeValue(value);
+  }
+
+  /**
+   * @return the combined RGB integer value consisting of the red component in bits 16-23, the green
+   *     component in bits 8-15, and the blue component in bits 0-7.
+   */
+  protected int getRGB() {
+    return Color.convertToAWTColor(this).getRGB();
   }
 
   /**
