@@ -1,6 +1,7 @@
 package org.code.theater;
 
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
@@ -346,20 +347,16 @@ public class Stage {
   private void drawImageHelper(
       BufferedImage image, int x, int y, int width, int height, double degrees) {
     if (degrees != 0) {
-      BufferedImage rotated = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-      Graphics2D rotatedGraphics = rotated.createGraphics();
-      rotatedGraphics.rotate(
-          Math.toRadians(degrees),
-          image.getWidth() / 2,
-          image.getHeight() / 2); // configure rotation
-      rotatedGraphics.drawImage(image, 0, 0, null);
-      // rotatedGraphics.rotate(Math.toRadians(degrees));
-      //      AffineTransform transform = new AffineTransform();
-      //      transform.rotate(Math.toRadians(degrees));
-      //      rotatedGraphics.transform(transform);
-      //      rotatedGraphics.drawImage(image, x, y, width, height, null);
-      this.graphics.drawImage(rotated, x, y, width, height, null);
-      // this.graphics.rotate(0);
+      AffineTransform transform = new AffineTransform();
+      double widthScale = (double) width / image.getWidth();
+      double heightScale = (double) height / image.getHeight();
+      // create a transform that moves the location of the image to (x,y), rotates around
+      // the center of the image and scales the image to width and height
+      // Note: order of transforms is important, do not reorder these calls
+      transform.translate(x, y);
+      transform.rotate(Math.toRadians(degrees), width / 2, height / 2);
+      transform.scale(widthScale, heightScale);
+      this.graphics.drawImage(image, transform, null);
     } else {
       this.graphics.drawImage(image, x, y, width, height, null);
     }
