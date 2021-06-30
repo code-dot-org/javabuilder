@@ -356,9 +356,9 @@ public class Stage {
     } else {
       this.gifWriter.writeToGif(this.image, 0);
       this.gifWriter.close();
-      this.outputAdapter.sendMessage(ImageEncoder.encodeStreamToMessage(this.imageOutputStream));
-
       this.audioWriter.writeToAudioStreamAndClose();
+
+      this.outputAdapter.sendMessage(ImageEncoder.encodeStreamToMessage(this.imageOutputStream));
       this.outputAdapter.sendMessage(SoundEncoder.encodeStreamToMessage(this.audioOutputStream));
 
       this.hasPlayed = true;
