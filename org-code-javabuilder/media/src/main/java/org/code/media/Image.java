@@ -153,6 +153,6 @@ public class Image {
   }
 
   private int getPixelIndex(int x, int y) {
-    return (x * this.width) + y;
+    return (y * this.width) + x;
   }
 }
