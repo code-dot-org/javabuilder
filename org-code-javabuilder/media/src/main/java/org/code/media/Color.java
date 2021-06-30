@@ -31,10 +31,9 @@ public class Color {
   }
 
   protected Color(int rgb) {
-    java.awt.Color awtColor = new java.awt.Color(rgb);
-    this.red = awtColor.getRed();
-    this.blue = awtColor.getBlue();
-    this.green = awtColor.getGreen();
+    this.red = (rgb >> 16) & 255;
+    this.blue = rgb & 255;
+    this.green = (rgb >> 8) & 255;
   }
 
   /**
@@ -99,7 +98,7 @@ public class Color {
    *     component in bits 8-15, and the blue component in bits 0-7.
    */
   protected int getRGB() {
-    return Color.convertToAWTColor(this).getRGB();
+    return (this.red << 16 | this.green << 8 | this.blue);
   }
 
   /**
