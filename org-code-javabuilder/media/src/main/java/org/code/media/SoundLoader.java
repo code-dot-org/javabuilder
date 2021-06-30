@@ -20,8 +20,7 @@ public class SoundLoader {
    * @throws SoundException if there is an error reading the file, or FileNotFoundException when the
    *     file cannot be found
    */
-  public static double[] read(String filename)
-      throws SoundException, InternalJavabuilderError, FileNotFoundException {
+  public static double[] read(String filename) throws SoundException, FileNotFoundException {
     // Acquire AudioInputStream
     final AudioInputStream audioInputStream = getAudioInputStream(filename);
     final AudioFormat audioFormat = audioInputStream.getFormat();

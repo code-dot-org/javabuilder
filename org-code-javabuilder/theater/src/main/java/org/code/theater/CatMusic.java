@@ -28,18 +28,19 @@ public class CatMusic {
   CatMusic(OutputAdapter outputAdapter, ByteArrayOutputStream audioOutputStream) {
     this.outputAdapter = outputAdapter;
     this.audioOutputStream = audioOutputStream;
-    this.audioWriter = new AudioWriter(this.audioOutputStream);
+    this.audioWriter = new AudioWriter.Factory().createAudioWriter(this.audioOutputStream);
   }
 
-  public double[] readSampleSound() {
-    try {
-      final String audioFilename =
-          Paths.get(CatMusic.class.getClassLoader().getResource("beatbox.wav").toURI()).toString();
-      return SoundLoader.read(audioFilename);
-    } catch (URISyntaxException | SoundException | FileNotFoundException e) {
-      e.printStackTrace();
-    }
-    return null;
+  public double[] readSampleSound()
+      throws FileNotFoundException, SoundException, URISyntaxException {
+    return this.read("beatbox.wav");
+  }
+
+  public double[] read(String audioFilename)
+      throws FileNotFoundException, SoundException, URISyntaxException {
+    final String fullAudioPath =
+        Paths.get(CatMusic.class.getClassLoader().getResource(audioFilename).toURI()).toString();
+    return SoundLoader.read(fullAudioPath);
   }
 
   public void playSound(double[] samples) {
@@ -50,21 +51,13 @@ public class CatMusic {
     }
   }
 
-  public void wait(int delayMs) {
-    try {
-      this.audioWriter.addDelay(delayMs);
-    } catch (SoundException e) {
-      e.printStackTrace();
-    }
+  public void pause(double delaySeconds) throws SoundException {
+    this.audioWriter.addDelay(delaySeconds);
   }
 
-  public void play() {
-    try {
-      this.audioWriter.writeToAudioStreamAndClose();
-      this.outputAdapter.sendMessage(SoundEncoder.encodeStreamToMessage(this.audioOutputStream));
-    } catch (SoundException e) {
-      e.printStackTrace();
-    }
+  public void play() throws SoundException {
+    this.audioWriter.writeToAudioStreamAndClose();
+    this.outputAdapter.sendMessage(SoundEncoder.encodeStreamToMessage(this.audioOutputStream));
   }
 
   public void reset() {
