@@ -73,18 +73,18 @@ public class Image {
   }
 
   /**
-   * Get the color value at the pixel specified.
+   * Get the Pixel at the (x,y) coordinate specified.
    *
    * @param x the x position of the pixel
    * @param y the y position of the pixel
-   * @return the color of the pixel
+   * @return Pixel at the given coordinate
    */
   public Pixel getPixel(int x, int y) {
     return this.pixels[x][y];
   }
 
   /**
-   * Set the color value at the pixel specified.
+   * Set the Pixel at the (x,y) coordinate specified.
    *
    * @param x the x position of the pixel
    * @param y the y position of the pixel
@@ -125,6 +125,11 @@ public class Image {
     }
   }
 
+  /**
+   * Get a BufferedImage of this Image
+   *
+   * @return
+   */
   public BufferedImage getBufferedImage() {
     BufferedImage bufferedImage =
         new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_RGB);
@@ -136,6 +141,13 @@ public class Image {
     return bufferedImage;
   }
 
+  /**
+   * Load the given image asset from file and return it as a BufferedImage
+   *
+   * @param filename
+   * @return BufferedImage
+   * @throws FileNotFoundException if the file is not found
+   */
   public static BufferedImage getImageAssetFromFile(String filename) throws FileNotFoundException {
     try {
       BufferedImage image =

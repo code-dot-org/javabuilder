@@ -30,6 +30,13 @@ public class Color {
     this.blue = this.sanitizeValue(blue);
   }
 
+  /**
+   * Initialize a color with the combined RGB integer value consisting of the red component in bits
+   * 16-23, the green component in bits 8-15, and the blue component in bits 0-7. Only used for
+   * conversion between BufferedImage and org.code.media.Image
+   *
+   * @param rgb
+   */
   protected Color(int rgb) {
     this.red = (rgb >> 16) & 255;
     this.blue = rgb & 255;
