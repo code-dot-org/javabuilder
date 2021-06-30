@@ -17,7 +17,6 @@ public class Stage {
   private final ByteArrayOutputStream imageOutputStream;
   private final Graphics2D graphics;
   private final ByteArrayOutputStream audioOutputStream;
-  private final AudioWriter.Factory audioWriterFactory;
   private final AudioWriter audioWriter;
   private final InstrumentSampleLoader instrumentSampleLoader;
   private java.awt.Color strokeColor;
@@ -55,7 +54,6 @@ public class Stage {
     this.imageOutputStream = new ByteArrayOutputStream();
     this.gifWriter = new GifWriter(this.imageOutputStream);
     this.audioOutputStream = new ByteArrayOutputStream();
-    this.audioWriterFactory = audioWriterFactory;
     this.audioWriter = audioWriterFactory.createAudioWriter(this.audioOutputStream);
     this.instrumentSampleLoader = instrumentSampleLoader;
     this.hasPlayed = false;
