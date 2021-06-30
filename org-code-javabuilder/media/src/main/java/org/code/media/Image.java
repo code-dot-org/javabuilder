@@ -141,15 +141,12 @@ public class Image {
       BufferedImage image =
           ImageIO.read(new URL(GlobalProtocol.getInstance().generateAssetUrl(filename)));
       if (image == null) {
+        // this can happen if the filename is not associated with an image
         throw new MediaRuntimeException(MediaRuntimeExceptionKeys.IMAGE_LOAD_ERROR);
       }
       return image;
     } catch (IOException e) {
-      if (e.getCause().getClass().equals(FileNotFoundException.class)) {
-        throw new FileNotFoundException();
-      } else {
-        throw new MediaRuntimeException(MediaRuntimeExceptionKeys.IMAGE_LOAD_ERROR);
-      }
+      throw new FileNotFoundException("Could not find file " + filename);
     }
   }
 }

@@ -5,11 +5,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import org.code.media.AudioWriter;
+import org.code.media.Image;
 import org.code.protocol.GlobalProtocol;
 import org.code.protocol.InputAdapter;
 import org.code.protocol.OutputAdapter;
@@ -150,6 +152,21 @@ public class StageTest {
 
     verify(instrumentSampleLoader).getSampleFile(Instrument.PIANO, note);
     verify(audioWriter).writeAudioFile(testSampleFile, seconds);
+  }
+
+  @Test
+  void drawImageWithRotationCreatesTransform() {
+    Image testImage = new Image(200, 300);
+    s.drawImage(testImage, 0, 300, 50, 75, 90);
+    verify(graphics).drawImage(any(BufferedImage.class), any(AffineTransform.class), any());
+  }
+
+  @Test
+  void drawImageWithoutRotationDoesNotCreateTransform() {
+    Image testImage = new Image(200, 300);
+    s.drawImage(testImage, 0, 300, 50, 75, 0);
+    verify(graphics)
+        .drawImage(any(BufferedImage.class), anyInt(), anyInt(), anyInt(), anyInt(), any());
   }
 
   private void verifyInvalidShapeThrowsException(Stage s, int[] points, boolean close) {
