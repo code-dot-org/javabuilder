@@ -8,6 +8,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
 import javax.imageio.ImageIO;
+import org.code.media.AudioWriter;
 import org.code.media.Color;
 import org.code.media.Image;
 import org.code.protocol.GlobalProtocol;
@@ -17,10 +18,13 @@ public class Stage {
   private final BufferedImage image;
   private final OutputAdapter outputAdapter;
   private final GifWriter gifWriter;
-  private final ByteArrayOutputStream outputStream;
+  private final ByteArrayOutputStream imageOutputStream;
+  private final Graphics2D graphics;
+  private final ByteArrayOutputStream audioOutputStream;
+  private final AudioWriter audioWriter;
+  private final InstrumentSampleLoader instrumentSampleLoader;
   private java.awt.Color strokeColor;
   private java.awt.Color fillColor;
-  private Graphics2D graphics;
   private boolean hasPlayed;
 
   private static final int WIDTH = 400;
@@ -32,7 +36,10 @@ public class Stage {
    * using Theater.stage.
    */
   protected Stage() {
-    this(new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB));
+    this(
+        new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB),
+        new AudioWriter.Factory(),
+        new InstrumentSampleLoader());
   }
 
   /**
@@ -41,12 +48,18 @@ public class Stage {
    *
    * @param image
    */
-  protected Stage(BufferedImage image) {
+  protected Stage(
+      BufferedImage image,
+      AudioWriter.Factory audioWriterFactory,
+      InstrumentSampleLoader instrumentSampleLoader) {
     this.image = image;
     this.graphics = this.image.createGraphics();
     this.outputAdapter = GlobalProtocol.getInstance().getOutputAdapter();
-    this.outputStream = new ByteArrayOutputStream();
-    this.gifWriter = new GifWriter(this.outputStream);
+    this.imageOutputStream = new ByteArrayOutputStream();
+    this.gifWriter = new GifWriter(this.imageOutputStream);
+    this.audioOutputStream = new ByteArrayOutputStream();
+    this.audioWriter = audioWriterFactory.createAudioWriter(this.audioOutputStream);
+    this.instrumentSampleLoader = instrumentSampleLoader;
     this.hasPlayed = false;
 
     // set up the image for drawing (set a white background and black stroke/fill)
@@ -70,7 +83,9 @@ public class Stage {
    *
    * @param sound an array of samples to play.
    */
-  public void playSound(double[] sound) {}
+  public void playSound(double[] sound) {
+    this.audioWriter.writeAudioSamples(sound);
+  }
 
   /**
    * Plays the sound referenced by the file name.
@@ -78,7 +93,9 @@ public class Stage {
    * @param filename the file to play in the asset manager.
    * @throws FileNotFoundException if the file can't be found in the project.
    */
-  public void playSound(String filename) throws FileNotFoundException {}
+  public void playSound(String filename) throws FileNotFoundException {
+    this.audioWriter.writeAudioFile(filename);
+  }
 
   /**
    * Plays a note with the selected instrument.
@@ -88,7 +105,18 @@ public class Stage {
    * @param seconds length of the note. Implementer's note: Behind the scenes, this should just be
    *     implemented using an array of loopable sounds (Mike can generate these).
    */
-  public void playNote(Instrument instrument, int note, double seconds) {}
+  public void playNote(Instrument instrument, int note, double seconds) {
+    final String sampleFile = instrumentSampleLoader.getSampleFile(instrument, note);
+    if (sampleFile == null) {
+      return;
+    }
+
+    try {
+      this.audioWriter.writeAudioFile(sampleFile, seconds);
+    } catch (FileNotFoundException e) {
+      System.out.printf("Could not play instrument: %s at note: %s%n", instrument, note);
+    }
+  }
 
   /**
    * Wait the provided number of seconds before performing the next draw or play command.
@@ -97,7 +125,8 @@ public class Stage {
    *     smallest value can be .1 seconds.
    */
   public void pause(double seconds) {
-    this.gifWriter.writeToGif(this.image, (int) (seconds * 1000));
+    this.gifWriter.writeToGif(this.image, (int) (Math.max(seconds, 0.1) * 1000));
+    this.audioWriter.addDelay(Math.max(seconds, 0.1));
   }
 
   /**
@@ -339,7 +368,11 @@ public class Stage {
     } else {
       this.gifWriter.writeToGif(this.image, 0);
       this.gifWriter.close();
-      outputAdapter.sendMessage(ImageEncoder.encodeStreamToMessage(this.outputStream));
+      this.audioWriter.writeToAudioStreamAndClose();
+
+      this.outputAdapter.sendMessage(ImageEncoder.encodeStreamToMessage(this.imageOutputStream));
+      this.outputAdapter.sendMessage(SoundEncoder.encodeStreamToMessage(this.audioOutputStream));
+
       this.hasPlayed = true;
     }
   }
