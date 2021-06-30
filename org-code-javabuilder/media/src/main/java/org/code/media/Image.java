@@ -20,22 +20,16 @@ public class Image {
    * @throws FileNotFoundException if the file doesn't exist in the asset manager.
    */
   public Image(String filename) throws FileNotFoundException {
-    try {
-      BufferedImage bufferedImage =
-          ImageIO.read(new URL(GlobalProtocol.getInstance().generateAssetUrl(filename)));
-      this.width = bufferedImage.getWidth();
-      this.height = bufferedImage.getHeight();
-      this.pixels = new Pixel[this.width][this.height];
+    BufferedImage bufferedImage = Image.getImageAssetFromFile(filename);
+    this.width = bufferedImage.getWidth();
+    this.height = bufferedImage.getHeight();
+    this.pixels = new Pixel[this.width][this.height];
 
-      for (int x = 0; x < this.width; x++) {
-        for (int y = 0; y < this.height; y++) {
-          int rgbColor = bufferedImage.getRGB(x, y);
-          this.pixels[x][y] = new Pixel(this, x, y, new Color(rgbColor));
-        }
+    for (int x = 0; x < this.width; x++) {
+      for (int y = 0; y < this.height; y++) {
+        int rgbColor = bufferedImage.getRGB(x, y);
+        this.pixels[x][y] = new Pixel(this, x, y, new Color(rgbColor));
       }
-    } catch (IOException e) {
-      // TODO: improve error handling
-      throw new FileNotFoundException();
     }
   }
 
@@ -140,5 +134,22 @@ public class Image {
       }
     }
     return bufferedImage;
+  }
+
+  public static BufferedImage getImageAssetFromFile(String filename) throws FileNotFoundException {
+    try {
+      BufferedImage image =
+          ImageIO.read(new URL(GlobalProtocol.getInstance().generateAssetUrl(filename)));
+      if (image == null) {
+        throw new MediaRuntimeException(MediaRuntimeExceptionKeys.IMAGE_LOAD_ERROR);
+      }
+      return image;
+    } catch (IOException e) {
+      if (e.getCause().getClass().equals(FileNotFoundException.class)) {
+        throw new FileNotFoundException();
+      } else {
+        throw new MediaRuntimeException(MediaRuntimeExceptionKeys.IMAGE_LOAD_ERROR);
+      }
+    }
   }
 }

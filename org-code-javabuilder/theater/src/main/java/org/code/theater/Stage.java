@@ -5,9 +5,6 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.URL;
-import javax.imageio.ImageIO;
 import org.code.media.AudioWriter;
 import org.code.media.Color;
 import org.code.media.Image;
@@ -156,13 +153,8 @@ public class Stage {
    */
   public void drawImage(String filename, int x, int y, int width, int height, double rotation)
       throws FileNotFoundException {
-    try {
-      BufferedImage imageToDraw =
-          ImageIO.read(new URL(GlobalProtocol.getInstance().generateAssetUrl(filename)));
-      this.drawImageHelper(imageToDraw, x, y, width, height, rotation);
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+    BufferedImage imageToDraw = Image.getImageAssetFromFile(filename);
+    this.drawImageHelper(imageToDraw, x, y, width, height, rotation);
   }
 
   /**
