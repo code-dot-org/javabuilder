@@ -346,9 +346,22 @@ public class Stage {
   private void drawImageHelper(
       BufferedImage image, int x, int y, int width, int height, double degrees) {
     if (degrees != 0) {
-      Graphics2D rotatedGraphics = image.createGraphics();
-      rotatedGraphics.rotate(Math.toRadians(degrees));
+      BufferedImage rotated = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+      Graphics2D rotatedGraphics = rotated.createGraphics();
+      rotatedGraphics.rotate(
+          Math.toRadians(degrees),
+          image.getWidth() / 2,
+          image.getHeight() / 2); // configure rotation
+      rotatedGraphics.drawImage(image, 0, 0, null);
+      // rotatedGraphics.rotate(Math.toRadians(degrees));
+      //      AffineTransform transform = new AffineTransform();
+      //      transform.rotate(Math.toRadians(degrees));
+      //      rotatedGraphics.transform(transform);
+      //      rotatedGraphics.drawImage(image, x, y, width, height, null);
+      this.graphics.drawImage(rotated, x, y, width, height, null);
+      // this.graphics.rotate(0);
+    } else {
+      this.graphics.drawImage(image, x, y, width, height, null);
     }
-    this.graphics.drawImage(image, x, y, width, height, null);
   }
 }
