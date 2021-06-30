@@ -1,12 +1,13 @@
 package org.code.media;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URL;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.UnsupportedAudioFileException;
+import org.code.protocol.GlobalProtocol;
 import org.code.protocol.InternalErrorKey;
 import org.code.protocol.InternalJavabuilderError;
 
@@ -22,7 +23,17 @@ public class SoundLoader {
    */
   public static double[] read(String filename) throws SoundException, FileNotFoundException {
     // Acquire AudioInputStream
-    final AudioInputStream audioInputStream = getAudioInputStream(filename);
+    final AudioInputStream audioInputStream;
+    try {
+      audioInputStream =
+          AudioSystem.getAudioInputStream(
+              new URL(GlobalProtocol.getInstance().generateAssetUrl(filename)));
+    } catch (IOException e) {
+      throw new FileNotFoundException("Could not find file: " + filename);
+    } catch (UnsupportedAudioFileException e) {
+      throw new SoundException(SoundExceptionKeys.INVALID_AUDIO_FILE_FORMAT);
+    }
+
     final AudioFormat audioFormat = audioInputStream.getFormat();
     if (!AudioUtils.isAudioFormatValid(audioFormat)) {
       throw new SoundException(SoundExceptionKeys.INVALID_AUDIO_FILE_FORMAT);
@@ -31,37 +42,12 @@ public class SoundLoader {
     // Read audio file samples as bytes
     final byte[] bytes;
     try {
-      final int bytesToRead = audioInputStream.available();
-      bytes = new byte[bytesToRead];
-      final int bytesRead = audioInputStream.read(bytes);
-      if (bytesToRead != bytesRead) {
-        throw new InternalJavabuilderError(InternalErrorKey.INTERNAL_EXCEPTION);
-      }
+      bytes = audioInputStream.readAllBytes();
       audioInputStream.close();
     } catch (IOException e) {
       throw new InternalJavabuilderError(InternalErrorKey.INTERNAL_EXCEPTION, e);
     }
 
     return AudioUtils.convertByteArrayToDoubleArray(bytes, audioFormat.getChannels());
-  }
-
-  private static AudioInputStream getAudioInputStream(String filename)
-      throws SoundException, FileNotFoundException {
-    if (filename == null) {
-      throw new FileNotFoundException("Missing file name");
-    }
-
-    final File file = new File(filename);
-    if (!file.exists()) {
-      throw new FileNotFoundException(filename);
-    }
-
-    try {
-      return AudioSystem.getAudioInputStream(file);
-    } catch (UnsupportedAudioFileException e) {
-      throw new SoundException(SoundExceptionKeys.INVALID_AUDIO_FILE_FORMAT);
-    } catch (IOException e) {
-      throw new InternalJavabuilderError(InternalErrorKey.INTERNAL_EXCEPTION, e);
-    }
   }
 }
