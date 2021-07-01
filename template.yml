@@ -5,15 +5,12 @@ Parameters:
   BaseDomainName:
     Type: String
     Description: Base domain name.
-    Default: dev-code.org
   BaseDomainNameHostedZonedID:
     Type: String
     Description: AWS Route53 Hosted Zone ID for base domain name.
-    Default: Z07248463JGJ44FME5BZ5
   SubDomainName:
     Type: String
     Description: Sub domain name for javabuilder service.
-    Default: javabuilderpilot3
   LogBucket:
     Type: String
     Default: cdo-logs.s3.amazonaws.com
