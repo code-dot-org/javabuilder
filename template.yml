@@ -244,7 +244,7 @@ Resources:
       CompatibleRuntimes:
         - java11
       ContentUri: org-code-javabuilder/change_runtime_directory
-      Description: Change AWS Lambda Java runtime directory to a temporary directory to enable student projects to read/write Files more easily.
+      Description: Change Java runtime to launch from the writeable /tmp directory to enable student projects to write files more easily.
       LayerName: change-java-runtime-directory
   BuildAndRunJavaProjectFunction:
     Type: AWS::Serverless::Function
@@ -259,6 +259,9 @@ Resources:
       Timeout: 300
       Role:
         Fn::ImportValue: JavabuilderLambdaExecutionRole
+      Environment:
+        Variables:
+          AWS_LAMBDA_EXEC_WRAPPER: /opt/change_runtime_directory
 Outputs:
   JavabuilderURL:
     Value:
