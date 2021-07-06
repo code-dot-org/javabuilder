@@ -1,5 +1,7 @@
 package org.code.media;
 
+import java.util.Map;
+
 public class Color {
 
   private int red;
@@ -10,11 +12,17 @@ public class Color {
    * Creates a color from a string representation.
    *
    * @param color the string name of the color
-   * @throws IllegalArgumentException if the value specifies an unsupported color name or illegal
-   *     hexadecimal value
+   * @throws IllegalArgumentException if the value specifies an unsupported color name
    */
   public Color(String color) throws IllegalArgumentException {
-    // TODO: Implement this method
+    String colorAllCaps = color.toUpperCase();
+    if (!ColorConstantMap.containsKey(colorAllCaps)) {
+      throw new IllegalArgumentException("Invalid color " + color);
+    }
+    Color colorToCopy = ColorConstantMap.get(colorAllCaps);
+    this.red = colorToCopy.getRed();
+    this.green = colorToCopy.getGreen();
+    this.blue = colorToCopy.getBlue();
   }
 
   /**
@@ -36,9 +44,9 @@ public class Color {
    * @param color
    */
   public Color(Color color) {
-    this.red = color.red;
-    this.green = color.green;
-    this.blue = color.blue;
+    this.red = color.getRed();
+    this.green = color.getGreen();
+    this.blue = color.getBlue();
   }
 
   /**
@@ -166,4 +174,33 @@ public class Color {
   public static final Color VIOLET = new Color(238, 130, 238);
   public static final Color BEIGE = new Color(245, 245, 220);
   public static final Color IVORY = new Color(255, 255, 240);
+
+  private static final Map<String, Color> ColorConstantMap =
+      Map.ofEntries(
+          Map.entry("WHITE", WHITE),
+          Map.entry("SILVER", SILVER),
+          Map.entry("GRAY", GRAY),
+          Map.entry("BLACK", BLACK),
+          Map.entry("RED", RED),
+          Map.entry("MAROON", MAROON),
+          Map.entry("YELLOW", YELLOW),
+          Map.entry("OLIVE", OLIVE),
+          Map.entry("LIME", LIME),
+          Map.entry("GREEN", GREEN),
+          Map.entry("AQUA", AQUA),
+          Map.entry("TEAL", TEAL),
+          Map.entry("BLUE", BLUE),
+          Map.entry("NAVY", NAVY),
+          Map.entry("FUCHSIA", FUCHSIA),
+          Map.entry("PURPLE", PURPLE),
+          Map.entry("PINK", PINK),
+          Map.entry("ORANGE", ORANGE),
+          Map.entry("GOLD", GOLD),
+          Map.entry("BROWN", BROWN),
+          Map.entry("TAN", TAN),
+          Map.entry("TURQUOISE", TURQUOISE),
+          Map.entry("INDIGO", INDIGO),
+          Map.entry("VIOLET", VIOLET),
+          Map.entry("BEIGE", BEIGE),
+          Map.entry("IVORY", IVORY));
 }
