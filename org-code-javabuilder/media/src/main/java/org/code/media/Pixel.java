@@ -1,9 +1,9 @@
 package org.code.media;
 
 public class Pixel {
-  private Image image;
-  private int x;
-  private int y;
+  private final Image image;
+  private final int x;
+  private final int y;
   private Color color;
 
   /**

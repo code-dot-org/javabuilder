@@ -31,6 +31,17 @@ public class Color {
   }
 
   /**
+   * Create a new color that is copied from the provided color
+   *
+   * @param color
+   */
+  public Color(Color color) {
+    this.red = color.red;
+    this.green = color.green;
+    this.blue = color.blue;
+  }
+
+  /**
    * Initialize a color with the combined RGB integer value consisting of the red component in bits
    * 16-23, the green component in bits 8-15, and the blue component in bits 0-7. Only used for
    * conversion between BufferedImage and org.code.media.Image
