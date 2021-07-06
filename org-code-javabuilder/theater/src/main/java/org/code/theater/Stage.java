@@ -1,6 +1,7 @@
 package org.code.theater;
 
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
@@ -147,11 +148,14 @@ public class Stage {
    * @param y the top of the image in the canvas
    * @param width the width to draw the image on the canvas
    * @param height the height to draw the image on the canvas
-   * @param rotation the amount to rotate the image
+   * @param rotation the amount to rotate the image in degrees
    * @throws FileNotFoundException if the file can't be found in the project.
    */
   public void drawImage(String filename, int x, int y, int width, int height, double rotation)
-      throws FileNotFoundException {}
+      throws FileNotFoundException {
+    BufferedImage imageToDraw = Image.getImageAssetFromFile(filename);
+    this.drawImageHelper(imageToDraw, x, y, width, height, rotation);
+  }
 
   /**
    * Draw an image on the canvas at the given location, expanded or shrunk to fit the width and
@@ -162,9 +166,11 @@ public class Stage {
    * @param y the top of the image in the canvas
    * @param width the width to draw the image on the canvas
    * @param height the height to draw the image on the canvas
-   * @param rotation the amount to rotate the image
+   * @param rotation the amount to rotate the image in degrees
    */
-  public void drawImage(Image image, int x, int y, int width, int height, double rotation) {}
+  public void drawImage(Image image, int x, int y, int width, int height, double rotation) {
+    this.drawImageHelper(image.getBufferedImage(), x, y, width, height, rotation);
+  }
 
   /**
    * Draws text on the image.
@@ -360,6 +366,24 @@ public class Stage {
       this.outputAdapter.sendMessage(SoundEncoder.encodeStreamToMessage(this.audioOutputStream));
 
       this.hasPlayed = true;
+    }
+  }
+
+  private void drawImageHelper(
+      BufferedImage image, int x, int y, int width, int height, double degrees) {
+    if (degrees != 0) {
+      AffineTransform transform = new AffineTransform();
+      double widthScale = (double) width / image.getWidth();
+      double heightScale = (double) height / image.getHeight();
+      // create a transform that moves the location of the image to (x,y), rotates around
+      // the center of the image and scales the image to width and height
+      // Note: order of transforms is important, do not reorder these calls
+      transform.translate(x, y);
+      transform.rotate(Math.toRadians(degrees), width / 2, height / 2);
+      transform.scale(widthScale, heightScale);
+      this.graphics.drawImage(image, transform, null);
+    } else {
+      this.graphics.drawImage(image, x, y, width, height, null);
     }
   }
 }
