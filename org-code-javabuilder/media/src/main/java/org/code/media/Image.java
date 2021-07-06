@@ -11,6 +11,7 @@ public class Image {
   private Pixel[][] pixels;
   private int width;
   private int height;
+  private static final Color DEFAULT_BACKGROUND_COLOR = Color.WHITE;
 
   /**
    * Creates a new image object, using the pixel information from the file uploaded to the asset
@@ -45,18 +46,13 @@ public class Image {
     for (int x = 0; x < this.width; x++) {
       for (int y = 0; y < this.height; y++) {
         Color sourceColor = source.getPixel(x, y).getColor();
-        this.pixels[x][y] =
-            new Pixel(
-                this,
-                x,
-                y,
-                new Color(sourceColor.getRed(), sourceColor.getGreen(), sourceColor.getBlue()));
+        this.pixels[x][y] = new Pixel(this, x, y, new Color(sourceColor));
       }
     }
   }
 
   /**
-   * Creates an empty image filled with white pixels.
+   * Creates an empty image filled with the default background color.
    *
    * @param width the width of the image to create.
    * @param height the height of the image to create.
@@ -67,7 +63,7 @@ public class Image {
     this.height = height;
     for (int x = 0; x < this.width; x++) {
       for (int y = 0; y < this.height; y++) {
-        this.pixels[x][y] = new Pixel(this, x, y, Color.WHITE);
+        this.pixels[x][y] = new Pixel(this, x, y, DEFAULT_BACKGROUND_COLOR);
       }
     }
   }
