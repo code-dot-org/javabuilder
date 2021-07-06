@@ -11,7 +11,7 @@ public class Color {
   /**
    * Creates a color from a string representation.
    *
-   * @param color the string name of the color
+   * @param color the string name of the color (case insensitive).
    * @throws IllegalArgumentException if the value specifies an unsupported color name
    */
   public Color(String color) throws IllegalArgumentException {
