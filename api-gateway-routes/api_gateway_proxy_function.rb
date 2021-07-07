@@ -47,7 +47,7 @@ def on_connect(event, context)
     :channelId => authorizer["channel_id"]
   }
   response = lambda_client.invoke({
-    function_name: ENV['BUILD_AND_RUN_PROJECT_LAMBDA_ARN'] || 'javaBuilderExecuteCode:11',
+    function_name: ENV['BUILD_AND_RUN_PROJECT_LAMBDA_ARN'] || 'javaBuilderExecuteCode:13',
     invocation_type: 'Event',
     payload: JSON.generate(payload)
   })
