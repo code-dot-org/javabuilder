@@ -39,7 +39,7 @@ public class WebSocketServer {
   @OnOpen
   public void onOpen(Session session) {
     Map<String, List<String>> params = session.getRequestParameterMap();
-    String projectUrl = params.get("projectUrl").get(0);
+    String channelId = params.get("channelId").get(0);
     boolean useNeighborhood = false;
     if (params.containsKey("useNeighborhood")) {
       useNeighborhood = Boolean.parseBoolean(params.get("useNeighborhood").get(0));
@@ -52,10 +52,14 @@ public class WebSocketServer {
 
     outputAdapter = new WebSocketOutputAdapter(session);
     inputAdapter = new WebSocketInputAdapter();
+    String dashboardHostname = "http://localhost-studio.code.org:3000";
+    GlobalProtocol.create(outputAdapter, inputAdapter, dashboardHostname, channelId);
     final UserProjectFileLoader fileLoader =
         new UserProjectFileLoader(
-            projectUrl, levelId, "http://localhost-studio.code.org:3000", useNeighborhood);
-    GlobalProtocol.create(outputAdapter, inputAdapter);
+            GlobalProtocol.getInstance().generateSourcesUrl(),
+            levelId,
+            dashboardHostname,
+            useNeighborhood);
     Thread codeExecutor =
         new Thread(
             () -> {

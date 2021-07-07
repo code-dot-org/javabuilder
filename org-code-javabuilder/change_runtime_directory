@@ -1,6 +1,7 @@
 #!/bin/bash
-# This script is deployed as a lambda layer to ensure our lambda runs from a temporary folder.
-# This enables File I/O on our lambda.
-rm -rf /tmp/*
-cd $(mktemp -d)
+# This script is deployed as an AWS Lambda Layer and is invoked as a Lambda runtime wrapper script. It changes
+# the Java runtime to launch from the only write-able directory (/tmp) to make it easier for student projects to
+# write files. The Lambda Request Handler is responsible for clearing the contents of this directory at the start/end
+# of each Lambda Invocation to prevent files created by one student session from leaking into the next session.
+cd /tmp
 exec "$@"
