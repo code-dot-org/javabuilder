@@ -262,6 +262,82 @@ Resources:
       Environment:
         Variables:
           AWS_LAMBDA_EXEC_WRAPPER: /opt/change_runtime_directory
+  OutputBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub  "cdo-dev-${SubDomainName}-output"
+      CorsConfiguration:
+        CorsRules:
+          - AllowedMethods: [GET]
+            AllowedOrigins: ['*']
+            AllowedHeaders: ['*']
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: 'aws:kms'
+  OutputBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref OutputBucket
+      PolicyDocument:
+        Statement:
+        - Action: ['s3:GetObject']
+          Effect: Allow
+          Resource: !Sub "arn:aws:s3:::${OutputBucket}/*"
+          Principal: '*'
+  OutputAPICertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Sub "${SubDomainName}-output.${BaseDomainName}"
+      ValidationMethod: DNS
+      DomainValidationOptions:
+        - DomainName: !Sub "${SubDomainName}-output.${BaseDomainName}"
+          HostedZoneId: !Ref BaseDomainNameHostedZonedID
+  OutputDomain:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneName: !Sub "${BaseDomainName}."
+      Name: !Sub "${SubDomainName}-output.${BaseDomainName}"
+      Type: A
+      AliasTarget:
+        DNSName: !GetAtt OutputCDN.DomainName
+        HostedZoneId: Z2FDTNDATAQYW2 # static ID for cloudfront aliases
+  OutputCDN:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        Aliases: [!Sub "${SubDomainName}-output.${BaseDomainName}"]
+        ViewerCertificate:
+          AcmCertificateArn: !Ref OutputAPICertificate
+          MinimumProtocolVersion: TLSv1
+          SslSupportMethod: sni-only
+        CustomErrorResponses:
+          - ErrorCode: 403
+            ErrorCachingMinTTL: 0
+        Logging:
+          Bucket: !Ref LogBucket
+          IncludeCookies: false
+          Prefix: !Sub "${SubDomainName}-output.${BaseDomainName}"
+        Origins:
+          - Id: OutputBucket
+            DomainName: !GetAtt OutputBucket.DomainName
+            S3OriginConfig: {}
+        DefaultCacheBehavior:
+          TargetOriginId: API
+          AllowedMethods: [DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT]
+          Compress: true
+          DefaultTTL: 0
+          ForwardedValues: {QueryString: false}
+          ViewerProtocolPolicy: redirect-to-https
+        CacheBehaviors:
+          - TargetOriginId: OutputBucket
+            PathPattern: /output/*
+            AllowedMethods: [DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT]
+            Compress: true
+            DefaultTTL: 0
+            ForwardedValues: {QueryString: true}
+            ViewerProtocolPolicy: redirect-to-https
 Outputs:
   JavabuilderURL:
     Value:
