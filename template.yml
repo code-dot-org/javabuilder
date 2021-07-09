@@ -275,6 +275,11 @@ Resources:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
               SSEAlgorithm: 'aws:kms'
+      LifecycleConfiguration:
+        Rules:
+          - Id: ExpirationRule
+            Status: Enabled
+            ExpirationInDays: 1
   OutputBucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:
@@ -315,29 +320,21 @@ Resources:
         CustomErrorResponses:
           - ErrorCode: 403
             ErrorCachingMinTTL: 0
-        Logging:
-          Bucket: !Ref LogBucket
-          IncludeCookies: false
-          Prefix: !Sub "${SubDomainName}-output.${BaseDomainName}"
+        # Logging:
+        #   Bucket: !Ref LogBucket
+        #   IncludeCookies: false
+        #   Prefix: !Sub "${SubDomainName}-output.${BaseDomainName}"
         Origins:
           - Id: OutputBucket
             DomainName: !GetAtt OutputBucket.DomainName
             S3OriginConfig: {}
         DefaultCacheBehavior:
-          TargetOriginId: API
+          TargetOriginId: OutputBucket
           AllowedMethods: [DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT]
           Compress: true
           DefaultTTL: 0
-          ForwardedValues: {QueryString: false}
+          ForwardedValues: {QueryString: true}
           ViewerProtocolPolicy: redirect-to-https
-        CacheBehaviors:
-          - TargetOriginId: OutputBucket
-            PathPattern: /output/*
-            AllowedMethods: [DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT]
-            Compress: true
-            DefaultTTL: 0
-            ForwardedValues: {QueryString: true}
-            ViewerProtocolPolicy: redirect-to-https
 Outputs:
   JavabuilderURL:
     Value:
