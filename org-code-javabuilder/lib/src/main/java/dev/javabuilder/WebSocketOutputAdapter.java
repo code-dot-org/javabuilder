@@ -1,9 +1,11 @@
 package dev.javabuilder;
 
 import java.io.IOException;
+import java.io.InputStream;
 import javax.websocket.RemoteEndpoint;
 import javax.websocket.Session;
 import org.code.protocol.ClientMessage;
+import org.code.protocol.JavabuilderException;
 import org.code.protocol.OutputAdapter;
 
 /**
@@ -23,6 +25,11 @@ public class WebSocketOutputAdapter implements OutputAdapter {
     } catch (IOException e) {
       e.printStackTrace();
     }
+  }
+
+  @Override
+  public String writeToFile(String filename, InputStream input) throws JavabuilderException {
+    return null;
   }
 
   public void sendDebuggingMessage(ClientMessage message) {
