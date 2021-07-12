@@ -262,6 +262,8 @@ Resources:
       Environment:
         Variables:
           AWS_LAMBDA_EXEC_WRAPPER: /opt/change_runtime_directory
+          OUTPUT_BUCKET_NAME: !Ref OutputBucket
+          GET_OUTPUT_URL: !Sub "https://${OutputDomain}"
   OutputBucket:
     Type: AWS::S3::Bucket
     Properties:
@@ -274,7 +276,7 @@ Resources:
       BucketEncryption:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
-              SSEAlgorithm: 'aws:kms'
+              SSEAlgorithm: 'AES256'
       LifecycleConfiguration:
         Rules:
           - Id: ExpirationRule
