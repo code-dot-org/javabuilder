@@ -80,18 +80,22 @@ class SoundLoaderTest {
   }
 
   @Test
-  public void testReadThrowsSoundExceptionIfAudioFormatInvalid() {
+  public void testReadThrowsSoundExceptionIfFormatConversionNotSupported() {
+    final SoundException soundException =
+        new SoundException(SoundExceptionKeys.INVALID_AUDIO_FILE_FORMAT);
     audioSystem
         .when(() -> AudioSystem.getAudioInputStream(any(URL.class)))
         .thenReturn(audioInputStream);
-    audioUtils.when(() -> AudioUtils.isAudioFormatValid(audioFormat)).thenReturn(false);
+    audioUtils
+        .when(() -> AudioUtils.convertStreamToDefaultAudioFormat(audioInputStream))
+        .thenThrow(soundException);
     Exception exception =
         assertThrows(
             SoundException.class,
             () -> {
               SoundLoader.read(TEST_FILE_NAME);
             });
-    assertEquals(SoundExceptionKeys.INVALID_AUDIO_FILE_FORMAT.toString(), exception.getMessage());
+    assertSame(soundException, exception);
   }
 
   @Test
@@ -99,7 +103,9 @@ class SoundLoaderTest {
     audioSystem
         .when(() -> AudioSystem.getAudioInputStream(any(URL.class)))
         .thenReturn(audioInputStream);
-    audioUtils.when(() -> AudioUtils.isAudioFormatValid(audioFormat)).thenReturn(true);
+    audioUtils
+        .when(() -> AudioUtils.convertStreamToDefaultAudioFormat(audioInputStream))
+        .thenReturn(audioInputStream);
 
     when(audioInputStream.readAllBytes()).thenThrow(IOException.class);
 
@@ -119,7 +125,9 @@ class SoundLoaderTest {
     audioSystem
         .when(() -> AudioSystem.getAudioInputStream(any(URL.class)))
         .thenReturn(audioInputStream);
-    audioUtils.when(() -> AudioUtils.isAudioFormatValid(audioFormat)).thenReturn(true);
+    audioUtils
+        .when(() -> AudioUtils.convertStreamToDefaultAudioFormat(audioInputStream))
+        .thenReturn(audioInputStream);
 
     when(audioInputStream.readAllBytes()).thenReturn(TEST_BYTE_ARRAY);
     doThrow(IOException.class).when(audioInputStream).close();
@@ -141,7 +149,9 @@ class SoundLoaderTest {
     audioSystem
         .when(() -> AudioSystem.getAudioInputStream(any(URL.class)))
         .thenReturn(audioInputStream);
-    audioUtils.when(() -> AudioUtils.isAudioFormatValid(audioFormat)).thenReturn(true);
+    audioUtils
+        .when(() -> AudioUtils.convertStreamToDefaultAudioFormat(audioInputStream))
+        .thenReturn(audioInputStream);
     audioUtils
         .when(() -> AudioUtils.convertByteArrayToDoubleArray(TEST_BYTE_ARRAY, TEST_CHANNELS))
         .thenReturn(TEST_DOUBLE_ARRAY);
