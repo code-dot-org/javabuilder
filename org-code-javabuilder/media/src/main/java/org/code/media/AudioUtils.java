@@ -35,15 +35,20 @@ class AudioUtils {
       AudioFileFormat.Type.WAVE;
 
   /**
-   * Determines if given {@link AudioFormat} is a valid format we can read
+   * Converts the given {@link AudioInputStream} to the default audio format for consistent
+   * reading/writing
    *
-   * @param audioFormat
-   * @return if audio format is valid
+   * @param stream
+   * @return converted AudioInputStream
+   * @throws SoundException if conversion is not supported
    */
-  public static boolean isAudioFormatValid(AudioFormat audioFormat) {
-    return audioFormat.getSampleRate() == DEFAULT_SAMPLE_RATE
-        && audioFormat.getSampleSizeInBits() == DEFAULT_BITS_PER_SAMPLE
-        && audioFormat.isBigEndian() == IS_NOT_BIG_ENDIAN;
+  public static AudioInputStream convertStreamToDefaultAudioFormat(AudioInputStream stream)
+      throws SoundException {
+    if (!AudioSystem.isConversionSupported(DEFAULT_AUDIO_FORMAT, stream.getFormat())) {
+      throw new SoundException(SoundExceptionKeys.INVALID_AUDIO_FILE_FORMAT);
+    }
+
+    return AudioSystem.getAudioInputStream(DEFAULT_AUDIO_FORMAT, stream);
   }
 
   /**
