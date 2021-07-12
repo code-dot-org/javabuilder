@@ -322,6 +322,7 @@ Resources:
         CustomErrorResponses:
           - ErrorCode: 403
             ErrorCachingMinTTL: 0
+        # TODO: enable logging when LogBucket is set up
         # Logging:
         #   Bucket: !Ref LogBucket
         #   IncludeCookies: false
