@@ -20,6 +20,8 @@ Globals:
     Timeout: 30
     MemorySize: 3008
     Tracing: Active
+Conditions:
+  IsDevCondition: !Equals [!Ref BaseDomainName, "dev-code.org"] 
 Resources:
   Domain:
     Type: AWS::Route53::RecordSet
@@ -267,7 +269,7 @@ Resources:
   OutputBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub  "cdo-dev-${SubDomainName}-output"
+      BucketName: !If [IsDevCondition, !Sub "cdo-dev-${SubDomainName}-output", !Sub "cdo-${SubDomainName}-output"] 
       CorsConfiguration:
         CorsRules:
           - AllowedMethods: [GET]
