@@ -44,7 +44,9 @@ def on_connect(event, context)
     :levelId => authorizer["level_id"],
     :options => authorizer["options"],
     :iss => authorizer["iss"],
-    :channelId => authorizer["channel_id"]
+    :channelId => authorizer["channel_id"],
+    :outputBucketName => ENV['OUTPUT_BUCKET_NAME'],
+    :javabuilderSessionId => authorizer['sid']
   }
   response = lambda_client.invoke({
     function_name: ENV['BUILD_AND_RUN_PROJECT_LAMBDA_ARN'] || 'javaBuilderExecuteCode:13',

@@ -41,6 +41,8 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     final String channelId = lambdaInput.get("channelId");
     final String dashboardHostname = "https://" + lambdaInput.get("iss");
     final JSONObject options = new JSONObject(lambdaInput.get("options"));
+    final String outputBucketName = System.getenv("OUTPUT_BUCKET_NAME");
+    final String javabuilderSessionId = lambdaInput.get("javabuilderSessionId");
     boolean useNeighborhood = false;
     if (options.has("useNeighborhood")) {
       String useNeighborhoodStr = options.getString("useNeighborhood");
@@ -55,7 +57,8 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
             .withEndpointConfiguration(
                 new AwsClientBuilder.EndpointConfiguration(apiEndpoint, "us-east-1"))
             .build();
-    final AWSOutputAdapter outputAdapter = new AWSOutputAdapter(connectionId, api);
+    final AWSOutputAdapter outputAdapter =
+        new AWSOutputAdapter(connectionId, api, outputBucketName, javabuilderSessionId);
 
     // Create user input handlers
     final AmazonSQS sqsClient = AmazonSQSClientBuilder.defaultClient();

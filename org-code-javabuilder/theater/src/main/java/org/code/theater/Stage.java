@@ -3,12 +3,14 @@ package org.code.theater;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import org.code.media.AudioWriter;
 import org.code.media.Color;
 import org.code.media.Image;
 import org.code.protocol.GlobalProtocol;
+import org.code.protocol.JavabuilderException;
 import org.code.protocol.OutputAdapter;
 
 public class Stage {
@@ -364,6 +366,15 @@ public class Stage {
 
       this.outputAdapter.sendMessage(ImageEncoder.encodeStreamToMessage(this.imageOutputStream));
       this.outputAdapter.sendMessage(SoundEncoder.encodeStreamToMessage(this.audioOutputStream));
+      try {
+        this.outputAdapter.writeToFile(
+            "theaterImage.gif", new ByteArrayInputStream(this.imageOutputStream.toByteArray()));
+        this.outputAdapter.writeToFile(
+            "theaterAudio.wav", new ByteArrayInputStream(this.audioOutputStream.toByteArray()));
+
+      } catch (JavabuilderException e) {
+        e.printStackTrace();
+      }
 
       this.hasPlayed = true;
     }
