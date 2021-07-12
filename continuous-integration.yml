@@ -28,14 +28,22 @@ Parameters:
     Type: String
     Description: CodePipeline Service Role name
     Default: AWS-CodePipeline-Service
-  StackName:
+  SubDomainName:
     Type: String
-    Description: Application stack name
+    Description: Subdomain name of production service. Also used as the CloudFormation Stack name for the production service.
     Default: javabuilder
-  StagingStackName:
+  StagingSubDomainName:
     Type: String
-    Description: Staging application stack name
+    Description: Subdomain name of staging service. Also used as the CloudFormation Stack name for the staging service.
     Default: javabuilder-staging
+  BaseDomainName:
+    Type: String
+    Description: Base domain name.
+    Default: dev-code.org
+  BaseDomainNameHostedZonedID:
+    Type: String
+    Description: AWS Route53 Hosted Zone ID for base domain name.
+    Default: Z07248463JGJ44FME5BZ5
   SlackApprovalChannel:
     Type: String
     Description: Slack channel for manual approval actions
@@ -61,7 +69,7 @@ Resources:
   Pipeline:
     Type: AWS::CodePipeline::Pipeline
     Properties:
-      Name: !Ref StackName
+      Name: !Ref SubDomainName
       RoleArn: !Sub "arn:aws:iam::${AWS::AccountId}:role/${CodePipelineServiceRoleName}"
       ArtifactStore:
         Type: S3
@@ -110,7 +118,7 @@ Resources:
                 ActionMode: CHANGE_SET_REPLACE
                 ChangeSetName: StagingChangeSet
                 RoleArn: !ImportValue JavabuilderCloudFormationRole
-                StackName: !Ref StagingStackName
+                StackName: !Ref StagingSubDomainName
                 TemplatePath: Package::output.yml
                 TemplateConfiguration: Package::configuration-staging.json
               OutputArtifacts: [Name: StagingChangeSet]
@@ -125,7 +133,7 @@ Resources:
               Configuration:
                 ActionMode: CHANGE_SET_EXECUTE
                 ChangeSetName: StagingChangeSet
-                StackName: !Ref StagingStackName
+                StackName: !Ref StagingSubDomainName
         - Name: Production
           Actions:
             - Name: Prepare
@@ -140,7 +148,7 @@ Resources:
                 ActionMode: CHANGE_SET_REPLACE
                 ChangeSetName: ProdChangeSet
                 RoleArn: !ImportValue JavabuilderCloudFormationRole
-                StackName: !Ref StackName
+                StackName: !Ref SubDomainName
                 TemplatePath: Package::output.yml
                 TemplateConfiguration: Package::configuration.json
               OutputArtifacts: [Name: ProdChangeSet]
@@ -153,7 +161,7 @@ Resources:
                 Version: 1
               Configuration:
                 NotificationArn: !Ref BuildApprovalSNS
-                CustomData: !Sub "${StackName} build awaiting approval to Production."
+                CustomData: !Sub "${SubDomainName} build awaiting approval to Production."
             - Name: Deploy
               RunOrder: 3
               ActionTypeId:
@@ -165,7 +173,7 @@ Resources:
               Configuration:
                 ActionMode: CHANGE_SET_EXECUTE
                 ChangeSetName: ProdChangeSet
-                StackName: !Ref StackName
+                StackName: !Ref SubDomainName
   Webhook:
     Type: AWS::CodePipeline::Webhook
     Properties:
@@ -200,8 +208,8 @@ Resources:
               REF_NAME: ${GitHubBranch}
               TEMPLATE_BUCKET: ${TemplateBucket}
               OUTPUT_TEMPLATE: output.yml
-              STACK: ${StackName}
-              STAGING_STACK: ${StagingStackName}
+              SUB_DOMAIN: ${SubDomainName}
+              STAGING_SUB_DOMAIN: ${StagingSubDomainName}
               TEMPLATE_CONFIG: configuration.json
               STAGING_TEMPLATE_CONFIG: configuration-staging.json
           phases:
@@ -225,7 +233,7 @@ Resources:
         Variables:
           SLACK_CHANNEL: !Ref SlackApprovalChannel
           SLACK_TOKEN: !Ref SlackToken
-          STACK_NAME: !Ref StackName
+          STACK_NAME: !Ref SubDomainName
       Events:
         ApprovalRequest:
           Type: SNS
