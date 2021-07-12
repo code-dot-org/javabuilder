@@ -33,7 +33,7 @@ class SoundLoaderTest {
   @BeforeEach
   public void setUp() {
     GlobalProtocol.create(
-        mock(OutputAdapter.class), mock(InputAdapter.class), TEST_DASHBOARD, TEST_CHANNEL_ID);
+        mock(OutputAdapter.class), mock(InputAdapter.class), TEST_DASHBOARD, TEST_CHANNEL_ID, null);
 
     audioSystem = mockStatic(AudioSystem.class);
     audioUtils = mockStatic(AudioUtils.class);

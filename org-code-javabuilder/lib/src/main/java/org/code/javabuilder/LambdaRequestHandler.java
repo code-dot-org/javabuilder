@@ -43,6 +43,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     final JSONObject options = new JSONObject(lambdaInput.get("options"));
     final String outputBucketName = System.getenv("OUTPUT_BUCKET_NAME");
     final String javabuilderSessionId = lambdaInput.get("javabuilderSessionId");
+    final String getOutputUrl = System.getenv("GET_OUTPUT_URL");
     boolean useNeighborhood = false;
     if (options.has("useNeighborhood")) {
       String useNeighborhoodStr = options.getString("useNeighborhood");
@@ -63,10 +64,12 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     // Create user input handlers
     final AmazonSQS sqsClient = AmazonSQSClientBuilder.defaultClient();
     final AWSInputAdapter inputAdapter = new AWSInputAdapter(sqsClient, queueUrl);
+    final AWSFileWriter fileWriter =
+        new AWSFileWriter(outputBucketName, javabuilderSessionId, getOutputUrl);
 
     // Load files to memory and create and invoke the code execution environment
     try {
-      GlobalProtocol.create(outputAdapter, inputAdapter, dashboardHostname, channelId);
+      GlobalProtocol.create(outputAdapter, inputAdapter, dashboardHostname, channelId, fileWriter);
       // Create file loader
       final UserProjectFileLoader userProjectFileLoader =
           new UserProjectFileLoader(

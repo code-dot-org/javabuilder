@@ -6,9 +6,11 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
+import java.util.HashMap;
 import org.code.media.AudioWriter;
 import org.code.media.Color;
 import org.code.media.Image;
+import org.code.protocol.FileWriter;
 import org.code.protocol.GlobalProtocol;
 import org.code.protocol.JavabuilderException;
 import org.code.protocol.OutputAdapter;
@@ -16,6 +18,7 @@ import org.code.protocol.OutputAdapter;
 public class Stage {
   private final BufferedImage image;
   private final OutputAdapter outputAdapter;
+  private final FileWriter fileWriter;
   private final GifWriter gifWriter;
   private final ByteArrayOutputStream imageOutputStream;
   private final Graphics2D graphics;
@@ -54,6 +57,7 @@ public class Stage {
     this.image = image;
     this.graphics = this.image.createGraphics();
     this.outputAdapter = GlobalProtocol.getInstance().getOutputAdapter();
+    this.fileWriter = GlobalProtocol.getInstance().getFileWriter();
     this.imageOutputStream = new ByteArrayOutputStream();
     this.gifWriter = new GifWriter(this.imageOutputStream);
     this.audioOutputStream = new ByteArrayOutputStream();
@@ -367,13 +371,24 @@ public class Stage {
       this.outputAdapter.sendMessage(ImageEncoder.encodeStreamToMessage(this.imageOutputStream));
       this.outputAdapter.sendMessage(SoundEncoder.encodeStreamToMessage(this.audioOutputStream));
       try {
-        this.outputAdapter.writeToFile(
-            "theaterImage.gif", new ByteArrayInputStream(this.imageOutputStream.toByteArray()));
-        this.outputAdapter.writeToFile(
-            "theaterAudio.wav", new ByteArrayInputStream(this.audioOutputStream.toByteArray()));
+        String imageUrl =
+            this.fileWriter.writeToFile(
+                "theaterImage.gif", new ByteArrayInputStream(this.imageOutputStream.toByteArray()));
+        String audioUrl =
+            this.fileWriter.writeToFile(
+                "theaterAudio.wav", new ByteArrayInputStream(this.audioOutputStream.toByteArray()));
 
+        HashMap<String, String> imageMessage = new HashMap<>();
+        imageMessage.put("imageUrl", imageUrl);
+        this.outputAdapter.sendMessage(
+            new TheaterMessage(TheaterSignalKey.VISUAL_URL, imageMessage));
+
+        HashMap<String, String> audioMessage = new HashMap<>();
+        audioMessage.put("audioUrl", audioUrl);
+        this.outputAdapter.sendMessage(
+            new TheaterMessage(TheaterSignalKey.AUDIO_URL, audioMessage));
       } catch (JavabuilderException e) {
-        e.printStackTrace();
+        System.out.println(e.getMessage());
       }
 
       this.hasPlayed = true;

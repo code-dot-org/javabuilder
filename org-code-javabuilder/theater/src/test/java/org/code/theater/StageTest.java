@@ -12,6 +12,7 @@ import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import org.code.media.AudioWriter;
 import org.code.media.Image;
+import org.code.protocol.FileWriter;
 import org.code.protocol.GlobalProtocol;
 import org.code.protocol.InputAdapter;
 import org.code.protocol.OutputAdapter;
@@ -34,7 +35,7 @@ public class StageTest {
 
   @BeforeEach
   public void setUp() {
-    GlobalProtocol.create(outputAdapter, mock(InputAdapter.class), "", "");
+    GlobalProtocol.create(outputAdapter, mock(InputAdapter.class), "", "", mock(FileWriter.class));
     System.setOut(new PrintStream(outputStreamCaptor));
     bufferedImage = mock(BufferedImage.class);
     graphics = mock(Graphics2D.class);
