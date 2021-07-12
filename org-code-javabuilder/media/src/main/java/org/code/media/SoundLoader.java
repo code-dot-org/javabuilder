@@ -3,7 +3,6 @@ package org.code.media;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
-import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.UnsupportedAudioFileException;
@@ -25,17 +24,13 @@ public class SoundLoader {
     // Acquire AudioInputStream
     final AudioInputStream audioInputStream;
     try {
+      final URL audioFileUrl = new URL(GlobalProtocol.getInstance().generateAssetUrl(filename));
       audioInputStream =
-          AudioSystem.getAudioInputStream(
-              new URL(GlobalProtocol.getInstance().generateAssetUrl(filename)));
+          AudioUtils.convertStreamToDefaultAudioFormat(
+              AudioSystem.getAudioInputStream(audioFileUrl));
     } catch (IOException e) {
       throw new FileNotFoundException("Could not find file: " + filename);
     } catch (UnsupportedAudioFileException e) {
-      throw new SoundException(SoundExceptionKeys.INVALID_AUDIO_FILE_FORMAT);
-    }
-
-    final AudioFormat audioFormat = audioInputStream.getFormat();
-    if (!AudioUtils.isAudioFormatValid(audioFormat)) {
       throw new SoundException(SoundExceptionKeys.INVALID_AUDIO_FILE_FORMAT);
     }
 
@@ -48,6 +43,7 @@ public class SoundLoader {
       throw new InternalJavabuilderError(InternalErrorKey.INTERNAL_EXCEPTION, e);
     }
 
-    return AudioUtils.convertByteArrayToDoubleArray(bytes, audioFormat.getChannels());
+    return AudioUtils.convertByteArrayToDoubleArray(
+        bytes, audioInputStream.getFormat().getChannels());
   }
 }
