@@ -12,6 +12,7 @@ public class GlobalProtocol {
   private static GlobalProtocol protocolInstance;
   private final OutputAdapter outputAdapter;
   private final InputAdapter inputAdapter;
+  private final FileWriter fileWriter;
   private final String dashboardHostname;
   private final String channelId;
 
@@ -19,20 +20,23 @@ public class GlobalProtocol {
       OutputAdapter outputAdapter,
       InputAdapter inputAdapter,
       String dashboardHostname,
-      String channelId) {
+      String channelId,
+      FileWriter fileWriter) {
     this.outputAdapter = outputAdapter;
     this.inputAdapter = inputAdapter;
     this.dashboardHostname = dashboardHostname;
     this.channelId = channelId;
+    this.fileWriter = fileWriter;
   }
 
   public static void create(
       OutputAdapter outputAdapter,
       InputAdapter inputAdapter,
       String dashboardHostname,
-      String channelId) {
+      String channelId,
+      FileWriter fileWriter) {
     GlobalProtocol.protocolInstance =
-        new GlobalProtocol(outputAdapter, inputAdapter, dashboardHostname, channelId);
+        new GlobalProtocol(outputAdapter, inputAdapter, dashboardHostname, channelId, fileWriter);
   }
 
   public static GlobalProtocol getInstance() {
@@ -49,6 +53,10 @@ public class GlobalProtocol {
 
   public InputAdapter getInputAdapter() {
     return this.inputAdapter;
+  }
+
+  public FileWriter getFileWriter() {
+    return this.fileWriter;
   }
 
   public String generateAssetUrl(String filename) {
