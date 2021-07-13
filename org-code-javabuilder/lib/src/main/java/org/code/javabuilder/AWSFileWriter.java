@@ -13,7 +13,7 @@ public class AWSFileWriter implements FileWriter {
   private final String getOutputURL;
   private int writes;
 
-  // Temporary limit on writes per session until we find a better way to limit usage.
+  // Temporary limit on writes per session until we can more fully limit usage.
   private static final int WRITES_PER_SESSION = 2;
 
   public AWSFileWriter(String outputBucketName, String javabuilderSessionId, String getOutputURL) {
