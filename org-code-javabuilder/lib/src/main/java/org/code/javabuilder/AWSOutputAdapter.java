@@ -10,11 +10,7 @@ public class AWSOutputAdapter implements OutputAdapter {
   private final String connectionId;
   private final AmazonApiGatewayManagementApi api;
 
-  public AWSOutputAdapter(
-      String connectionId,
-      AmazonApiGatewayManagementApi api,
-      String outputBucketName,
-      String javabuilderSessionId) {
+  public AWSOutputAdapter(String connectionId, AmazonApiGatewayManagementApi api) {
     this.connectionId = connectionId;
     this.api = api;
   }

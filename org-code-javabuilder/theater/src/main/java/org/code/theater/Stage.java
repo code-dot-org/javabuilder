@@ -32,6 +32,8 @@ public class Stage {
   private static final int WIDTH = 400;
   private static final int HEIGHT = 400;
   private static final java.awt.Color DEFAULT_COLOR = java.awt.Color.BLACK;
+  private static final String IMAGE_FILENAME = "theaterImage.gif";
+  private static final String AUDIO_FILENAME = "theaterAudio.wav";
 
   /**
    * Initialize Stage with a default image. Stage should be initialized outside of org.code.theater
@@ -373,18 +375,18 @@ public class Stage {
       try {
         String imageUrl =
             this.fileWriter.writeToFile(
-                "theaterImage.gif", new ByteArrayInputStream(this.imageOutputStream.toByteArray()));
+                IMAGE_FILENAME, new ByteArrayInputStream(this.imageOutputStream.toByteArray()));
         String audioUrl =
             this.fileWriter.writeToFile(
-                "theaterAudio.wav", new ByteArrayInputStream(this.audioOutputStream.toByteArray()));
+                AUDIO_FILENAME, new ByteArrayInputStream(this.audioOutputStream.toByteArray()));
 
         HashMap<String, String> imageMessage = new HashMap<>();
-        imageMessage.put("imageUrl", imageUrl);
+        imageMessage.put("url", imageUrl);
         this.outputAdapter.sendMessage(
             new TheaterMessage(TheaterSignalKey.VISUAL_URL, imageMessage));
 
         HashMap<String, String> audioMessage = new HashMap<>();
-        audioMessage.put("audioUrl", audioUrl);
+        audioMessage.put("url", audioUrl);
         this.outputAdapter.sendMessage(
             new TheaterMessage(TheaterSignalKey.AUDIO_URL, audioMessage));
       } catch (JavabuilderException e) {

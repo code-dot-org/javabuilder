@@ -45,7 +45,6 @@ def on_connect(event, context)
     :options => authorizer["options"],
     :iss => authorizer["iss"],
     :channelId => authorizer["channel_id"],
-    :outputBucketName => ENV['OUTPUT_BUCKET_NAME'],
     :javabuilderSessionId => authorizer['sid']
   }
   response = lambda_client.invoke({
