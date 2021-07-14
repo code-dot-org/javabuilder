@@ -10,10 +10,7 @@ import java.util.HashMap;
 import org.code.media.AudioWriter;
 import org.code.media.Color;
 import org.code.media.Image;
-import org.code.protocol.FileWriter;
-import org.code.protocol.GlobalProtocol;
-import org.code.protocol.JavabuilderException;
-import org.code.protocol.OutputAdapter;
+import org.code.protocol.*;
 
 public class Stage {
   private final BufferedImage image;
@@ -370,28 +367,11 @@ public class Stage {
       this.gifWriter.close();
       this.audioWriter.writeToAudioStreamAndClose();
 
+      // TODO: Remove these messages once we've updated the client to load from file.
       this.outputAdapter.sendMessage(ImageEncoder.encodeStreamToMessage(this.imageOutputStream));
       this.outputAdapter.sendMessage(SoundEncoder.encodeStreamToMessage(this.audioOutputStream));
-      try {
-        String imageUrl =
-            this.fileWriter.writeToFile(
-                IMAGE_FILENAME, new ByteArrayInputStream(this.imageOutputStream.toByteArray()));
-        String audioUrl =
-            this.fileWriter.writeToFile(
-                AUDIO_FILENAME, new ByteArrayInputStream(this.audioOutputStream.toByteArray()));
 
-        HashMap<String, String> imageMessage = new HashMap<>();
-        imageMessage.put("url", imageUrl);
-        this.outputAdapter.sendMessage(
-            new TheaterMessage(TheaterSignalKey.VISUAL_URL, imageMessage));
-
-        HashMap<String, String> audioMessage = new HashMap<>();
-        audioMessage.put("url", audioUrl);
-        this.outputAdapter.sendMessage(
-            new TheaterMessage(TheaterSignalKey.AUDIO_URL, audioMessage));
-      } catch (JavabuilderException e) {
-        System.out.println(e.getMessage());
-      }
+      this.writeImageAndAudioToFile();
 
       this.hasPlayed = true;
     }
@@ -412,6 +392,30 @@ public class Stage {
       this.graphics.drawImage(image, transform, null);
     } else {
       this.graphics.drawImage(image, x, y, width, height, null);
+    }
+  }
+
+  private void writeImageAndAudioToFile() {
+    try {
+      String imageUrl =
+          this.fileWriter.writeToFile(
+              IMAGE_FILENAME, new ByteArrayInputStream(this.imageOutputStream.toByteArray()));
+      String audioUrl =
+          this.fileWriter.writeToFile(
+              AUDIO_FILENAME, new ByteArrayInputStream(this.audioOutputStream.toByteArray()));
+
+      HashMap<String, String> imageMessage = new HashMap<>();
+      imageMessage.put("url", imageUrl);
+      this.outputAdapter.sendMessage(new TheaterMessage(TheaterSignalKey.VISUAL_URL, imageMessage));
+
+      HashMap<String, String> audioMessage = new HashMap<>();
+      audioMessage.put("url", audioUrl);
+      this.outputAdapter.sendMessage(new TheaterMessage(TheaterSignalKey.AUDIO_URL, audioMessage));
+    } catch (JavabuilderException e) {
+      // we should not hit this (caused by too many file writes)
+      // in normal execution as it is only called via play,
+      // and play can only be called once.
+      throw new InternalJavabuilderError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e);
     }
   }
 }
