@@ -5,6 +5,8 @@ import com.amazonaws.services.apigatewaymanagementapi.AmazonApiGatewayManagement
 import com.amazonaws.services.apigatewaymanagementapi.AmazonApiGatewayManagementApiClientBuilder;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import java.util.Map;
@@ -63,8 +65,10 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     // Create user input handlers
     final AmazonSQS sqsClient = AmazonSQSClientBuilder.defaultClient();
     final AWSInputAdapter inputAdapter = new AWSInputAdapter(sqsClient, queueUrl);
+
+    final AmazonS3 s3Client = AmazonS3ClientBuilder.standard().build();
     final AWSFileWriter fileWriter =
-        new AWSFileWriter(outputBucketName, javabuilderSessionId, getOutputUrl);
+        new AWSFileWriter(s3Client, outputBucketName, javabuilderSessionId, getOutputUrl);
 
     // Load files to memory and create and invoke the code execution environment
     try {
