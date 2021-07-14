@@ -35,7 +35,6 @@ class AudioUtilsTest {
 
   private MockedStatic<AudioSystem> audioSystem;
   private AudioInputStream audioInputStream;
-  private AudioInputStream convertedStream;
   private AudioFormat audioFormat;
 
   @BeforeEach
@@ -45,7 +44,6 @@ class AudioUtilsTest {
 
     audioSystem = mockStatic(AudioSystem.class);
     audioInputStream = mock(AudioInputStream.class);
-    convertedStream = mock(AudioInputStream.class);
     audioFormat = mock(AudioFormat.class);
 
     when(audioInputStream.getFormat()).thenReturn(audioFormat);
@@ -176,34 +174,6 @@ class AudioUtilsTest {
     }
 
     verify(audioFormat).getChannels();
-  }
-
-  @Test
-  public void testConvertStreamToDefaultAudioFormatThrowsIfNotSupported() {
-    audioSystem
-        .when(() -> AudioSystem.isConversionSupported(any(AudioFormat.class), eq(audioFormat)))
-        .thenReturn(false);
-
-    Exception exception =
-        assertThrows(
-            SoundException.class,
-            () -> {
-              AudioUtils.convertStreamToDefaultAudioFormat(audioInputStream);
-            });
-
-    assertEquals(SoundExceptionKeys.INVALID_AUDIO_FILE_FORMAT.toString(), exception.getMessage());
-  }
-
-  @Test
-  public void testConvertStreamToDefaultAudioFormatReturnsConvertedStream() {
-    audioSystem
-        .when(() -> AudioSystem.isConversionSupported(any(AudioFormat.class), eq(audioFormat)))
-        .thenReturn(true);
-    audioSystem
-        .when(() -> AudioSystem.getAudioInputStream(any(AudioFormat.class), eq(audioInputStream)))
-        .thenReturn(convertedStream);
-
-    assertEquals(convertedStream, AudioUtils.convertStreamToDefaultAudioFormat(audioInputStream));
   }
 
   @Test

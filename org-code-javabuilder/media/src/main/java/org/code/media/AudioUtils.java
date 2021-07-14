@@ -32,23 +32,6 @@ class AudioUtils {
       AudioFileFormat.Type.WAVE;
 
   /**
-   * Converts the given {@link AudioInputStream} to the default audio format for consistent
-   * reading/writing
-   *
-   * @param stream
-   * @return converted AudioInputStream
-   * @throws SoundException if conversion is not supported
-   */
-  public static AudioInputStream convertStreamToDefaultAudioFormat(AudioInputStream stream)
-      throws SoundException {
-    if (!AudioSystem.isConversionSupported(DEFAULT_AUDIO_FORMAT, stream.getFormat())) {
-      throw new SoundException(SoundExceptionKeys.INVALID_AUDIO_FILE_FORMAT);
-    }
-
-    return AudioSystem.getAudioInputStream(DEFAULT_AUDIO_FORMAT, stream);
-  }
-
-  /**
    * Converts an array of raw audio samples as bytes to raw audio samples as doubles. Each sample is
    * normalized to be within the range (-1.0, 1.0). If byte array represents stereo sound (2
    * channels), left and right channels are averaged. Bitwise operations assume the byte data is
@@ -186,7 +169,8 @@ class AudioUtils {
   static double[] readSamplesFromFilePath(String filepath) throws FileNotFoundException {
     try {
       return AudioUtils.readSamplesFromInputStream(
-          AudioSystem.getAudioInputStream(new File(filepath)));
+          AudioUtils.convertStreamToDefaultAudioFormat(
+              AudioSystem.getAudioInputStream(new File(filepath))));
     } catch (IOException e) {
       throw new FileNotFoundException("Could not find file: " + filepath);
     } catch (UnsupportedAudioFileException e) {
@@ -205,5 +189,14 @@ class AudioUtils {
 
     return AudioUtils.convertByteArrayToDoubleArray(
         bytes, audioInputStream.getFormat().getChannels());
+  }
+
+  private static AudioInputStream convertStreamToDefaultAudioFormat(AudioInputStream stream)
+      throws SoundException {
+    if (!AudioSystem.isConversionSupported(DEFAULT_AUDIO_FORMAT, stream.getFormat())) {
+      throw new SoundException(SoundExceptionKeys.INVALID_AUDIO_FILE_FORMAT);
+    }
+
+    return AudioSystem.getAudioInputStream(DEFAULT_AUDIO_FORMAT, stream);
   }
 }
