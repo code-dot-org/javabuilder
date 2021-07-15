@@ -91,7 +91,7 @@ public class Stage {
    * @throws FileNotFoundException if the file can't be found in the project.
    */
   public void playSound(String filename) throws FileNotFoundException {
-    this.audioWriter.writeAudioAssetFile(filename);
+    this.audioWriter.writeAudioFromAssetFile(filename);
   }
 
   /**
@@ -109,7 +109,7 @@ public class Stage {
     }
 
     try {
-      this.audioWriter.writeLocalAudioFile(sampleFilePath, seconds);
+      this.audioWriter.writeAudioFromLocalFile(sampleFilePath, seconds);
     } catch (FileNotFoundException e) {
       System.out.printf("Could not play instrument: %s at note: %s%n", instrument, note);
     }

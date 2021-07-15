@@ -127,7 +127,7 @@ public class StageTest {
   void testPlaySoundWithFilenameCallsAudioWriter() throws FileNotFoundException {
     final String testFile = "test.wav";
     s.playSound(testFile);
-    verify(audioWriter).writeAudioAssetFile(testFile);
+    verify(audioWriter).writeAudioFromAssetFile(testFile);
   }
 
   @Test
@@ -138,7 +138,7 @@ public class StageTest {
     s.playNote(Instrument.PIANO, 60, 1);
 
     verify(instrumentSampleLoader).getSampleFilePath(Instrument.PIANO, 60);
-    verify(audioWriter, never()).writeLocalAudioFile(anyString(), anyDouble());
+    verify(audioWriter, never()).writeAudioFromLocalFile(anyString(), anyDouble());
   }
 
   @Test
@@ -152,7 +152,7 @@ public class StageTest {
     s.playNote(Instrument.PIANO, note, seconds);
 
     verify(instrumentSampleLoader).getSampleFilePath(Instrument.PIANO, note);
-    verify(audioWriter).writeLocalAudioFile(testSampleFile, seconds);
+    verify(audioWriter).writeAudioFromLocalFile(testSampleFile, seconds);
   }
 
   @Test

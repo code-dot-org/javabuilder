@@ -166,7 +166,7 @@ class AudioUtils {
    * @return samples
    * @throws FileNotFoundException
    */
-  static double[] readSamplesFromFilePath(String filepath) throws FileNotFoundException {
+  static double[] readSamplesFromLocalFile(String filepath) throws FileNotFoundException {
     try {
       return AudioUtils.readSamplesFromInputStream(
           AudioUtils.convertStreamToDefaultAudioFormat(
