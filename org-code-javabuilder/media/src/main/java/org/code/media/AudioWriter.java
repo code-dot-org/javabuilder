@@ -39,22 +39,24 @@ public class AudioWriter {
     this.writeAudioSamples(AudioUtils.truncateSamples(samples, lengthSeconds));
   }
 
-  public void writeAudioAssetFile(String filename) throws SoundException, FileNotFoundException {
+  public void writeAudioFromAssetFile(String filename)
+      throws SoundException, FileNotFoundException {
     this.writeAudioSamples(AudioUtils.readSamplesFromAssetFile(filename));
   }
 
-  public void writeAudioAssetFile(String filename, double lengthSeconds)
+  public void writeAudioFromAssetFile(String filename, double lengthSeconds)
       throws SoundException, FileNotFoundException {
     this.writeAudioSamples(AudioUtils.readSamplesFromAssetFile(filename), lengthSeconds);
   }
 
-  public void writeLocalAudioFile(String filepath) throws SoundException, FileNotFoundException {
-    this.writeAudioSamples(AudioUtils.readSamplesFromFilePath(filepath));
+  public void writeAudioFromLocalFile(String filepath)
+      throws SoundException, FileNotFoundException {
+    this.writeAudioSamples(AudioUtils.readSamplesFromLocalFile(filepath));
   }
 
-  public void writeLocalAudioFile(String filepath, double lengthSeconds)
+  public void writeAudioFromLocalFile(String filepath, double lengthSeconds)
       throws SoundException, FileNotFoundException {
-    this.writeAudioSamples(AudioUtils.readSamplesFromFilePath(filepath), lengthSeconds);
+    this.writeAudioSamples(AudioUtils.readSamplesFromLocalFile(filepath), lengthSeconds);
   }
 
   public void addDelay(double delaySeconds) {
