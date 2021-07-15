@@ -3,7 +3,6 @@ package org.code.theater;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.util.HashMap;
@@ -15,7 +14,7 @@ import org.code.protocol.*;
 public class Stage {
   private final BufferedImage image;
   private final OutputAdapter outputAdapter;
-  private final FileWriter fileWriter;
+  private final JavabuilderFileWriter fileWriter;
   private final GifWriter gifWriter;
   private final ByteArrayOutputStream imageOutputStream;
   private final Graphics2D graphics;
@@ -399,10 +398,10 @@ public class Stage {
     try {
       String imageUrl =
           this.fileWriter.writeToFile(
-              IMAGE_FILENAME, new ByteArrayInputStream(this.imageOutputStream.toByteArray()));
+              IMAGE_FILENAME, this.imageOutputStream.toByteArray(), "image/gif");
       String audioUrl =
           this.fileWriter.writeToFile(
-              AUDIO_FILENAME, new ByteArrayInputStream(this.audioOutputStream.toByteArray()));
+              AUDIO_FILENAME, this.audioOutputStream.toByteArray(), "audio/wav");
 
       HashMap<String, String> imageMessage = new HashMap<>();
       imageMessage.put("url", imageUrl);
