@@ -2,6 +2,8 @@ package dev.javabuilder;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.List;
+import java.util.Map;
 import javax.websocket.OnClose;
 import javax.websocket.OnMessage;
 import javax.websocket.OnOpen;
@@ -9,6 +11,10 @@ import javax.websocket.PongMessage;
 import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
 import org.code.javabuilder.*;
+import org.code.protocol.GlobalProtocol;
+import org.code.protocol.JavabuilderException;
+import org.code.protocol.JavabuilderRuntimeException;
+import org.code.protocol.Properties;
 
 /**
  * This sets up a simple WebSocket server for local development when interactions between dashboard
@@ -32,29 +38,48 @@ public class WebSocketServer {
    */
   @OnOpen
   public void onOpen(Session session) {
-    String projectUrl = session.getQueryString().replaceFirst("projectUrl=", "");
+    Map<String, List<String>> params = session.getRequestParameterMap();
+    String channelId = params.get("channelId").get(0);
+    boolean useNeighborhood = false;
+    if (params.containsKey("useNeighborhood")) {
+      useNeighborhood = Boolean.parseBoolean(params.get("useNeighborhood").get(0));
+    }
+    String levelId = "";
+    if (params.containsKey("levelId")) {
+      levelId = params.get("levelId").get(0);
+    }
+    Properties.setConnectionId("LocalhostWebSocketConnection");
 
     outputAdapter = new WebSocketOutputAdapter(session);
     inputAdapter = new WebSocketInputAdapter();
-    final UserProjectFileLoader fileLoader = new UserProjectFileLoader(projectUrl);
+    String dashboardHostname = "http://localhost-studio.code.org:3000";
+    GlobalProtocol.create(outputAdapter, inputAdapter, dashboardHostname, channelId);
+    final UserProjectFileLoader fileLoader =
+        new UserProjectFileLoader(
+            GlobalProtocol.getInstance().generateSourcesUrl(),
+            levelId,
+            dashboardHostname,
+            useNeighborhood);
     Thread codeExecutor =
         new Thread(
             () -> {
               try {
                 UserProjectFiles userProjectFiles = fileLoader.loadFiles();
                 try (CodeBuilder codeBuilder =
-                    new CodeBuilder(inputAdapter, outputAdapter, userProjectFiles)) {
+                    new CodeBuilder(GlobalProtocol.getInstance(), userProjectFiles)) {
                   codeBuilder.buildUserCode();
                   codeBuilder.runUserCode();
                 }
-              } catch (UserFacingException e) {
-                outputAdapter.sendMessage(e.getMessage());
-                outputAdapter.sendMessage("\n" + e.getLoggingString());
-              } catch (UserInitiatedException e) {
-                outputAdapter.sendMessage(e.getMessage());
-                outputAdapter.sendMessage("\n" + e.getLoggingString());
+              } catch (JavabuilderException | JavabuilderRuntimeException e) {
+                outputAdapter.sendMessage(e.getExceptionMessage());
+                outputAdapter.sendMessage(new DebuggingMessage("\n" + e.getLoggingString()));
               } catch (InternalFacingException e) {
-                outputAdapter.sendMessage("\n" + e.getLoggingString());
+                outputAdapter.sendMessage(new DebuggingMessage("\n" + e.getLoggingString()));
+              } catch (Throwable e) {
+                outputAdapter.sendMessage(new DebuggingMessage("\n" + e.getMessage()));
+                outputAdapter.sendMessage(new DebuggingMessage("\n" + e.toString()));
+                // Throw here to ensure we always get local logging
+                throw e;
               } finally {
                 try {
                   session.close();
@@ -83,11 +108,11 @@ public class WebSocketServer {
 
   @OnMessage
   public void byteMessage(ByteBuffer b) {
-    outputAdapter.sendMessage("Got a byte array message. Doing nothing.");
+    outputAdapter.sendMessage(new SystemOutMessage("Got a byte array message. Doing nothing."));
   }
 
   @OnMessage
   public void pongMessage(PongMessage p) {
-    outputAdapter.sendMessage("Got a pong message. Doing nothing.");
+    outputAdapter.sendMessage(new SystemOutMessage("Got a pong message. Doing nothing."));
   }
 }

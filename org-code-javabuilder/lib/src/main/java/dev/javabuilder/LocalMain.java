@@ -1,6 +1,9 @@
 package dev.javabuilder;
 
 import org.code.javabuilder.*;
+import org.code.protocol.GlobalProtocol;
+import org.code.protocol.JavabuilderException;
+import org.code.protocol.JavabuilderRuntimeException;
 
 /**
  * Intended for local testing only. This is a local version of the Javabuilder lambda function. The
@@ -15,19 +18,17 @@ public class LocalMain {
     // Create and invoke the code execution environment
     try {
       UserProjectFiles userProjectFiles = fileLoader.loadFiles();
+      GlobalProtocol.create(outputAdapter, inputAdapter, "", "");
       try (CodeBuilder codeBuilder =
-          new CodeBuilder(inputAdapter, outputAdapter, userProjectFiles)) {
+          new CodeBuilder(GlobalProtocol.getInstance(), userProjectFiles)) {
         codeBuilder.buildUserCode();
         codeBuilder.runUserCode();
       }
-    } catch (UserFacingException e) {
-      outputAdapter.sendMessage(e.getMessage());
-      outputAdapter.sendMessage("\n" + e.getLoggingString());
-    } catch (UserInitiatedException e) {
-      outputAdapter.sendMessage(e.getMessage());
-      outputAdapter.sendMessage("\n" + e.getLoggingString());
+    } catch (JavabuilderException | JavabuilderRuntimeException e) {
+      outputAdapter.sendMessage(e.getExceptionMessage());
+      System.out.println("\n" + e.getLoggingString());
     } catch (InternalFacingException e) {
-      outputAdapter.sendMessage("\n" + e.getLoggingString());
+      System.out.println("\n" + e.getLoggingString());
     }
   }
 }

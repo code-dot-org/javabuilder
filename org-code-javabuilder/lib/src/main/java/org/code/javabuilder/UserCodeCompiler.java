@@ -7,6 +7,8 @@ import java.util.Collections;
 import java.util.List;
 import javax.tools.*;
 import javax.tools.JavaCompiler.CompilationTask;
+import org.code.protocol.InternalErrorKey;
+import org.code.protocol.OutputAdapter;
 
 /**
  * Compiles all user code managed by the ProjectFileManager. Any compiler output will be passed
@@ -37,11 +39,10 @@ public class UserCodeCompiler {
 
     // diagnostics will include any compiler errors
     for (Diagnostic<? extends JavaFileObject> diagnostic : diagnostics.getDiagnostics()) {
-      outputAdapter.sendMessage(diagnostic.toString());
+      outputAdapter.sendMessage(new SystemOutMessage(diagnostic.toString()));
     }
     if (!success) {
-      throw new UserInitiatedException(
-          "We couldn't compile your program. Look for bugs in your program and try again.");
+      throw new UserInitiatedException(UserInitiatedExceptionKey.COMPILER_ERROR);
     }
   }
 
@@ -57,8 +58,7 @@ public class UserCodeCompiler {
     } catch (IOException e) {
       e.printStackTrace();
       // if we can't set the file location we won't be able to run the class properly.
-      throw new UserFacingException(
-          "We hit an error on our side while compiling your program. Try again.", e);
+      throw new UserFacingException(InternalErrorKey.INTERNAL_COMPILER_EXCEPTION, e);
     }
     // create file for user-provided code
     List<JavaFileObject> files = new ArrayList<>();
@@ -67,7 +67,13 @@ public class UserCodeCompiler {
           new JavaSourceFromString(projectFile.getClassName(), projectFile.getFileContents()));
     }
 
+    // Include the user-facing api jars in the student code classpath so the student code can use
+    // them.
+    List<String> optionList = new ArrayList<String>();
+    optionList.add("-classpath");
+    optionList.add(Util.getAllJarPaths());
+
     // create compilation task
-    return compiler.getTask(null, fileManager, diagnostics, null, null, files);
+    return compiler.getTask(null, fileManager, diagnostics, optionList, null, files);
   }
 }

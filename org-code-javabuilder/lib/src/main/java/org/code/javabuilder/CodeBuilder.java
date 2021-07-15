@@ -6,6 +6,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.List;
+import org.code.protocol.GlobalProtocol;
+import org.code.protocol.InputAdapter;
+import org.code.protocol.InternalErrorKey;
+import org.code.protocol.OutputAdapter;
 
 /** The orchestrator for code compilation and execution. */
 public class CodeBuilder implements AutoCloseable {
@@ -16,19 +20,17 @@ public class CodeBuilder implements AutoCloseable {
   private final InputStream sysin;
   private final UserProjectFiles userProjectFiles;
 
-  public CodeBuilder(
-      InputAdapter inputAdapter, OutputAdapter outputAdapter, UserProjectFiles userProjectFiles)
+  public CodeBuilder(GlobalProtocol protocol, UserProjectFiles userProjectFiles)
       throws UserFacingException {
     this.sysout = System.out;
     this.sysin = System.in;
-    this.outputAdapter = outputAdapter;
-    this.inputAdapter = inputAdapter;
+    this.outputAdapter = protocol.getOutputAdapter();
+    this.inputAdapter = protocol.getInputAdapter();
     this.userProjectFiles = userProjectFiles;
     try {
       this.tempFolder = Files.createTempDirectory("tmpdir").toFile();
     } catch (IOException e) {
-      throw new UserFacingException(
-          "We hit an error on our side while loading your program. Try again.", e);
+      throw new UserFacingException(InternalErrorKey.INTERNAL_EXCEPTION, e);
     }
   }
 
@@ -58,8 +60,7 @@ public class CodeBuilder implements AutoCloseable {
       runner =
           new JavaRunner(this.tempFolder.toURI().toURL(), this.userProjectFiles.getJavaFiles());
     } catch (MalformedURLException e) {
-      throw new UserFacingException(
-          "We hit an error on our side while running your program. Try Again", e);
+      throw new UserFacingException(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e);
     }
     runner.runCode();
   }
@@ -96,8 +97,7 @@ public class CodeBuilder implements AutoCloseable {
       try {
         Files.writeString(Path.of(filePath), projectFile.getFileContents());
       } catch (IOException e) {
-        throw new UserFacingException(
-            "We hit an error on our side while compiling your program. Try again.", e);
+        throw new UserFacingException(InternalErrorKey.INTERNAL_COMPILER_EXCEPTION, e);
       }
     }
   }
