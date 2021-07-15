@@ -10,10 +10,7 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import java.util.Map;
-import org.code.protocol.GlobalProtocol;
-import org.code.protocol.JavabuilderException;
-import org.code.protocol.JavabuilderRuntimeException;
-import org.code.protocol.Properties;
+import org.code.protocol.*;
 import org.json.JSONObject;
 
 /**
@@ -52,6 +49,9 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
       useNeighborhood = Boolean.parseBoolean(useNeighborhoodStr);
     }
 
+    final JavabuilderLogger logger =
+        new LambdaLogHandler(context.getLogger(), javabuilderSessionId);
+
     Properties.setConnectionId(connectionId);
 
     // Create user-program output handlers
@@ -68,7 +68,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
 
     final AmazonS3 s3Client = AmazonS3ClientBuilder.standard().build();
     final AWSFileWriter fileWriter =
-        new AWSFileWriter(s3Client, outputBucketName, javabuilderSessionId, getOutputUrl);
+        new AWSFileWriter(s3Client, outputBucketName, javabuilderSessionId, getOutputUrl, logger);
 
     // Load files to memory and create and invoke the code execution environment
     try {

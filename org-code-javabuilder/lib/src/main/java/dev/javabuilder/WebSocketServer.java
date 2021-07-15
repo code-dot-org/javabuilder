@@ -53,7 +53,8 @@ public class WebSocketServer {
     outputAdapter = new WebSocketOutputAdapter(session);
     inputAdapter = new WebSocketInputAdapter();
     String dashboardHostname = "http://localhost-studio.code.org:3000";
-    GlobalProtocol.create(outputAdapter, inputAdapter, dashboardHostname, channelId, null);
+    GlobalProtocol.create(
+        outputAdapter, inputAdapter, dashboardHostname, channelId, new NoOpFileWriter());
     final UserProjectFileLoader fileLoader =
         new UserProjectFileLoader(
             GlobalProtocol.getInstance().generateSourcesUrl(),

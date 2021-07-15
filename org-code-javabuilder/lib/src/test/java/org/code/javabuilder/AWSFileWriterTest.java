@@ -21,23 +21,25 @@ public class AWSFileWriterTest {
   void setUp() {
     s3ClientMock = mock(AmazonS3.class);
     fileWriter =
-        new AWSFileWriter(s3ClientMock, FAKE_BUCKET_NAME, FAKE_SESSION_ID, FAKE_OUTPUT_URL);
+        new AWSFileWriter(
+            s3ClientMock, FAKE_BUCKET_NAME, FAKE_SESSION_ID, FAKE_OUTPUT_URL, new TestLogger());
   }
 
   @Test
   void canOnlyWriteTwice() throws JavabuilderException {
-    fileWriter.writeToFile("test.txt", new ByteArrayInputStream(new byte[10]));
-    fileWriter.writeToFile("test2.txt", new ByteArrayInputStream(new byte[10]));
+    fileWriter.writeToFile("test.gif", new byte[10], "image/gif");
+    fileWriter.writeToFile("test2.wav", new byte[10], "audio/wav");
     assertThrows(
         UserInitiatedException.class,
-        () -> fileWriter.writeToFile("test3.txt", new ByteArrayInputStream(new byte[10])));
+        () -> fileWriter.writeToFile("test3.txt", new byte[10], "text/plain"));
   }
 
   @Test
   void writesToS3() throws JavabuilderException {
-    ByteArrayInputStream input = new ByteArrayInputStream(new byte[10]);
-    fileWriter.writeToFile("test.txt", input);
+    byte[] input = new byte[10];
+    fileWriter.writeToFile("test.txt", input, "text/plain");
     String key = FAKE_SESSION_ID + "/test.txt";
-    verify(s3ClientMock).putObject(FAKE_BUCKET_NAME, key, input, null);
+    verify(s3ClientMock)
+        .putObject(anyString(), anyString(), any(ByteArrayInputStream.class), any());
   }
 }

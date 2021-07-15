@@ -12,7 +12,7 @@ public class GlobalProtocol {
   private static GlobalProtocol protocolInstance;
   private final OutputAdapter outputAdapter;
   private final InputAdapter inputAdapter;
-  private final FileWriter fileWriter;
+  private final JavabuilderFileWriter fileWriter;
   private final String dashboardHostname;
   private final String channelId;
 
@@ -21,7 +21,7 @@ public class GlobalProtocol {
       InputAdapter inputAdapter,
       String dashboardHostname,
       String channelId,
-      FileWriter fileWriter) {
+      JavabuilderFileWriter fileWriter) {
     this.outputAdapter = outputAdapter;
     this.inputAdapter = inputAdapter;
     this.dashboardHostname = dashboardHostname;
@@ -34,7 +34,7 @@ public class GlobalProtocol {
       InputAdapter inputAdapter,
       String dashboardHostname,
       String channelId,
-      FileWriter fileWriter) {
+      JavabuilderFileWriter fileWriter) {
     GlobalProtocol.protocolInstance =
         new GlobalProtocol(outputAdapter, inputAdapter, dashboardHostname, channelId, fileWriter);
   }
@@ -55,7 +55,7 @@ public class GlobalProtocol {
     return this.inputAdapter;
   }
 
-  public FileWriter getFileWriter() {
+  public JavabuilderFileWriter getFileWriter() {
     return this.fileWriter;
   }
 
