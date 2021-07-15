@@ -39,6 +39,12 @@ Resources:
                   - "cloudformation:DescribeStacks"
                 Resource: '*'
 
+              # BuildAndRunJavaProject Lambda needs to put objects to the output bucket.
+              - Effect: Allow
+                Action:
+                  - 's3:PutObject'
+                Resource: 'arn:aws:s3:::cdo-*javabuilder*-output/*'
+
               # All Lambdas need logging permissions.
               - Effect: Allow
                 Action:
