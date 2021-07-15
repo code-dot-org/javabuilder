@@ -1,23 +1,18 @@
 package org.code.javabuilder;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import org.code.protocol.InternalErrorKey;
+import org.code.protocol.JavabuilderException;
 
-/** Exception with a message intended to be seen by the user */
-public class UserFacingException extends Exception {
-  public UserFacingException(String errorMessage) {
-    super(errorMessage);
+/**
+ * An exception caused by us that is intended to be seen by the user. These are the conceptual
+ * equivalent of HTTP 500 errors.
+ */
+public class UserFacingException extends JavabuilderException {
+  public UserFacingException(InternalErrorKey key) {
+    super(key);
   }
 
-  public UserFacingException(String errorMessage, Exception cause) {
-    super(errorMessage, cause);
-  }
-
-  /** @return A pretty version of the exception and stack trace. */
-  public String getLoggingString() {
-    StringWriter stringWriter = new StringWriter();
-    PrintWriter printWriter = new PrintWriter(stringWriter);
-    printStackTrace(printWriter);
-    return stringWriter.toString();
+  public UserFacingException(InternalErrorKey key, Throwable cause) {
+    super(key, cause);
   }
 }

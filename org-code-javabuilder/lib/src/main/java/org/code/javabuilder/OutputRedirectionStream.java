@@ -1,6 +1,7 @@
 package org.code.javabuilder;
 
 import java.io.OutputStream;
+import org.code.protocol.OutputAdapter;
 
 /**
  * An OutputStream that passes output to an OutputAdapter. It is intended to redirect output from
@@ -60,7 +61,8 @@ public class OutputRedirectionStream extends OutputStream {
     if (buffer.length() == 0) {
       return;
     }
-    outputAdapter.sendMessage(buffer.toString());
+
+    outputAdapter.sendMessage(new SystemOutMessage(buffer.toString()));
     buffer.delete(0, buffer.length());
   }
 }

@@ -6,6 +6,7 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.List;
+import org.code.protocol.InternalErrorKey;
 
 /** The class that executes the student's code */
 public class JavaRunner {
@@ -27,10 +28,13 @@ public class JavaRunner {
    */
   public void runCode()
       throws UserFacingException, InternalFacingException, UserInitiatedException {
-    URL[] classLoaderUrls = new URL[] {this.executableLocation};
+    // Include the user-facing api jars in the code we are loading so student code can access them.
+    URL[] classLoaderUrls = Util.getAllJarURLs(this.executableLocation);
 
-    // Create a new URLClassLoader
-    URLClassLoader urlClassLoader = new URLClassLoader(classLoaderUrls);
+    // Create a new URLClassLoader. Use the current class loader as the parent so IO settings are
+    // preserved.
+    URLClassLoader urlClassLoader =
+        new URLClassLoader(classLoaderUrls, JavaRunner.class.getClassLoader());
 
     try {
       // load and run the main method of the class
@@ -38,10 +42,9 @@ public class JavaRunner {
       mainMethod.invoke(null, new Object[] {null});
     } catch (IllegalAccessException e) {
       // TODO: this error message may not be not very friendly
-      throw new UserFacingException("Illegal access: " + e, e);
+      throw new UserInitiatedException(UserInitiatedExceptionKey.ILLEGAL_METHOD_ACCESS, e);
     } catch (InvocationTargetException e) {
-      throw new UserInitiatedException(
-          "Your code hit an exception " + e.getCause().getClass().toString(), e);
+      throw new UserInitiatedException(UserInitiatedExceptionKey.RUNTIME_ERROR, e);
     }
     try {
       urlClassLoader.close();
@@ -74,21 +77,19 @@ public class JavaRunner {
               && parameterTypes.length == 1
               && parameterTypes[0].equals(String[].class)) {
             if (mainMethod != null) {
-              throw new UserInitiatedException(
-                  "Your code can only have one main method. We found at least two classes with main methods.");
+              throw new UserInitiatedException(UserInitiatedExceptionKey.TWO_MAIN_METHODS);
             }
             mainMethod = method;
           }
         }
       } catch (ClassNotFoundException e) {
         // this should be caught earlier in compilation
-        throw new UserFacingException(
-            "We hit an error on our side while running your program. Try Again", e);
+        throw new UserFacingException(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e);
       }
     }
 
     if (mainMethod == null) {
-      throw new UserInitiatedException("Error: your program does not contain a main method");
+      throw new UserInitiatedException(UserInitiatedExceptionKey.NO_MAIN_METHOD);
     }
     return mainMethod;
   }

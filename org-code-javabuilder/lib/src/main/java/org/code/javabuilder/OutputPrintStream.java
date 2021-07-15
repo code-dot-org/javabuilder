@@ -1,6 +1,7 @@
 package org.code.javabuilder;
 
 import java.io.PrintStream;
+import org.code.protocol.OutputAdapter;
 
 /**
  * Wrapper class for PrintStream to ensure autoFlush is set to true for PrintStreams that replace

@@ -41,10 +41,13 @@ def on_connect(event, context)
     :queueUrl => sqs_queue.queue_url,
     :apiEndpoint => api_endpoint,
     :connectionId => request_context["connectionId"],
-    :projectUrl => authorizer["project_url"]
+    :levelId => authorizer["level_id"],
+    :options => authorizer["options"],
+    :iss => authorizer["iss"],
+    :channelId => authorizer["channel_id"]
   }
   response = lambda_client.invoke({
-    function_name: 'javaBuilderExecuteCode:4',
+    function_name: ENV['BUILD_AND_RUN_PROJECT_LAMBDA_ARN'] || 'javaBuilderExecuteCode:13',
     invocation_type: 'Event',
     payload: JSON.generate(payload)
   })

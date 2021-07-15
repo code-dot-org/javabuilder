@@ -1,23 +1,14 @@
 package org.code.javabuilder;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import org.code.protocol.JavabuilderException;
 
-/** Exception caused by a user action. */
-public class UserInitiatedException extends Exception {
-  public UserInitiatedException(String errorMessage) {
-    super(errorMessage);
+/** An exception caused by a user action. */
+public class UserInitiatedException extends JavabuilderException {
+  public UserInitiatedException(UserInitiatedExceptionKey key) {
+    super(key);
   }
 
-  public UserInitiatedException(String errorMessage, Exception cause) {
-    super(errorMessage, cause);
-  }
-
-  /** @return A pretty version of the exception and stack trace. */
-  public String getLoggingString() {
-    StringWriter stringWriter = new StringWriter();
-    PrintWriter printWriter = new PrintWriter(stringWriter);
-    printStackTrace(printWriter);
-    return stringWriter.toString();
+  public UserInitiatedException(UserInitiatedExceptionKey key, Throwable cause) {
+    super(key, cause);
   }
 }
