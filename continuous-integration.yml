@@ -70,7 +70,7 @@ Resources:
     Type: AWS::CodePipeline::Pipeline
     Properties:
       Name: !Ref SubDomainName
-      RoleArn: !Sub "arn:aws:iam::${AWS::AccountId}:role/${CodePipelineServiceRoleName}"
+      RoleArn: !Sub "arn:aws:iam::${AWS::AccountId}:role/service-role/${CodePipelineServiceRoleName}"
       ArtifactStore:
         Type: S3
         Location: !Ref ArtifactBucket
@@ -174,20 +174,20 @@ Resources:
                 ActionMode: CHANGE_SET_EXECUTE
                 ChangeSetName: ProdChangeSet
                 StackName: !Ref SubDomainName
-  Webhook:
-    Type: AWS::CodePipeline::Webhook
-    Properties:
-      AuthenticationConfiguration:
-        SecretToken: !Ref AWS::AccountId
-      Filters:
-        - JsonPath: "$.ref"
-          MatchEquals: refs/heads/{Branch}
-      Authentication: GITHUB_HMAC
-      TargetPipeline: !Ref Pipeline
-      TargetAction: Source
-      Name: javabuilder-webhook
-      TargetPipelineVersion: !GetAtt Pipeline.Version
-      RegisterWithThirdParty: true
+#  Webhook:
+#    Type: AWS::CodePipeline::Webhook
+#    Properties:
+#      AuthenticationConfiguration:
+#        SecretToken: !Ref AWS::AccountId
+#      Filters:
+#        - JsonPath: "$.ref"
+#          MatchEquals: refs/heads/{Branch}
+#      Authentication: GITHUB_HMAC
+#      TargetPipeline: !Ref Pipeline
+#      TargetAction: Source
+#      Name: javabuilder-webhook
+#      TargetPipelineVersion: !GetAtt Pipeline.Version
+#      RegisterWithThirdParty: true
   Build:
     Type: AWS::CodeBuild::Project
     Properties:
