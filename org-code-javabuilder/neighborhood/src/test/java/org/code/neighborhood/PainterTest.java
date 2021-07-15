@@ -7,6 +7,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import org.code.protocol.GlobalProtocol;
 import org.code.protocol.InputAdapter;
+import org.code.protocol.JavabuilderFileWriter;
 import org.code.protocol.OutputAdapter;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,7 +24,8 @@ public class PainterTest {
 
   @BeforeEach
   public void setUp() {
-    GlobalProtocol.create(outputAdapter, mock(InputAdapter.class), "", "", null);
+    GlobalProtocol.create(
+        outputAdapter, mock(InputAdapter.class), "", "", mock(JavabuilderFileWriter.class));
     System.setOut(new PrintStream(outputStreamCaptor));
     World w = new World(singleSquareGrid);
     World.setInstance(w);

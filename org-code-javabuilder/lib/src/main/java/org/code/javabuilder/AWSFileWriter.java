@@ -4,7 +4,6 @@ import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import org.code.protocol.InternalErrorKey;
 import org.code.protocol.JavabuilderException;
 import org.code.protocol.JavabuilderFileWriter;
@@ -21,9 +20,6 @@ public class AWSFileWriter implements JavabuilderFileWriter {
 
   // Temporary limit on writes per session until we can more fully limit usage.
   private static final int WRITES_PER_SESSION = 2;
-  // Number of times to retry writing to S3 if we hit a failure
-  private static final int MAX_RETRIES = 3;
-  private static final int RETRY_TIMEOUT = 250;
 
   public AWSFileWriter(
       AmazonS3 s3Client,
@@ -50,37 +46,20 @@ public class AWSFileWriter implements JavabuilderFileWriter {
     metadata.setContentType(contentType);
     metadata.setContentLength(inputBytes.length);
     ByteArrayInputStream inputStream = new ByteArrayInputStream(inputBytes);
-    if (this.putObjectWithRetry(filePath, inputStream, metadata)) {
-      this.writes++;
-    } else {
-      // We couldn't write to S3, send a message to the user
+
+    try {
+      this.s3Client.putObject(this.outputBucketName, filePath, inputStream, metadata);
+    } catch (SdkClientException e) {
+      JSONObject eventData = new JSONObject();
+      eventData.put("type", "S3_WRITE_ERROR");
+      eventData.put("stackTrace", e.getStackTrace());
+      eventData.put("message", e.getMessage());
+      this.logger.logError(eventData);
+      // We couldn't write to S3, send a message to the user and fail. The S3 SDK includes retries.
       throw new UserFacingException(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION);
     }
 
+    this.writes++;
     return this.getOutputURL + "/" + filePath;
-  }
-
-  private boolean putObjectWithRetry(String filePath, InputStream input, ObjectMetadata metadata) {
-    boolean success = false;
-    int tries = 0;
-    while (tries < MAX_RETRIES && !success) {
-      try {
-        this.s3Client.putObject(this.outputBucketName, filePath, input, metadata);
-        success = true;
-      } catch (SdkClientException e) {
-        JSONObject eventData = new JSONObject();
-        eventData.put("type", "S3_WRITE_ERROR");
-        eventData.put("stackTrace", e.getStackTrace());
-        eventData.put("message", e.getMessage());
-        this.logger.logError(eventData);
-        try {
-          Thread.sleep(RETRY_TIMEOUT);
-        } catch (InterruptedException interruptedException) {
-          /* No action required */
-        }
-      }
-      tries++;
-    }
-    return success;
   }
 }
