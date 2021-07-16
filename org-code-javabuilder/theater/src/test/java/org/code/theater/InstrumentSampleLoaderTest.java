@@ -27,16 +27,11 @@ class InstrumentSampleLoaderTest {
 
   @Test
   public void testGetSampleFileReturnsNullForMissingInstrument() {
-    assertNull(unitUnderTest.getSampleFile(Instrument.BASS, VALID_NOTE));
+    assertNull(unitUnderTest.getSampleFilePath(Instrument.BASS, VALID_NOTE));
   }
 
   @Test
   public void testGetSampleFileReturnsNullForMissingNote() {
-    assertNull(unitUnderTest.getSampleFile(VALID_INSTRUMENT, 12));
-  }
-
-  @Test
-  public void testGetSampleFileReturnsFileNameForValidInstrumentAndNote() {
-    assertEquals(VALID_FILE, unitUnderTest.getSampleFile(VALID_INSTRUMENT, VALID_NOTE));
+    assertNull(unitUnderTest.getSampleFilePath(VALID_INSTRUMENT, 12));
   }
 }
