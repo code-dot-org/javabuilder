@@ -4,6 +4,7 @@ import java.util.HashMap;
 import org.code.protocol.OutputAdapter;
 
 public class Painter {
+  private static final int LARGE_GRID_SIZE = 16;
   private static int lastId = 0;
   private int xLocation;
   private int yLocation;
@@ -84,7 +85,7 @@ public class Painter {
    * @param color the color of the paint being added
    */
   public void paint(String color) {
-    if (this.remainingPaint > 0) {
+    if (this.hasPaint()) {
       this.grid.getSquare(this.xLocation, this.yLocation).setColor(color);
       this.remainingPaint--;
       HashMap<String, String> details = this.getSignalDetails();
@@ -146,6 +147,9 @@ public class Painter {
 
   /** @return True if the painter's personal bucket has paint in it. */
   public boolean hasPaint() {
+    if (this.grid.getSize() >= LARGE_GRID_SIZE) {
+      return true;
+    }
     return this.remainingPaint > 0;
   }
 

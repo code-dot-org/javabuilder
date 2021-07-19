@@ -150,4 +150,24 @@ public class PainterTest {
     painter.paint("red");
     assertEquals(painter.getMyPaint(), 0);
   }
+
+  @Test
+  void largeGridInfinitePaint() {
+    World w = new World(16);
+    World.setInstance(w);
+    Painter painter = new Painter(0, 0, "North", 1);
+    assertTrue(painter.hasPaint());
+    painter.paint("red");
+    assertTrue(painter.hasPaint());
+  }
+
+  @Test
+  void noInfinitePaint() {
+    World w = new World(15);
+    World.setInstance(w);
+    Painter painter = new Painter(0, 0, "North", 1);
+    assertTrue(painter.hasPaint());
+    painter.paint("red");
+    assertFalse(painter.hasPaint());
+  }
 }
