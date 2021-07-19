@@ -213,6 +213,9 @@ Resources:
               TEMPLATE_CONFIG: configuration.json
               STAGING_TEMPLATE_CONFIG: configuration-staging.json
           phases:
+            install:
+              commands:
+                - apt-get update && apt-get install -y jq
             build:
               commands:
                 - /bin/bash ./package.sh
