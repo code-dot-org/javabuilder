@@ -366,11 +366,14 @@ public class Stage {
       this.gifWriter.close();
       this.audioWriter.writeToAudioStreamAndClose();
 
-      this.writeImageAndAudioToFile();
-
-      // TODO: Remove these messages once we've updated the client to load from file.
-      this.outputAdapter.sendMessage(ImageEncoder.encodeStreamToMessage(this.imageOutputStream));
-      this.outputAdapter.sendMessage(SoundEncoder.encodeStreamToMessage(this.audioOutputStream));
+      // If we are in local mode, write output data directly to output adapter
+      if (GlobalProtocol.getInstance().getDashboardHostname().contains("localhost")) {
+        this.outputAdapter.sendMessage(ImageEncoder.encodeStreamToMessage(this.imageOutputStream));
+        this.outputAdapter.sendMessage(SoundEncoder.encodeStreamToMessage(this.audioOutputStream));
+      } else {
+        // otherwise write image and audio to file
+        this.writeImageAndAudioToFile();
+      }
 
       this.hasPlayed = true;
     }
