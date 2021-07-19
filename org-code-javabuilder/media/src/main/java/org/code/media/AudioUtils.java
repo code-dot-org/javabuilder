@@ -1,13 +1,10 @@
 package org.code.media;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import java.io.*;
+import java.net.URL;
 import java.util.Arrays;
-import javax.sound.sampled.AudioFileFormat;
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.*;
+import org.code.protocol.GlobalProtocol;
 import org.code.protocol.InternalErrorKey;
 import org.code.protocol.InternalJavabuilderError;
 
@@ -33,18 +30,6 @@ class AudioUtils {
 
   private static final AudioFileFormat.Type DEFAULT_AUDIO_FILE_FORMAT_TYPE =
       AudioFileFormat.Type.WAVE;
-
-  /**
-   * Determines if given {@link AudioFormat} is a valid format we can read
-   *
-   * @param audioFormat
-   * @return if audio format is valid
-   */
-  public static boolean isAudioFormatValid(AudioFormat audioFormat) {
-    return audioFormat.getSampleRate() == DEFAULT_SAMPLE_RATE
-        && audioFormat.getSampleSizeInBits() == DEFAULT_BITS_PER_SAMPLE
-        && audioFormat.isBigEndian() == IS_NOT_BIG_ENDIAN;
-  }
 
   /**
    * Converts an array of raw audio samples as bytes to raw audio samples as doubles. Each sample is
@@ -150,5 +135,68 @@ class AudioUtils {
 
   public static int getDefaultSampleRate() {
     return DEFAULT_SAMPLE_RATE;
+  }
+
+  /**
+   * Loads and reads the audio samples from the given asset file
+   *
+   * @param filename Name of the asset file
+   * @return samples
+   * @throws FileNotFoundException
+   */
+  public static double[] readSamplesFromAssetFile(String filename) throws FileNotFoundException {
+    try {
+      final URL audioFileUrl = new URL(GlobalProtocol.getInstance().generateAssetUrl(filename));
+      final AudioInputStream audioInputStream =
+          AudioUtils.convertStreamToDefaultAudioFormat(
+              AudioSystem.getAudioInputStream(audioFileUrl));
+      return AudioUtils.readSamplesFromInputStream(audioInputStream);
+    } catch (IOException e) {
+      throw new FileNotFoundException("Could not find file: " + filename);
+    } catch (UnsupportedAudioFileException e) {
+      throw new SoundException(SoundExceptionKeys.INVALID_AUDIO_FILE_FORMAT);
+    }
+  }
+
+  /**
+   * Loads and reads the audio samples from the file referenced by the given local filepath. Meant
+   * for internal use.
+   *
+   * @param filepath local path
+   * @return samples
+   * @throws FileNotFoundException
+   */
+  static double[] readSamplesFromLocalFile(String filepath) throws FileNotFoundException {
+    try {
+      return AudioUtils.readSamplesFromInputStream(
+          AudioUtils.convertStreamToDefaultAudioFormat(
+              AudioSystem.getAudioInputStream(new File(filepath))));
+    } catch (IOException e) {
+      throw new FileNotFoundException("Could not find file: " + filepath);
+    } catch (UnsupportedAudioFileException e) {
+      throw new SoundException(SoundExceptionKeys.INVALID_AUDIO_FILE_FORMAT);
+    }
+  }
+
+  private static double[] readSamplesFromInputStream(AudioInputStream audioInputStream) {
+    final byte[] bytes;
+    try {
+      bytes = audioInputStream.readAllBytes();
+      audioInputStream.close();
+    } catch (IOException e) {
+      throw new InternalJavabuilderError(InternalErrorKey.INTERNAL_EXCEPTION, e);
+    }
+
+    return AudioUtils.convertByteArrayToDoubleArray(
+        bytes, audioInputStream.getFormat().getChannels());
+  }
+
+  private static AudioInputStream convertStreamToDefaultAudioFormat(AudioInputStream stream)
+      throws SoundException {
+    if (!AudioSystem.isConversionSupported(DEFAULT_AUDIO_FORMAT, stream.getFormat())) {
+      throw new SoundException(SoundExceptionKeys.INVALID_AUDIO_FILE_FORMAT);
+    }
+
+    return AudioSystem.getAudioInputStream(DEFAULT_AUDIO_FORMAT, stream);
   }
 }

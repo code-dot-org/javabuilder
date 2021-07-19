@@ -129,17 +129,18 @@ public class StageTest {
   void testPlaySoundWithFilenameCallsAudioWriter() throws FileNotFoundException {
     final String testFile = "test.wav";
     s.playSound(testFile);
-    verify(audioWriter).writeAudioFile(testFile);
+    verify(audioWriter).writeAudioFromAssetFile(testFile);
   }
 
   @Test
   void testPlayNoteDoesNothingWhenFileNotFound() throws FileNotFoundException {
-    when(instrumentSampleLoader.getSampleFile(any(Instrument.class), anyInt())).thenReturn(null);
+    when(instrumentSampleLoader.getSampleFilePath(any(Instrument.class), anyInt()))
+        .thenReturn(null);
 
     s.playNote(Instrument.PIANO, 60, 1);
 
-    verify(instrumentSampleLoader).getSampleFile(Instrument.PIANO, 60);
-    verify(audioWriter, never()).writeAudioFile(anyString(), anyDouble());
+    verify(instrumentSampleLoader).getSampleFilePath(Instrument.PIANO, 60);
+    verify(audioWriter, never()).writeAudioFromLocalFile(anyString(), anyDouble());
   }
 
   @Test
@@ -147,13 +148,13 @@ public class StageTest {
     final String testSampleFile = "test.wav";
     final int note = 60;
     final double seconds = 2.0;
-    when(instrumentSampleLoader.getSampleFile(any(Instrument.class), anyInt()))
+    when(instrumentSampleLoader.getSampleFilePath(any(Instrument.class), eq(note)))
         .thenReturn(testSampleFile);
 
     s.playNote(Instrument.PIANO, note, seconds);
 
-    verify(instrumentSampleLoader).getSampleFile(Instrument.PIANO, note);
-    verify(audioWriter).writeAudioFile(testSampleFile, seconds);
+    verify(instrumentSampleLoader).getSampleFilePath(Instrument.PIANO, note);
+    verify(audioWriter).writeAudioFromLocalFile(testSampleFile, seconds);
   }
 
   @Test
