@@ -257,7 +257,7 @@ Resources:
       Runtime: java11
       CodeUri: org-code-javabuilder/lib/build/distributions/lib.zip
       Description: Compile and execute a JavaLab project.
-      MemorySize: 512
+      MemorySize: 1024
       Timeout: 300
       Role:
         Fn::ImportValue: JavabuilderLambdaExecutionRole
