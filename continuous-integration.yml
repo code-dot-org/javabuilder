@@ -194,8 +194,8 @@ Resources:
       Artifacts:
         Type: CODEPIPELINE
       Environment:
-        ComputeType: BUILD_GENERAL1_LARGE
-        Image: aws/codebuild/docker:17.09.0
+        ComputeType: BUILD_GENERAL1_MEDIUM
+        Image: aws/codebuild/amazonlinux2-x86_64-standard
         Type: LINUX_CONTAINER
       ServiceRole: !ImportValue JavabuilderCodeBuildRole
       Source:
@@ -217,8 +217,6 @@ Resources:
               runtime-versions:
                 ruby: 2.7
                 java: corretto11
-              commands:
-                - apt-get update && apt-get install -y jq
             build:
               commands:
                 - /bin/bash ./package.sh
