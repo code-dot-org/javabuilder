@@ -195,7 +195,7 @@ Resources:
         Type: CODEPIPELINE
       Environment:
         ComputeType: BUILD_GENERAL1_MEDIUM
-        Image: aws/codebuild/amazonlinux2-x86_64-standard
+        Image: aws/codebuild/amazonlinux2-x86_64-standard:3.0
         Type: LINUX_CONTAINER
       ServiceRole: !ImportValue JavabuilderCodeBuildRole
       Source:
