@@ -31,13 +31,29 @@ aws cloudformation package \
   --s3-bucket ${TEMPLATE_BUCKET} \
   --output-template-file ${OUTPUT_TEMPLATE} \
 
-# Query existing parameter values for reuse in CodePipeline configuration.
-JQ_FILTER='{Parameters: .Stacks[].Parameters | map({(.ParameterKey): .ParameterValue}) | add}'
+cat <<JSON > ${TEMPLATE_CONFIG}
+{
+  "Parameters": {
+    "BaseDomainName": "dev-code.org",
+    "BaseDomainNameHostedZonedID": "Z07248463JGJ44FME5BZ5",
+    "SubDomainName": "javabuilder"
+  },
+  "Tags": {
+    "environment": "production"
+  }
+}
+JSON
 
-aws cloudformation describe-stacks --stack-name ${STACK} | \
-  jq "${JQ_FILTER}" \
-    > ${TEMPLATE_CONFIG}
+cat <<JSON > ${STAGING_TEMPLATE_CONFIG}
+{
+  "Parameters": {
+    "BaseDomainName": "dev-code.org",
+    "BaseDomainNameHostedZonedID": "Z07248463JGJ44FME5BZ5",
+    "SubDomainName": "javabuilder-staging"
+  },
+  "Tags": {
+    "environment": "staging"
+  }
+}
+JSON
 
-aws cloudformation describe-stacks --stack-name ${STAGING_STACK} | \
-  jq "${JQ_FILTER}" \
-    > ${STAGING_TEMPLATE_CONFIG}
