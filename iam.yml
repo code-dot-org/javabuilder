@@ -130,6 +130,7 @@ Resources:
                   - "apigateway:*"
                   - "lambda:*"
                   - "cloudformation:*"
+                  - "acm:*"
                   - "route53:*"
                 Resource: '*'
               - Effect: Allow
