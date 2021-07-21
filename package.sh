@@ -34,9 +34,9 @@ aws cloudformation package \
 cat <<JSON > ${TEMPLATE_CONFIG}
 {
   "Parameters": {
-    "BaseDomainName": "dev-code.org",
-    "BaseDomainNameHostedZonedID": "Z07248463JGJ44FME5BZ5",
-    "SubDomainName": "javabuilder"
+    "BaseDomainName": "${BASE_DOMAIN}",
+    "BaseDomainNameHostedZonedID": "${BASE_DOMAIN_HOSTED_ZONE_ID}",
+    "SubDomainName": "${SUB_DOMAIN}"
   },
   "Tags": {
     "environment": "production"
@@ -47,9 +47,9 @@ JSON
 cat <<JSON > ${STAGING_TEMPLATE_CONFIG}
 {
   "Parameters": {
-    "BaseDomainName": "dev-code.org",
-    "BaseDomainNameHostedZonedID": "Z07248463JGJ44FME5BZ5",
-    "SubDomainName": "javabuilder-staging"
+    "BaseDomainName": "${BASE_DOMAIN}",
+    "BaseDomainNameHostedZonedID": "${BASE_DOMAIN_HOSTED_ZONE_ID}",
+    "SubDomainName": "${STAGING_SUB_DOMAIN}"
   },
   "Tags": {
     "environment": "staging"
