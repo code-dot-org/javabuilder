@@ -184,11 +184,6 @@ Resources:
       Action: lambda:InvokeFunction
       FunctionName: !Ref StartSessionAndRelayMessagesFunction
       Principal: apigateway.amazonaws.com
-  APIGatewayCloudWatchLogs:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName:
-        Fn::Sub: ${SubDomainName}.${BaseDomainName}
   JavabuilderAuthorizerLambda:
     Type: AWS::Serverless::Function
     Properties:
