@@ -4,7 +4,6 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Comparator;
 import java.util.List;
 import org.code.protocol.GlobalProtocol;
 import org.code.protocol.InputAdapter;
@@ -78,10 +77,7 @@ public class CodeBuilder implements AutoCloseable {
     if (this.tempFolder != null) {
       try {
         // Recursively delete the temp folder
-        Files.walk(this.tempFolder.toPath())
-            .sorted(Comparator.reverseOrder())
-            .map(Path::toFile)
-            .forEach(File::delete);
+        Util.recursivelyClearDirectory(this.tempFolder.toPath());
       } catch (IOException e) {
         throw new InternalFacingException(e.toString(), e);
       }
