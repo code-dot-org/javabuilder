@@ -169,9 +169,7 @@ class AudioUtilsTest {
     when(audioInputStream.readAllBytes()).thenReturn(BYTE_ARRAY_MONO);
 
     final double[] converted = AudioUtils.readSamplesFromAssetFile(TEST_FILE_NAME);
-    for (int i = 0; i < converted.length; i++) {
-      assertEquals(DOUBLE_ARRAY[i], Math.round(converted[i] * 10) / 10.0);
-    }
+    assertSampleArraysMatch(DOUBLE_ARRAY, converted);
 
     verify(audioFormat).getChannels();
   }
@@ -203,10 +201,7 @@ class AudioUtilsTest {
   @Test
   public void testConvertByteArrayConvertsCorrectly() throws SoundException {
     double[] converted = AudioUtils.convertByteArrayToDoubleArray(BYTE_ARRAY_MONO, 1);
-    // Verify values are correct when rounded
-    for (int i = 0; i < converted.length; i++) {
-      assertEquals(DOUBLE_ARRAY[i], Math.round(converted[i] * 10) / 10.0);
-    }
+    assertSampleArraysMatch(DOUBLE_ARRAY, converted);
   }
 
   @Test
@@ -242,5 +237,28 @@ class AudioUtilsTest {
     Arrays.fill(samples, 0.5);
 
     assertSame(samples, AudioUtils.truncateSamples(samples, 7.0));
+  }
+
+  @Test
+  public void testBlendSamplesBlendsCorrectly() {
+    final double[] samples = new double[] {0.2, -0.4, 0.7, -0.9};
+    // blend starting at index 0
+    double[] expected = new double[] {0.4, -0.8, 1.0, -1.0};
+    assertSampleArraysMatch(expected, AudioUtils.blendSamples(samples, samples, 0));
+
+    // blend starting at index 1
+    expected = new double[] {0.2, -0.2, 0.3, -0.2, -0.9};
+    assertSampleArraysMatch(expected, AudioUtils.blendSamples(samples, samples, 1));
+
+    // blend starting at index 2
+    expected = new double[] {0.2, -0.4, 0.9, -1.0, 0.7, -0.9};
+    assertSampleArraysMatch(expected, AudioUtils.blendSamples(samples, samples, 2));
+  }
+
+  // Verify values are correct when rounded
+  private void assertSampleArraysMatch(double[] expected, double[] actual) {
+    for (int i = 0; i < expected.length; i++) {
+      assertEquals(expected[i], Math.round(actual[i] * 10) / 10.0);
+    }
   }
 }

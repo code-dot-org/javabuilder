@@ -35,6 +35,7 @@ public class Stage {
   protected Stage() {
     this(
         new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB),
+        new GifWriter.Factory(),
         new AudioWriter.Factory(),
         new InstrumentSampleLoader());
   }
@@ -47,13 +48,14 @@ public class Stage {
    */
   protected Stage(
       BufferedImage image,
+      GifWriter.Factory gifWriterFactory,
       AudioWriter.Factory audioWriterFactory,
       InstrumentSampleLoader instrumentSampleLoader) {
     this.image = image;
     this.graphics = this.image.createGraphics();
     this.outputAdapter = GlobalProtocol.getInstance().getOutputAdapter();
     this.imageOutputStream = new ByteArrayOutputStream();
-    this.gifWriter = new GifWriter(this.imageOutputStream);
+    this.gifWriter = gifWriterFactory.createGifWriter(this.imageOutputStream);
     this.audioOutputStream = new ByteArrayOutputStream();
     this.audioWriter = audioWriterFactory.createAudioWriter(this.audioOutputStream);
     this.instrumentSampleLoader = instrumentSampleLoader;
@@ -103,16 +105,21 @@ public class Stage {
    *     implemented using an array of loopable sounds (Mike can generate these).
    */
   public void playNote(Instrument instrument, int note, double seconds) {
-    final String sampleFilePath = instrumentSampleLoader.getSampleFilePath(instrument, note);
-    if (sampleFilePath == null) {
-      return;
-    }
+    this.playNote(instrument, note, seconds, false);
+  }
 
-    try {
-      this.audioWriter.writeAudioFromLocalFile(sampleFilePath, seconds);
-    } catch (FileNotFoundException e) {
-      System.out.printf("Could not play instrument: %s at note: %s%n", instrument, note);
-    }
+  /**
+   * Plays a note with the selected instrument and adds a pause for the duration of the note.
+   * Convenience method for playing notes in sequence without needing to call pause() between each
+   * one.
+   *
+   * @param instrument the instrument to play.
+   * @param note the note to play. 60 represents middle C on a piano.
+   * @param seconds length of the note. Implementer's note: Behind the scenes, this should just be
+   *     implemented using an array of loopable sounds (Mike can generate these).
+   */
+  public void playNoteAndPause(Instrument instrument, int note, double seconds) {
+    this.playNote(instrument, note, seconds, true);
   }
 
   /**
@@ -384,6 +391,22 @@ public class Stage {
       this.graphics.drawImage(image, transform, null);
     } else {
       this.graphics.drawImage(image, x, y, width, height, null);
+    }
+  }
+
+  private void playNote(Instrument instrument, int note, double noteLength, boolean shouldPause) {
+    final String sampleFilePath = instrumentSampleLoader.getSampleFilePath(instrument, note);
+    if (sampleFilePath == null) {
+      return;
+    }
+
+    try {
+      this.audioWriter.writeAudioFromLocalFile(sampleFilePath, noteLength);
+      if (shouldPause) {
+        this.pause(noteLength);
+      }
+    } catch (FileNotFoundException e) {
+      System.out.printf("Could not play instrument: %s at note: %s%n", instrument, note);
     }
   }
 }
