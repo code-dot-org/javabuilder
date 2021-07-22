@@ -38,6 +38,7 @@ public class Stage {
   protected Stage() {
     this(
         new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB),
+        new GifWriter.Factory(),
         new AudioWriter.Factory(),
         new InstrumentSampleLoader());
   }
@@ -50,6 +51,7 @@ public class Stage {
    */
   protected Stage(
       BufferedImage image,
+      GifWriter.Factory gifWriterFactory,
       AudioWriter.Factory audioWriterFactory,
       InstrumentSampleLoader instrumentSampleLoader) {
     this.image = image;
@@ -57,7 +59,7 @@ public class Stage {
     this.outputAdapter = GlobalProtocol.getInstance().getOutputAdapter();
     this.fileWriter = GlobalProtocol.getInstance().getFileWriter();
     this.imageOutputStream = new ByteArrayOutputStream();
-    this.gifWriter = new GifWriter(this.imageOutputStream);
+    this.gifWriter = gifWriterFactory.createGifWriter(this.imageOutputStream);
     this.audioOutputStream = new ByteArrayOutputStream();
     this.audioWriter = audioWriterFactory.createAudioWriter(this.audioOutputStream);
     this.instrumentSampleLoader = instrumentSampleLoader;
@@ -103,20 +105,24 @@ public class Stage {
    *
    * @param instrument the instrument to play.
    * @param note the note to play. 60 represents middle C on a piano.
-   * @param seconds length of the note. Implementer's note: Behind the scenes, this should just be
-   *     implemented using an array of loopable sounds (Mike can generate these).
+   * @param seconds length of the note.
    */
   public void playNote(Instrument instrument, int note, double seconds) {
-    final String sampleFilePath = instrumentSampleLoader.getSampleFilePath(instrument, note);
-    if (sampleFilePath == null) {
-      return;
-    }
+    this.playNote(instrument, note, seconds, false);
+  }
 
-    try {
-      this.audioWriter.writeAudioFromLocalFile(sampleFilePath, seconds);
-    } catch (FileNotFoundException e) {
-      System.out.printf("Could not play instrument: %s at note: %s%n", instrument, note);
-    }
+  /**
+   * Plays a note with the selected instrument and adds a pause in drawing/audio for the duration of
+   * the note, so that subsequent play commands begin after the note has finished playing.
+   * Convenience method for playing notes in sequence without needing to call pause() between each
+   * one.
+   *
+   * @param instrument the instrument to play.
+   * @param note the note to play. 60 represents middle C on a piano.
+   * @param seconds length of the note.
+   */
+  public void playNoteAndPause(Instrument instrument, int note, double seconds) {
+    this.playNote(instrument, note, seconds, true);
   }
 
   /**
@@ -418,6 +424,22 @@ public class Stage {
       // in normal execution as it is only called via play,
       // and play can only be called once.
       throw new InternalJavabuilderError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e);
+    }
+  }
+
+  private void playNote(Instrument instrument, int note, double noteLength, boolean shouldPause) {
+    final String sampleFilePath = instrumentSampleLoader.getSampleFilePath(instrument, note);
+    if (sampleFilePath == null) {
+      return;
+    }
+
+    try {
+      this.audioWriter.writeAudioFromLocalFile(sampleFilePath, noteLength);
+      if (shouldPause) {
+        this.pause(noteLength);
+      }
+    } catch (FileNotFoundException e) {
+      System.out.printf("Could not play instrument: %s at note: %s%n", instrument, note);
     }
   }
 }
