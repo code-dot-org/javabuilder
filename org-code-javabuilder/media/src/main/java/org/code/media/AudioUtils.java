@@ -133,6 +133,30 @@ class AudioUtils {
     return Arrays.copyOf(samples, newLength);
   }
 
+  /**
+   * Blends audio samples from newSamples into originalSamples starting at the sample index
+   * indicated by sampleOffset
+   *
+   * @param originalSamples original samples to blend into
+   * @param newSamples new samples to blend
+   * @param sampleOffset sample index to start blending
+   * @return
+   */
+  public static double[] blendSamples(
+      double[] originalSamples, double[] newSamples, int sampleOffset) {
+    final double[] blendedSamples =
+        Arrays.copyOf(
+            originalSamples, Math.max(originalSamples.length, sampleOffset + newSamples.length));
+
+    for (int i = 0; i < newSamples.length; i++) {
+      // Blend samples by adding and clamping to range (-1.0, 1.0)
+      final double blendedSample = blendedSamples[i + sampleOffset] + newSamples[i];
+      blendedSamples[i + sampleOffset] = Math.max(-1.0, Math.min(1.0, blendedSample));
+    }
+
+    return blendedSamples;
+  }
+
   public static int getDefaultSampleRate() {
     return DEFAULT_SAMPLE_RATE;
   }

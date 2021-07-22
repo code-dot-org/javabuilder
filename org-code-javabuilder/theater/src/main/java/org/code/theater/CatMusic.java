@@ -59,8 +59,4 @@ public class CatMusic {
     this.audioWriter.writeToAudioStreamAndClose();
     this.outputAdapter.sendMessage(SoundEncoder.encodeStreamToMessage(this.audioOutputStream));
   }
-
-  public void reset() {
-    this.audioWriter.reset();
-  }
 }
