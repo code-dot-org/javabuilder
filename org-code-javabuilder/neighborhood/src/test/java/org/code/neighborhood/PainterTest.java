@@ -7,6 +7,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import org.code.protocol.GlobalProtocol;
 import org.code.protocol.InputAdapter;
+import org.code.protocol.JavabuilderFileWriter;
 import org.code.protocol.OutputAdapter;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,7 +24,8 @@ public class PainterTest {
 
   @BeforeEach
   public void setUp() {
-    GlobalProtocol.create(outputAdapter, mock(InputAdapter.class), "", "");
+    GlobalProtocol.create(
+        outputAdapter, mock(InputAdapter.class), "", "", mock(JavabuilderFileWriter.class));
     System.setOut(new PrintStream(outputStreamCaptor));
     World w = new World(singleSquareGrid);
     World.setInstance(w);
@@ -149,5 +151,25 @@ public class PainterTest {
     assertEquals(painter.getMyPaint(), 1);
     painter.paint("red");
     assertEquals(painter.getMyPaint(), 0);
+  }
+
+  @Test
+  void largeGridInfinitePaint() {
+    World w = new World(16);
+    World.setInstance(w);
+    Painter painter = new Painter(0, 0, "North", 1);
+    assertTrue(painter.hasPaint());
+    painter.paint("red");
+    assertTrue(painter.hasPaint());
+  }
+
+  @Test
+  void noInfinitePaint() {
+    World w = new World(15);
+    World.setInstance(w);
+    Painter painter = new Painter(0, 0, "North", 1);
+    assertTrue(painter.hasPaint());
+    painter.paint("red");
+    assertFalse(painter.hasPaint());
   }
 }
