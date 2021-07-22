@@ -1,5 +1,7 @@
 package org.code.javabuilder;
 
+import static org.code.protocol.InternalErrorKey.INTERNAL_EXCEPTION;
+
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.apigatewaymanagementapi.AmazonApiGatewayManagementApi;
 import com.amazonaws.services.apigatewaymanagementapi.AmazonApiGatewayManagementApiClientBuilder;
@@ -9,6 +11,8 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.Map;
 import org.code.protocol.*;
 import org.json.JSONObject;
@@ -73,6 +77,14 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     // Load files to memory and create and invoke the code execution environment
     try {
       GlobalProtocol.create(outputAdapter, inputAdapter, dashboardHostname, channelId, fileWriter);
+
+      try {
+        // Delete any leftover contents of the tmp folder from previous lambda invocations
+        Util.recursivelyClearDirectory(Paths.get(System.getProperty("java.io.tmpdir")));
+      } catch (IOException e) {
+        throw new InternalJavabuilderError(INTERNAL_EXCEPTION, e);
+      }
+
       // Create file loader
       final UserProjectFileLoader userProjectFileLoader =
           new UserProjectFileLoader(

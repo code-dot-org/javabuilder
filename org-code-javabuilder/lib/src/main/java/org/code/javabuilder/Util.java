@@ -1,9 +1,14 @@
 package org.code.javabuilder;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Comparator;
 import org.code.protocol.InternalErrorKey;
 import org.code.protocol.InternalJavabuilderError;
 
@@ -35,5 +40,9 @@ public class Util {
     }
 
     return String.join(System.getProperty("path.separator"), allJarPaths);
+  }
+
+  public static void recursivelyClearDirectory(Path directory) throws IOException {
+    Files.walk(directory).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
   }
 }
