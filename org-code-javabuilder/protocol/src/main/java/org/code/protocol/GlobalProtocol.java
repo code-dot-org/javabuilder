@@ -60,7 +60,10 @@ public class GlobalProtocol {
   }
 
   public String generateAssetUrl(String filename) {
-    return String.format("%s/v3/assets/%s/%s", this.dashboardHostname, this.channelId, filename);
+    // append timestamp to asset url to avoid cached 404s.
+    return String.format(
+        "%s/v3/assets/%s/%s?t=%d",
+        this.dashboardHostname, this.channelId, filename, System.currentTimeMillis());
   }
 
   public String generateSourcesUrl() {
