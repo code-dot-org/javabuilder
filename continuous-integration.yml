@@ -217,6 +217,8 @@ Resources:
               runtime-versions:
                 ruby: 2.7
                 java: corretto11
+              commands:
+                - gem install bundler
             build:
               commands:
                 - /bin/bash ./package.sh
