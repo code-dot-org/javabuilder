@@ -5,15 +5,16 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
+import java.util.HashMap;
 import org.code.media.AudioWriter;
 import org.code.media.Color;
 import org.code.media.Image;
-import org.code.protocol.GlobalProtocol;
-import org.code.protocol.OutputAdapter;
+import org.code.protocol.*;
 
 public class Stage {
   private final BufferedImage image;
   private final OutputAdapter outputAdapter;
+  private final JavabuilderFileWriter fileWriter;
   private final GifWriter gifWriter;
   private final ByteArrayOutputStream imageOutputStream;
   private final Graphics2D graphics;
@@ -27,6 +28,8 @@ public class Stage {
   private static final int WIDTH = 400;
   private static final int HEIGHT = 400;
   private static final java.awt.Color DEFAULT_COLOR = java.awt.Color.BLACK;
+  private static final String IMAGE_FILENAME = "theaterImage.gif";
+  private static final String AUDIO_FILENAME = "theaterAudio.wav";
 
   /**
    * Initialize Stage with a default image. Stage should be initialized outside of org.code.theater
@@ -54,6 +57,7 @@ public class Stage {
     this.image = image;
     this.graphics = this.image.createGraphics();
     this.outputAdapter = GlobalProtocol.getInstance().getOutputAdapter();
+    this.fileWriter = GlobalProtocol.getInstance().getFileWriter();
     this.imageOutputStream = new ByteArrayOutputStream();
     this.gifWriter = gifWriterFactory.createGifWriter(this.imageOutputStream);
     this.audioOutputStream = new ByteArrayOutputStream();
@@ -369,8 +373,14 @@ public class Stage {
       this.gifWriter.close();
       this.audioWriter.writeToAudioStreamAndClose();
 
-      this.outputAdapter.sendMessage(ImageEncoder.encodeStreamToMessage(this.imageOutputStream));
-      this.outputAdapter.sendMessage(SoundEncoder.encodeStreamToMessage(this.audioOutputStream));
+      // If we are in local mode, write output data directly to output adapter
+      if (GlobalProtocol.getInstance().getDashboardHostname().contains("localhost")) {
+        this.outputAdapter.sendMessage(ImageEncoder.encodeStreamToMessage(this.imageOutputStream));
+        this.outputAdapter.sendMessage(SoundEncoder.encodeStreamToMessage(this.audioOutputStream));
+      } else {
+        // otherwise write image and audio to file
+        this.writeImageAndAudioToFile();
+      }
 
       this.hasPlayed = true;
     }
@@ -391,6 +401,30 @@ public class Stage {
       this.graphics.drawImage(image, transform, null);
     } else {
       this.graphics.drawImage(image, x, y, width, height, null);
+    }
+  }
+
+  private void writeImageAndAudioToFile() {
+    try {
+      String imageUrl =
+          this.fileWriter.writeToFile(
+              IMAGE_FILENAME, this.imageOutputStream.toByteArray(), "image/gif");
+      String audioUrl =
+          this.fileWriter.writeToFile(
+              AUDIO_FILENAME, this.audioOutputStream.toByteArray(), "audio/wav");
+
+      HashMap<String, String> imageMessage = new HashMap<>();
+      imageMessage.put("url", imageUrl);
+      this.outputAdapter.sendMessage(new TheaterMessage(TheaterSignalKey.VISUAL_URL, imageMessage));
+
+      HashMap<String, String> audioMessage = new HashMap<>();
+      audioMessage.put("url", audioUrl);
+      this.outputAdapter.sendMessage(new TheaterMessage(TheaterSignalKey.AUDIO_URL, audioMessage));
+    } catch (JavabuilderException e) {
+      // we should not hit this (caused by too many file writes)
+      // in normal execution as it is only called via play,
+      // and play can only be called once.
+      throw new InternalJavabuilderError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e);
     }
   }
 

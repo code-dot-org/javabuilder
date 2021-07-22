@@ -14,6 +14,7 @@ import org.code.media.AudioWriter;
 import org.code.media.Image;
 import org.code.protocol.GlobalProtocol;
 import org.code.protocol.InputAdapter;
+import org.code.protocol.JavabuilderFileWriter;
 import org.code.protocol.OutputAdapter;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,7 +35,8 @@ public class StageTest {
 
   @BeforeEach
   public void setUp() {
-    GlobalProtocol.create(outputAdapter, mock(InputAdapter.class), "", "");
+    GlobalProtocol.create(
+        outputAdapter, mock(InputAdapter.class), "", "", mock(JavabuilderFileWriter.class));
     System.setOut(new PrintStream(outputStreamCaptor));
     bufferedImage = mock(BufferedImage.class);
     graphics = mock(Graphics2D.class);
