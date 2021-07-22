@@ -105,22 +105,21 @@ public class Stage {
    *
    * @param instrument the instrument to play.
    * @param note the note to play. 60 represents middle C on a piano.
-   * @param seconds length of the note. Implementer's note: Behind the scenes, this should just be
-   *     implemented using an array of loopable sounds (Mike can generate these).
+   * @param seconds length of the note.
    */
   public void playNote(Instrument instrument, int note, double seconds) {
     this.playNote(instrument, note, seconds, false);
   }
 
   /**
-   * Plays a note with the selected instrument and adds a pause for the duration of the note.
+   * Plays a note with the selected instrument and adds a pause in drawing/audio for the duration of
+   * the note, so that subsequent play commands begin after the note has finished playing.
    * Convenience method for playing notes in sequence without needing to call pause() between each
    * one.
    *
    * @param instrument the instrument to play.
    * @param note the note to play. 60 represents middle C on a piano.
-   * @param seconds length of the note. Implementer's note: Behind the scenes, this should just be
-   *     implemented using an array of loopable sounds (Mike can generate these).
+   * @param seconds length of the note.
    */
   public void playNoteAndPause(Instrument instrument, int note, double seconds) {
     this.playNote(instrument, note, seconds, true);
