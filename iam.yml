@@ -132,12 +132,18 @@ Resources:
                   - "cloudformation:*"
                   - "acm:*"
                   - "route53:*"
+                  - "cloudfront:*"
                 Resource: '*'
               - Effect: Allow
                 Action:
                   - "s3:GetObject"
                 Resource:
                   - !Sub "arn:aws:s3:::${TemplateBucket}/*"
+              - Effect: Allow
+                Action:
+                  - "s3:*"
+                Resource:
+                  - !Sub "arn:aws:s3:::cdo-*javabuilder*-output"
               - Effect: Allow
                 Action:
                   - "iam:PassRole"
