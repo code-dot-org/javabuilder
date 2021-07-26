@@ -14,6 +14,7 @@ import org.code.media.AudioWriter;
 import org.code.media.Image;
 import org.code.protocol.GlobalProtocol;
 import org.code.protocol.InputAdapter;
+import org.code.protocol.JavabuilderFileWriter;
 import org.code.protocol.OutputAdapter;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,7 +27,7 @@ public class StageTest {
   private final ByteArrayOutputStream outputStreamCaptor = new ByteArrayOutputStream();
   private BufferedImage bufferedImage;
   private Graphics2D graphics;
-  private AudioWriter.Factory audioWriterFactory;
+  private GifWriter gifWriter;
   private AudioWriter audioWriter;
   private InstrumentSampleLoader instrumentSampleLoader;
 
@@ -34,18 +35,24 @@ public class StageTest {
 
   @BeforeEach
   public void setUp() {
-    GlobalProtocol.create(outputAdapter, mock(InputAdapter.class), "", "");
+    GlobalProtocol.create(
+        outputAdapter, mock(InputAdapter.class), "", "", mock(JavabuilderFileWriter.class));
     System.setOut(new PrintStream(outputStreamCaptor));
     bufferedImage = mock(BufferedImage.class);
     graphics = mock(Graphics2D.class);
     when(bufferedImage.createGraphics()).thenReturn(graphics);
-    audioWriterFactory = mock(AudioWriter.Factory.class);
+
+    gifWriter = mock(GifWriter.class);
+    final GifWriter.Factory gifWriterFactory = mock(GifWriter.Factory.class);
+    when(gifWriterFactory.createGifWriter(any(ByteArrayOutputStream.class))).thenReturn(gifWriter);
+
+    final AudioWriter.Factory audioWriterFactory = mock(AudioWriter.Factory.class);
     audioWriter = mock(AudioWriter.class);
     when(audioWriterFactory.createAudioWriter(any(ByteArrayOutputStream.class)))
         .thenReturn(audioWriter);
     instrumentSampleLoader = mock(InstrumentSampleLoader.class);
 
-    s = new Stage(bufferedImage, audioWriterFactory, instrumentSampleLoader);
+    s = new Stage(bufferedImage, gifWriterFactory, audioWriterFactory, instrumentSampleLoader);
   }
 
   @AfterEach
@@ -127,17 +134,18 @@ public class StageTest {
   void testPlaySoundWithFilenameCallsAudioWriter() throws FileNotFoundException {
     final String testFile = "test.wav";
     s.playSound(testFile);
-    verify(audioWriter).writeAudioFile(testFile);
+    verify(audioWriter).writeAudioFromAssetFile(testFile);
   }
 
   @Test
   void testPlayNoteDoesNothingWhenFileNotFound() throws FileNotFoundException {
-    when(instrumentSampleLoader.getSampleFile(any(Instrument.class), anyInt())).thenReturn(null);
+    when(instrumentSampleLoader.getSampleFilePath(any(Instrument.class), anyInt()))
+        .thenReturn(null);
 
     s.playNote(Instrument.PIANO, 60, 1);
 
-    verify(instrumentSampleLoader).getSampleFile(Instrument.PIANO, 60);
-    verify(audioWriter, never()).writeAudioFile(anyString(), anyDouble());
+    verify(instrumentSampleLoader).getSampleFilePath(Instrument.PIANO, 60);
+    verify(audioWriter, never()).writeAudioFromLocalFile(anyString(), anyDouble());
   }
 
   @Test
@@ -145,13 +153,38 @@ public class StageTest {
     final String testSampleFile = "test.wav";
     final int note = 60;
     final double seconds = 2.0;
-    when(instrumentSampleLoader.getSampleFile(any(Instrument.class), anyInt()))
+    when(instrumentSampleLoader.getSampleFilePath(any(Instrument.class), eq(note)))
         .thenReturn(testSampleFile);
 
     s.playNote(Instrument.PIANO, note, seconds);
 
-    verify(instrumentSampleLoader).getSampleFile(Instrument.PIANO, note);
-    verify(audioWriter).writeAudioFile(testSampleFile, seconds);
+    verify(instrumentSampleLoader).getSampleFilePath(Instrument.PIANO, note);
+    verify(audioWriter).writeAudioFromLocalFile(testSampleFile, seconds);
+    verify(audioWriter, never()).addDelay(anyDouble());
+  }
+
+  @Test
+  void testPlayNoteAndPauseDoesNotPauseWhenFileNotFound() throws FileNotFoundException {
+    when(instrumentSampleLoader.getSampleFilePath(any(Instrument.class), anyInt()))
+        .thenReturn(null);
+
+    s.playNoteAndPause(Instrument.PIANO, 60, 1);
+
+    verify(audioWriter, never()).addDelay(anyDouble());
+  }
+
+  @Test
+  void testPlayNoteAndPauseDoesPauseIfFileExists() throws FileNotFoundException {
+    final String testSampleFile = "test.wav";
+    final int note = 60;
+    final double seconds = 2.0;
+    when(instrumentSampleLoader.getSampleFilePath(any(Instrument.class), eq(note)))
+        .thenReturn(testSampleFile);
+
+    s.playNoteAndPause(Instrument.PIANO, note, seconds);
+
+    verify(audioWriter).addDelay(seconds);
+    verify(gifWriter).writeToGif(any(BufferedImage.class), eq((int) (seconds * 1000)));
   }
 
   @Test

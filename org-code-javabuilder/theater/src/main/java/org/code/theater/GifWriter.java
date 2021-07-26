@@ -20,7 +20,13 @@ class GifWriter {
   private ImageWriteParam params;
   private ImageOutputStream imageOutputStream;
 
-  public GifWriter(ByteArrayOutputStream out) {
+  public static class Factory {
+    public GifWriter createGifWriter(ByteArrayOutputStream out) {
+      return new GifWriter(out);
+    }
+  }
+
+  GifWriter(ByteArrayOutputStream out) {
     try {
       this.imageOutputStream = ImageIO.createImageOutputStream(out);
       this.writer = ImageIO.getImageWritersBySuffix("gif").next();

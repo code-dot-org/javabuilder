@@ -12,6 +12,7 @@ public class GlobalProtocol {
   private static GlobalProtocol protocolInstance;
   private final OutputAdapter outputAdapter;
   private final InputAdapter inputAdapter;
+  private final JavabuilderFileWriter fileWriter;
   private final String dashboardHostname;
   private final String channelId;
 
@@ -19,20 +20,23 @@ public class GlobalProtocol {
       OutputAdapter outputAdapter,
       InputAdapter inputAdapter,
       String dashboardHostname,
-      String channelId) {
+      String channelId,
+      JavabuilderFileWriter fileWriter) {
     this.outputAdapter = outputAdapter;
     this.inputAdapter = inputAdapter;
     this.dashboardHostname = dashboardHostname;
     this.channelId = channelId;
+    this.fileWriter = fileWriter;
   }
 
   public static void create(
       OutputAdapter outputAdapter,
       InputAdapter inputAdapter,
       String dashboardHostname,
-      String channelId) {
+      String channelId,
+      JavabuilderFileWriter fileWriter) {
     GlobalProtocol.protocolInstance =
-        new GlobalProtocol(outputAdapter, inputAdapter, dashboardHostname, channelId);
+        new GlobalProtocol(outputAdapter, inputAdapter, dashboardHostname, channelId, fileWriter);
   }
 
   public static GlobalProtocol getInstance() {
@@ -51,11 +55,22 @@ public class GlobalProtocol {
     return this.inputAdapter;
   }
 
+  public JavabuilderFileWriter getFileWriter() {
+    return this.fileWriter;
+  }
+
   public String generateAssetUrl(String filename) {
-    return String.format("%s/v3/assets/%s/%s", this.dashboardHostname, this.channelId, filename);
+    // append timestamp to asset url to avoid cached 404s.
+    return String.format(
+        "%s/v3/assets/%s/%s?t=%d",
+        this.dashboardHostname, this.channelId, filename, System.currentTimeMillis());
   }
 
   public String generateSourcesUrl() {
     return String.format("%s/v3/sources/%s", this.dashboardHostname, this.channelId);
+  }
+
+  public String getDashboardHostname() {
+    return this.dashboardHostname;
   }
 }

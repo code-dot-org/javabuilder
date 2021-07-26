@@ -1,17 +1,20 @@
 package org.code.javabuilder;
 
+import static org.code.protocol.InternalErrorKey.INTERNAL_EXCEPTION;
+
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.apigatewaymanagementapi.AmazonApiGatewayManagementApi;
 import com.amazonaws.services.apigatewaymanagementapi.AmazonApiGatewayManagementApiClientBuilder;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.Map;
-import org.code.protocol.GlobalProtocol;
-import org.code.protocol.JavabuilderException;
-import org.code.protocol.JavabuilderRuntimeException;
-import org.code.protocol.Properties;
+import org.code.protocol.*;
 import org.json.JSONObject;
 
 /**
@@ -41,11 +44,17 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     final String channelId = lambdaInput.get("channelId");
     final String dashboardHostname = "https://" + lambdaInput.get("iss");
     final JSONObject options = new JSONObject(lambdaInput.get("options"));
+    final String javabuilderSessionId = lambdaInput.get("javabuilderSessionId");
+    final String outputBucketName = System.getenv("OUTPUT_BUCKET_NAME");
+    final String getOutputUrl = System.getenv("GET_OUTPUT_URL");
     boolean useNeighborhood = false;
     if (options.has("useNeighborhood")) {
       String useNeighborhoodStr = options.getString("useNeighborhood");
       useNeighborhood = Boolean.parseBoolean(useNeighborhoodStr);
     }
+
+    final JavabuilderLogger logger =
+        new LambdaLogHandler(context.getLogger(), javabuilderSessionId);
 
     Properties.setConnectionId(connectionId);
 
@@ -61,9 +70,21 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     final AmazonSQS sqsClient = AmazonSQSClientBuilder.defaultClient();
     final AWSInputAdapter inputAdapter = new AWSInputAdapter(sqsClient, queueUrl);
 
+    final AmazonS3 s3Client = AmazonS3ClientBuilder.standard().build();
+    final AWSFileWriter fileWriter =
+        new AWSFileWriter(s3Client, outputBucketName, javabuilderSessionId, getOutputUrl, logger);
+
     // Load files to memory and create and invoke the code execution environment
     try {
-      GlobalProtocol.create(outputAdapter, inputAdapter, dashboardHostname, channelId);
+      GlobalProtocol.create(outputAdapter, inputAdapter, dashboardHostname, channelId, fileWriter);
+
+      try {
+        // Delete any leftover contents of the tmp folder from previous lambda invocations
+        Util.recursivelyClearDirectory(Paths.get(System.getProperty("java.io.tmpdir")));
+      } catch (IOException e) {
+        throw new InternalJavabuilderError(INTERNAL_EXCEPTION, e);
+      }
+
       // Create file loader
       final UserProjectFileLoader userProjectFileLoader =
           new UserProjectFileLoader(
