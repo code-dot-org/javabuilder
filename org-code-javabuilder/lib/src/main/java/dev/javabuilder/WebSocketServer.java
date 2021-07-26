@@ -2,8 +2,7 @@ package dev.javabuilder;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.List;
-import java.util.Map;
+import java.util.Base64;
 import javax.websocket.OnClose;
 import javax.websocket.OnMessage;
 import javax.websocket.OnOpen;
@@ -15,6 +14,7 @@ import org.code.protocol.GlobalProtocol;
 import org.code.protocol.JavabuilderException;
 import org.code.protocol.JavabuilderRuntimeException;
 import org.code.protocol.Properties;
+import org.json.JSONObject;
 
 /**
  * This sets up a simple WebSocket server for local development when interactions between dashboard
@@ -38,21 +38,26 @@ public class WebSocketServer {
    */
   @OnOpen
   public void onOpen(Session session) {
-    Map<String, List<String>> params = session.getRequestParameterMap();
-    String channelId = params.get("channelId").get(0);
+    // Decode the authorization token
+    String token = session.getRequestParameterMap().get("Authorization").get(0);
+    Base64.Decoder decoder = Base64.getDecoder();
+    String payload = new String(decoder.decode(token.split("\\.")[1]));
+    JSONObject queryInput = new JSONObject(payload);
+
+    final String levelId = queryInput.getString("level_id");
+    final String channelId = queryInput.getString("channel_id");
+    final String dashboardHostname = "http://" + queryInput.get("iss") + ":3000";
+    final JSONObject options = new JSONObject(queryInput.get("options"));
     boolean useNeighborhood = false;
-    if (params.containsKey("useNeighborhood")) {
-      useNeighborhood = Boolean.parseBoolean(params.get("useNeighborhood").get(0));
+    if (options.has("useNeighborhood")) {
+      String useNeighborhoodStr = options.getString("useNeighborhood");
+      useNeighborhood = Boolean.parseBoolean(useNeighborhoodStr);
     }
-    String levelId = "";
-    if (params.containsKey("levelId")) {
-      levelId = params.get("levelId").get(0);
-    }
+
     Properties.setConnectionId("LocalhostWebSocketConnection");
 
     outputAdapter = new WebSocketOutputAdapter(session);
     inputAdapter = new WebSocketInputAdapter();
-    String dashboardHostname = "http://localhost-studio.code.org:3000";
     GlobalProtocol.create(
         outputAdapter, inputAdapter, dashboardHostname, channelId, new NoOpFileWriter());
     final UserProjectFileLoader fileLoader =
