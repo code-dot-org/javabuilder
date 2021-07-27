@@ -15,5 +15,7 @@ public enum UserInitiatedExceptionKey {
   // The user tried to include a source file that did not end in .java
   JAVA_EXTENSION_MISSING,
   // The user is writing to file too many times
-  TOO_MANY_WRITES
+  TOO_MANY_WRITES,
+  // The user tried to run a file without a class definition
+  CLASS_NOT_FOUND
 }
