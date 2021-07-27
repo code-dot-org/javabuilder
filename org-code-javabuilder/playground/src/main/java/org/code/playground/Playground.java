@@ -1,5 +1,7 @@
 package org.code.playground;
 
+import java.io.FileNotFoundException;
+
 public final static class Playground {
     /**
      * Returns the width of the playground screen. This will always be 400.
@@ -70,11 +72,19 @@ public final static class Playground {
     public static void run() throws PlaygroundRunningException;
 
     /**
+     * Ends the game, plays the sound supplied, and stops program execution.
+     * @param endingSound the name of a sound file in the asset manager to play at the end of the game.
+     * @throws PlaygroundNotRunningException if the run() method has not been
+     *                                       called.
+     * @throws FileNotFoundException if the sound file cannot be found.
+     */
+    public static void exit(String endingSound) throws PlaygroundNotRunningException, FileNotFoundException;
+
+    /**
      * Ends the game and stops program execution.
      * 
      * @throws PlaygroundNotRunningException if the run() method has not been
      *                                       called.
      */
-    public static void exit() throws PlaygroundNotRunningException;
-
+    public static void exit();
 }
