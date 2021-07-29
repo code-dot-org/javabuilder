@@ -13,6 +13,8 @@ BASE_DOMAIN_HOSTED_ZONE_ID=${BASE_DOMAIN_HOSTED_ZONE_ID-'Z07248463JGJ44FME5BZ5'}
 FULLY_QUALIFIED_DOMAIN_NAME="${SUB_DOMAIN}.${BASE_DOMAIN}"
 STACK=${FULLY_QUALIFIED_DOMAIN_NAME//./-}
 
+PROVISIONED_CONCURRENT_EXECUTIONS=${PROVISIONED_CONCURRENT_EXECUTIONS-'1'}
+
 TEMPLATE=template.yml
 OUTPUT_TEMPLATE=$(mktemp)
 
@@ -28,7 +30,7 @@ aws cloudformation package \
 # TODO: Remove CAPABILITY_IAM temporarily added during testing.
 aws cloudformation deploy \
   --template-file ${OUTPUT_TEMPLATE} \
-  --parameter-overrides SubDomainName=$SUB_DOMAIN BaseDomainName=$BASE_DOMAIN BaseDomainNameHostedZonedID=$BASE_DOMAIN_HOSTED_ZONE_ID \
+  --parameter-overrides SubDomainName=$SUB_DOMAIN BaseDomainName=$BASE_DOMAIN BaseDomainNameHostedZonedID=$BASE_DOMAIN_HOSTED_ZONE_ID ProvisionedConcurrentExecutions=$PROVISIONED_CONCURRENT_EXECUTIONS \
   --stack-name ${STACK} \
   --capabilities CAPABILITY_IAM \
   "$@"
