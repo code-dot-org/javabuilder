@@ -267,8 +267,6 @@ Resources:
       AutoPublishAlias: live
       ProvisionedConcurrencyConfig:
         ProvisionedConcurrentExecutions: !Ref ProvisionedConcurrentExecutions
-      DeploymentPreference:
-        Type: AllAtOnce
       Description: Compile and execute a JavaLab project.
       MemorySize: 1024
       Timeout: 300
