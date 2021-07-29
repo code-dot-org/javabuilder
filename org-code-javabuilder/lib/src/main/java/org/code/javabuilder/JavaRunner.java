@@ -6,6 +6,7 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.List;
+import org.code.protocol.JavabuilderRuntimeException;
 
 /** The class that executes the student's code */
 public class JavaRunner {
@@ -43,6 +44,11 @@ public class JavaRunner {
       // TODO: this error message may not be not very friendly
       throw new UserInitiatedException(UserInitiatedExceptionKey.ILLEGAL_METHOD_ACCESS, e);
     } catch (InvocationTargetException e) {
+      if (e.getCause() instanceof JavabuilderRuntimeException) {
+        // If the invocation exception is wrapping another JavabuilderRuntimeException, we don't
+        // need to wrap it in a UserInitiatedException
+        throw (JavabuilderRuntimeException) e.getCause();
+      }
       throw new UserInitiatedException(UserInitiatedExceptionKey.RUNTIME_ERROR, e);
     }
     try {
