@@ -47,7 +47,7 @@ public class WebSocketServer {
     final String levelId = queryInput.getString("level_id");
     final String channelId = queryInput.getString("channel_id");
     final String dashboardHostname = "http://" + queryInput.get("iss") + ":3000";
-    final JSONObject options = new JSONObject(queryInput.get("options"));
+    final JSONObject options = new JSONObject((String) queryInput.get("options"));
     boolean useNeighborhood = false;
     if (options.has("useNeighborhood")) {
       String useNeighborhoodStr = options.getString("useNeighborhood");

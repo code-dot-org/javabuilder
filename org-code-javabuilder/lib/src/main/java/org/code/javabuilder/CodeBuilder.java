@@ -57,7 +57,10 @@ public class CodeBuilder implements AutoCloseable {
     JavaRunner runner;
     try {
       runner =
-          new JavaRunner(this.tempFolder.toURI().toURL(), this.userProjectFiles.getJavaFiles());
+          new JavaRunner(
+              this.tempFolder.toURI().toURL(),
+              this.userProjectFiles.getJavaFiles(),
+              this.outputAdapter);
     } catch (MalformedURLException e) {
       throw new UserFacingException(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e);
     }
