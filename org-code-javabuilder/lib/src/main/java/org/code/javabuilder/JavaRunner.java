@@ -7,15 +7,21 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.List;
 import org.code.protocol.JavabuilderRuntimeException;
+import org.code.protocol.OutputAdapter;
+import org.code.protocol.StatusMessage;
+import org.code.protocol.StatusMessageKey;
 
 /** The class that executes the student's code */
 public class JavaRunner {
   private final URL executableLocation;
   private final List<JavaProjectFile> javaFiles;
+  private final OutputAdapter outputAdapter;
 
-  public JavaRunner(URL executableLocation, List<JavaProjectFile> javaFiles) {
+  public JavaRunner(
+      URL executableLocation, List<JavaProjectFile> javaFiles, OutputAdapter outputAdapter) {
     this.executableLocation = executableLocation;
     this.javaFiles = javaFiles;
+    this.outputAdapter = outputAdapter;
   }
 
   /**
@@ -39,11 +45,14 @@ public class JavaRunner {
     try {
       // load and run the main method of the class
       Method mainMethod = this.findMainMethod(urlClassLoader);
+      this.outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.RUNNING));
       mainMethod.invoke(null, new Object[] {null});
     } catch (IllegalAccessException e) {
       // TODO: this error message may not be not very friendly
+      this.outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.EXITED));
       throw new UserInitiatedException(UserInitiatedExceptionKey.ILLEGAL_METHOD_ACCESS, e);
     } catch (InvocationTargetException e) {
+      this.outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.EXITED));
       if (e.getCause() instanceof JavabuilderRuntimeException) {
         // If the invocation exception is wrapping another JavabuilderRuntimeException, we don't
         // need to wrap it in a UserInitiatedException
@@ -52,6 +61,7 @@ public class JavaRunner {
       throw new UserInitiatedException(UserInitiatedExceptionKey.RUNTIME_ERROR, e);
     }
     try {
+      this.outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.EXITED));
       urlClassLoader.close();
     } catch (IOException e) {
       // The user code has finished running. We don't want to confuse them at this point with an
