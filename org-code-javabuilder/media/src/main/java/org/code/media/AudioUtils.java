@@ -144,6 +144,9 @@ class AudioUtils {
    */
   public static double[] blendSamples(
       double[] originalSamples, double[] newSamples, int sampleOffset) {
+    if (originalSamples == null || newSamples == null) {
+      throw new SoundException(SoundExceptionKeys.MISSING_AUDIO_DATA);
+    }
     final double[] blendedSamples =
         Arrays.copyOf(
             originalSamples, Math.max(originalSamples.length, sampleOffset + newSamples.length));
