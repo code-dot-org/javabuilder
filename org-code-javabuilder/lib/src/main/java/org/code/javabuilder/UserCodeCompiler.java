@@ -9,6 +9,8 @@ import javax.tools.*;
 import javax.tools.JavaCompiler.CompilationTask;
 import org.code.protocol.InternalErrorKey;
 import org.code.protocol.OutputAdapter;
+import org.code.protocol.StatusMessage;
+import org.code.protocol.StatusMessageKey;
 
 /**
  * Compiles all user code managed by the ProjectFileManager. Any compiler output will be passed
@@ -31,6 +33,7 @@ public class UserCodeCompiler {
    *     exception that interferes with compilation.
    */
   public void compileProgram() throws UserFacingException, UserInitiatedException {
+    this.outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.COMPILING));
     DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
 
     CompilationTask task = getCompilationTask(diagnostics);
@@ -44,6 +47,7 @@ public class UserCodeCompiler {
     if (!success) {
       throw new UserInitiatedException(UserInitiatedExceptionKey.COMPILER_ERROR);
     }
+    this.outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.COMPILATION_SUCCESSFUL));
   }
 
   private CompilationTask getCompilationTask(DiagnosticCollector<JavaFileObject> diagnostics)
