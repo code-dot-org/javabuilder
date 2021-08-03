@@ -28,7 +28,8 @@ public class Color {
   }
 
   /**
-   * Create a new color based on the red, green, and blue values provided. Assumes 100% opacity
+   * Create a new color based on the red, green, and blue values provided. The alpha value will be
+   * maximum opacity.
    *
    * @param red the red value from 0 - 255
    * @param green the green value from 0 - 255
