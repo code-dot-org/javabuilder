@@ -128,7 +128,7 @@ public class Image {
    */
   public BufferedImage getBufferedImage() {
     BufferedImage bufferedImage =
-        new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_RGB);
+        new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_ARGB);
     for (int x = 0; x < this.width; x++) {
       for (int y = 0; y < this.height; y++) {
         bufferedImage.setRGB(x, y, this.pixels[x][y].getColor().getRGB());
