@@ -12,6 +12,7 @@ public class Image {
   private int width;
   private int height;
   private static final Color DEFAULT_BACKGROUND_COLOR = Color.WHITE;
+  private BufferedImage bufferedImage;
 
   /**
    * Creates a new image object, using the pixel information from the file uploaded to the asset
@@ -21,17 +22,11 @@ public class Image {
    * @throws FileNotFoundException if the file doesn't exist in the asset manager.
    */
   public Image(String filename) throws FileNotFoundException {
-    BufferedImage bufferedImage = Image.getImageAssetFromFile(filename);
+    this.bufferedImage = Image.getImageAssetFromFile(filename);
     this.width = bufferedImage.getWidth();
     this.height = bufferedImage.getHeight();
-    this.pixels = new Pixel[this.width][this.height];
-
-    for (int x = 0; x < this.width; x++) {
-      for (int y = 0; y < this.height; y++) {
-        int rgbColor = bufferedImage.getRGB(x, y);
-        this.pixels[x][y] = new Pixel(this, x, y, new Color(rgbColor));
-      }
-    }
+    // don't create pixel array until we need it
+    this.pixels = null;
   }
 
   /**
@@ -76,6 +71,10 @@ public class Image {
    * @return Pixel at the given coordinate
    */
   public Pixel getPixel(int x, int y) {
+    if (this.pixels == null) {
+      this.createPixelArray();
+      this.bufferedImage = null;
+    }
     return this.pixels[x][y];
   }
 
@@ -87,6 +86,10 @@ public class Image {
    * @param color the color to set the pixel
    */
   public void setPixel(int x, int y, Color color) {
+    if (this.pixels == null) {
+      this.createPixelArray();
+      this.bufferedImage = null;
+    }
     this.pixels[x][y].setColor(color);
   }
 
@@ -114,6 +117,10 @@ public class Image {
    * @param color the color with which to fill the image.
    */
   public void clear(Color color) {
+    if (this.pixels == null) {
+      this.pixels = new Pixel[this.width][this.height];
+      this.bufferedImage = null;
+    }
     for (int x = 0; x < this.width; x++) {
       for (int y = 0; y < this.height; y++) {
         this.pixels[x][y].setColor(color);
@@ -127,14 +134,18 @@ public class Image {
    * @return
    */
   public BufferedImage getBufferedImage() {
-    BufferedImage bufferedImage =
+    // if we've never set up the pixel array, return our buffered image
+    if (this.pixels == null) {
+      return this.bufferedImage;
+    }
+    BufferedImage bufferedImageResult =
         new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_ARGB);
     for (int x = 0; x < this.width; x++) {
       for (int y = 0; y < this.height; y++) {
-        bufferedImage.setRGB(x, y, this.pixels[x][y].getColor().getRGB());
+        bufferedImageResult.setRGB(x, y, this.pixels[x][y].getColor().getRGB());
       }
     }
-    return bufferedImage;
+    return bufferedImageResult;
   }
 
   /**
@@ -155,6 +166,17 @@ public class Image {
       return image;
     } catch (IOException e) {
       throw new FileNotFoundException("Could not find file " + filename);
+    }
+  }
+
+  /** Create a 2d array of pixels from this.bufferedImage */
+  private void createPixelArray() {
+    this.pixels = new Pixel[this.width][this.height];
+    for (int x = 0; x < this.width; x++) {
+      for (int y = 0; y < this.height; y++) {
+        int rgbColor = this.bufferedImage.getRGB(x, y);
+        this.pixels[x][y] = new Pixel(this, x, y, new Color(rgbColor));
+      }
     }
   }
 }
