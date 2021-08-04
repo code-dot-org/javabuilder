@@ -139,7 +139,7 @@ public class Image {
       return this.bufferedImage;
     }
     BufferedImage bufferedImageResult =
-        new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_RGB);
+        new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_ARGB);
     for (int x = 0; x < this.width; x++) {
       for (int y = 0; y < this.height; y++) {
         bufferedImageResult.setRGB(x, y, this.pixels[x][y].getColor().getRGB());
