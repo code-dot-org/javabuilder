@@ -27,10 +27,8 @@ aws cloudformation package \
   --s3-bucket ${S3_BUCKET} \
   --output-template-file ${OUTPUT_TEMPLATE}
 
-# TODO: Remove CAPABILITY_IAM temporarily added during testing.
 aws cloudformation deploy \
   --template-file ${OUTPUT_TEMPLATE} \
   --parameter-overrides SubDomainName=$SUB_DOMAIN BaseDomainName=$BASE_DOMAIN BaseDomainNameHostedZonedID=$BASE_DOMAIN_HOSTED_ZONE_ID ProvisionedConcurrentExecutions=$PROVISIONED_CONCURRENT_EXECUTIONS \
   --stack-name ${STACK} \
-  --capabilities CAPABILITY_IAM \
   "$@"
