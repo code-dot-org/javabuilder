@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: 2010-09-09
 Transform: AWS::Serverless-2016-10-31
-Description: Provision an instance of the Javabuilder service.
+Description: Provision an instance of the Javabuilder service. Empty the OutputBucket before deleting this Stack.
 Parameters:
   BaseDomainName:
     Type: String
@@ -85,7 +85,7 @@ Resources:
     Properties:
       ApiId: !Ref WebSocketAPI
       AuthorizerType: REQUEST
-      AuthorizerUri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${JavabuilderAuthorizerLambda.Arn}/invocations"
+      AuthorizerUri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${WebsocketAuthorizerLambda.Arn}/invocations"
       IdentitySource:
         - route.request.querystring.Authorization
       Name: WebSocketAuthorizer
@@ -194,12 +194,7 @@ Resources:
       Action: lambda:InvokeFunction
       FunctionName: !Ref StartSessionAndRelayMessagesFunction
       Principal: apigateway.amazonaws.com
-  APIGatewayCloudWatchLogs:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName:
-        Fn::Sub: ${SubDomainName}.${BaseDomainName}
-  JavabuilderAuthorizerLambda:
+  WebsocketAuthorizerLambda:
     Type: AWS::Serverless::Function
     Properties:
       Handler: lambda_function.lambda_handler
@@ -245,7 +240,7 @@ Resources:
       - WebSocketAuthorizer
     Properties:
       Action: lambda:InvokeFunction
-      FunctionName: !Ref JavabuilderAuthorizerLambda
+      FunctionName: !Ref WebsocketAuthorizerLambda
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${WebSocketAPI}/authorizers/${WebSocketAuthorizer}"
   ChangeJavaRuntimeDirectoryLayer:
@@ -354,4 +349,4 @@ Resources:
 Outputs:
   JavabuilderURL:
     Value:
-      Fn::Sub: https://${SubDomainName}.${BaseDomainName}
+      Fn::Sub: wss://${SubDomainName}.${BaseDomainName}
