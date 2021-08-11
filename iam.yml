@@ -69,9 +69,11 @@ Resources:
         - "arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess"
         - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
         - "arn:aws:iam::aws:policy/service-role/AWSLambdaRole"
+        # TODO: Restrict SQS permissions to minimum required.
         - "arn:aws:iam::aws:policy/AmazonSQSFullAccess"
 
         # Compile and Run Project Lambda.
+        # TODO: Restrict SQS permissions to minimum required.
         - "arn:aws:iam::aws:policy/service-role/AWSLambdaSQSQueueExecutionRole"
         - "arn:aws:iam::aws:policy/AmazonAPIGatewayInvokeFullAccess"
   JavabuilderAPIGatewayRole:
