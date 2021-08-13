@@ -30,4 +30,5 @@ aws cloudformation deploy \
   --template-file ${OUTPUT_TEMPLATE} \
   --parameter-overrides SubDomainName=$SUB_DOMAIN BaseDomainName=$BASE_DOMAIN BaseDomainNameHostedZonedID=$BASE_DOMAIN_HOSTED_ZONE_ID ProvisionedConcurrentExecutions=$PROVISIONED_CONCURRENT_EXECUTIONS \
   --stack-name ${STACK} \
+  --role-arn 'arn:aws:iam::475661607190:role/admin/CloudFormationService'
   "$@"
