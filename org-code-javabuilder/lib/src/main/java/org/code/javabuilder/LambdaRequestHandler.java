@@ -76,7 +76,8 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
 
     // Load files to memory and create and invoke the code execution environment
     try {
-      GlobalProtocol.create(outputAdapter, inputAdapter, dashboardHostname, channelId, fileWriter);
+      GlobalProtocol.create(
+          outputAdapter, inputAdapter, dashboardHostname, channelId, levelId, fileWriter);
 
       try {
         // Delete any leftover contents of the tmp folder from previous lambda invocations
