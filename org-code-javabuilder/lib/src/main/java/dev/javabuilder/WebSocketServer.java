@@ -59,7 +59,7 @@ public class WebSocketServer {
     outputAdapter = new WebSocketOutputAdapter(session);
     inputAdapter = new WebSocketInputAdapter();
     GlobalProtocol.create(
-        outputAdapter, inputAdapter, dashboardHostname, channelId, new NoOpFileWriter());
+        outputAdapter, inputAdapter, dashboardHostname, channelId, levelId, new NoOpFileWriter());
     final UserProjectFileLoader fileLoader =
         new UserProjectFileLoader(
             GlobalProtocol.getInstance().generateSourcesUrl(),
