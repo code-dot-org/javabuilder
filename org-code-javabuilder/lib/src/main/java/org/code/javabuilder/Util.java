@@ -16,6 +16,7 @@ import org.code.protocol.InternalJavabuilderError;
 public class Util {
   private static final String NEIGHBORHOOD_JAR = "neighborhood-full.jar";
   private static final String THEATER_JAR = "theater-full.jar";
+  private static final String PLAYGROUND_JAR = "playground-full.jar";
 
   /** @return a URL describing the location the given jar */
   private static URL getJarURL(String jarName) {
@@ -25,7 +26,10 @@ public class Util {
   /** @return a list of URLs with the location of all user-facing api jars */
   public static URL[] getAllJarURLs(URL executableLocation) {
     return new URL[] {
-      executableLocation, Util.getJarURL(NEIGHBORHOOD_JAR), Util.getJarURL(THEATER_JAR)
+      executableLocation,
+      Util.getJarURL(NEIGHBORHOOD_JAR),
+      Util.getJarURL(THEATER_JAR),
+      Util.getJarURL(PLAYGROUND_JAR)
     };
   }
 
@@ -35,6 +39,7 @@ public class Util {
     try {
       allJarPaths.add(Paths.get(Util.getJarURL(NEIGHBORHOOD_JAR).toURI()).toString());
       allJarPaths.add(Paths.get(Util.getJarURL(THEATER_JAR).toURI()).toString());
+      allJarPaths.add(Paths.get(Util.getJarURL(PLAYGROUND_JAR).toURI()).toString());
     } catch (URISyntaxException e) {
       throw new InternalJavabuilderError(InternalErrorKey.INTERNAL_COMPILER_EXCEPTION, e);
     }
