@@ -1,0 +1,43 @@
+plugins {
+    // Apply the java-library plugin for API and implementation separation.
+    id 'java-library'
+    id 'com.github.sherter.google-java-format' version '0.8'
+}
+
+repositories {
+    // Use JCenter for resolving dependencies.
+    jcenter()
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
+    // https://mvnrepository.com/artifact/org.mockito/mockito-core
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: '3.9.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.6.0'
+    // https://mvnrepository.com/artifact/org.json/json
+    implementation group: 'org.json', name: 'json', version: '20210307'
+    implementation project(':protocol')
+    implementation project(':media')
+}
+
+test {
+    useJUnitPlatform()
+}
+
+// Builds the Playground fat-jar (i.e. jar with all dependencies) and copies it to the resources
+// folder in the javabuilder sub-project (currently named 'lib'). This will allow student code to
+// access the Theater package.
+task buildPlayground(type: Jar) {
+    archiveClassifier = 'full'
+    from sourceSets.main.output
+    dependsOn configurations.runtimeClasspath
+    from {
+        configurations.runtimeClasspath.findAll { it.name.endsWith('jar') }.collect { zipTree(it) }
+    }
+    destinationDirectory = project(':lib').project.layout.projectDirectory.dir('src/main/resources/jars')
+}
