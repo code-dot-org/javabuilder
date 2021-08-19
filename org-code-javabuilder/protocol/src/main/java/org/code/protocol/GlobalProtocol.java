@@ -11,7 +11,7 @@ package org.code.protocol;
 public class GlobalProtocol {
   private static GlobalProtocol protocolInstance;
   private final OutputAdapter outputAdapter;
-  private final InputAdapter inputAdapter;
+  private final InputHandler inputHandler;
   private final JavabuilderFileWriter fileWriter;
   private final String dashboardHostname;
   private final String channelId;
@@ -19,13 +19,13 @@ public class GlobalProtocol {
 
   private GlobalProtocol(
       OutputAdapter outputAdapter,
-      InputAdapter inputAdapter,
+      InputHandler inputHandler,
       String dashboardHostname,
       String channelId,
       JavabuilderFileWriter fileWriter,
       AssetUrlGenerator assetUrlGenerator) {
     this.outputAdapter = outputAdapter;
-    this.inputAdapter = inputAdapter;
+    this.inputHandler = inputHandler;
     this.dashboardHostname = dashboardHostname;
     this.channelId = channelId;
     this.fileWriter = fileWriter;
@@ -42,7 +42,7 @@ public class GlobalProtocol {
     GlobalProtocol.protocolInstance =
         new GlobalProtocol(
             outputAdapter,
-            inputAdapter,
+            new InputHandler(inputAdapter),
             dashboardHostname,
             channelId,
             fileWriter,
@@ -61,8 +61,8 @@ public class GlobalProtocol {
     return this.outputAdapter;
   }
 
-  public InputAdapter getInputAdapter() {
-    return this.inputAdapter;
+  public InputHandler getInputHandler() {
+    return this.inputHandler;
   }
 
   public JavabuilderFileWriter getFileWriter() {

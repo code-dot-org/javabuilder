@@ -5,15 +5,12 @@ import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import org.code.protocol.GlobalProtocol;
-import org.code.protocol.InputAdapter;
-import org.code.protocol.InternalErrorKey;
-import org.code.protocol.OutputAdapter;
+import org.code.protocol.*;
 
 /** The orchestrator for code compilation and execution. */
 public class CodeBuilder implements AutoCloseable {
   private final OutputAdapter outputAdapter;
-  private final InputAdapter inputAdapter;
+  private final InputHandler inputHandler;
   private final File tempFolder;
   private final PrintStream sysout;
   private final InputStream sysin;
@@ -24,7 +21,7 @@ public class CodeBuilder implements AutoCloseable {
     this.sysout = System.out;
     this.sysin = System.in;
     this.outputAdapter = protocol.getOutputAdapter();
-    this.inputAdapter = protocol.getInputAdapter();
+    this.inputHandler = protocol.getInputHandler();
     this.userProjectFiles = userProjectFiles;
     try {
       this.tempFolder = Files.createTempDirectory("tmpdir").toFile();
@@ -53,7 +50,7 @@ public class CodeBuilder implements AutoCloseable {
   public void runUserCode()
       throws UserFacingException, InternalFacingException, UserInitiatedException {
     System.setOut(new OutputPrintStream(this.outputAdapter));
-    System.setIn(new InputRedirectionStream(this.inputAdapter));
+    System.setIn(new InputRedirectionStream(this.inputHandler));
     JavaRunner runner;
     try {
       runner =
