@@ -18,7 +18,7 @@ public class LocalMain {
     // Create and invoke the code execution environment
     try {
       UserProjectFiles userProjectFiles = fileLoader.loadFiles();
-      GlobalProtocol.create(outputAdapter, inputAdapter, "", "", "", new NoOpFileWriter());
+      GlobalProtocol.create(outputAdapter, inputAdapter, "", "", "", new LocalFileWriter());
       try (CodeBuilder codeBuilder =
           new CodeBuilder(GlobalProtocol.getInstance(), userProjectFiles)) {
         codeBuilder.buildUserCode();

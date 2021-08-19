@@ -76,8 +76,4 @@ public class GlobalProtocol {
   public String generateSourcesUrl() {
     return String.format("%s/v3/sources/%s", this.dashboardHostname, this.channelId);
   }
-
-  public String getDashboardHostname() {
-    return this.dashboardHostname;
-  }
 }
