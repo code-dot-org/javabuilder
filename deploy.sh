@@ -26,9 +26,14 @@ aws cloudformation package \
   --s3-bucket ${TEMPLATE_BUCKET} \
   --output-template-file ${OUTPUT_TEMPLATE}
 
+# 'Developer' role requires a specific service role for all CloudFormation operations.
+if [[ $(aws sts get-caller-identity --query Arn --output text) =~ "assumed-role/Developer/" ]]; then
+  # Append the role-arn option to the positional parameters $@ passed to cloudformation deploy.
+  set -- "$@" "--role-arn 'arn:aws:iam::$(aws sts get-caller-identity --query Account --output text):role/admin/CloudFormationService'"
+fi
+
 aws cloudformation deploy \
   --template-file ${OUTPUT_TEMPLATE} \
   --parameter-overrides SubDomainName=$SUB_DOMAIN BaseDomainName=$BASE_DOMAIN BaseDomainNameHostedZonedID=$BASE_DOMAIN_HOSTED_ZONE_ID ProvisionedConcurrentExecutions=$PROVISIONED_CONCURRENT_EXECUTIONS \
   --stack-name ${STACK} \
-  --role-arn 'arn:aws:iam::475661607190:role/admin/CloudFormationService'
   "$@"
