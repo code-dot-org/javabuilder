@@ -1,5 +1,8 @@
 package org.code.theater;
 
+import static org.code.protocol.AllowedFileNames.THEATER_AUDIO_NAME;
+import static org.code.protocol.AllowedFileNames.THEATER_IMAGE_NAME;
+
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
@@ -28,8 +31,6 @@ public class Stage {
   private static final int WIDTH = 400;
   private static final int HEIGHT = 400;
   private static final java.awt.Color DEFAULT_COLOR = java.awt.Color.BLACK;
-  private static final String IMAGE_FILENAME = "theaterImage.gif";
-  private static final String AUDIO_FILENAME = "theaterAudio.wav";
 
   /**
    * Initialize Stage with a default image. Stage should be initialized outside of org.code.theater
@@ -399,10 +400,10 @@ public class Stage {
     try {
       String imageUrl =
           this.fileWriter.writeToFile(
-              IMAGE_FILENAME, this.imageOutputStream.toByteArray(), "image/gif");
+              THEATER_IMAGE_NAME, this.imageOutputStream.toByteArray(), "image/gif");
       String audioUrl =
           this.fileWriter.writeToFile(
-              AUDIO_FILENAME, this.audioOutputStream.toByteArray(), "audio/wav");
+              THEATER_AUDIO_NAME, this.audioOutputStream.toByteArray(), "audio/wav");
 
       HashMap<String, String> imageMessage = new HashMap<>();
       imageMessage.put("url", imageUrl);
