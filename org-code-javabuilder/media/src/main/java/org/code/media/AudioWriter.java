@@ -78,4 +78,22 @@ public class AudioWriter {
       throw new InternalJavabuilderError(InternalErrorKey.INTERNAL_EXCEPTION, e);
     }
   }
+
+  // TODO Combine with method above and possibly remove outputStream instance variable
+  public void writeToAudioStreamAndClose(ByteArrayOutputStream outputStream) {
+    AudioUtils.writeBytesToOutputStream(
+        AudioUtils.convertDoubleArrayToByteArray(this.audioSamples), outputStream);
+    this.currentSampleIndex = 0;
+
+    try {
+      outputStream.close();
+    } catch (IOException e) {
+      throw new InternalJavabuilderError(InternalErrorKey.INTERNAL_EXCEPTION, e);
+    }
+  }
+
+  /** Clear all audio from the audio writer */
+  public void reset() {
+    this.audioSamples = new double[] {};
+  }
 }
