@@ -5,7 +5,6 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -232,33 +231,15 @@ public final class Playground {
   }
 
   private void dispatchPlaygroundUpdate() {
-    final ByteArrayOutputStream imageOutputStream = this.composePlaygroundImage();
-
     final HashMap<String, String> details = new HashMap<>();
-    final boolean isLocalhost =
-        GlobalProtocol.getInstance().getDashboardHostname().contains("localhost");
-    if (isLocalhost) {
-      details.put("image", this.generateEncodedString(imageOutputStream));
-    } else {
-      details.put(
-          "imageUrl",
-          this.generateOutputUrl(
-              imageOutputStream, PLAYGROUND_IMAGE_FILE_NAME, OUTPUT_IMAGE_CONTENT_TYPE));
-    }
+    details.put("imageUrl", this.writePlaygroundImageToUrl());
 
     if (this.soundFilename != null) {
       try {
-        final ByteArrayOutputStream audioOutputStream = this.writeAudioFile(this.soundFilename);
-        if (isLocalhost) {
-          details.put("audio", this.generateEncodedString(audioOutputStream));
-        } else {
-          details.put(
-              "audioUrl",
-              this.generateOutputUrl(
-                  audioOutputStream, PLAYGROUND_AUDIO_FILE_NAME, OUTPUT_AUDIO_CONTENT_TYPE));
-        }
+        details.put("audioUrl", this.writeAudioFileToUrl(this.soundFilename));
       } catch (FileNotFoundException e) {
-
+        // TODO exception handling
+        System.out.println(e);
       }
     }
 
@@ -270,17 +251,7 @@ public final class Playground {
     final HashMap<String, String> details = new HashMap<>();
     if (this.exitSound != null) {
       try {
-        final ByteArrayOutputStream audioOutputStream = this.writeAudioFile(this.exitSound);
-        final boolean isLocalhost =
-            GlobalProtocol.getInstance().getDashboardHostname().contains("localhost");
-        if (isLocalhost) {
-          details.put("audio", this.generateEncodedString(audioOutputStream));
-        } else {
-          details.put(
-              "audioUrl",
-              this.generateOutputUrl(
-                  audioOutputStream, PLAYGROUND_AUDIO_FILE_NAME, OUTPUT_AUDIO_CONTENT_TYPE));
-        }
+        details.put("audioUrl", this.writeAudioFileToUrl(this.exitSound));
       } catch (FileNotFoundException e) {
         // TODO handle / refactor to bubble up exception
         System.out.println(e);
@@ -289,7 +260,7 @@ public final class Playground {
     this.outputAdapter.sendMessage(new PlaygroundMessage(PlaygroundSignalKey.EXIT, details));
   }
 
-  private ByteArrayOutputStream composePlaygroundImage() {
+  private String writePlaygroundImageToUrl() {
     // Draw images in order, starting with background image
     if (this.backgroundImage != null) {
       this.graphics.drawImage(
@@ -304,20 +275,22 @@ public final class Playground {
     final ByteArrayOutputStream imageOutputStream = new ByteArrayOutputStream();
     try {
       ImageIO.write(this.image, OUTPUT_IMAGE_FILE_FORMAT, imageOutputStream);
-      return imageOutputStream;
+      return this.generateOutputUrl(
+          imageOutputStream, PLAYGROUND_IMAGE_FILE_NAME, OUTPUT_IMAGE_CONTENT_TYPE);
     } catch (IOException e) {
       throw new InternalJavabuilderError(InternalErrorKey.INTERNAL_EXCEPTION, e);
     }
   }
 
-  private ByteArrayOutputStream writeAudioFile(String audioFilename) throws FileNotFoundException {
+  private String writeAudioFileToUrl(String audioFilename) throws FileNotFoundException {
     final ByteArrayOutputStream audioOutputStream = new ByteArrayOutputStream();
 
     this.audioWriter.writeAudioFromAssetFile(audioFilename);
     this.audioWriter.writeToAudioStreamAndClose(audioOutputStream);
     this.audioWriter.reset();
 
-    return audioOutputStream;
+    return this.generateOutputUrl(
+        audioOutputStream, PLAYGROUND_AUDIO_FILE_NAME, OUTPUT_AUDIO_CONTENT_TYPE);
   }
 
   private String generateOutputUrl(
@@ -327,9 +300,5 @@ public final class Playground {
     } catch (JavabuilderException e) {
       throw new InternalJavabuilderError(InternalErrorKey.INTERNAL_EXCEPTION, e);
     }
-  }
-
-  private String generateEncodedString(ByteArrayOutputStream outputStream) {
-    return Base64.getEncoder().encodeToString(outputStream.toByteArray());
   }
 }

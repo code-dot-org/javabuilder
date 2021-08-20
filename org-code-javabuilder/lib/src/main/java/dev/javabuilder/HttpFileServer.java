@@ -1,8 +1,7 @@
 package dev.javabuilder;
 
 import static dev.javabuilder.LocalWebserverConstants.DIRECTORY;
-import static org.code.protocol.AllowedFileNames.THEATER_AUDIO_NAME;
-import static org.code.protocol.AllowedFileNames.THEATER_IMAGE_NAME;
+import static org.code.protocol.AllowedFileNames.*;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -22,7 +21,9 @@ import javax.servlet.http.HttpServletResponse;
     name = "FileServlet",
     urlPatterns = {
       "/" + DIRECTORY + "/" + THEATER_IMAGE_NAME,
-      "/" + DIRECTORY + "/" + THEATER_AUDIO_NAME
+      "/" + DIRECTORY + "/" + THEATER_AUDIO_NAME,
+      "/" + DIRECTORY + "/" + PLAYGROUND_IMAGE_FILE_NAME,
+      "/" + DIRECTORY + "/" + PLAYGROUND_AUDIO_FILE_NAME
     })
 public class HttpFileServer extends HttpServlet {
   /**
@@ -38,12 +39,13 @@ public class HttpFileServer extends HttpServlet {
     // for local development.
     String[] urlParts = request.getRequestURI().split("/");
     String fileName = urlParts[urlParts.length - 1];
-    if (!fileName.equals(THEATER_IMAGE_NAME) && !fileName.equals(THEATER_AUDIO_NAME)) {
-      response.sendError(
-          403,
-          String.format("Only %s and %s can be accessed.", THEATER_IMAGE_NAME, THEATER_AUDIO_NAME));
-      return;
-    }
+    //    if (!fileName.equals(THEATER_IMAGE_NAME) && !fileName.equals(THEATER_AUDIO_NAME)) {
+    //      response.sendError(
+    //          403,
+    //          String.format("Only %s and %s can be accessed.", THEATER_IMAGE_NAME,
+    // THEATER_AUDIO_NAME));
+    //      return;
+    //    }
     OutputStream out = response.getOutputStream();
     Files.copy(Paths.get(System.getProperty("java.io.tmpdir"), DIRECTORY, fileName), out);
     out.flush();
