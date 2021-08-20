@@ -5,9 +5,19 @@
 TEMPLATE_BUCKET=${TEMPLATE_BUCKET?Required}
 SUB_DOMAIN=${SUB_DOMAIN?Required}
 
-# Default to dev-code.org domain name and the Route 53 Hosted Zone ID in the Dev AWS account for that base domain name.
+get_hosted_zone() {
+  aws route53 list-hosted-zones-by-name \
+  --dns-name "$1" \
+  --max-items 1 \
+  --query HostedZones[0].Id \
+  --output text \
+  | sed 's|/hostedzone/||'
+}
+
+# Default to dev-code.org domain name.
 BASE_DOMAIN=${BASE_DOMAIN-'dev-code.org'}
-BASE_DOMAIN_HOSTED_ZONE_ID=${BASE_DOMAIN_HOSTED_ZONE_ID-'Z07248463JGJ44FME5BZ5'}
+# Default to lookup the hosted zone by name.
+BASE_DOMAIN_HOSTED_ZONE_ID=${BASE_DOMAIN_HOSTED_ZONE_ID-$(get_hosted_zone "${BASE_DOMAIN}")}
 
 # Use sub domain name as the CloudFormation Stack name.
 STACK=${SUB_DOMAIN}
@@ -25,6 +35,12 @@ aws cloudformation package \
   --template-file ${TEMPLATE} \
   --s3-bucket ${TEMPLATE_BUCKET} \
   --output-template-file ${OUTPUT_TEMPLATE}
+
+# 'Developer' role requires a specific service role for all CloudFormation operations.
+if [[ $(aws sts get-caller-identity --query Arn --output text) =~ "assumed-role/Developer/" ]]; then
+  # Append the role-arn option to the positional parameters $@ passed to cloudformation deploy.
+  set -- "$@" "--role-arn 'arn:aws:iam::$(aws sts get-caller-identity --query Account --output text):role/admin/CloudFormationService'"
+fi
 
 aws cloudformation deploy \
   --template-file ${OUTPUT_TEMPLATE} \
