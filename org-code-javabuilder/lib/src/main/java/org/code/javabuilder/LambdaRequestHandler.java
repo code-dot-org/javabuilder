@@ -5,6 +5,7 @@ import static org.code.protocol.InternalErrorKey.INTERNAL_EXCEPTION;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.apigatewaymanagementapi.AmazonApiGatewayManagementApi;
 import com.amazonaws.services.apigatewaymanagementapi.AmazonApiGatewayManagementApiClientBuilder;
+import com.amazonaws.services.apigatewaymanagementapi.model.DeleteConnectionRequest;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.s3.AmazonS3;
@@ -108,6 +109,10 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
       context.getLogger().log(e.getLoggingString());
     } catch (Throwable e) {
       e.printStackTrace();
+    } finally {
+      final DeleteConnectionRequest deleteConnectionRequest =
+          new DeleteConnectionRequest().withConnectionId(connectionId);
+      api.deleteConnection(deleteConnectionRequest);
     }
 
     return "done";
