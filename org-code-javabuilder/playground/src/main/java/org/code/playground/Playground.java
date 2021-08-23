@@ -5,9 +5,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 import javax.imageio.ImageIO;
 import org.code.media.AudioWriter;
 import org.code.media.Image;
@@ -55,10 +53,12 @@ public final class Playground {
   private final BufferedImage image;
   private final Graphics2D graphics;
   private final Map<Image, ImagePosition> imagePositionMap;
+  private final ArrayList<Image> imageDrawOrderStack;
 
   private boolean isRunning;
+  private boolean updateRequested;
   private boolean exitRequested;
-  private BufferedImage backgroundImage;
+  private Image backgroundImage;
   private String soundFilename;
   private String exitSound;
 
@@ -69,9 +69,11 @@ public final class Playground {
     this.image = new BufferedImage(PLAYGROUND_WIDTH, PLAYGROUND_HEIGHT, BufferedImage.TYPE_INT_RGB);
     this.graphics = this.image.createGraphics();
     this.imagePositionMap = new LinkedHashMap<>();
+    this.imageDrawOrderStack = new ArrayList<>();
     this.audioWriter = new AudioWriter.Factory().createAudioWriter(new ByteArrayOutputStream());
 
     this.isRunning = false;
+    this.updateRequested = false;
     this.exitRequested = false;
   }
 
@@ -101,7 +103,8 @@ public final class Playground {
    * @throws FileNotFoundException if the file cannot be found in the asset manager
    */
   public void setBackgroundImage(String filename) throws FileNotFoundException {
-    this.backgroundImage = Image.getImageAssetFromFile(filename);
+    this.backgroundImage = new Image(filename);
+    this.updateRequested = true;
   }
 
   /**
@@ -133,6 +136,8 @@ public final class Playground {
   public void addImage(Image image, int x, int y, int width, int height) {
     if (!this.imagePositionMap.containsKey(image)) {
       this.imagePositionMap.put(image, new ImagePosition(x, y, width, height));
+      this.imageDrawOrderStack.add(image);
+      this.updateRequested = true;
     }
   }
 
@@ -143,7 +148,11 @@ public final class Playground {
    *     nothing.
    */
   public void removeImage(Image image) {
-    this.imagePositionMap.remove(image);
+    if (this.imagePositionMap.containsKey(image)) {
+      this.imagePositionMap.remove(image);
+      this.imageDrawOrderStack.remove(image);
+      this.updateRequested = true;
+    }
   }
 
   /**
@@ -161,16 +170,24 @@ public final class Playground {
     this.outputAdapter.sendMessage(new PlaygroundMessage(PlaygroundSignalKey.RUN, new HashMap<>()));
     this.isRunning = true;
 
-    // Dispatch initial state
-    this.dispatchPlaygroundUpdate();
+    // Dispatch initial state if update is pending
+    if (this.updateRequested) {
+      this.dispatchPlaygroundUpdate();
+    }
 
-    // Wait for next input
+    // Wait for next user input
     while (this.isRunning) {
       final JSONObject message =
           new JSONObject(this.inputHandler.getNextMessageForType(InputMessageType.PLAYGROUND));
       this.onCoordinateClicked(message.getInt("x"), message.getInt("y"));
 
-      // If exit was called in a callback, dispatch an exit message
+      // Dispatch new playground image and sound if changes were made
+      if (this.updateRequested) {
+        this.dispatchPlaygroundUpdate();
+        this.updateRequested = false;
+      }
+
+      // If exit was called in a callback, dispatch an exit message ending the game
       if (this.exitRequested) {
         this.dispatchExitMessage();
         this.exitRequested = false;
@@ -211,8 +228,9 @@ public final class Playground {
 
   private void onCoordinateClicked(int x, int y) {
     System.out.printf("Coordinate clicked: (%d, %d)", x, y);
-    // Find first clickable image to handle click, in order of last added image
-    for (Image image : this.imagePositionMap.keySet() /* TODO reverse this */) {
+    // Find first clickable image to handle click, in order of last drawn image
+    for (int i = this.imageDrawOrderStack.size() - 1; i >= 0; i--) {
+      final Image image = this.imageDrawOrderStack.get(i);
       if (image instanceof ClickableImage
           && this.imagePositionMap.get(image).containsCoordinates(x, y)) {
         final ClickableImage clickableImage = (ClickableImage) image;
@@ -222,9 +240,6 @@ public final class Playground {
         } else {
           this.soundFilename = null;
         }
-
-        // Dispatch new playground image and sound after changes have processed
-        this.dispatchPlaygroundUpdate();
         break;
       }
     }
@@ -264,9 +279,9 @@ public final class Playground {
     // Draw images in order, starting with background image
     if (this.backgroundImage != null) {
       this.graphics.drawImage(
-          this.backgroundImage, 0, 0, PLAYGROUND_WIDTH, PLAYGROUND_HEIGHT, null);
+          this.backgroundImage.getBufferedImage(), 0, 0, PLAYGROUND_WIDTH, PLAYGROUND_HEIGHT, null);
     }
-    for (Image image : this.imagePositionMap.keySet()) {
+    for (Image image : this.imageDrawOrderStack) {
       final ImagePosition position = this.imagePositionMap.get(image);
       this.graphics.drawImage(
           image.getBufferedImage(), position.x, position.y, position.width, position.height, null);
