@@ -88,6 +88,7 @@ public class WebSocketServer {
                 throw e;
               } finally {
                 try {
+                  GlobalProtocol.reset();
                   session.close();
                 } catch (IOException e) {
                   e.printStackTrace();
@@ -98,9 +99,7 @@ public class WebSocketServer {
   }
 
   @OnClose
-  public void myOnClose() {
-    System.out.println("Session Closed");
-  }
+  public void myOnClose() {}
 
   /**
    * Currently, the only way we accept messages from the client. This mimics console input.

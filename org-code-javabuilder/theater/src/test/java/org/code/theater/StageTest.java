@@ -57,6 +57,7 @@ public class StageTest {
 
   @AfterEach
   public void tearDown() {
+    GlobalProtocol.reset();
     System.setOut(standardOut);
   }
 

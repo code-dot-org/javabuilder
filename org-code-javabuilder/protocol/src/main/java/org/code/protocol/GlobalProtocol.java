@@ -39,6 +39,9 @@ public class GlobalProtocol {
       String channelId,
       String levelId,
       JavabuilderFileWriter fileWriter) {
+    if (GlobalProtocol.protocolInstance != null) {
+      throw new InternalJavabuilderError(InternalErrorKey.INTERNAL_EXCEPTION);
+    }
     GlobalProtocol.protocolInstance =
         new GlobalProtocol(
             outputAdapter,
@@ -47,6 +50,10 @@ public class GlobalProtocol {
             channelId,
             fileWriter,
             new AssetUrlGenerator(dashboardHostname, channelId, levelId));
+  }
+
+  public static void reset() {
+    GlobalProtocol.protocolInstance = null;
   }
 
   public static GlobalProtocol getInstance() {
