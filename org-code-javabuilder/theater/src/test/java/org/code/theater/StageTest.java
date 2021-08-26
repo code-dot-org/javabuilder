@@ -32,17 +32,8 @@ public class StageTest {
 
   @BeforeEach
   public void setUp() {
-    JavabuilderLogger logger =
-        new JavabuilderLogger(
-            new TestLogHandler(), "sessionId", "connectionId", "levelId", "channelId");
     GlobalProtocol.create(
-        outputAdapter,
-        mock(InputAdapter.class),
-        "",
-        "",
-        "",
-        mock(JavabuilderFileWriter.class),
-        logger);
+        outputAdapter, mock(InputAdapter.class), "", "", "", mock(JavabuilderFileWriter.class));
     System.setOut(new PrintStream(outputStreamCaptor));
     bufferedImage = mock(BufferedImage.class);
     graphics = mock(Graphics2D.class);
