@@ -6,6 +6,7 @@ import static org.mockito.Mockito.*;
 import com.amazonaws.services.s3.AmazonS3;
 import java.io.ByteArrayInputStream;
 import org.code.protocol.JavabuilderException;
+import org.code.protocol.JavabuilderLogger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -20,9 +21,11 @@ public class AWSFileWriterTest {
   @BeforeEach
   void setUp() {
     s3ClientMock = mock(AmazonS3.class);
+    JavabuilderLogger logger =
+        new JavabuilderLogger(
+            new TestLogger(), FAKE_SESSION_ID, "connectionId", "levelId", "channelId");
     fileWriter =
-        new AWSFileWriter(
-            s3ClientMock, FAKE_BUCKET_NAME, FAKE_SESSION_ID, FAKE_OUTPUT_URL, new TestLogger());
+        new AWSFileWriter(s3ClientMock, FAKE_BUCKET_NAME, FAKE_SESSION_ID, FAKE_OUTPUT_URL, logger);
   }
 
   @Test

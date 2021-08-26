@@ -10,10 +10,7 @@ import javax.websocket.PongMessage;
 import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
 import org.code.javabuilder.*;
-import org.code.protocol.GlobalProtocol;
-import org.code.protocol.JavabuilderException;
-import org.code.protocol.JavabuilderRuntimeException;
-import org.code.protocol.Properties;
+import org.code.protocol.*;
 import org.json.JSONObject;
 
 /**
@@ -44,9 +41,11 @@ public class WebSocketServer {
     String payload = new String(decoder.decode(token.split("\\.")[1]));
     JSONObject queryInput = new JSONObject(payload);
 
+    final String connectionId = "LocalhostWebSocketConnection";
     final String levelId = queryInput.getString("level_id");
     final String channelId = queryInput.getString("channel_id");
     final String dashboardHostname = "http://" + queryInput.get("iss") + ":3000";
+    final String javabuilderSessionId = "LocalhostSessionId";
     final JSONObject options = new JSONObject(queryInput.getString("options"));
     boolean useNeighborhood = false;
     if (options.has("useNeighborhood")) {
@@ -54,12 +53,25 @@ public class WebSocketServer {
       useNeighborhood = Boolean.parseBoolean(useNeighborhoodStr);
     }
 
-    Properties.setConnectionId("LocalhostWebSocketConnection");
+    final JavabuilderLogger logger =
+        new JavabuilderLogger(
+            new LocalLogHandler(System.out),
+            javabuilderSessionId,
+            connectionId,
+            levelId,
+            channelId);
+    Properties.setConnectionId(connectionId);
 
     outputAdapter = new WebSocketOutputAdapter(session);
     inputAdapter = new WebSocketInputAdapter();
     GlobalProtocol.create(
-        outputAdapter, inputAdapter, dashboardHostname, channelId, levelId, new LocalFileWriter());
+        outputAdapter,
+        inputAdapter,
+        dashboardHostname,
+        channelId,
+        levelId,
+        new LocalFileWriter(),
+        logger);
     final UserProjectFileLoader fileLoader =
         new UserProjectFileLoader(
             GlobalProtocol.getInstance().generateSourcesUrl(),
@@ -76,16 +88,28 @@ public class WebSocketServer {
                   codeBuilder.buildUserCode();
                   codeBuilder.runUserCode();
                 }
-              } catch (JavabuilderException | JavabuilderRuntimeException e) {
+              } catch (InternalJavabuilderError e) {
+                // Errors we caused that affect the user
                 outputAdapter.sendMessage(e.getExceptionMessage());
-                outputAdapter.sendMessage(new DebuggingMessage("\n" + e.getLoggingString()));
+                JSONObject errorInfo = new JSONObject();
+                errorInfo.put("exceptionMessage", e.getExceptionMessage().getFormattedMessage());
+                errorInfo.put("exceptionLoggingString", e.getLoggingString());
+                logger.logError(errorInfo);
+              } catch (JavabuilderException | JavabuilderRuntimeException e) {
+                // Errors the user caused
+                outputAdapter.sendMessage(e.getExceptionMessage());
               } catch (InternalFacingException e) {
-                outputAdapter.sendMessage(new DebuggingMessage("\n" + e.getLoggingString()));
+                // Errors we caused that don't affect the user
+                JSONObject errorInfo = new JSONObject();
+                errorInfo.put("exceptionLoggingString", e.getLoggingString());
+                logger.logError(errorInfo);
               } catch (Throwable e) {
-                outputAdapter.sendMessage(new DebuggingMessage("\n" + e.getMessage()));
-                outputAdapter.sendMessage(new DebuggingMessage("\n" + e.toString()));
-                // Throw here to ensure we always get local logging
-                throw e;
+                // Errors we didn't catch
+                InternalFacingException loggingException =
+                    new InternalFacingException("UNCAUGHT", e);
+                JSONObject errorInfo = new JSONObject();
+                errorInfo.put("exceptionLoggingString", loggingException.getLoggingString());
+                logger.logError(errorInfo);
               } finally {
                 try {
                   session.close();
@@ -99,7 +123,9 @@ public class WebSocketServer {
 
   @OnClose
   public void myOnClose() {
-    System.out.println("Session Closed");
+    JSONObject eventData = new JSONObject();
+    eventData.put("webSocketEvent", "closed");
+    GlobalProtocol.getInstance().getLogger().logInfo(eventData);
   }
 
   /**

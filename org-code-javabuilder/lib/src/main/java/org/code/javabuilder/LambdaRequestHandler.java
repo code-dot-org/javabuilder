@@ -55,7 +55,12 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     }
 
     final JavabuilderLogger logger =
-        new LambdaLogHandler(context.getLogger(), javabuilderSessionId);
+        new JavabuilderLogger(
+            new LambdaLogHandler(context.getLogger()),
+            javabuilderSessionId,
+            connectionId,
+            levelId,
+            channelId);
 
     Properties.setConnectionId(connectionId);
 
@@ -78,7 +83,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     // Load files to memory and create and invoke the code execution environment
     try {
       GlobalProtocol.create(
-          outputAdapter, inputAdapter, dashboardHostname, channelId, levelId, fileWriter);
+          outputAdapter, inputAdapter, dashboardHostname, channelId, levelId, fileWriter, logger);
 
       try {
         // Delete any leftover contents of the tmp folder from previous lambda invocations
