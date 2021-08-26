@@ -9,6 +9,7 @@
 plugins {
     // Apply the java-library plugin for API and implementation separation.
     id 'java-library'
+    id 'java-test-fixtures'
     id 'com.github.sherter.google-java-format' version '0.8'
 }
 
