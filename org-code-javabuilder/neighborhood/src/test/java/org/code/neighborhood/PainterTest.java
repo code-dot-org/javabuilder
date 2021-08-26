@@ -21,17 +21,8 @@ public class PainterTest {
 
   @BeforeEach
   public void setUp() {
-    JavabuilderLogger logger =
-        new JavabuilderLogger(
-            new TestLogHandler(), "sessionId", "connectionId", "levelId", "channelId");
     GlobalProtocol.create(
-        outputAdapter,
-        mock(InputAdapter.class),
-        "",
-        "",
-        "",
-        mock(JavabuilderFileWriter.class),
-        logger);
+        outputAdapter, mock(InputAdapter.class), "", "", "", mock(JavabuilderFileWriter.class));
     System.setOut(new PrintStream(outputStreamCaptor));
     World w = new World(singleSquareGrid);
     World.setInstance(w);
