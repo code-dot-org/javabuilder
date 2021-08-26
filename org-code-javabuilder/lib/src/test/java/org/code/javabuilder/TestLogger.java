@@ -1,16 +1,10 @@
 package org.code.javabuilder;
 
-import org.code.protocol.JavabuilderLogger;
-import org.json.JSONObject;
+import org.code.protocol.LogHandler;
 
-public class TestLogger implements JavabuilderLogger {
+public class TestLogger implements LogHandler {
   @Override
-  public void logInfo(JSONObject eventData) {
-    System.out.println("INFO: " + eventData.toString());
-  }
-
-  @Override
-  public void logError(JSONObject eventData) {
-    System.out.println("ERROR: " + eventData.toString());
+  public void log(String log) {
+    System.out.println(log);
   }
 }

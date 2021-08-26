@@ -4,10 +4,7 @@ import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import java.io.ByteArrayInputStream;
-import org.code.protocol.InternalErrorKey;
-import org.code.protocol.JavabuilderException;
-import org.code.protocol.JavabuilderFileWriter;
-import org.code.protocol.JavabuilderLogger;
+import org.code.protocol.*;
 import org.json.JSONObject;
 
 public class AWSFileWriter implements JavabuilderFileWriter {

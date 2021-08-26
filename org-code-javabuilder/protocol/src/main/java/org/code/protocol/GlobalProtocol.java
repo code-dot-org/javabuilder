@@ -16,6 +16,7 @@ public class GlobalProtocol {
   private final String dashboardHostname;
   private final String channelId;
   private final AssetUrlGenerator assetUrlGenerator;
+  private final JavabuilderLogger logger;
 
   private GlobalProtocol(
       OutputAdapter outputAdapter,
@@ -23,13 +24,15 @@ public class GlobalProtocol {
       String dashboardHostname,
       String channelId,
       JavabuilderFileWriter fileWriter,
-      AssetUrlGenerator assetUrlGenerator) {
+      AssetUrlGenerator assetUrlGenerator,
+      JavabuilderLogger logger) {
     this.outputAdapter = outputAdapter;
     this.inputAdapter = inputAdapter;
     this.dashboardHostname = dashboardHostname;
     this.channelId = channelId;
     this.fileWriter = fileWriter;
     this.assetUrlGenerator = assetUrlGenerator;
+    this.logger = logger;
   }
 
   public static void create(
@@ -38,7 +41,8 @@ public class GlobalProtocol {
       String dashboardHostname,
       String channelId,
       String levelId,
-      JavabuilderFileWriter fileWriter) {
+      JavabuilderFileWriter fileWriter,
+      JavabuilderLogger logger) {
     GlobalProtocol.protocolInstance =
         new GlobalProtocol(
             outputAdapter,
@@ -46,7 +50,8 @@ public class GlobalProtocol {
             dashboardHostname,
             channelId,
             fileWriter,
-            new AssetUrlGenerator(dashboardHostname, channelId, levelId));
+            new AssetUrlGenerator(dashboardHostname, channelId, levelId),
+            logger);
   }
 
   public static GlobalProtocol getInstance() {
@@ -67,6 +72,10 @@ public class GlobalProtocol {
 
   public JavabuilderFileWriter getFileWriter() {
     return this.fileWriter;
+  }
+
+  public JavabuilderLogger getLogger() {
+    return this.logger;
   }
 
   public String generateAssetUrl(String filename) {

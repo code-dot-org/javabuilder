@@ -3,6 +3,7 @@ package dev.javabuilder;
 import org.code.javabuilder.*;
 import org.code.protocol.GlobalProtocol;
 import org.code.protocol.JavabuilderException;
+import org.code.protocol.JavabuilderLogger;
 import org.code.protocol.JavabuilderRuntimeException;
 
 /**
@@ -16,9 +17,16 @@ public class LocalMain {
     final LocalOutputAdapter outputAdapter = new LocalOutputAdapter(System.out);
     final LocalProjectFileLoader fileLoader = new LocalProjectFileLoader();
     // Create and invoke the code execution environment
+    final JavabuilderLogger logger =
+        new JavabuilderLogger(
+            new LocalLogHandler(System.out),
+            "javabuilderSessionId",
+            "connectionId",
+            "levelId",
+            "channelId");
     try {
       UserProjectFiles userProjectFiles = fileLoader.loadFiles();
-      GlobalProtocol.create(outputAdapter, inputAdapter, "", "", "", new LocalFileWriter());
+      GlobalProtocol.create(outputAdapter, inputAdapter, "", "", "", new LocalFileWriter(), logger);
       try (CodeBuilder codeBuilder =
           new CodeBuilder(GlobalProtocol.getInstance(), userProjectFiles)) {
         codeBuilder.buildUserCode();
