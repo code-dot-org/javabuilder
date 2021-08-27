@@ -59,7 +59,8 @@ public class WebSocketServer {
     }
 
     this.logger = Logger.getLogger(MAIN_LOGGER);
-    this.logger.addHandler(new LocalLogHandler(System.out, levelId, channelId));
+    this.logHandler = new LocalLogHandler(System.out, levelId, channelId);
+    this.logger.addHandler(this.logHandler);
     // turn off the default console logger
     this.logger.setUseParentHandlers(false);
 
