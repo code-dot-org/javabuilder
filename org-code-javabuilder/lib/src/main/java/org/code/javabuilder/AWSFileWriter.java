@@ -56,7 +56,7 @@ public class AWSFileWriter implements JavabuilderFileWriter {
       eventData.put("message", e.getMessage());
       this.logger.logError(eventData);
       // We couldn't write to S3, send a message to the user and fail. The S3 SDK includes retries.
-      throw new InternalError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION);
+      throw new InternalServerError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION);
     }
 
     this.writes++;

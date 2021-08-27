@@ -17,10 +17,11 @@ public class UserProjectFileParser {
    *
    * @param json JSON String in UserSourceData format
    * @return UserProjectFiles: all files in the project
-   * @throws InternalError
+   * @throws InternalServerError
    * @throws UserInitiatedException
    */
-  public UserProjectFiles parseFileJson(String json) throws InternalError, UserInitiatedException {
+  public UserProjectFiles parseFileJson(String json)
+      throws InternalServerError, UserInitiatedException {
     try {
       UserProjectFiles userProjectFiles = new UserProjectFiles();
       UserSourceData sourceData = this.objectMapper.readValue(json, UserSourceData.class);
@@ -37,7 +38,7 @@ public class UserProjectFileParser {
       }
       return userProjectFiles;
     } catch (IOException io) {
-      throw new InternalError(InternalErrorKey.INTERNAL_EXCEPTION, io);
+      throw new InternalServerError(InternalErrorKey.INTERNAL_EXCEPTION, io);
     }
   }
 }

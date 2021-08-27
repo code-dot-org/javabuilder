@@ -29,13 +29,13 @@ public class Util {
   }
 
   /** @return a joined list of the paths of all user-facing api jars */
-  public static String getAllJarPaths() throws InternalError {
+  public static String getAllJarPaths() throws InternalServerError {
     ArrayList<String> allJarPaths = new ArrayList<>();
     try {
       allJarPaths.add(Paths.get(Util.getJarURL(NEIGHBORHOOD_JAR).toURI()).toString());
       allJarPaths.add(Paths.get(Util.getJarURL(THEATER_JAR).toURI()).toString());
     } catch (URISyntaxException e) {
-      throw new InternalError(InternalErrorKey.INTERNAL_COMPILER_EXCEPTION, e);
+      throw new InternalServerError(InternalErrorKey.INTERNAL_COMPILER_EXCEPTION, e);
     }
 
     return String.join(System.getProperty("path.separator"), allJarPaths);
