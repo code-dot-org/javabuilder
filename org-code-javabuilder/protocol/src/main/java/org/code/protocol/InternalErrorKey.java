@@ -7,5 +7,7 @@ public enum InternalErrorKey {
   // We caused an error while compiling the user's program.
   INTERNAL_COMPILER_EXCEPTION,
   // We caused an error.
-  INTERNAL_EXCEPTION
+  INTERNAL_EXCEPTION,
+  // We caused an error that we aren't currently tracking.
+  UNKNOWN_ERROR
 }
