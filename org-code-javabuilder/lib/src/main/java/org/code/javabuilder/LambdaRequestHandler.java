@@ -84,7 +84,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
         // Delete any leftover contents of the tmp folder from previous lambda invocations
         Util.recursivelyClearDirectory(Paths.get(System.getProperty("java.io.tmpdir")));
       } catch (IOException e) {
-        throw new InternalJavabuilderError(INTERNAL_EXCEPTION, e);
+        throw new InternalError(INTERNAL_EXCEPTION, e);
       }
 
       // Create file loader

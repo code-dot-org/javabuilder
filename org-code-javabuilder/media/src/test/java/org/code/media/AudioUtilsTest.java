@@ -123,7 +123,7 @@ class AudioUtilsTest {
 
     Exception exception =
         assertThrows(
-            InternalJavabuilderError.class,
+            InternalRuntimeError.class,
             () -> {
               AudioUtils.readSamplesFromAssetFile(TEST_FILE_NAME);
             });
@@ -149,7 +149,7 @@ class AudioUtilsTest {
 
     Exception exception =
         assertThrows(
-            InternalJavabuilderError.class,
+            InternalRuntimeError.class,
             () -> {
               AudioUtils.readSamplesFromAssetFile(TEST_FILE_NAME);
             });
