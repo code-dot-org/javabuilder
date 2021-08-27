@@ -51,7 +51,7 @@ public class GlobalProtocol {
 
   public static GlobalProtocol getInstance() {
     if (GlobalProtocol.protocolInstance == null) {
-      throw new InternalJavabuilderError(InternalErrorKey.INTERNAL_EXCEPTION);
+      throw new InternalRuntimeError(InternalErrorKey.INTERNAL_EXCEPTION);
     }
 
     return GlobalProtocol.protocolInstance;

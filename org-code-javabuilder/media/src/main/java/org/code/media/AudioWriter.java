@@ -4,7 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import org.code.protocol.InternalErrorKey;
-import org.code.protocol.InternalJavabuilderError;
+import org.code.protocol.InternalRuntimeError;
 
 /**
  * Writer for concatenating audio data from multiple audio sources. The raw audio samples in bytes
@@ -75,7 +75,7 @@ public class AudioWriter {
     try {
       this.audioOutputStream.close();
     } catch (IOException e) {
-      throw new InternalJavabuilderError(InternalErrorKey.INTERNAL_EXCEPTION, e);
+      throw new InternalRuntimeError(InternalErrorKey.INTERNAL_EXCEPTION, e);
     }
   }
 }
