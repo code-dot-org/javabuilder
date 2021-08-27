@@ -113,6 +113,8 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
   private void cleanUpResources(String connectionId, AmazonApiGatewayManagementApi api) {
     final DeleteConnectionRequest deleteConnectionRequest =
         new DeleteConnectionRequest().withConnectionId(connectionId);
+    // Deleting the API Gateway connection should always be the last thing executed because the
+    // delete action cleans up the AWS resources associated with this lambda
     api.deleteConnection(deleteConnectionRequest);
   }
 }

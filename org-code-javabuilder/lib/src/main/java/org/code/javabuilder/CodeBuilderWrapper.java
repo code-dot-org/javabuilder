@@ -29,8 +29,7 @@ public class CodeBuilderWrapper {
       // Errors we didn't catch. These may have affected the user. For now, let's tell
       // them about it.
       outputAdapter.sendMessage(
-          (new InternalJavabuilderError(InternalErrorKey.INTERNAL_EXCEPTION, e))
-              .getExceptionMessage());
+          (new InternalServerError(InternalErrorKey.INTERNAL_EXCEPTION, e)).getExceptionMessage());
     }
   }
 }
