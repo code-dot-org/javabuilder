@@ -56,7 +56,8 @@ class AssetUrlGeneratorTest {
         .thenThrow(wrappedException);
 
     final Exception exception =
-        assertThrows(InternalRuntimeError.class, () -> unitUnderTest.generateAssetUrl("filename"));
+        assertThrows(
+            InternalServerRuntimeError.class, () -> unitUnderTest.generateAssetUrl("filename"));
     assertEquals(exception.getMessage(), InternalErrorKey.INTERNAL_EXCEPTION.toString());
     assertSame(exception.getCause(), wrappedException);
   }
@@ -69,7 +70,8 @@ class AssetUrlGeneratorTest {
     when(httpResponse.body()).thenReturn(errorResponseBody);
 
     final Exception exception =
-        assertThrows(InternalRuntimeError.class, () -> unitUnderTest.generateAssetUrl("filename"));
+        assertThrows(
+            InternalServerRuntimeError.class, () -> unitUnderTest.generateAssetUrl("filename"));
     assertEquals(exception.getMessage(), InternalErrorKey.INTERNAL_EXCEPTION.toString());
     assertEquals(exception.getCause().getMessage(), errorResponseBody);
   }
@@ -79,7 +81,8 @@ class AssetUrlGeneratorTest {
     when(httpResponse.body()).thenReturn("[ /// invalid /// ]");
 
     final Exception exception =
-        assertThrows(InternalRuntimeError.class, () -> unitUnderTest.generateAssetUrl("filename"));
+        assertThrows(
+            InternalServerRuntimeError.class, () -> unitUnderTest.generateAssetUrl("filename"));
     assertEquals(exception.getMessage(), InternalErrorKey.INTERNAL_EXCEPTION.toString());
     assertTrue(exception.getCause() instanceof JSONException);
   }

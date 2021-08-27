@@ -7,12 +7,12 @@ import org.code.protocol.JavabuilderException;
  * An exception that we caused that affects the user. These are the conceptual equivalent of HTTP
  * 500 errors.
  */
-public class InternalError extends JavabuilderException {
-  public InternalError(InternalErrorKey key) {
+public class InternalServerError extends JavabuilderException {
+  public InternalServerError(InternalErrorKey key) {
     super(key);
   }
 
-  public InternalError(InternalErrorKey key, Throwable cause) {
+  public InternalServerError(InternalErrorKey key, Throwable cause) {
     super(key, cause);
   }
 }
