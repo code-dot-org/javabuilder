@@ -60,6 +60,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     logger.addHandler(
         new LambdaLogHandler(
             context.getLogger(), javabuilderSessionId, connectionId, levelId, channelId));
+    // turn off the default console logger
     logger.setUseParentHandlers(false);
 
     Properties.setConnectionId(connectionId);

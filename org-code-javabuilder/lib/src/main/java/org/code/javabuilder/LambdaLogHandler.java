@@ -36,9 +36,9 @@ public class LambdaLogHandler extends Handler {
     JSONObject logData = new JSONObject();
     logData.put("sessionMetadata", sessionMetadata);
     logData.put("message", record.getMessage());
+    logData.put("level", record.getLevel());
 
-    record.setMessage(logData.toString());
-    this.logger.log(record.toString());
+    this.logger.log(logData.toString());
   }
 
   @Override
