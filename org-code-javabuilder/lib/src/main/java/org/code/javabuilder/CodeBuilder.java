@@ -40,12 +40,11 @@ public class CodeBuilder implements AutoCloseable {
    *     compile due to internal errors.
    */
   public void buildUserCode() throws InternalServerError, UserInitiatedException {
-    throw new RuntimeException("ERROR!! ERROR!!!");
-    //    this.saveProjectAssets();
-    //    UserCodeCompiler codeCompiler =
-    //        new UserCodeCompiler(
-    //            this.userProjectFiles.getJavaFiles(), this.tempFolder, this.outputAdapter);
-    //    codeCompiler.compileProgram();
+    this.saveProjectAssets();
+    UserCodeCompiler codeCompiler =
+        new UserCodeCompiler(
+            this.userProjectFiles.getJavaFiles(), this.tempFolder, this.outputAdapter);
+    codeCompiler.compileProgram();
   }
 
   /**
