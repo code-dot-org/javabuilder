@@ -42,16 +42,16 @@ public class AWSInputAdapterTest {
   }
 
   @Test
-  void addsNewlineToMessage() {
+  void getsNextMessage() {
     messageSetUp(new String[] {"hello"});
-    assertEquals(inputAdapter.getNextMessage(), "hello" + System.lineSeparator());
+    assertEquals(inputAdapter.getNextMessage(), "hello");
   }
 
   @Test
   void addsAllReceivedMessagesToQueue() {
     messageSetUp(new String[] {"", "world"});
     inputAdapter.getNextMessage();
-    assertEquals(inputAdapter.getNextMessage(), "world" + System.lineSeparator());
+    assertEquals(inputAdapter.getNextMessage(), "world");
   }
 
   /**
