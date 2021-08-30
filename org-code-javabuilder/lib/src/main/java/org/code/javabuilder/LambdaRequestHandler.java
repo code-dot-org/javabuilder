@@ -95,18 +95,30 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
       // Delete any leftover contents of the tmp folder from previous lambda invocations
       Util.recursivelyClearDirectory(Paths.get(System.getProperty("java.io.tmpdir")));
     } catch (IOException e) {
-      outputAdapter.sendMessage(
-          (new InternalServerError(INTERNAL_EXCEPTION, e).getExceptionMessage()));
+      // Wrap this in our error type so we can log it and tell the user.
+      InternalServerError error = new InternalServerError(INTERNAL_EXCEPTION, e);
+
+      // Log the error
+      JSONObject eventData = new JSONObject();
+      eventData.put("exceptionMessage", error.getExceptionMessage());
+      eventData.put("loggingString", error.getLoggingString());
+      Logger.getLogger(MAIN_LOGGER).severe(eventData.toString());
+
+      // This affected the user. Let's tell them about it.
+      outputAdapter.sendMessage(error.getExceptionMessage());
+
       cleanUpResources(connectionId, api);
       return "error clearing tmpdir";
     }
 
-    // Load files to memory and create and invoke the code execution environment
-    CodeBuilderWrapper codeBuilderWrapper =
-        new CodeBuilderWrapper(userProjectFileLoader, outputAdapter);
-    codeBuilderWrapper.executeCodeBuilder();
-
-    cleanUpResources(connectionId, api);
+    try {
+      // Load files to memory and create and invoke the code execution environment
+      CodeBuilderWrapper codeBuilderWrapper =
+          new CodeBuilderWrapper(userProjectFileLoader, outputAdapter);
+      codeBuilderWrapper.executeCodeBuilder();
+    } finally {
+      cleanUpResources(connectionId, api);
+    }
     return "done";
   }
 
