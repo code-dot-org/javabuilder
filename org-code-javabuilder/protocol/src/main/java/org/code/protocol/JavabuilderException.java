@@ -1,12 +1,8 @@
 package org.code.protocol;
 
-import static org.code.protocol.LoggerNames.MAIN_LOGGER;
-
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.HashMap;
-import java.util.logging.Logger;
-import org.json.JSONObject;
 
 /** Parent exception for all exceptions that will be displayed to the user. */
 public abstract class JavabuilderException extends Exception
@@ -21,20 +17,6 @@ public abstract class JavabuilderException extends Exception
   protected JavabuilderException(Enum key, Throwable cause) {
     super(key.toString(), cause);
     this.key = key;
-  }
-
-  protected JavabuilderException(Enum key, Boolean logOnCreate) {
-    this(key);
-    if (logOnCreate) {
-      logError();
-    }
-  }
-
-  protected JavabuilderException(Enum key, Throwable cause, Boolean logOnCreate) {
-    this(key, cause);
-    if (logOnCreate) {
-      logError();
-    }
   }
 
   public JavabuilderThrowableMessage getExceptionMessage() {
@@ -53,12 +35,5 @@ public abstract class JavabuilderException extends Exception
     PrintWriter printWriter = new PrintWriter(stringWriter);
     this.printStackTrace(printWriter);
     return stringWriter.toString();
-  }
-
-  private void logError() {
-    JSONObject eventData = new JSONObject();
-    eventData.put("exceptionMessage", getExceptionMessage());
-    eventData.put("loggingString", getLoggingString());
-    Logger.getLogger(MAIN_LOGGER).severe(eventData.toString());
   }
 }

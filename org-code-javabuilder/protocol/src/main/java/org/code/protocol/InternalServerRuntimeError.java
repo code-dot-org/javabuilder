@@ -7,10 +7,10 @@ package org.code.protocol;
  */
 public class InternalServerRuntimeError extends JavabuilderRuntimeException {
   public InternalServerRuntimeError(InternalErrorKey key) {
-    super(key, true);
+    super(key);
   }
 
   public InternalServerRuntimeError(InternalErrorKey key, Throwable cause) {
-    super(key, cause, true);
+    super(key, cause);
   }
 }
