@@ -9,10 +9,10 @@ import org.code.protocol.JavabuilderException;
  */
 public class InternalServerError extends JavabuilderException {
   public InternalServerError(InternalErrorKey key) {
-    super(key, true);
+    super(key);
   }
 
   public InternalServerError(InternalErrorKey key, Throwable cause) {
-    super(key, cause, true);
+    super(key, cause);
   }
 }
