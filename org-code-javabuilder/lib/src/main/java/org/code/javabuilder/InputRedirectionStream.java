@@ -5,7 +5,8 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.Queue;
-import org.code.protocol.InputAdapter;
+import org.code.protocol.InputHandler;
+import org.code.protocol.InputMessageType;
 
 /**
  * An InputStream that queries an InputAdapter for new bytes. This is intended to redirect system.in
@@ -15,10 +16,10 @@ import org.code.protocol.InputAdapter;
  */
 public class InputRedirectionStream extends InputStream {
   private final Queue<Byte> queue;
-  private final InputAdapter inputAdapter;
+  private final InputHandler inputAdapter;
 
-  public InputRedirectionStream(InputAdapter inputAdapter) {
-    this.inputAdapter = inputAdapter;
+  public InputRedirectionStream(InputHandler inputHandler) {
+    this.inputAdapter = inputHandler;
     this.queue = new LinkedList<>();
   }
 
@@ -32,7 +33,12 @@ public class InputRedirectionStream extends InputStream {
   @Override
   public int read() {
     if (queue.peek() == null) {
-      byte[] message = inputAdapter.getNextMessage().getBytes(StandardCharsets.UTF_8);
+      // The Java Lab console is an <input> element that uses the enter key to trigger onSubmit.
+      // Rather than adding an arbitrary line separator from the client, we instead add the
+      // separator here so we can use a line separator that Scanner will recognize.
+      final String messageWithNewline =
+          inputAdapter.getNextMessageForType(InputMessageType.SYSTEM_IN) + System.lineSeparator();
+      byte[] message = messageWithNewline.getBytes(StandardCharsets.UTF_8);
       for (byte b : message) {
         queue.add(b);
       }
