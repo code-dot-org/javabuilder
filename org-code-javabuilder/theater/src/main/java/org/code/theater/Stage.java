@@ -416,7 +416,7 @@ public class Stage {
       // we should not hit this (caused by too many file writes)
       // in normal execution as it is only called via play,
       // and play can only be called once.
-      throw new InternalJavabuilderError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e);
+      throw new InternalServerRuntimeError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e);
     }
   }
 
