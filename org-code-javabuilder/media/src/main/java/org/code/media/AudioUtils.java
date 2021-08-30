@@ -6,7 +6,7 @@ import java.util.Arrays;
 import javax.sound.sampled.*;
 import org.code.protocol.GlobalProtocol;
 import org.code.protocol.InternalErrorKey;
-import org.code.protocol.InternalJavabuilderError;
+import org.code.protocol.InternalServerRuntimeError;
 
 class AudioUtils {
   private static final int MONO_CHANNELS = 1;
@@ -113,7 +113,7 @@ class AudioUtils {
     try {
       AudioSystem.write(audioInputStream, DEFAULT_AUDIO_FILE_FORMAT_TYPE, outputStream);
     } catch (IOException e) {
-      throw new InternalJavabuilderError(InternalErrorKey.INTERNAL_EXCEPTION, e);
+      throw new InternalServerRuntimeError(InternalErrorKey.INTERNAL_EXCEPTION, e);
     }
   }
 
@@ -211,7 +211,7 @@ class AudioUtils {
       bytes = audioInputStream.readAllBytes();
       audioInputStream.close();
     } catch (IOException e) {
-      throw new InternalJavabuilderError(InternalErrorKey.INTERNAL_EXCEPTION, e);
+      throw new InternalServerRuntimeError(InternalErrorKey.INTERNAL_EXCEPTION, e);
     }
 
     return AudioUtils.convertByteArrayToDoubleArray(

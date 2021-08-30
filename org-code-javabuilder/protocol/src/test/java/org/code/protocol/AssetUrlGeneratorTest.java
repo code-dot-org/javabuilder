@@ -57,7 +57,7 @@ class AssetUrlGeneratorTest {
 
     final Exception exception =
         assertThrows(
-            InternalJavabuilderError.class, () -> unitUnderTest.generateAssetUrl("filename"));
+            InternalServerRuntimeError.class, () -> unitUnderTest.generateAssetUrl("filename"));
     assertEquals(exception.getMessage(), InternalErrorKey.INTERNAL_EXCEPTION.toString());
     assertSame(exception.getCause(), wrappedException);
   }
@@ -71,7 +71,7 @@ class AssetUrlGeneratorTest {
 
     final Exception exception =
         assertThrows(
-            InternalJavabuilderError.class, () -> unitUnderTest.generateAssetUrl("filename"));
+            InternalServerRuntimeError.class, () -> unitUnderTest.generateAssetUrl("filename"));
     assertEquals(exception.getMessage(), InternalErrorKey.INTERNAL_EXCEPTION.toString());
     assertEquals(exception.getCause().getMessage(), errorResponseBody);
   }
@@ -82,7 +82,7 @@ class AssetUrlGeneratorTest {
 
     final Exception exception =
         assertThrows(
-            InternalJavabuilderError.class, () -> unitUnderTest.generateAssetUrl("filename"));
+            InternalServerRuntimeError.class, () -> unitUnderTest.generateAssetUrl("filename"));
     assertEquals(exception.getMessage(), InternalErrorKey.INTERNAL_EXCEPTION.toString());
     assertTrue(exception.getCause() instanceof JSONException);
   }

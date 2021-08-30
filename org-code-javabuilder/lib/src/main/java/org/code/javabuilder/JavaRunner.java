@@ -27,13 +27,13 @@ public class JavaRunner {
   /**
    * Run the compiled user code.
    *
-   * @throws UserFacingException When the user's code hits a runtime error or fails due to an
+   * @throws InternalServerError When the user's code hits a runtime error or fails due to an
    *     internal error.
    * @throws InternalFacingException When we hit an internal error after the user's code has
    *     finished executing.
    */
   public void runCode()
-      throws UserFacingException, InternalFacingException, UserInitiatedException {
+      throws InternalServerError, InternalFacingException, UserInitiatedException {
     // Include the user-facing api jars in the code we are loading so student code can access them.
     URL[] classLoaderUrls = Util.getAllJarURLs(this.executableLocation);
 
@@ -75,11 +75,11 @@ public class JavaRunner {
    *
    * @param urlClassLoader class loader pointing to location of compiled classes
    * @return the main method if it is found
-   * @throws UserFacingException if there is an issue loading a class
+   * @throws InternalServerError if there is an issue loading a class
    * @throws UserInitiatedException if there is more than one main method or no main method
    */
   public Method findMainMethod(URLClassLoader urlClassLoader)
-      throws UserFacingException, UserInitiatedException {
+      throws InternalServerError, UserInitiatedException {
 
     Method mainMethod = null;
     for (JavaProjectFile file : this.javaFiles) {
