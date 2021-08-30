@@ -46,8 +46,6 @@ public class InputHandler {
           message = nextMessageData;
         }
 
-        System.out.printf("Received message: %s of type: %s\n", message, nextMessageType);
-
         if (!inputQueues.containsKey(nextMessageType)) {
           inputQueues.put(nextMessageType, new LinkedList<>());
         }
