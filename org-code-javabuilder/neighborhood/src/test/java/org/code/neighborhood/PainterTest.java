@@ -159,8 +159,6 @@ public class PainterTest {
     World.setInstance(w);
     Painter painter = new Painter();
     assertTrue(painter.hasPaint());
-    painter.paint("red");
-    assertTrue(painter.hasPaint());
   }
 
   @Test
