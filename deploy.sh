@@ -39,7 +39,7 @@ aws cloudformation package \
 # 'Developer' role requires a specific service role for all CloudFormation operations.
 if [[ $(aws sts get-caller-identity --query Arn --output text) =~ "assumed-role/Developer/" ]]; then
   # Append the role-arn option to the positional parameters $@ passed to cloudformation deploy.
-  set -- "$@" "--role-arn 'arn:aws:iam::$(aws sts get-caller-identity --query Account --output text):role/admin/CloudFormationService'"
+  set -- "$@" --role-arn "arn:aws:iam::$(aws sts get-caller-identity --query Account --output text):role/admin/CloudFormationService"
 fi
 
 aws cloudformation deploy \
