@@ -21,8 +21,7 @@ public class AWSFileWriterTest {
   void setUp() {
     s3ClientMock = mock(AmazonS3.class);
     fileWriter =
-        new AWSFileWriter(
-            s3ClientMock, FAKE_BUCKET_NAME, FAKE_SESSION_ID, FAKE_OUTPUT_URL, new TestLogger());
+        new AWSFileWriter(s3ClientMock, FAKE_BUCKET_NAME, FAKE_SESSION_ID, FAKE_OUTPUT_URL);
   }
 
   @Test

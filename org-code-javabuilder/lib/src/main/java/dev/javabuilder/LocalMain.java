@@ -1,9 +1,10 @@
 package dev.javabuilder;
 
+import static org.code.protocol.LoggerNames.MAIN_LOGGER;
+
+import java.util.logging.Logger;
 import org.code.javabuilder.*;
-import org.code.protocol.GlobalProtocol;
-import org.code.protocol.JavabuilderException;
-import org.code.protocol.JavabuilderRuntimeException;
+import org.code.protocol.*;
 
 /**
  * Intended for local testing only. This is a local version of the Javabuilder lambda function. The
@@ -15,20 +16,16 @@ public class LocalMain {
     final LocalInputAdapter inputAdapter = new LocalInputAdapter();
     final LocalOutputAdapter outputAdapter = new LocalOutputAdapter(System.out);
     final LocalProjectFileLoader fileLoader = new LocalProjectFileLoader();
+
+    Logger logger = Logger.getLogger(MAIN_LOGGER);
+    logger.addHandler(new LocalLogHandler(System.out, "levelId", "channelId"));
+    // turn off the default console logger
+    logger.setUseParentHandlers(false);
+
+    GlobalProtocol.create(outputAdapter, inputAdapter, "", "", "", new LocalFileWriter());
+
     // Create and invoke the code execution environment
-    try {
-      UserProjectFiles userProjectFiles = fileLoader.loadFiles();
-      GlobalProtocol.create(outputAdapter, inputAdapter, "", "", "", new LocalFileWriter());
-      try (CodeBuilder codeBuilder =
-          new CodeBuilder(GlobalProtocol.getInstance(), userProjectFiles)) {
-        codeBuilder.buildUserCode();
-        codeBuilder.runUserCode();
-      }
-    } catch (JavabuilderException | JavabuilderRuntimeException e) {
-      outputAdapter.sendMessage(e.getExceptionMessage());
-      System.out.println("\n" + e.getLoggingString());
-    } catch (InternalFacingException e) {
-      System.out.println("\n" + e.getLoggingString());
-    }
+    CodeBuilderWrapper codeBuilderWrapper = new CodeBuilderWrapper(fileLoader, outputAdapter);
+    codeBuilderWrapper.executeCodeBuilder();
   }
 }

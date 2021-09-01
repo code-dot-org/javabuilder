@@ -5,10 +5,7 @@ import static org.mockito.Mockito.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-import org.code.protocol.GlobalProtocol;
-import org.code.protocol.InputAdapter;
-import org.code.protocol.JavabuilderFileWriter;
-import org.code.protocol.OutputAdapter;
+import org.code.protocol.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
