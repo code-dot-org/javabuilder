@@ -11,6 +11,7 @@ import java.io.FileNotFoundException;
 import java.util.HashMap;
 import org.code.media.AudioWriter;
 import org.code.media.Color;
+import org.code.media.FontHelper;
 import org.code.media.Image;
 import org.code.protocol.*;
 
@@ -24,6 +25,7 @@ public class Stage {
   private final ByteArrayOutputStream audioOutputStream;
   private final AudioWriter audioWriter;
   private final InstrumentSampleLoader instrumentSampleLoader;
+  private final FontHelper fontHelper;
   private java.awt.Color strokeColor;
   private java.awt.Color fillColor;
   private boolean hasPlayed;
@@ -64,6 +66,7 @@ public class Stage {
     this.audioOutputStream = new ByteArrayOutputStream();
     this.audioWriter = audioWriterFactory.createAudioWriter(this.audioOutputStream);
     this.instrumentSampleLoader = instrumentSampleLoader;
+    this.fontHelper = new FontHelper();
     this.hasPlayed = false;
 
     // set up the image for drawing (set a white background and black stroke/fill)
@@ -195,7 +198,12 @@ public class Stage {
    * @param rotation the rotation or tilt of the text, in degrees
    */
   public void drawText(
-      String text, int x, int y, String color, String font, int height, double rotation) {}
+      String text, int x, int y, Color color, String font, int height, double rotation) {
+    Font sizedFont = this.fontHelper.getFont().deriveFont((float) height);
+    this.graphics.setFont(sizedFont);
+    this.graphics.setColor(Color.convertToAWTColor(color));
+    this.graphics.drawString(text, x, y);
+  }
 
   /**
    * Draw a line on the canvas.
