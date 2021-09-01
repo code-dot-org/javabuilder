@@ -13,6 +13,3 @@
 
 # Ignore Gradle build output directory
 build
-
-# Ignore ruby configuration file
-.ruby-version
