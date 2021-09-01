@@ -10,7 +10,7 @@ public class Painter {
   private int yLocation;
   private Direction direction;
   private int remainingPaint;
-  private boolean hasInfinitePaint;
+  private final boolean hasInfinitePaint;
   private final Grid grid;
   private final String id;
   private final OutputAdapter outputAdapter;
@@ -23,7 +23,7 @@ public class Painter {
     this.remainingPaint = 0;
     World worldInstance = World.getInstance();
     this.grid = worldInstance.getGrid();
-    this.hasInfinitePaint = (this.grid.getSize() >= LARGE_GRID_SIZE) ? true : false;
+    this.hasInfinitePaint = this.grid.getSize() >= LARGE_GRID_SIZE;
     this.outputAdapter = worldInstance.getOutputAdapter();
     this.id = "painter-" + lastId++;
     this.sendInitializationMessage();
