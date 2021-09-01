@@ -33,9 +33,12 @@ public class InputRedirectionStream extends InputStream {
   @Override
   public int read() {
     if (queue.peek() == null) {
-      byte[] message =
-          (inputAdapter.getNextMessageForType(InputMessageType.SYSTEM_IN) + System.lineSeparator())
-              .getBytes(StandardCharsets.UTF_8);
+      // The Java Lab console is an <input> element that uses the enter key to trigger onSubmit.
+      // Rather than adding an arbitrary line separator from the client, we instead add the
+      // separator here so we can use a line separator that Scanner will recognize.
+      final String messageWithNewline =
+          inputAdapter.getNextMessageForType(InputMessageType.SYSTEM_IN) + System.lineSeparator();
+      byte[] message = messageWithNewline.getBytes(StandardCharsets.UTF_8);
       for (byte b : message) {
         queue.add(b);
       }

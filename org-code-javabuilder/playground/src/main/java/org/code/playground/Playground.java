@@ -293,7 +293,7 @@ public final class Playground {
       return this.generateOutputUrl(
           imageOutputStream, PLAYGROUND_IMAGE_FILE_NAME, OUTPUT_IMAGE_CONTENT_TYPE);
     } catch (IOException e) {
-      throw new InternalJavabuilderError(InternalErrorKey.INTERNAL_EXCEPTION, e);
+      throw new InternalServerRuntimeError(InternalErrorKey.INTERNAL_EXCEPTION, e);
     }
   }
 
@@ -313,7 +313,7 @@ public final class Playground {
     try {
       return this.fileWriter.writeToFile(filename, outputStream.toByteArray(), contentType);
     } catch (JavabuilderException e) {
-      throw new InternalJavabuilderError(InternalErrorKey.INTERNAL_EXCEPTION, e);
+      throw new InternalServerRuntimeError(InternalErrorKey.INTERNAL_EXCEPTION, e);
     }
   }
 }

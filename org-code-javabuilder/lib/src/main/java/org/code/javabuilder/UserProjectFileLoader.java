@@ -30,10 +30,10 @@ public class UserProjectFileLoader implements ProjectFileLoader {
   /**
    * Loads all user project files.
    *
-   * @throws UserFacingException If the load times out or fails.
+   * @throws InternalServerError If the load times out or fails.
    */
   @Override
-  public UserProjectFiles loadFiles() throws UserFacingException, UserInitiatedException {
+  public UserProjectFiles loadFiles() throws InternalServerError, UserInitiatedException {
     HttpClient client = HttpClient.newBuilder().build();
     String jsonBody = getRequest(String.join("/", baseUrl, MAIN_SOURCE_FILE_NAME), client);
     UserProjectFiles projectFiles = this.projectFileParser.parseFileJson(jsonBody);
@@ -43,7 +43,7 @@ public class UserProjectFileLoader implements ProjectFileLoader {
   }
 
   public void loadNeighborhoodFile(UserProjectFiles userProjectFiles, HttpClient client)
-      throws UserFacingException {
+      throws InternalServerError {
     if (this.useNeighborhood) {
       String requestUrl = this.dashboardHostname + "/levels/" + levelId + "/get_serialized_maze";
       String maze = this.getRequest(requestUrl, client);
@@ -51,18 +51,18 @@ public class UserProjectFileLoader implements ProjectFileLoader {
     }
   }
 
-  private String getRequest(String url, HttpClient client) throws UserFacingException {
+  private String getRequest(String url, HttpClient client) throws InternalServerError {
     HttpRequest request =
         HttpRequest.newBuilder().uri(URI.create(url)).timeout(Duration.ofSeconds(10)).build();
     HttpResponse<String> response;
     try {
       response = client.send(request, HttpResponse.BodyHandlers.ofString());
     } catch (IOException | InterruptedException e) {
-      throw new UserFacingException(InternalErrorKey.INTERNAL_EXCEPTION, e);
+      throw new InternalServerError(InternalErrorKey.INTERNAL_EXCEPTION, e);
     }
     String body = response.body();
     if (response.statusCode() > 299) {
-      throw new UserFacingException(InternalErrorKey.INTERNAL_EXCEPTION, new Exception(body));
+      throw new InternalServerError(InternalErrorKey.INTERNAL_EXCEPTION, new Exception(body));
     }
     return body;
   }

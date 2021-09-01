@@ -6,7 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import org.code.javabuilder.UserFacingException;
+import org.code.javabuilder.InternalServerError;
 import org.code.protocol.InternalErrorKey;
 import org.code.protocol.JavabuilderException;
 import org.code.protocol.JavabuilderFileWriter;
@@ -23,7 +23,7 @@ public class LocalFileWriter implements JavabuilderFileWriter {
       }
       Files.write(file.toPath(), inputBytes);
     } catch (IOException e) {
-      throw new UserFacingException(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e);
+      throw new InternalServerError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e);
     }
     return String.format("http://localhost:8080/%s/%s", DIRECTORY, filename);
   }

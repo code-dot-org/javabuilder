@@ -10,7 +10,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Comparator;
 import org.code.protocol.InternalErrorKey;
-import org.code.protocol.InternalJavabuilderError;
 
 /** A set of static utility functions that are used in multiple locations */
 public class Util {
@@ -34,14 +33,14 @@ public class Util {
   }
 
   /** @return a joined list of the paths of all user-facing api jars */
-  public static String getAllJarPaths() {
+  public static String getAllJarPaths() throws InternalServerError {
     ArrayList<String> allJarPaths = new ArrayList<>();
     try {
       allJarPaths.add(Paths.get(Util.getJarURL(NEIGHBORHOOD_JAR).toURI()).toString());
       allJarPaths.add(Paths.get(Util.getJarURL(THEATER_JAR).toURI()).toString());
       allJarPaths.add(Paths.get(Util.getJarURL(PLAYGROUND_JAR).toURI()).toString());
     } catch (URISyntaxException e) {
-      throw new InternalJavabuilderError(InternalErrorKey.INTERNAL_COMPILER_EXCEPTION, e);
+      throw new InternalServerError(InternalErrorKey.INTERNAL_COMPILER_EXCEPTION, e);
     }
 
     return String.join(System.getProperty("path.separator"), allJarPaths);

@@ -59,7 +59,7 @@ public class AssetUrlGenerator {
                   .map(entry -> (String) ((Map<String, Object>) entry).get("filename"))
                   .collect(Collectors.toList());
     } catch (JSONException e) {
-      throw new InternalJavabuilderError(InternalErrorKey.INTERNAL_EXCEPTION, e);
+      throw new InternalServerRuntimeError(InternalErrorKey.INTERNAL_EXCEPTION, e);
     }
   }
 
@@ -82,18 +82,19 @@ public class AssetUrlGenerator {
   }
 
   // TODO: Create generic HTTP request handler and share with UserProjectFileLoader
-  private String getRequest(String url, HttpClient client) throws InternalJavabuilderError {
+  private String getRequest(String url, HttpClient client) throws InternalServerRuntimeError {
     HttpRequest request =
         HttpRequest.newBuilder().uri(URI.create(url)).timeout(Duration.ofSeconds(10)).build();
     HttpResponse<String> response;
     try {
       response = client.send(request, HttpResponse.BodyHandlers.ofString());
     } catch (IOException | InterruptedException e) {
-      throw new InternalJavabuilderError(InternalErrorKey.INTERNAL_EXCEPTION, e);
+      throw new InternalServerRuntimeError(InternalErrorKey.INTERNAL_EXCEPTION, e);
     }
     String body = response.body();
     if (response.statusCode() > 299) {
-      throw new InternalJavabuilderError(InternalErrorKey.INTERNAL_EXCEPTION, new Exception(body));
+      throw new InternalServerRuntimeError(
+          InternalErrorKey.INTERNAL_EXCEPTION, new Exception(body));
     }
     return body;
   }

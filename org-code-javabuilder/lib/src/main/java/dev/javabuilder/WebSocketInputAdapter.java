@@ -25,7 +25,6 @@ public class WebSocketInputAdapter implements InputAdapter {
   }
 
   public void appendMessage(String message) {
-    System.out.println("Received message " + message);
-    messages.add(message + System.lineSeparator());
+    messages.add(message);
   }
 }
