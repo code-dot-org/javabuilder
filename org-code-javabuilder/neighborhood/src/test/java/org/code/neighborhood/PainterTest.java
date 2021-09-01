@@ -151,18 +151,34 @@ public class PainterTest {
   }
 
   @Test
-  void largeGridInfinitePaint() {
-    World w = new World(16);
+  void largeGridInfinitePaintDefaultConstructor() {
+    World w = new World(20);
     World.setInstance(w);
-    Painter painter = new Painter(0, 0, "North", 1);
-    assertTrue(painter.hasPaint());
-    painter.paint("red");
+    Painter painter = new Painter();
     assertTrue(painter.hasPaint());
   }
 
   @Test
+  void noInfinitePaintDefaultConstructor() {
+    World w = new World(19);
+    World.setInstance(w);
+    Painter painter = new Painter();
+    assertFalse(painter.hasPaint());
+  }
+
+  @Test
+  void largeGridNoInfinitePaintWhenPaintSpecified() {
+    World w = new World(20);
+    World.setInstance(w);
+    Painter painter = new Painter(0, 0, "North", 1);
+    assertTrue(painter.hasPaint());
+    painter.paint("red");
+    assertFalse(painter.hasPaint());
+  }
+
+  @Test
   void noInfinitePaint() {
-    World w = new World(15);
+    World w = new World(19);
     World.setInstance(w);
     Painter painter = new Painter(0, 0, "North", 1);
     assertTrue(painter.hasPaint());
