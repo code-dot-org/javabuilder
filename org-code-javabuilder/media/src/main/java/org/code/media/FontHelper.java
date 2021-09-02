@@ -1,11 +1,10 @@
 package org.code.media;
 
 import java.awt.*;
-import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 public class FontHelper {
   private final Map<String, java.awt.Font> fontMap;
@@ -13,8 +12,8 @@ public class FontHelper {
 
   public FontHelper() {
     this.fontMap = new HashMap<>();
-    Properties props = System.getProperties();
-    props.put("sun.awt.fontconfig", FONT_FOLDER + "fontconfig.properties");
+    //    Properties props = System.getProperties();
+    //    props.put("sun.awt.fontconfig", FONT_FOLDER + "fontconfig.properties");
     this.populateFontMap();
   }
 
@@ -29,9 +28,9 @@ public class FontHelper {
         for (FontStyle fontStyle : FontStyle.values()) {
           String filename =
               fontToFilenamePrefix.get(font) + fontStyleToFilenameSuffix.get(fontStyle);
-          File fontFile = new File(FONT_FOLDER + filename);
+          InputStream fileStream = this.getClass().getClassLoader().getResourceAsStream(filename);
           this.fontMap.put(
-              filename, java.awt.Font.createFont(java.awt.Font.TRUETYPE_FONT, fontFile));
+              filename, java.awt.Font.createFont(java.awt.Font.TRUETYPE_FONT, fileStream));
         }
       }
     } catch (FontFormatException e) {

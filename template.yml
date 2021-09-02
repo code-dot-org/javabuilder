@@ -256,7 +256,7 @@ Resources:
     Properties:
       CompatibleRuntimes:
         - java11
-      ContentUri: org-code-javabuilder/fonts.zip
+      ContentUri: org-code-javabuilder/font_config.zip
       Description: Fonts and font configuration
       LayerName: add-fonts
   BuildAndRunJavaProjectFunction:
