@@ -23,5 +23,8 @@ DEPENDENCIES
   aws-sdk-lambda (= 1.39.0)
   jwt
 
+RUBY VERSION
+   ruby 2.7.4p191
+
 BUNDLED WITH
    2.1.4

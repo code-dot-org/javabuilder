@@ -1,5 +1,7 @@
 # Gemfile
 source 'https://rubygems.org'
 
+ruby '~> 2.7'
+
 gem 'aws-sdk-lambda', '1.39.0'
 gem 'jwt'
