@@ -234,6 +234,11 @@ Resources:
             82lnuUHekrW+j3sCimbhFPM+HDXJI03g5Uv698oiSXp8+dqB7VzGD4ux9lwlB6Dr\n 3+8Pz/c7t8me0CJquotr7p7kYtoPo6kK9NL74zu4KsAcotDvRw8tHRs3cZ/X3KEl\n
             vb2YtSsq4ecf7sZeQgSbeZ6PdwEIBp0dl5AG6SgIWPcweNwmZmJg917i0lSGgWxW\n OlIo9VurlVd3AgMBAAE=\n
             -----END RSA PUBLIC KEY-----'
+          rsa_pub_adhoc: '-----BEGIN RSA PUBLIC KEY-----\n MIIBCgKCAQEA9GNvGjnBnrIqv1PZSsTTebtfnI9y9UeaFyav+PyfhoB+UnxNjLvk\n
+          ZXLAq+HVm/L59F/5pZgKCefaiFborFsUvmRKGbVfcg4t0O3pp5X5M+uPof0lf2H7\n 5ipALHwWUOtWajJ1ksPmmAGHPd0rVH+LaFCb635S9F7A2Gg1GDQLMOVMftseSnE1\n
+          9wfm6mMkJKduINAOrx4KFxksipWh4CckGN6bHTColPM0znAa1tQD0cqcauqDWZuE\n 71gxo1pBcX82a7BNnn6k06R9AthK9a5mkXENkseymOBII+epfbgWQLFgONasFzIV\n
+          Cw9cOSWtjxocTqfSlJCWVKxh1uHd8v16PQIDAQAB\n
+          -----END RSA PUBLIC KEY-----'
   WebSocketAuthorizerPermission:
     Type: AWS::Lambda::Permission
     DependsOn:
