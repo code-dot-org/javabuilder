@@ -3,35 +3,56 @@ package org.code.media;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
 public class FontHelper {
-  private static Font font;
+  private final Map<String, java.awt.Font> fontMap;
+  private static final String FONT_FOLDER = "/opt/fonts/";
 
   public FontHelper() {
-    try {
-      System.out.println("creating file...");
-      //      InputStream fontStream =
-      //          this.getClass().getClassLoader().getResourceAsStream("LiberationSans-Bold.ttf");
-      File fontFile = new File("/opt/fonts/LiberationSans-Bold.ttf");
-      System.out.println("file length: " + fontFile.length());
-      this.font = Font.createFont(Font.TRUETYPE_FONT, fontFile);
-    } catch (FontFormatException e) {
-      System.out.println("font format exception: " + e);
-      e.printStackTrace();
-    } catch (IOException e) {
-      System.out.println("io exception: " + e);
-      e.printStackTrace();
-    } catch (Exception e) {
-      System.out.println("some other exception: " + e);
-      e.printStackTrace();
-    }
-    boolean isNull = this.font == null;
-    System.out.println("finishing font helper constructor. is null is " + isNull);
+    this.fontMap = new HashMap<>();
+    Properties props = System.getProperties();
+    props.put("sun.awt.fontconfig", FONT_FOLDER + "fontconfig.properties");
+    this.populateFontMap();
   }
 
-  public Font getFont() {
-    System.out.println("in getFont");
-    System.out.println("font name: " + this.font.getFontName());
-    return this.font;
+  public java.awt.Font getFont(Font font, FontStyle fontStyle) {
+    return this.fontMap.get(
+        fontToFilenamePrefix.get(font) + fontStyleToFilenameSuffix.get(fontStyle));
   }
+
+  private void populateFontMap() {
+    try {
+      for (Font font : Font.values()) {
+        for (FontStyle fontStyle : FontStyle.values()) {
+          String filename =
+              fontToFilenamePrefix.get(font) + fontStyleToFilenameSuffix.get(fontStyle);
+          File fontFile = new File(FONT_FOLDER + filename);
+          this.fontMap.put(
+              filename, java.awt.Font.createFont(java.awt.Font.TRUETYPE_FONT, fontFile));
+        }
+      }
+    } catch (FontFormatException e) {
+      // TODO: throw exception
+      e.printStackTrace();
+    } catch (IOException e) {
+      // TODO: throw exception
+      e.printStackTrace();
+    }
+  }
+
+  private static Map<Font, String> fontToFilenamePrefix =
+      Map.ofEntries(
+          Map.entry(Font.MONO, "LiberationMono"),
+          Map.entry(Font.SANS, "LiberationSans"),
+          Map.entry(Font.SERIF, "LiberationSerif"));
+
+  private static Map<FontStyle, String> fontStyleToFilenameSuffix =
+      Map.ofEntries(
+          Map.entry(FontStyle.NORMAL, "-Regular.ttf"),
+          Map.entry(FontStyle.BOLD, "-Bold.ttf"),
+          Map.entry(FontStyle.ITALIC, "-Italic.ttf"),
+          Map.entry(FontStyle.BOLD_ITALIC, "-BoldItalic.ttf"));
 }
