@@ -9,9 +9,9 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.util.HashMap;
-import org.code.media.AudioWriter;
+import org.code.media.*;
 import org.code.media.Color;
-import org.code.media.FontHelper;
+import org.code.media.Font;
 import org.code.media.Image;
 import org.code.protocol.*;
 
@@ -198,9 +198,16 @@ public class Stage {
    * @param rotation the rotation or tilt of the text, in degrees
    */
   public void drawText(
-      String text, int x, int y, Color color, String font, int height, double rotation) {
-    Font sizedFont = this.fontHelper.getFont().deriveFont((float) height);
-    // Font sizedFont = this.graphics.getFont().deriveFont((float)height);
+      String text,
+      int x,
+      int y,
+      Color color,
+      Font font,
+      FontStyle fontStyle,
+      int height,
+      double rotation) {
+    System.out.println("in drawText");
+    java.awt.Font sizedFont = this.fontHelper.getFont(font, fontStyle).deriveFont((float) height);
     this.graphics.setFont(sizedFont);
     this.graphics.setColor(Color.convertToAWTColor(color));
     this.graphics.drawString(text, x, y);
