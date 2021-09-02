@@ -206,11 +206,15 @@ public class Stage {
       FontStyle fontStyle,
       int height,
       double rotation) {
-    System.out.println("in drawText");
+    AffineTransform originalTransform = this.graphics.getTransform();
+    if (rotation != 0) {
+      this.graphics.rotate(Math.toRadians(rotation), x, y);
+    }
     java.awt.Font sizedFont = this.fontHelper.getFont(font, fontStyle).deriveFont((float) height);
     this.graphics.setFont(sizedFont);
     this.graphics.setColor(Color.convertToAWTColor(color));
     this.graphics.drawString(text, x, y);
+    this.graphics.setTransform(originalTransform);
   }
 
   /**
