@@ -200,6 +200,7 @@ public class Stage {
   public void drawText(
       String text, int x, int y, Color color, String font, int height, double rotation) {
     Font sizedFont = this.fontHelper.getFont().deriveFont((float) height);
+    // Font sizedFont = this.graphics.getFont().deriveFont((float)height);
     this.graphics.setFont(sizedFont);
     this.graphics.setColor(Color.convertToAWTColor(color));
     this.graphics.drawString(text, x, y);
