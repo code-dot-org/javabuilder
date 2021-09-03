@@ -194,7 +194,7 @@ public class Stage {
    * @param y the distance from the top of the image to draw the text.
    * @param color the color to draw the text.
    * @param font the name of the font to draw the text in.
-   * @param fontStyle the name of the font style to draw the text in
+   * @param fontStyle the name of the font style to draw the text in.
    * @param height the height of the text in pixels.
    * @param rotation the rotation or tilt of the text, in degrees
    */

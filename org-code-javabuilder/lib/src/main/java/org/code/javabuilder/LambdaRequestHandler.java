@@ -93,7 +93,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
 
     // manually set font configuration file since there is no font configuration on a lambda.
     java.util.Properties props = System.getProperties();
-    // /opt is the folder any layer files go into.
+    // /opt is the folder all layer files go into.
     props.put("sun.awt.fontconfig", "/opt/fontconfig.properties");
 
     try {
