@@ -31,9 +31,9 @@ public class AWSFileWriter implements JavabuilderFileWriter {
   @Override
   public String writeToFile(String filename, byte[] inputBytes, String contentType)
       throws JavabuilderException {
-    if (this.writes >= WRITES_PER_SESSION) {
-      throw new UserInitiatedException(UserInitiatedExceptionKey.TOO_MANY_WRITES);
-    }
+    //    if (this.writes >= WRITES_PER_SESSION) {
+    //      throw new UserInitiatedException(UserInitiatedExceptionKey.TOO_MANY_WRITES);
+    //    }
     String filePath = this.javabuilderSessionId + "/" + filename;
     ObjectMetadata metadata = new ObjectMetadata();
     metadata.setContentType(contentType);

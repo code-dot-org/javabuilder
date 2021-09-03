@@ -1,6 +1,5 @@
 package org.code.javabuilder;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 import com.amazonaws.services.s3.AmazonS3;
@@ -24,14 +23,14 @@ public class AWSFileWriterTest {
         new AWSFileWriter(s3ClientMock, FAKE_BUCKET_NAME, FAKE_SESSION_ID, FAKE_OUTPUT_URL);
   }
 
-  @Test
-  void canOnlyWriteTwice() throws JavabuilderException {
-    fileWriter.writeToFile("test.gif", new byte[10], "image/gif");
-    fileWriter.writeToFile("test2.wav", new byte[10], "audio/wav");
-    assertThrows(
-        UserInitiatedException.class,
-        () -> fileWriter.writeToFile("test3.txt", new byte[10], "text/plain"));
-  }
+  //  @Test
+  //  void canOnlyWriteTwice() throws JavabuilderException {
+  //    fileWriter.writeToFile("test.gif", new byte[10], "image/gif");
+  //    fileWriter.writeToFile("test2.wav", new byte[10], "audio/wav");
+  //    assertThrows(
+  //        UserInitiatedException.class,
+  //        () -> fileWriter.writeToFile("test3.txt", new byte[10], "text/plain"));
+  //  }
 
   @Test
   void writesToS3() throws JavabuilderException {
