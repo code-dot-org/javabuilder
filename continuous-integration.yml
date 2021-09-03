@@ -210,6 +210,7 @@ Resources:
               OUTPUT_TEMPLATE: output.yml
               SUB_DOMAIN: ${SubDomainName}
               STAGING_SUB_DOMAIN: ${StagingSubDomainName}
+              PROVISIONED_CONCURRENT_EXECUTIONS: 10
               TEMPLATE_CONFIG: configuration.json
               STAGING_TEMPLATE_CONFIG: configuration-staging.json
           phases:

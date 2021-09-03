@@ -1,26 +1,35 @@
 #!/bin/bash -e
 
-# Package template for CodePipeline's CloudFormation-Deploy action.
+# Package Javabuilder for CodePipeline's CloudFormation-Deploy action.
 
-# Required environment variables:
+TEMPLATE_BUCKET=${TEMPLATE_BUCKET?Required}
 SUB_DOMAIN=${SUB_DOMAIN?Required}
 STAGING_SUB_DOMAIN=${STAGING_SUB_DOMAIN?Required}
 
+get_hosted_zone() {
+  aws route53 list-hosted-zones-by-name \
+  --dns-name "$1" \
+  --max-items 1 \
+  --query HostedZones[0].Id \
+  --output text \
+  | sed 's|/hostedzone/||'
+}
+
 # Default to dev-code.org domain name and the Route 53 Hosted Zone ID in the Dev AWS account for that base domain name.
 BASE_DOMAIN=${BASE_DOMAIN-'dev-code.org'}
-BASE_DOMAIN_HOSTED_ZONE_ID=${BASE_DOMAIN_HOSTED_ZONE_ID-'Z07248463JGJ44FME5BZ5'}
+# Default to lookup the hosted zone by name.
+BASE_DOMAIN_HOSTED_ZONE_ID=${BASE_DOMAIN_HOSTED_ZONE_ID-$(get_hosted_zone "${BASE_DOMAIN}")}
 
-# CloudFormation stack names can't contain periods ("."), so replace them with hyphens ("-").
-FULLY_QUALIFIED_DOMAIN_NAME="${SUB_DOMAIN}.${BASE_DOMAIN}"
-STAGING_FULLY_QUALIFIED_DOMAIN_NAME="${STAGING_SUB_DOMAIN}.${BASE_DOMAIN}"
+# Use sub domain name as the CloudFormation Stack name.
+STACK=${SUB_DOMAIN}
+STAGING_STACK=${STAGING_SUB_DOMAIN}
 
-STACK=${FULLY_QUALIFIED_DOMAIN_NAME//./-}
-STAGING_STACK=${STAGING_FULLY_QUALIFIED_DOMAIN_NAME//./-}
+# Provisioned concurrency for production stack.
+PROVISIONED_CONCURRENT_EXECUTIONS=${PROVISIONED_CONCURRENT_EXECUTIONS-'1'}
 
 OUTPUT_TEMPLATE=${OUTPUT_TEMPLATE?Required}
 TEMPLATE_CONFIG=${TEMPLATE_CONFIG?Required}
 STAGING_TEMPLATE_CONFIG=${STAGING_TEMPLATE_CONFIG?Required}
-TEMPLATE_BUCKET=${TEMPLATE_BUCKET?Required}
 
 # Build each Lambda (that needs to be compiled or has external package dependencies) so it can be uploaded to AWS Lambda.
 ./javabuilder-authorizer/build.sh
@@ -36,7 +45,8 @@ cat <<JSON > ${TEMPLATE_CONFIG}
   "Parameters": {
     "BaseDomainName": "${BASE_DOMAIN}",
     "BaseDomainNameHostedZonedID": "${BASE_DOMAIN_HOSTED_ZONE_ID}",
-    "SubDomainName": "${SUB_DOMAIN}"
+    "SubDomainName": "${SUB_DOMAIN}",
+    "ProvisionedConcurrentExecutions": "1"
   },
   "Tags": {
     "environment": "production"
@@ -49,7 +59,8 @@ cat <<JSON > ${STAGING_TEMPLATE_CONFIG}
   "Parameters": {
     "BaseDomainName": "${BASE_DOMAIN}",
     "BaseDomainNameHostedZonedID": "${BASE_DOMAIN_HOSTED_ZONE_ID}",
-    "SubDomainName": "${STAGING_SUB_DOMAIN}"
+    "SubDomainName": "${STAGING_SUB_DOMAIN}",
+    "ProvisionedConcurrentExecutions": "${PROVISIONED_CONCURRENT_EXECUTIONS}"
   },
   "Tags": {
     "environment": "staging"
