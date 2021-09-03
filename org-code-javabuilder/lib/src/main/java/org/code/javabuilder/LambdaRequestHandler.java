@@ -91,9 +91,10 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
             dashboardHostname,
             useNeighborhood);
 
-    // manually set font configuration file since there is no font configuration on a lambda
+    // manually set font configuration file since there is no font configuration on a lambda.
     java.util.Properties props = System.getProperties();
-    props.put("sun.awt.fontconfig", "opt/fonts/fontconfig.properties");
+    // /opt is the folder any layer files go into.
+    props.put("sun.awt.fontconfig", "/opt/fontconfig.properties");
 
     try {
       // Delete any leftover contents of the tmp folder from previous lambda invocations

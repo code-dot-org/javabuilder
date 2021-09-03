@@ -5,15 +5,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import org.code.protocol.InternalErrorKey;
+import org.code.protocol.InternalServerRuntimeError;
 
 public class FontHelper {
   private final Map<String, java.awt.Font> fontMap;
-  private static final String FONT_FOLDER = "/opt/fonts/";
 
   public FontHelper() {
     this.fontMap = new HashMap<>();
-    //    Properties props = System.getProperties();
-    //    props.put("sun.awt.fontconfig", FONT_FOLDER + "fontconfig.properties");
     this.populateFontMap();
   }
 
@@ -33,12 +32,10 @@ public class FontHelper {
               filename, java.awt.Font.createFont(java.awt.Font.TRUETYPE_FONT, fileStream));
         }
       }
-    } catch (FontFormatException e) {
-      // TODO: throw exception
-      e.printStackTrace();
-    } catch (IOException e) {
-      // TODO: throw exception
-      e.printStackTrace();
+    } catch (FontFormatException | IOException e) {
+      // throw exception if we can't load a font, as we will hit a weird error later if the user
+      // tries to use that font.
+      throw new InternalServerRuntimeError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION);
     }
   }
 

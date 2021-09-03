@@ -11,6 +11,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import org.code.media.AudioWriter;
+import org.code.media.Color;
+import org.code.media.Font;
+import org.code.media.FontStyle;
 import org.code.media.Image;
 import org.code.protocol.*;
 import org.junit.jupiter.api.AfterEach;
@@ -61,7 +64,7 @@ public class StageTest {
   void drawLineDefaultsToBlack() {
     s.removeStrokeColor();
     s.drawLine(0, 0, 100, 100);
-    verify(graphics).setColor(Color.BLACK);
+    verify(graphics).setColor(java.awt.Color.BLACK);
     verify(graphics).drawLine(0, 0, 100, 100);
   }
 
@@ -197,6 +200,25 @@ public class StageTest {
     s.drawImage(testImage, 0, 300, 50, 75, 0);
     verify(graphics)
         .drawImage(any(BufferedImage.class), anyInt(), anyInt(), anyInt(), anyInt(), any());
+  }
+
+  @Test
+  void drawTextWithoutRotationDrawsTextCorrectly() {
+    s.drawText("hello", 0, 0, Color.BLUE, Font.SANS, FontStyle.BOLD, 12, 0);
+    verify(graphics).drawString("hello", 0, 0);
+    // verify we never rotate
+    verify(graphics, never()).rotate(anyDouble(), anyDouble(), anyDouble());
+  }
+
+  @Test
+  void drawTextWithRotationDrawsTextCorrectly() {
+    s.drawText("hello world", 50, 150, Color.BLUE, Font.SANS, FontStyle.BOLD, 12, 95);
+    verify(graphics).drawString("hello world", 50, 150);
+    double radians = Math.toRadians(95);
+    // verify we rotated correctly
+    verify(graphics).rotate(radians, 50, 150);
+    // verify we reset the transform
+    verify(graphics).setTransform(any());
   }
 
   private void verifyInvalidShapeThrowsException(Stage s, int[] points, boolean close) {

@@ -192,8 +192,9 @@ public class Stage {
    * @param text the text to draw
    * @param x the distance from the left side of the image to draw the text.
    * @param y the distance from the top of the image to draw the text.
-   * @param color the color to draw the text, using any CSS color string (e.g. #234 or green)
-   * @param font the name of the font to draw the text in
+   * @param color the color to draw the text.
+   * @param font the name of the font to draw the text in.
+   * @param fontStyle the name of the font style to draw the text in
    * @param height the height of the text in pixels.
    * @param rotation the rotation or tilt of the text, in degrees
    */
@@ -214,7 +215,26 @@ public class Stage {
     this.graphics.setFont(sizedFont);
     this.graphics.setColor(Color.convertToAWTColor(color));
     this.graphics.drawString(text, x, y);
-    this.graphics.setTransform(originalTransform);
+    if (rotation != 0) {
+      // reset to original transform if we rotated
+      this.graphics.setTransform(originalTransform);
+    }
+  }
+
+  /**
+   * Draws text on the image with a normal font style
+   *
+   * @param text the text to draw
+   * @param x the distance from the left side of the image to draw the text.
+   * @param y the distance from the top of the image to draw the text.
+   * @param color the color to draw the text.
+   * @param font the name of the font to draw the text in.
+   * @param height the height of the text in pixels.
+   * @param rotation the rotation or tilt of the text, in degrees.
+   */
+  public void drawText(
+      String text, int x, int y, Color color, Font font, int height, double rotation) {
+    this.drawText(text, x, y, color, font, FontStyle.NORMAL, height, rotation);
   }
 
   /**
