@@ -37,10 +37,7 @@ public class AWSInputAdapter implements InputAdapter {
     while (messages.peek() == null) {
       List<Message> messages = sqsClient.receiveMessage(request).getMessages();
       for (Message message : messages) {
-        // The Java Lab console is an <input> element that uses the enter key to trigger onSubmit.
-        // Rather than adding an arbitrary line separator from the client, we instead add the
-        // separator here so we can use a line separator that Scanner will recognize.
-        this.messages.add(message.getBody() + System.lineSeparator());
+        this.messages.add(message.getBody());
         sqsClient.deleteMessage(queueUrl, message.getReceiptHandle());
       }
     }

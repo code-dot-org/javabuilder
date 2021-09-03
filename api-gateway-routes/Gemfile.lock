@@ -25,5 +25,8 @@ DEPENDENCIES
   aws-sdk-lambda (= 1.39.0)
   aws-sdk-sqs (= 1.38.0)
 
+RUBY VERSION
+   ruby 2.7.4p191
+
 BUNDLED WITH
    1.17.3

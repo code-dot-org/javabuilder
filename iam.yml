@@ -39,6 +39,12 @@ Resources:
                   - "cloudformation:DescribeStacks"
                 Resource: '*'
 
+              # BuildAndRunJavaProject Lambda needs to put objects to the output bucket.
+              - Effect: Allow
+                Action:
+                  - 's3:PutObject'
+                Resource: 'arn:aws:s3:::cdo-*javabuilder*-output/*'
+
               # All Lambdas need logging permissions.
               - Effect: Allow
                 Action:
@@ -48,7 +54,8 @@ Resources:
                 Action:
                   - "logs:CreateLogStream"
                   - "logs:PutLogEvents"
-                Resource: 'arn:aws:logs:::log-group:/aws/lambda/javabuilder*'
+                Resource:
+                  - 'arn:aws:logs:::log-group:/aws/lambda/javabuilder*'
               - Effect: Allow
                 Action:
                   - "xray:PutTraceSegments"
@@ -59,12 +66,49 @@ Resources:
         # Currently doesn't require any permissions beyond logging.
 
         # Invoke and relay messages to Project Lambda.
+        - "arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess"
+        - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
         - "arn:aws:iam::aws:policy/service-role/AWSLambdaRole"
+        # TODO: Restrict SQS permissions to minimum required.
         - "arn:aws:iam::aws:policy/AmazonSQSFullAccess"
 
         # Compile and Run Project Lambda.
+        # TODO: Restrict SQS permissions to minimum required.
         - "arn:aws:iam::aws:policy/service-role/AWSLambdaSQSQueueExecutionRole"
         - "arn:aws:iam::aws:policy/AmazonAPIGatewayInvokeFullAccess"
+  JavabuilderAPIGatewayRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: ['sts:AssumeRole']
+            Effect: Allow
+            Principal: {Service: [apigateway.amazonaws.com]}
+      Path: /
+      Policies:
+        - PolicyName: JavabuilderAPIGatewayPolicy
+          PolicyDocument:
+            Statement:
+              # Grant the Javabuilder API Gateway permission to invoke its Lambda Authorizer.
+              - Effect: Allow
+                Action:
+                  - "lambda:InvokeFunction"
+                Resource:
+                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:javabuilder*" #TODO: Restrict this further to just Lambda Authorizers?
+              # Grant API Gateway permission to publish CloudWatch Logs
+              - Effect: Allow
+                Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutRetentionPolicy'
+                  - 'logs:PutLogEvents'
+                Resource:
+                  - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/apigateway/*"
+                  - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/apigateway/"
+                  - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/apigateway/*:log-stream:*"
+                  # TODO: Restrict to just Javabuilder log-groups and log-streams.
+                  - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:*"
+                  - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:*:log-stream:*"
   JavabuilderCloudFormationRole:
     Type: AWS::IAM::Role
     Properties:
@@ -84,7 +128,9 @@ Resources:
                   - "apigateway:*"
                   - "lambda:*"
                   - "cloudformation:*"
+                  - "acm:*"
                   - "route53:*"
+                  - "cloudfront:*"
                 Resource: '*'
               - Effect: Allow
                 Action:
@@ -93,9 +139,24 @@ Resources:
                   - !Sub "arn:aws:s3:::${TemplateBucket}/*"
               - Effect: Allow
                 Action:
+                  - "s3:*"
+                Resource:
+                  - !Sub "arn:aws:s3:::cdo-*javabuilder*-output"
+              - Effect: Allow
+                Action:
                   - "iam:PassRole"
                 Resource:
                   - !GetAtt JavabuilderLambdaExecutionRole.Arn
+              # Grant CloudFormation permission to create CloudWatch Log Group for API Gateway.
+              - Effect: Allow
+                Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutRetentionPolicy'
+                Resource:
+                  - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/apigateway/*"
+                  - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/apigateway/"
+                  - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/apigateway/*:log-stream:*"
   JavabuilderCodeBuildRole:
     Type: AWS::IAM::Role
     Properties:
@@ -134,6 +195,10 @@ Outputs:
     Description: Javabuilder Lambda Execution Role ARN
     Value: !GetAtt JavabuilderLambdaExecutionRole.Arn
     Export: {Name: JavabuilderLambdaExecutionRole}
+  JavabuilderAPIGatewayRole:
+    Description: Javabuilder API Gateway Role ARN
+    Value: !GetAtt JavabuilderAPIGatewayRole.Arn
+    Export: {Name: JavabuilderAPIGatewayRole}
   JavabuilderCloudFormationRole:
     Description: Javabuilder CloudFormation Role ARN
     Value: !GetAtt JavabuilderCloudFormationRole.Arn

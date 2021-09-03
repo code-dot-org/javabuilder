@@ -1,5 +1,8 @@
 package org.code.theater;
 
+import static org.code.protocol.AllowedFileNames.THEATER_AUDIO_NAME;
+import static org.code.protocol.AllowedFileNames.THEATER_IMAGE_NAME;
+
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
@@ -28,8 +31,6 @@ public class Stage {
   private static final int WIDTH = 400;
   private static final int HEIGHT = 400;
   private static final java.awt.Color DEFAULT_COLOR = java.awt.Color.BLACK;
-  private static final String IMAGE_FILENAME = "theaterImage.gif";
-  private static final String AUDIO_FILENAME = "theaterAudio.wav";
 
   /**
    * Initialize Stage with a default image. Stage should be initialized outside of org.code.theater
@@ -368,19 +369,11 @@ public class Stage {
     if (this.hasPlayed) {
       throw new TheaterRuntimeException(ExceptionKeys.DUPLICATE_PLAY_COMMAND);
     } else {
+      this.outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.GENERATING_RESULTS));
       this.gifWriter.writeToGif(this.image, 0);
       this.gifWriter.close();
       this.audioWriter.writeToAudioStreamAndClose();
-
-      // If we are in local mode, write output data directly to output adapter
-      if (GlobalProtocol.getInstance().getDashboardHostname().contains("localhost")) {
-        this.outputAdapter.sendMessage(ImageEncoder.encodeStreamToMessage(this.imageOutputStream));
-        this.outputAdapter.sendMessage(SoundEncoder.encodeStreamToMessage(this.audioOutputStream));
-      } else {
-        // otherwise write image and audio to file
-        this.writeImageAndAudioToFile();
-      }
-
+      this.writeImageAndAudioToFile();
       this.hasPlayed = true;
     }
   }
@@ -407,10 +400,10 @@ public class Stage {
     try {
       String imageUrl =
           this.fileWriter.writeToFile(
-              IMAGE_FILENAME, this.imageOutputStream.toByteArray(), "image/gif");
+              THEATER_IMAGE_NAME, this.imageOutputStream.toByteArray(), "image/gif");
       String audioUrl =
           this.fileWriter.writeToFile(
-              AUDIO_FILENAME, this.audioOutputStream.toByteArray(), "audio/wav");
+              THEATER_AUDIO_NAME, this.audioOutputStream.toByteArray(), "audio/wav");
 
       HashMap<String, String> imageMessage = new HashMap<>();
       imageMessage.put("url", imageUrl);
@@ -423,7 +416,7 @@ public class Stage {
       // we should not hit this (caused by too many file writes)
       // in normal execution as it is only called via play,
       // and play can only be called once.
-      throw new InternalJavabuilderError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e);
+      throw new InternalServerRuntimeError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e);
     }
   }
 

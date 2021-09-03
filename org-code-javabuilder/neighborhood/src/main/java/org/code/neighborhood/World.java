@@ -3,7 +3,7 @@ package org.code.neighborhood;
 import java.io.IOException;
 import org.code.protocol.GlobalProtocol;
 import org.code.protocol.InternalErrorKey;
-import org.code.protocol.InternalJavabuilderError;
+import org.code.protocol.InternalServerRuntimeError;
 import org.code.protocol.OutputAdapter;
 
 public class World {
@@ -23,7 +23,7 @@ public class World {
     try {
       this.grid = gridFactory.createGridFromString(s);
     } catch (IOException e) {
-      throw new InternalJavabuilderError(InternalErrorKey.INTERNAL_EXCEPTION, e);
+      throw new InternalServerRuntimeError(InternalErrorKey.INTERNAL_EXCEPTION, e);
     }
   }
 
@@ -33,7 +33,7 @@ public class World {
     try {
       this.grid = gridFactory.createGridFromJSON("grid.txt");
     } catch (IOException e) {
-      throw new InternalJavabuilderError(InternalErrorKey.INTERNAL_EXCEPTION, e);
+      throw new InternalServerRuntimeError(InternalErrorKey.INTERNAL_EXCEPTION, e);
     }
   }
 

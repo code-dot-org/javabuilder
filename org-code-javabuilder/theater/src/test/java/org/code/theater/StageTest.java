@@ -12,10 +12,7 @@ import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import org.code.media.AudioWriter;
 import org.code.media.Image;
-import org.code.protocol.GlobalProtocol;
-import org.code.protocol.InputAdapter;
-import org.code.protocol.JavabuilderFileWriter;
-import org.code.protocol.OutputAdapter;
+import org.code.protocol.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,7 +33,7 @@ public class StageTest {
   @BeforeEach
   public void setUp() {
     GlobalProtocol.create(
-        outputAdapter, mock(InputAdapter.class), "", "", mock(JavabuilderFileWriter.class));
+        outputAdapter, mock(InputAdapter.class), "", "", "", mock(JavabuilderFileWriter.class));
     System.setOut(new PrintStream(outputStreamCaptor));
     bufferedImage = mock(BufferedImage.class);
     graphics = mock(Graphics2D.class);

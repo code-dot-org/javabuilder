@@ -4,12 +4,13 @@ import java.util.HashMap;
 import org.code.protocol.OutputAdapter;
 
 public class Painter {
-  private static final int LARGE_GRID_SIZE = 16;
+  private static final int LARGE_GRID_SIZE = 20;
   private static int lastId = 0;
   private int xLocation;
   private int yLocation;
   private Direction direction;
   private int remainingPaint;
+  private final boolean hasInfinitePaint;
   private final Grid grid;
   private final String id;
   private final OutputAdapter outputAdapter;
@@ -22,6 +23,7 @@ public class Painter {
     this.remainingPaint = 0;
     World worldInstance = World.getInstance();
     this.grid = worldInstance.getGrid();
+    this.hasInfinitePaint = this.grid.getSize() >= LARGE_GRID_SIZE;
     this.outputAdapter = worldInstance.getOutputAdapter();
     this.id = "painter-" + lastId++;
     this.sendInitializationMessage();
@@ -40,6 +42,7 @@ public class Painter {
     this.yLocation = y;
     this.direction = Direction.fromString(direction);
     this.remainingPaint = paint;
+    this.hasInfinitePaint = false;
     World worldInstance = World.getInstance();
     this.grid = worldInstance.getGrid();
     this.outputAdapter = worldInstance.getOutputAdapter();
@@ -147,7 +150,7 @@ public class Painter {
 
   /** @return True if the painter's personal bucket has paint in it. */
   public boolean hasPaint() {
-    if (this.grid.getSize() >= LARGE_GRID_SIZE) {
+    if (this.hasInfinitePaint) {
       return true;
     }
     return this.remainingPaint > 0;

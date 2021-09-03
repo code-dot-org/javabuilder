@@ -1,9 +1,12 @@
 package dev.javabuilder;
 
+import static org.code.protocol.LoggerNames.MAIN_LOGGER;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.List;
-import java.util.Map;
+import java.util.Base64;
+import java.util.logging.Handler;
+import java.util.logging.Logger;
 import javax.websocket.OnClose;
 import javax.websocket.OnMessage;
 import javax.websocket.OnOpen;
@@ -11,10 +14,8 @@ import javax.websocket.PongMessage;
 import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
 import org.code.javabuilder.*;
-import org.code.protocol.GlobalProtocol;
-import org.code.protocol.JavabuilderException;
-import org.code.protocol.JavabuilderRuntimeException;
-import org.code.protocol.Properties;
+import org.code.protocol.*;
+import org.json.JSONObject;
 
 /**
  * This sets up a simple WebSocket server for local development when interactions between dashboard
@@ -27,6 +28,8 @@ import org.code.protocol.Properties;
 public class WebSocketServer {
   private WebSocketInputAdapter inputAdapter;
   private WebSocketOutputAdapter outputAdapter;
+  private Handler logHandler;
+  private Logger logger;
 
   /**
    * This acts as the main function for the WebSocket server. Therefore, we do many of the same
@@ -38,23 +41,35 @@ public class WebSocketServer {
    */
   @OnOpen
   public void onOpen(Session session) {
-    Map<String, List<String>> params = session.getRequestParameterMap();
-    String channelId = params.get("channelId").get(0);
+    // Decode the authorization token
+    String token = session.getRequestParameterMap().get("Authorization").get(0);
+    Base64.Decoder decoder = Base64.getDecoder();
+    String payload = new String(decoder.decode(token.split("\\.")[1]));
+    JSONObject queryInput = new JSONObject(payload);
+
+    final String connectionId = "LocalhostWebSocketConnection";
+    final String levelId = queryInput.getString("level_id");
+    final String channelId = queryInput.getString("channel_id");
+    final String dashboardHostname = "http://" + queryInput.get("iss") + ":3000";
+    final JSONObject options = new JSONObject(queryInput.getString("options"));
     boolean useNeighborhood = false;
-    if (params.containsKey("useNeighborhood")) {
-      useNeighborhood = Boolean.parseBoolean(params.get("useNeighborhood").get(0));
+    if (options.has("useNeighborhood")) {
+      String useNeighborhoodStr = options.getString("useNeighborhood");
+      useNeighborhood = Boolean.parseBoolean(useNeighborhoodStr);
     }
-    String levelId = "";
-    if (params.containsKey("levelId")) {
-      levelId = params.get("levelId").get(0);
-    }
-    Properties.setConnectionId("LocalhostWebSocketConnection");
+
+    this.logger = Logger.getLogger(MAIN_LOGGER);
+    this.logHandler = new LocalLogHandler(System.out, levelId, channelId);
+    this.logger.addHandler(this.logHandler);
+    // turn off the default console logger
+    this.logger.setUseParentHandlers(false);
+
+    Properties.setConnectionId(connectionId);
 
     outputAdapter = new WebSocketOutputAdapter(session);
     inputAdapter = new WebSocketInputAdapter();
-    String dashboardHostname = "http://localhost-studio.code.org:3000";
     GlobalProtocol.create(
-        outputAdapter, inputAdapter, dashboardHostname, channelId, new NoOpFileWriter());
+        outputAdapter, inputAdapter, dashboardHostname, channelId, levelId, new LocalFileWriter());
     final UserProjectFileLoader fileLoader =
         new UserProjectFileLoader(
             GlobalProtocol.getInstance().generateSourcesUrl(),
@@ -64,29 +79,14 @@ public class WebSocketServer {
     Thread codeExecutor =
         new Thread(
             () -> {
+              CodeBuilderWrapper codeBuilderWrapper =
+                  new CodeBuilderWrapper(fileLoader, outputAdapter);
+              codeBuilderWrapper.executeCodeBuilder();
               try {
-                UserProjectFiles userProjectFiles = fileLoader.loadFiles();
-                try (CodeBuilder codeBuilder =
-                    new CodeBuilder(GlobalProtocol.getInstance(), userProjectFiles)) {
-                  codeBuilder.buildUserCode();
-                  codeBuilder.runUserCode();
-                }
-              } catch (JavabuilderException | JavabuilderRuntimeException e) {
-                outputAdapter.sendMessage(e.getExceptionMessage());
-                outputAdapter.sendMessage(new DebuggingMessage("\n" + e.getLoggingString()));
-              } catch (InternalFacingException e) {
-                outputAdapter.sendMessage(new DebuggingMessage("\n" + e.getLoggingString()));
-              } catch (Throwable e) {
-                outputAdapter.sendMessage(new DebuggingMessage("\n" + e.getMessage()));
-                outputAdapter.sendMessage(new DebuggingMessage("\n" + e.toString()));
-                // Throw here to ensure we always get local logging
-                throw e;
-              } finally {
-                try {
-                  session.close();
-                } catch (IOException e) {
-                  e.printStackTrace();
-                }
+                session.close();
+                logger.removeHandler(this.logHandler);
+              } catch (IOException e) {
+                e.printStackTrace();
               }
             });
     codeExecutor.start();
@@ -94,7 +94,7 @@ public class WebSocketServer {
 
   @OnClose
   public void myOnClose() {
-    System.out.println("Session Closed");
+    Logger.getLogger(MAIN_LOGGER).info("WebSocket Closed");
   }
 
   /**

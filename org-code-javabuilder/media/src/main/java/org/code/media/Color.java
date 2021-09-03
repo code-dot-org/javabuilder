@@ -7,6 +7,7 @@ public class Color {
   private int red;
   private int green;
   private int blue;
+  private int alpha;
 
   /**
    * Creates a color from a string representation.
@@ -23,10 +24,12 @@ public class Color {
     this.red = colorToCopy.getRed();
     this.green = colorToCopy.getGreen();
     this.blue = colorToCopy.getBlue();
+    this.setFullOpacity();
   }
 
   /**
-   * Create a new color based on the red, green, and blue values provided.
+   * Create a new color based on the red, green, and blue values provided. The alpha value will be
+   * maximum opacity.
    *
    * @param red the red value from 0 - 255
    * @param green the green value from 0 - 255
@@ -36,6 +39,7 @@ public class Color {
     this.red = this.sanitizeValue(red);
     this.green = this.sanitizeValue(green);
     this.blue = this.sanitizeValue(blue);
+    this.setFullOpacity();
   }
 
   /**
@@ -47,12 +51,13 @@ public class Color {
     this.red = color.getRed();
     this.green = color.getGreen();
     this.blue = color.getBlue();
+    this.alpha = color.getAlpha();
   }
 
   /**
-   * Initialize a color with the combined RGB integer value consisting of the red component in bits
-   * 16-23, the green component in bits 8-15, and the blue component in bits 0-7. Only used for
-   * conversion between BufferedImage and org.code.media.Image
+   * Initialize a color with the combined RGB integer value consisting of the alpha component in
+   * bits 24-31, the red component in bits 16-23, the green component in bits 8-15, and the blue
+   * component in bits 0-7. Only used for conversion between BufferedImage and org.code.media.Image
    *
    * @param rgb
    */
@@ -60,6 +65,14 @@ public class Color {
     this.red = (rgb >> 16) & 255;
     this.blue = rgb & 255;
     this.green = (rgb >> 8) & 255;
+    this.alpha = (rgb >> 24) & 255;
+  }
+
+  protected Color(int red, int green, int blue, int alpha) {
+    this.red = this.sanitizeValue(red);
+    this.green = this.sanitizeValue(green);
+    this.blue = this.sanitizeValue(blue);
+    this.alpha = this.sanitizeValue(alpha);
   }
 
   /**
@@ -89,6 +102,10 @@ public class Color {
     return this.blue;
   }
 
+  protected int getAlpha() {
+    return this.alpha;
+  }
+
   /**
    * Sets the amount of red (ranging from 0 to 255). Values below 0 will be ignored and set to 0,
    * and values above 255 will be ignored and set to 255.
@@ -97,6 +114,8 @@ public class Color {
    */
   public void setRed(int value) {
     this.red = this.sanitizeValue(value);
+    // for now, setting the color implies we want full opacity
+    this.setFullOpacity();
   }
 
   /**
@@ -107,6 +126,8 @@ public class Color {
    */
   public void setGreen(int value) {
     this.green = this.sanitizeValue(value);
+    // for now, setting the color implies we want full opacity
+    this.setFullOpacity();
   }
 
   /**
@@ -117,14 +138,17 @@ public class Color {
    */
   public void setBlue(int value) {
     this.blue = this.sanitizeValue(value);
+    // for now, setting the color implies we want full opacity
+    this.setFullOpacity();
   }
 
   /**
-   * @return the combined RGB integer value consisting of the red component in bits 16-23, the green
-   *     component in bits 8-15, and the blue component in bits 0-7.
+   * @return the combined RGB integer value consisting of the alpha component in bits 24-31, the red
+   *     component in bits 16-23, the green component in bits 8-15, and the blue component in bits
+   *     0-7.
    */
   protected int getRGB() {
-    return (this.red << 16 | this.green << 8 | this.blue);
+    return (this.alpha << 24 | this.red << 16 | this.green << 8 | this.blue);
   }
 
   /**
@@ -141,6 +165,10 @@ public class Color {
       return 255;
     }
     return value;
+  }
+
+  private void setFullOpacity() {
+    this.alpha = 255;
   }
 
   public static java.awt.Color convertToAWTColor(Color c) {
