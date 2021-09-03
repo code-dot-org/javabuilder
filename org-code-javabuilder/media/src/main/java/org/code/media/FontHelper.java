@@ -17,16 +17,14 @@ public class FontHelper {
   }
 
   public java.awt.Font getFont(Font font, FontStyle fontStyle) {
-    return this.fontMap.get(
-        fontToFilenamePrefix.get(font) + fontStyleToFilenameSuffix.get(fontStyle));
+    return this.fontMap.get(getFontFilename(font, fontStyle));
   }
 
   private void populateFontMap() {
     try {
       for (Font font : Font.values()) {
         for (FontStyle fontStyle : FontStyle.values()) {
-          String filename =
-              fontToFilenamePrefix.get(font) + fontStyleToFilenameSuffix.get(fontStyle);
+          String filename = getFontFilename(font, fontStyle);
           InputStream fileStream = this.getClass().getClassLoader().getResourceAsStream(filename);
           this.fontMap.put(
               filename, java.awt.Font.createFont(java.awt.Font.TRUETYPE_FONT, fileStream));
@@ -37,6 +35,10 @@ public class FontHelper {
       // later if the user tries to use that font.
       throw new InternalServerRuntimeError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e);
     }
+  }
+
+  private String getFontFilename(Font font, FontStyle fontStyle) {
+    return fontToFilenamePrefix.get(font) + fontStyleToFilenameSuffix.get(fontStyle);
   }
 
   private static Map<Font, String> fontToFilenamePrefix =
