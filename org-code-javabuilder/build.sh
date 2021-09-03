@@ -3,7 +3,6 @@
 # cd to script directory (shh, it's magic: https://stackoverflow.com/questions/6393551/what-is-the-meaning-of-0-in-a-bash-script)
 cd "${0%/*}"
 
-# Create font config zip file
 # remove font_config.zip if it exists
 rm -f font_config.zip
 
