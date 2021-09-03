@@ -35,7 +35,7 @@ public class FontHelper {
     } catch (FontFormatException | IOException e) {
       // throw an exception if we can't load a font, as we will hit a null pointer exception
       // later if the user tries to use that font.
-      throw new InternalServerRuntimeError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION);
+      throw new InternalServerRuntimeError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e);
     }
   }
 
