@@ -11,10 +11,6 @@ import org.json.JSONObject;
  * Handles retrieving various types of JSON messages from the client. Expects JSON in the format:
  *
  * <p>{ "messageType": "<message type>", "message": "<message contents>" }
- *
- * <p>Currently if JSON is not in this format, then it is assumed that the message is a System.in
- * message. TODO: This behavior only exists while Javalab has not been updated to use the new
- * messaging protocol. Remove this once Javalab is updated and published to production.
  */
 public class InputHandler {
   private static final String MESSAGE_TYPE_KEY = "messageType";
@@ -40,10 +36,7 @@ public class InputHandler {
           nextMessageType = InputMessageType.valueOf(jsonMessage.getString(MESSAGE_TYPE_KEY));
           message = jsonMessage.getString(MESSAGE_KEY);
         } catch (JSONException | IllegalArgumentException e) {
-          // If the message is not JSON, then assume it is a System.in message.
-          // TODO: Remove this and instead throw exception once Javalab is updated to send JSON
-          nextMessageType = InputMessageType.SYSTEM_IN;
-          message = nextMessageData;
+          throw new InternalServerRuntimeError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e);
         }
 
         if (!inputQueues.containsKey(nextMessageType)) {

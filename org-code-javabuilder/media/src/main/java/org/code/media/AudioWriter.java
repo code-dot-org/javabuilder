@@ -68,6 +68,12 @@ public class AudioWriter {
    * closes output streams.
    */
   public void writeToAudioStreamAndClose() {
+    if (this.audioSamples.length == 0) {
+      // Add a silent audio sample so we can build a valid wav file.
+      // TODO: Send a "No audio" signal instead
+      this.audioSamples = new double[] {0};
+    }
+
     AudioUtils.writeBytesToOutputStream(
         AudioUtils.convertDoubleArrayToByteArray(this.audioSamples), this.audioOutputStream);
     this.currentSampleIndex = 0;

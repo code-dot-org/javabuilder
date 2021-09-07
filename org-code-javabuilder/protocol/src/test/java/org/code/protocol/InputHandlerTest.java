@@ -1,6 +1,7 @@
 package org.code.protocol;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 import java.util.Map;
@@ -52,30 +53,38 @@ class InputHandlerTest {
     verify(inputAdapter, never()).getNextMessage();
   }
 
-  /**
-   * TODO: The following tests should be updated to verify that exceptions are thrown once Javalab
-   * is updated to send JSON
-   */
   @Test
-  public void testDefaultsToSystemInIfMessageIsNotJson() {
+  public void testThrowsExceptionIfMessageIsNotJson() {
     final String testMessage = "not json";
     when(inputAdapter.getNextMessage()).thenReturn(testMessage);
-    assertEquals(testMessage, unitUnderTest.getNextMessageForType(InputMessageType.SYSTEM_IN));
+    Exception e =
+        assertThrows(
+            InternalServerRuntimeError.class,
+            () -> unitUnderTest.getNextMessageForType(InputMessageType.SYSTEM_IN));
+    assertEquals(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION.name(), e.getMessage());
   }
 
   @Test
-  public void testDefaultsToSystemInIfMessageHasInvalidType() {
+  public void testThrowsExceptionIfMessageHasInvalidType() {
     final String testMessage = createJsonMessage("invalidType", "invalidMessage");
     when(inputAdapter.getNextMessage()).thenReturn(testMessage);
-    assertEquals(testMessage, unitUnderTest.getNextMessageForType(InputMessageType.SYSTEM_IN));
+    Exception e =
+        assertThrows(
+            InternalServerRuntimeError.class,
+            () -> unitUnderTest.getNextMessageForType(InputMessageType.SYSTEM_IN));
+    assertEquals(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION.name(), e.getMessage());
   }
 
   @Test
-  public void testDefaultsToSystemInIfMessageTextIsMissing() {
+  public void testThrowsExceptionIfMessageTextIsMissing() {
     final String testMessage =
         new JSONObject(Map.of("messageType", InputMessageType.SYSTEM_IN.name())).toString();
     when(inputAdapter.getNextMessage()).thenReturn(testMessage);
-    assertEquals(testMessage, unitUnderTest.getNextMessageForType(InputMessageType.SYSTEM_IN));
+    Exception e =
+        assertThrows(
+            InternalServerRuntimeError.class,
+            () -> unitUnderTest.getNextMessageForType(InputMessageType.SYSTEM_IN));
+    assertEquals(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION.name(), e.getMessage());
   }
 
   private String createJsonMessage(String messageType, String message) {

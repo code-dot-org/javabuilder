@@ -256,10 +256,19 @@ Resources:
       ContentUri: org-code-javabuilder/change_runtime_directory
       Description: Change Java runtime to launch from the writeable /tmp directory to enable student projects to write files more easily.
       LayerName: change-java-runtime-directory
+  FontConfigurationLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      CompatibleRuntimes:
+        - java11
+      ContentUri: org-code-javabuilder/font_config.zip
+      Description: Add a font configuration file to enable use of fonts.
+      LayerName: font-configuration
   BuildAndRunJavaProjectFunction:
     Type: AWS::Serverless::Function
     Properties:
       Layers:
+        - !Ref FontConfigurationLayer
         - !Ref ChangeJavaRuntimeDirectoryLayer
       Handler: org.code.javabuilder.LambdaRequestHandler::handleRequest
       Runtime: java11
