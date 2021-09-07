@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import org.code.protocol.InputHandler;
 import org.code.protocol.InputMessageType;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,9 +36,12 @@ public class InputRedirectionStreamTest {
 
   @Test
   public void availableReturnsRemainingSizeOfStream() {
-    when(inputHandler.getNextMessageForType(InputMessageType.SYSTEM_IN)).thenReturn("hello world");
+    String input = "hello world";
+    when(inputHandler.getNextMessageForType(InputMessageType.SYSTEM_IN)).thenReturn(input);
     stream.read();
-    assertEquals(stream.available(), 11); // characters + newline
+    // Use System.lineSeparator as different OS's have different lineSeparators.
+    int expectedSize = (input + System.lineSeparator()).length() - 1;
+    assertEquals(expectedSize, stream.available()); // characters + newline - 1 for the read.
   }
 
   @Test
@@ -60,11 +64,18 @@ public class InputRedirectionStreamTest {
 
   @Test
   public void arrayReadStopsWhenInputEnds() {
-    when(inputHandler.getNextMessageForType(InputMessageType.SYSTEM_IN)).thenReturn("hi");
-    byte[] b = new byte[4];
-    stream.read(b);
+    String input = "hi";
+    when(inputHandler.getNextMessageForType(InputMessageType.SYSTEM_IN)).thenReturn(input);
+    // Use System.lineSeparator as different OS's have different lineSeparators.
+    byte[] message = (input + System.lineSeparator()).getBytes(StandardCharsets.UTF_8);
+    byte[] expected = new byte[5];
 
-    assertArrayEquals(new byte[] {'h', 'i', '\n', 0}, b);
+    // expected should be longer than message
+    System.arraycopy(message, 0, expected, 0, message.length);
+
+    byte[] actual = new byte[5];
+    stream.read(actual);
+    assertArrayEquals(expected, actual);
   }
 
   @Test
