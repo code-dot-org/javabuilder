@@ -95,6 +95,8 @@ def get_public_key(origin)
     stage_name = "levelbuilder"
   elsif origin.include? "test"
     stage_name = "test"
+  elsif origin.include? "adhoc"
+    stage_name = "adhoc"
   else
     stage_name = "production"
   end
