@@ -190,6 +190,10 @@ Resources:
                 Action:
                   - "cloudformation:DescribeStacks"
                 Resource: '*'
+              - Effect: Allow
+                Action:
+                  - "route53:ListHostedZonesByName"
+                Resource: '*'
 Outputs:
   JavabuilderLambdaExecutionRole:
     Description: Javabuilder Lambda Execution Role ARN
