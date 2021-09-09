@@ -5,20 +5,20 @@ import org.code.media.Color;
 import org.code.media.Font;
 import org.code.media.FontStyle;
 
-public final static class Playground {
+public class Playground {
     /**
      * Returns the width of the playground screen. This will always be 400.
      * 
      * @return the width of the playground in pixels.
      */
-    public static int getWidth();
+    public int getWidth();
 
     /**
      * Returns the height of the playground screen. This will always be 400.
      * 
      * @return the height of the playground in pixels.
      */
-    public static int getHeight();
+    public int getHeight();
 
     /**
      * Sets the background of the playground to the provided image. The image will
@@ -30,7 +30,7 @@ public final static class Playground {
      * @throws FileNotFoundException if the file cannot be found in the asset
      *                               manager
      */
-    public static void setBackgroundImage(String filename) throws FileNotFoundException;
+    public void setBackgroundImage(String filename) throws FileNotFoundException;
 
     /**
      * Adds a clickable item from the playground.
@@ -40,7 +40,7 @@ public final static class Playground {
      * @param x the distance, in pixels, from the left side of the playground
      * @param y the distance, in pixels, from the top of the playground
      */
-    public static void addItem(ClickableItem item, int x, int y);
+    public void addItem(ClickableItem item, int x, int y);
 
     /**
      * Removes the clickable item from the playground.
@@ -48,7 +48,7 @@ public final static class Playground {
      * @param item the item to remove. If the item is not in the playground, this
      *              method does nothing.
      */
-    public static void removeClickableItem(ClickableItem item);
+    public void removeClickableItem(ClickableItem item);
 
     /**
      * Adds a non-clickable item to the playground.
@@ -58,7 +58,7 @@ public final static class Playground {
      * @param x the distance, in pixels, from the left side of the playground
      * @param y the distance, in pixels, from the top of the playground
      */
-    public static void addItem(Item item, int x, int y);
+    public void addItem(Item item, int x, int y);
 
     /**
      * Removes the non-clickable item from the playground.
@@ -66,7 +66,7 @@ public final static class Playground {
      * @param item the item to remove. If the image is not in the playground, this
      *              method does nothing.
      */
-    public static void removeItem(Item item);
+    public void removeItem(Item item);
     
     /**
      * Draws text on the playground.
@@ -80,7 +80,7 @@ public final static class Playground {
      * @param height the height of the text in pixels.
      * @param rotation the rotation or tilt of the text, in degrees
      */
-    public void drawText(String text, int x, int y, Color color, Font font, FontStyle fontStyle, int height, double rotation);
+    public drawText(String text, int x, int y, Color color, Font font, FontStyle fontStyle, int height, double rotation);
 
     /**
      * Draws text on the playground with a normal font style
@@ -93,7 +93,7 @@ public final static class Playground {
      * @param height the height of the text in pixels.
      * @param rotation the rotation or tilt of the text, in degrees.
      */
-    public void drawText(String text, int x, int y, Color color, Font font, int height, double rotation);
+    public drawText(String text, int x, int y, Color color, Font font, int height, double rotation);
 
     /**
      * Starts the playground game, waiting for the user to click on images and
@@ -103,7 +103,7 @@ public final static class Playground {
      * @throws PlaygroundRunningException if the run() method has already been
      *                                    called.
      */
-    public static void run() throws PlaygroundRunningException;
+    public void run() throws PlaygroundRunningException;
 
     /**
      * Ends the game, plays the sound supplied, and stops program execution.
@@ -112,7 +112,7 @@ public final static class Playground {
      *                                       called.
      * @throws FileNotFoundException if the sound file cannot be found.
      */
-    public static void exit(String endingSound) throws PlaygroundNotRunningException, FileNotFoundException;
+    public void exit(String endingSound) throws PlaygroundNotRunningException, FileNotFoundException;
 
     /**
      * Ends the game and stops program execution.
@@ -120,5 +120,5 @@ public final static class Playground {
      * @throws PlaygroundNotRunningException if the run() method has not been
      *                                       called.
      */
-    public static void exit();
+    public void exit();
 }
