@@ -30,36 +30,40 @@ public final static class Playground {
     public static void setBackgroundImage(String filename) throws FileNotFoundException;
 
     /**
-     * Adds a clickable image from the playground.
+     * Adds a clickable item from the playground.
      * 
-     * @param image the image to add. If the image is already in the playground,
+     * @param item the item to add. If the item is already in the playground,
      *              this method does nothing.
+     * @param x the distance, in pixels, from the left side of the playground
+     * @param y the distance, in pixels, from the top of the playground
      */
-    public static void addClickableImage(ClickableImage image);
+    public static void addItem(ClickableItem item, int x, int y);
 
     /**
-     * Removes the clickable image from the playground.
+     * Removes the clickable item from the playground.
      * 
-     * @param image the image to remove. If the image is not in the playground, this
+     * @param item the item to remove. If the item is not in the playground, this
      *              method does nothing.
      */
-    public static void removeClickableImage(ClickableImage img);
+    public static void removeClickableItem(ClickableItem item);
 
     /**
-     * Adds a non-clickable image from the playground.
+     * Adds a non-clickable item to the playground.
      * 
-     * @param image the image to add. If the image is already in the playground,
+     * @param item the item to add. If the item is already in the playground,
      *              this method does nothing.
+     * @param x the distance, in pixels, from the left side of the playground
+     * @param y the distance, in pixels, from the top of the playground
      */
-    public static void addImage(Image image);
+    public static void addItem(Item item, int x, int y);
 
     /**
-     * Removes the image from the playground.
+     * Removes the non-clickable item from the playground.
      * 
-     * @param image the image to remove. If the image is not in the playground, this
+     * @param item the item to remove. If the image is not in the playground, this
      *              method does nothing.
      */
-    public static void removeImage(Image image);
+    public static void removeItem(Item item);
 
     /**
      * Starts the playground game, waiting for the user to click on images and
