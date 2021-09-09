@@ -16,7 +16,7 @@ public class Item {
   /**
   * Retrieve the filename for this item.
   *
-  * @returns the filename in the asset manager for the image associated with this item.
+  * @return the filename in the asset manager for the image associated with this item.
   */
   public String getFilename();
 }
