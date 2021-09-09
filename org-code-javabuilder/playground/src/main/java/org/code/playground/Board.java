@@ -5,7 +5,7 @@ import org.code.media.Color;
 import org.code.media.Font;
 import org.code.media.FontStyle;
 
-public class Playground {
+public class Board {
     /**
      * Returns the width of the playground screen. This will always be 400.
      * 
