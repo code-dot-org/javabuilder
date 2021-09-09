@@ -1,6 +1,9 @@
 package org.code.playground;
 
 import java.io.FileNotFoundException;
+import org.code.media.Color;
+import org.code.media.Font;
+import org.code.media.FontStyle;
 
 public final static class Playground {
     /**
@@ -64,6 +67,33 @@ public final static class Playground {
      *              method does nothing.
      */
     public static void removeItem(Item item);
+    
+    /**
+     * Draws text on the playground.
+     *
+     * @param text the text to draw
+     * @param x the distance from the left side of the playground to draw the text.
+     * @param y the distance from the top of the playground to draw the text.
+     * @param color the color to draw the text.
+     * @param font the name of the font to draw the text in.
+     * @param fontStyle the name of the font style to draw the text in.
+     * @param height the height of the text in pixels.
+     * @param rotation the rotation or tilt of the text, in degrees
+     */
+    public void drawText(String text, int x, int y, Color color, Font font, FontStyle fontStyle, int height, double rotation);
+
+    /**
+     * Draws text on the playground with a normal font style
+     *
+     * @param text the text to draw
+     * @param x the distance from the left side of the playground to draw the text.
+     * @param y the distance from the top of the playground to draw the text.
+     * @param color the color to draw the text.
+     * @param font the name of the font to draw the text in.
+     * @param height the height of the text in pixels.
+     * @param rotation the rotation or tilt of the text, in degrees.
+     */
+    public void drawText(String text, int x, int y, Color color, Font font, int height, double rotation);
 
     /**
      * Starts the playground game, waiting for the user to click on images and
