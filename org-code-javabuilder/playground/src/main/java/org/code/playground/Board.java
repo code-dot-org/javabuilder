@@ -43,7 +43,7 @@ public class Board {
      * @param width the width of the item, in pixels
      * @param height the height of the item, in pixels
      */
-    public void addItem(ClickableItem item, int x, int y, int width, int height);
+    public void addClickableItem(ClickableItem item, int x, int y, int width, int height);
 
     /**
      * Removes the clickable item from the playground.
