@@ -22,7 +22,7 @@ public class Board {
 
     /**
      * Sets the background of the playground to the provided image. The image will
-     * be scaled to fit the full playground screen, which may distory the image if
+     * be scaled to fit the full playground screen, which may distort the image if
      * it is not square.
      * 
      * @param filename the name of the file from the asset manager to put in the
@@ -33,14 +33,17 @@ public class Board {
     public void setBackgroundImage(String filename) throws FileNotFoundException;
 
     /**
-     * Adds a clickable item from the playground.
+     * Adds a clickable item from the playground. The image for the item will
+     * be scaled to fit the width and height provided, which may distort the image.
      * 
      * @param item the item to add. If the item is already in the playground,
      *              this method does nothing.
      * @param x the distance, in pixels, from the left side of the playground
      * @param y the distance, in pixels, from the top of the playground
+     * @param width the width of the item, in pixels
+     * @param height the height of the item, in pixels
      */
-    public void addItem(ClickableItem item, int x, int y);
+    public void addItem(ClickableItem item, int x, int y, int width, int height);
 
     /**
      * Removes the clickable item from the playground.
@@ -51,14 +54,17 @@ public class Board {
     public void removeClickableItem(ClickableItem item);
 
     /**
-     * Adds a non-clickable item to the playground.
+     * Adds a non-clickable item to the playground. The image for the item will
+     * be scaled to fit the width and height provided, which may distort the image.
      * 
      * @param item the item to add. If the item is already in the playground,
      *              this method does nothing.
      * @param x the distance, in pixels, from the left side of the playground
      * @param y the distance, in pixels, from the top of the playground
+     * @param width the width of the item, in pixels
+     * @param height the height of the item, in pixels
      */
-    public void addItem(Item item, int x, int y);
+    public void addItem(Item item, int x, int y, int width, int height);
 
     /**
      * Removes the non-clickable item from the playground.
