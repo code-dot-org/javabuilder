@@ -7,22 +7,22 @@ import org.code.media.FontStyle;
 
 public class Board {
     /**
-     * Returns the width of the playground screen. This will always be 400.
+     * Returns the width of the board. This will always be 400.
      * 
-     * @return the width of the playground in pixels.
+     * @return the width of the board in pixels.
      */
     public int getWidth();
 
     /**
-     * Returns the height of the playground screen. This will always be 400.
+     * Returns the height of the board. This will always be 400.
      * 
-     * @return the height of the playground in pixels.
+     * @return the height of the board in pixels.
      */
     public int getHeight();
 
     /**
-     * Sets the background of the playground to the provided image. The image will
-     * be scaled to fit the full playground screen, which may distort the image if
+     * Sets the background of the board to the provided image. The image will
+     * be scaled to fit the full board, which may distort the image if
      * it is not square.
      * 
      * @param filename the name of the file from the asset manager to put in the
@@ -33,53 +33,43 @@ public class Board {
     public void setBackgroundImage(String filename) throws FileNotFoundException;
 
     /**
-     * Adds a clickable item from the playground. The image for the item will
-     * be scaled to fit the width and height provided, which may distort the image.
+     * Adds a clickable item to the board.
      * 
-     * @param item the item to add. If the item is already in the playground,
-     *              this method does nothing.
-     * @param x the distance, in pixels, from the left side of the playground
-     * @param y the distance, in pixels, from the top of the playground
-     * @param width the width of the item, in pixels
-     * @param height the height of the item, in pixels
+     * @param item the item to add. If the item is already on the board,
+     *             this method does nothing.
      */
-    public void addClickableItem(ClickableItem item, int x, int y, int width, int height);
+    public void addClickableItem(ClickableItem item);
 
     /**
-     * Removes the clickable item from the playground.
+     * Removes the clickable item from the board.
      * 
-     * @param item the item to remove. If the item is not in the playground, this
-     *              method does nothing.
+     * @param item the item to remove. If the item is not on the board, this
+     *             method does nothing.
      */
     public void removeClickableItem(ClickableItem item);
 
     /**
-     * Adds a non-clickable item to the playground. The image for the item will
-     * be scaled to fit the width and height provided, which may distort the image.
-     * 
-     * @param item the item to add. If the item is already in the playground,
-     *              this method does nothing.
-     * @param x the distance, in pixels, from the left side of the playground
-     * @param y the distance, in pixels, from the top of the playground
-     * @param width the width of the item, in pixels
-     * @param height the height of the item, in pixels
+     * Adds a non-clickable item to the board. 
+     *
+     * @param item the item to add. If the item is already on the board,
+     *             this method does nothing.
      */
     public void addItem(Item item, int x, int y, int width, int height);
 
     /**
-     * Removes the non-clickable item from the playground.
+     * Removes the non-clickable item from the board.
      * 
-     * @param item the item to remove. If the image is not in the playground, this
-     *              method does nothing.
+     * @param item the item to remove. If the image is not on the board, this
+     *             method does nothing.
      */
     public void removeItem(Item item);
     
     /**
-     * Draws text on the playground.
+     * Draws text on the board.
      *
      * @param text the text to draw
-     * @param x the distance from the left side of the playground to draw the text.
-     * @param y the distance from the top of the playground to draw the text.
+     * @param x the distance from the left side of the board to draw the text.
+     * @param y the distance from the top of the board to draw the text.
      * @param color the color to draw the text.
      * @param font the name of the font to draw the text in.
      * @param fontStyle the name of the font style to draw the text in.
@@ -89,11 +79,11 @@ public class Board {
     public drawText(String text, int x, int y, Color color, Font font, FontStyle fontStyle, int height, double rotation);
 
     /**
-     * Draws text on the playground with a normal font style
+     * Draws text on the board with a normal font style
      *
      * @param text the text to draw
-     * @param x the distance from the left side of the playground to draw the text.
-     * @param y the distance from the top of the playground to draw the text.
+     * @param x the distance from the left side of the board to draw the text.
+     * @param y the distance from the top of the board to draw the text.
      * @param color the color to draw the text.
      * @param font the name of the font to draw the text in.
      * @param height the height of the text in pixels.
