@@ -54,6 +54,7 @@ public final class Playground {
   private final Graphics2D graphics;
   private final Map<Image, ImagePosition> imagePositionMap;
   private final ArrayList<Image> imageDrawOrderStack;
+  private final PlaygroundTimer timer;
 
   private boolean isRunning;
   private boolean updateRequested;
@@ -71,6 +72,7 @@ public final class Playground {
     this.imagePositionMap = new LinkedHashMap<>();
     this.imageDrawOrderStack = new ArrayList<>();
     this.audioWriter = new AudioWriter.Factory().createAudioWriter(new ByteArrayOutputStream());
+    this.timer = new PlaygroundTimer();
 
     this.isRunning = false;
     this.updateRequested = false;
@@ -173,6 +175,7 @@ public final class Playground {
     // Dispatch initial state if update is pending
     if (this.updateRequested) {
       this.dispatchPlaygroundUpdate();
+      this.updateRequested = false;
     }
 
     // Wait for next user input
@@ -185,6 +188,7 @@ public final class Playground {
       if (this.updateRequested) {
         this.dispatchPlaygroundUpdate();
         this.updateRequested = false;
+        this.timer.onUpdateDispatched();
       }
 
       // If exit was called in a callback, dispatch an exit message ending the game
@@ -227,7 +231,7 @@ public final class Playground {
   }
 
   private void onCoordinateClicked(int x, int y) {
-    System.out.printf("Coordinate clicked: (%d, %d)", x, y);
+    this.timer.onMessageReceived();
     // Find first clickable image to handle click, in order of last drawn image
     for (int i = this.imageDrawOrderStack.size() - 1; i >= 0; i--) {
       final Image image = this.imageDrawOrderStack.get(i);
@@ -276,6 +280,7 @@ public final class Playground {
   }
 
   private String writePlaygroundImageToUrl() {
+    this.timer.onDrawStarted();
     // Draw images in order, starting with background image
     if (this.backgroundImage != null) {
       this.graphics.drawImage(
@@ -290,6 +295,7 @@ public final class Playground {
     final ByteArrayOutputStream imageOutputStream = new ByteArrayOutputStream();
     try {
       ImageIO.write(this.image, OUTPUT_IMAGE_FILE_FORMAT, imageOutputStream);
+      this.timer.onDrawEnded();
       return this.generateOutputUrl(
           imageOutputStream, PLAYGROUND_IMAGE_FILE_NAME, OUTPUT_IMAGE_CONTENT_TYPE);
     } catch (IOException e) {
