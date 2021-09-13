@@ -2,31 +2,100 @@
     /**
      * Creates text item that can be placed the board.
      *
-     * @param text the text to draw
-     * @param x the distance from the left side of the board to draw the text.
-     * @param y the distance from the top of the board to draw the text.
-     * @param color the color to draw the text.
-     * @param font the name of the font to draw the text in.
-     * @param fontStyle the style of the font.
-     * @param height the height of the text in pixels.
-     * @param rotation the rotation or tilt of the text, in degrees.
+     * @param text the text content
+     * @param x the distance from the left side of the board
+     * @param y the distance from the top of the board
+     * @param color the color to draw the text
+     * @param font the name of the font to draw the text
+     * @param fontStyle the style of the font
+     * @param height the height of the text in pixels
+     * @param rotation the rotation or tilt of the text, in degrees
      */
     public TextItem(String text, Color color, Font font, FontStyle fontStyle, int height, double rotation);
    
     /**
      * Creates text item that can be placed the board in a normal font style.
      *
-     * @param text the text to draw
-     * @param x the distance from the left side of the board to draw the text.
-     * @param y the distance from the top of the board to draw the text.
-     * @param color the color to draw the text.
-     * @param font the name of the font to draw the text in.
-     * @param height the height of the text in pixels.
+     * @param text the text content
+     * @param x the distance from the left side of the board
+     * @param y the distance from the top of the board
+     * @param color the color to draw the text
+     * @param font the name of the font to draw the text
+     * @param height the height of the text in pixels
      * @param rotation the rotation or tilt of the text, in degrees.
      */
    public TextItem(String text, Color color, Font font, int height, double rotation);
    
+  /**
+   * Set the text content for the item.
+   *
+   * @param text the content for the item
+   */
+  public void setText(String text);
+  
+  /**
+   * Get the text content for the item.
+   *
+   * @return text the content for the item
+   */
+  public String getText(); 
+  
+  /**
+   * Set the text color for the item.
+   *
+   * @param color the text color
+   */
+  public void setColor(Color color);
+  
+  /**
+   * Get the text color for the item.
+   *
+   * @return the text color for the item
+   */
+  public Color getColor();
+  
+  /**
+   * Set the font for the text.
+   *
+   * @param font the font for the text.
+   */
+  public void setFont(Font font);
+  
+  /**
+   * Get the font for the text.
+   *
+   * @return the font for the 
+   */
+  public Font getFont();
+  
+  /**
+   * Set the font style for the text.
+   *
+   * @param fontStyle the font style for the item
+   */
+  public void setFontStyle(FontStyle fontStyle);
    
+  /**
+   * Get the font style for the text.
+   *
+   * @return the font style for the item
+   */
+  public FontStyle getFontStyle();
+  
+  /**
+   * Set the rotation for the text.
+   *
+   * @param rotation the rotation for the text, in degrees
+   */
+  public void setRotation(double rotation);
+  
+   /**
+   * Get the rotation for the text.
+   *
+   * @return the rotation for the text, in degrees
+   */
+  public double getRotation();
+  
    /**
    * Set the X position for the item.
    *
