@@ -2,7 +2,7 @@ package org.code.playground;
 
 import java.io.FileNotFoundException;
 
-public abstract class ClickableItem extends Item {
+public abstract class ClickableItem extends ImageItem {
 
     /**
      * Sets a sound to play when the user clicks on this item.
