@@ -54,7 +54,7 @@ public class Board {
      * @param item the item to add. If the item is already on the board,
      *             this method does nothing.
      */
-    public void addItem(Item item, int x, int y, int width, int height);
+    public void addItem(Item item);
 
     /**
      * Removes the non-clickable item from the board.
@@ -63,33 +63,6 @@ public class Board {
      *             method does nothing.
      */
     public void removeItem(Item item);
-    
-    /**
-     * Draws text on the board.
-     *
-     * @param text the text to draw
-     * @param x the distance from the left side of the board to draw the text.
-     * @param y the distance from the top of the board to draw the text.
-     * @param color the color to draw the text.
-     * @param font the name of the font to draw the text in.
-     * @param fontStyle the name of the font style to draw the text in.
-     * @param height the height of the text in pixels.
-     * @param rotation the rotation or tilt of the text, in degrees
-     */
-    public drawText(String text, int x, int y, Color color, Font font, FontStyle fontStyle, int height, double rotation);
-
-    /**
-     * Draws text on the board with a normal font style
-     *
-     * @param text the text to draw
-     * @param x the distance from the left side of the board to draw the text.
-     * @param y the distance from the top of the board to draw the text.
-     * @param color the color to draw the text.
-     * @param font the name of the font to draw the text in.
-     * @param height the height of the text in pixels.
-     * @param rotation the rotation or tilt of the text, in degrees.
-     */
-    public drawText(String text, int x, int y, Color color, Font font, int height, double rotation);
 
     /**
      * Starts the playground game, waiting for the user to click on images and
