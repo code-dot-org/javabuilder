@@ -26,31 +26,4 @@
    * @return the distance, in pixels, from the top of the board
    */
   public int getY();
-  
-  /**
-   * Set the width for the item.
-   *
-   * @param width the width of the item, in pixels
-   */
-  public void setWidth(int width);
-
-  /**
-   * Get the width for the item.
-   *
-   * @return the width of the item, in pixels
-   */
-  public int getWidth();
-  
-  /**
-   * Set the height for the item.
-   *
-   * @param height the height of the item, in pixels
-   */
-  public void setHeight(int height);
-  
-  /**
-   * Get the height for the item.
-   *
-   * @return the height of the item, in pixels
-   */
-  public int getHeight();
+}
