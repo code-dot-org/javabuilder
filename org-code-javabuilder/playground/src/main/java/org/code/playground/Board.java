@@ -33,20 +33,20 @@ public class Board {
     public void setBackgroundImage(String filename) throws FileNotFoundException;
 
     /**
-     * Adds a clickable item to the board.
+     * Adds a clickable image to the board.
      * 
-     * @param item the item to add. If the item is already on the board,
-     *             this method does nothing.
+     * @param image the image to add. If the image is already on the board,
+     *              this method does nothing.
      */
-    public void addClickableItem(ClickableItem item);
+    public void addClickableImage(ClickableImage image);
 
     /**
-     * Removes the clickable item from the board.
+     * Removes the clickable image from the board.
      * 
-     * @param item the item to remove. If the item is not on the board, this
+     * @param image the image to remove. If the image is not on the board, this
      *             method does nothing.
      */
-    public void removeClickableItem(ClickableItem item);
+    public void removeClickableImage(ClickableImage item);
 
     /**
      * Adds a non-clickable item to the board. 
