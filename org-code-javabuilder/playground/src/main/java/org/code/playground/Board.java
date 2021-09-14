@@ -63,6 +63,14 @@ public class Board {
      *             method does nothing.
      */
     public void removeItem(Item item);
+    
+     /**
+     * Plays a sound from the asset manager.
+     * 
+     * @param filename the name of the sound file from the asset manager to play
+     * @throws FileNotFoundException when the sound file cannot be found.
+     */
+    public void playSound(String filename) throws FileNotFoundException;
 
     /**
      * Starts the playground game, waiting for the user to click on images and
