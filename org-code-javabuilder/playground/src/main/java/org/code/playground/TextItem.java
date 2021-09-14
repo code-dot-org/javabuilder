@@ -11,7 +11,7 @@
      * @param height the height of the text in pixels
      * @param rotation the rotation or tilt of the text, in degrees
      */
-    public TextItem(String text, Color color, Font font, FontStyle fontStyle, int height, double rotation);
+    public TextItem(String text, int x, int y, Color color, Font font, FontStyle fontStyle, int height, double rotation);
    
     /**
      * Creates text item that can be placed the board in a normal font style.
@@ -24,7 +24,7 @@
      * @param height the height of the text in pixels
      * @param rotation the rotation or tilt of the text, in degrees.
      */
-   public TextItem(String text, Color color, Font font, int height, double rotation);
+   public TextItem(String text, int x, int y, Color color, Font font, int height, double rotation);
    
   /**
    * Set the text content for the item.
