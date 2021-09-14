@@ -13,4 +13,5 @@ include('neighborhood')
 include('protocol')
 include('theater')
 include('media')
+include('playground')
 
