@@ -31,7 +31,7 @@ public class ImageItem implements Item{
    * @param filename the filename in the asset manager for the image to associat with this item
    * @throws FileNotFoundException if the file specified is not the in the asset manager
    */
-  public void getFilename(String filename) throws FileNotFoundException;
+  public void setFilename(String filename) throws FileNotFoundException;
   
    /**
    * Set the X position for the item.
