@@ -251,11 +251,15 @@ public final class Playground {
 
   private void dispatchPlaygroundUpdate() {
     final HashMap<String, String> details = new HashMap<>();
-    details.put("imageUrl", this.writePlaygroundImageToUrl());
+    final ByteArrayOutputStream imageOutputStream = this.writePlaygroundImage();
+    details.put("imageUrl", this.writePlaygroundImageToUrl(imageOutputStream));
+    details.put("image", this.writeStreamToString(imageOutputStream));
 
     if (this.soundFilename != null) {
       try {
-        details.put("audioUrl", this.writeAudioFileToUrl(this.soundFilename));
+        final ByteArrayOutputStream audioOutputStream = this.writeAudioFile(this.soundFilename);
+        details.put("audioUrl", this.writeAudioFileToUrl(audioOutputStream));
+        details.put("audio", this.writeStreamToString(audioOutputStream));
       } catch (FileNotFoundException e) {
         // TODO exception handling
         System.out.println(e);
@@ -270,7 +274,9 @@ public final class Playground {
     final HashMap<String, String> details = new HashMap<>();
     if (this.exitSound != null) {
       try {
-        details.put("audioUrl", this.writeAudioFileToUrl(this.exitSound));
+        final ByteArrayOutputStream audioOutputStream = this.writeAudioFile(this.exitSound);
+        details.put("audioUrl", this.writeAudioFileToUrl(audioOutputStream));
+        details.put("audio", this.writeStreamToString(audioOutputStream));
       } catch (FileNotFoundException e) {
         // TODO handle / refactor to bubble up exception
         System.out.println(e);
@@ -279,7 +285,7 @@ public final class Playground {
     this.outputAdapter.sendMessage(new PlaygroundMessage(PlaygroundSignalKey.EXIT, details));
   }
 
-  private String writePlaygroundImageToUrl() {
+  private ByteArrayOutputStream writePlaygroundImage() {
     this.timer.onDrawStarted();
     // Draw images in order, starting with background image
     if (this.backgroundImage != null) {
@@ -296,20 +302,54 @@ public final class Playground {
     try {
       ImageIO.write(this.image, OUTPUT_IMAGE_FILE_FORMAT, imageOutputStream);
       this.timer.onDrawEnded();
-      return this.generateOutputUrl(
-          imageOutputStream, PLAYGROUND_IMAGE_FILE_NAME, OUTPUT_IMAGE_CONTENT_TYPE);
+      return imageOutputStream;
     } catch (IOException e) {
       throw new InternalServerRuntimeError(InternalErrorKey.INTERNAL_EXCEPTION, e);
     }
   }
 
-  private String writeAudioFileToUrl(String audioFilename) throws FileNotFoundException {
+  private String writePlaygroundImageToUrl(ByteArrayOutputStream imageOutputStream) {
+    //    this.timer.onDrawStarted();
+    //    // Draw images in order, starting with background image
+    //    if (this.backgroundImage != null) {
+    //      this.graphics.drawImage(
+    //          this.backgroundImage.getBufferedImage(), 0, 0, PLAYGROUND_WIDTH, PLAYGROUND_HEIGHT,
+    // null);
+    //    }
+    //    for (Image image : this.imageDrawOrderStack) {
+    //      final ImagePosition position = this.imagePositionMap.get(image);
+    //      this.graphics.drawImage(
+    //          image.getBufferedImage(), position.x, position.y, position.width, position.height,
+    // null);
+    //    }
+    //
+    //    final ByteArrayOutputStream imageOutputStream = new ByteArrayOutputStream();
+    //    try {
+    //      ImageIO.write(this.image, OUTPUT_IMAGE_FILE_FORMAT, imageOutputStream);
+    //      this.timer.onDrawEnded();
+    //    } catch (IOException e) {
+    //      throw new InternalServerRuntimeError(InternalErrorKey.INTERNAL_EXCEPTION, e);
+    //    }
+    return this.generateOutputUrl(
+        imageOutputStream, PLAYGROUND_IMAGE_FILE_NAME, OUTPUT_IMAGE_CONTENT_TYPE);
+  }
+
+  private String writeStreamToString(ByteArrayOutputStream imageOutputStream) {
+    return Base64.getEncoder().encodeToString(imageOutputStream.toByteArray());
+  }
+
+  private ByteArrayOutputStream writeAudioFile(String audioFilename) throws FileNotFoundException {
     final ByteArrayOutputStream audioOutputStream = new ByteArrayOutputStream();
 
     this.audioWriter.writeAudioFromAssetFile(audioFilename);
     this.audioWriter.writeToAudioStreamAndClose(audioOutputStream);
     this.audioWriter.reset();
 
+    return audioOutputStream;
+  }
+
+  private String writeAudioFileToUrl(ByteArrayOutputStream audioOutputStream)
+      throws FileNotFoundException {
     return this.generateOutputUrl(
         audioOutputStream, PLAYGROUND_AUDIO_FILE_NAME, OUTPUT_AUDIO_CONTENT_TYPE);
   }
