@@ -77,24 +77,24 @@ public class Board {
      * executing the appropriate code. To end the game, call the end() method. The
      * run() method may only be called once per execution of a program.
      * 
-     * @throws PlaygroundRunningException if the run() method has already been
+     * @throws PlaygroundException if the run() method has already been
      *                                    called.
      */
-    public void run() throws PlaygroundRunningException;
+    public void run() throws PlaygroundException {}
 
     /**
      * Ends the game, plays the sound supplied, and stops program execution.
      * @param endingSound the name of a sound file in the asset manager to play at the end of the game.
-     * @throws PlaygroundNotRunningException if the run() method has not been
+     * @throws PlaygroundException if the run() method has not been
      *                                       called.
      * @throws FileNotFoundException if the sound file cannot be found.
      */
-    public void exit(String endingSound) throws PlaygroundNotRunningException, FileNotFoundException;
+    public void exit(String endingSound) throws PlaygroundException, FileNotFoundException {}
 
     /**
      * Ends the game and stops program execution.
      * 
-     * @throws PlaygroundNotRunningException if the run() method has not been
+     * @throws PlaygroundException if the run() method has not been
      *                                       called.
      */
     public void exit();
