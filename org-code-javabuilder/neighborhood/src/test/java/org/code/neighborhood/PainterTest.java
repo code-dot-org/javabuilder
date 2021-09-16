@@ -5,10 +5,7 @@ import static org.mockito.Mockito.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-import org.code.protocol.GlobalProtocol;
-import org.code.protocol.InputAdapter;
-import org.code.protocol.JavabuilderFileWriter;
-import org.code.protocol.OutputAdapter;
+import org.code.protocol.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,7 +22,7 @@ public class PainterTest {
   @BeforeEach
   public void setUp() {
     GlobalProtocol.create(
-        outputAdapter, mock(InputAdapter.class), "", "", mock(JavabuilderFileWriter.class));
+        outputAdapter, mock(InputAdapter.class), "", "", "", mock(JavabuilderFileWriter.class));
     System.setOut(new PrintStream(outputStreamCaptor));
     World w = new World(singleSquareGrid);
     World.setInstance(w);
@@ -154,18 +151,34 @@ public class PainterTest {
   }
 
   @Test
-  void largeGridInfinitePaint() {
-    World w = new World(16);
+  void largeGridInfinitePaintDefaultConstructor() {
+    World w = new World(20);
     World.setInstance(w);
-    Painter painter = new Painter(0, 0, "North", 1);
-    assertTrue(painter.hasPaint());
-    painter.paint("red");
+    Painter painter = new Painter();
     assertTrue(painter.hasPaint());
   }
 
   @Test
+  void noInfinitePaintDefaultConstructor() {
+    World w = new World(19);
+    World.setInstance(w);
+    Painter painter = new Painter();
+    assertFalse(painter.hasPaint());
+  }
+
+  @Test
+  void largeGridNoInfinitePaintWhenPaintSpecified() {
+    World w = new World(20);
+    World.setInstance(w);
+    Painter painter = new Painter(0, 0, "North", 1);
+    assertTrue(painter.hasPaint());
+    painter.paint("red");
+    assertFalse(painter.hasPaint());
+  }
+
+  @Test
   void noInfinitePaint() {
-    World w = new World(15);
+    World w = new World(19);
     World.setInstance(w);
     Painter painter = new Painter(0, 0, "North", 1);
     assertTrue(painter.hasPaint());

@@ -39,6 +39,9 @@ dependencies {
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.6.0'
     // https://mvnrepository.com/artifact/javax.websocket/javax.websocket-api
     compileOnly group: 'javax.websocket', name: 'javax.websocket-api', version: '1.1'
+    // https://mvnrepository.com/artifact/javax.servlet/javax.servlet-api
+    compileOnly group: 'javax.servlet', name: 'javax.servlet-api', version: '4.0.1'
+
 }
 
 test {
@@ -58,6 +61,7 @@ gretty {
 task buildZip(type: Zip) {
     from project(':neighborhood').getTasksByName('buildNeighborhood', false)
     from project(':theater').getTasksByName('buildTheater', false)
+    from project(':playground').getTasksByName('buildPlayground', false)
     from compileJava
     from processResources
     into('lib') {
@@ -77,6 +81,7 @@ build.dependsOn installGitHook
 afterEvaluate {
     tasks.prepareInplaceWebAppFolder.dependsOn project(':neighborhood').getTasksByName('buildNeighborhood', false)
     tasks.prepareInplaceWebAppFolder.dependsOn project(':theater').getTasksByName('buildTheater', false)
+    tasks.prepareInplaceWebAppFolder.dependsOn project(':playground').getTasksByName('buildPlayground', false)
     // This ensures updates to the githook will be installed
     tasks.prepareInplaceWebAppFolder.dependsOn installGitHook
 }

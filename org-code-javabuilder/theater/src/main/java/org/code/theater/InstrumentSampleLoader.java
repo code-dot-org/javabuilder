@@ -18,8 +18,8 @@ class InstrumentSampleLoader {
 
     final Map<Integer, String> bassMap = new HashMap<>();
 
-    // Bass note values: 24 - 60 (C1 - C4)
-    for (int note = 24; note <= 60; note++) {
+    // Bass note values: 48 - 84 (played C3 - C6, sounding C1 - C4, two octaves below)
+    for (int note = 48; note <= 84; note++) {
       bassMap.put(note, "instruments/javalab-bass-" + note + ".wav");
     }
 

@@ -4,7 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import org.code.protocol.InternalErrorKey;
-import org.code.protocol.InternalJavabuilderError;
+import org.code.protocol.InternalServerRuntimeError;
 
 /**
  * Writer for concatenating audio data from multiple audio sources. The raw audio samples in bytes
@@ -68,6 +68,12 @@ public class AudioWriter {
    * closes output streams.
    */
   public void writeToAudioStreamAndClose() {
+    if (this.audioSamples.length == 0) {
+      // Add a silent audio sample so we can build a valid wav file.
+      // TODO: Send a "No audio" signal instead
+      this.audioSamples = new double[] {0};
+    }
+
     AudioUtils.writeBytesToOutputStream(
         AudioUtils.convertDoubleArrayToByteArray(this.audioSamples), this.audioOutputStream);
     this.currentSampleIndex = 0;
@@ -75,7 +81,7 @@ public class AudioWriter {
     try {
       this.audioOutputStream.close();
     } catch (IOException e) {
-      throw new InternalJavabuilderError(InternalErrorKey.INTERNAL_EXCEPTION, e);
+      throw new InternalServerRuntimeError(InternalErrorKey.INTERNAL_EXCEPTION, e);
     }
   }
 }

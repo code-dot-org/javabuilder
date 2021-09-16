@@ -19,8 +19,8 @@ import org.mockito.MockedStatic;
 
 class AudioUtilsTest {
 
-  private static final String TEST_DASHBOARD = "https://localhost-studio.code.org";
-  private static final String TEST_CHANNEL_ID = "0";
+  private static final String TEST_FILE_URL =
+      "https://localhost-studio.code.org/assets/beatbox.wav";
   private static final String TEST_FILE_NAME = "beatbox.wav";
   private static final int TEST_CHANNELS = 1;
 
@@ -33,18 +33,18 @@ class AudioUtilsTest {
     (byte) 0x00, (byte) 0x00 // 0.0
   };
 
+  private MockedStatic<GlobalProtocol> globalProtocol;
   private MockedStatic<AudioSystem> audioSystem;
   private AudioInputStream audioInputStream;
   private AudioFormat audioFormat;
 
   @BeforeEach
   public void setUp() {
-    GlobalProtocol.create(
-        mock(OutputAdapter.class),
-        mock(InputAdapter.class),
-        TEST_DASHBOARD,
-        TEST_CHANNEL_ID,
-        mock(JavabuilderFileWriter.class));
+    globalProtocol = mockStatic(GlobalProtocol.class);
+    final GlobalProtocol globalProtocolInstance = mock(GlobalProtocol.class);
+
+    globalProtocol.when(GlobalProtocol::getInstance).thenReturn(globalProtocolInstance);
+    when(globalProtocolInstance.generateAssetUrl(TEST_FILE_NAME)).thenReturn(TEST_FILE_URL);
 
     audioSystem = mockStatic(AudioSystem.class);
     audioInputStream = mock(AudioInputStream.class);
@@ -56,6 +56,7 @@ class AudioUtilsTest {
 
   @AfterEach
   public void tearDown() {
+    globalProtocol.close();
     audioSystem.close();
   }
 
@@ -122,7 +123,7 @@ class AudioUtilsTest {
 
     Exception exception =
         assertThrows(
-            InternalJavabuilderError.class,
+            InternalServerRuntimeError.class,
             () -> {
               AudioUtils.readSamplesFromAssetFile(TEST_FILE_NAME);
             });
@@ -148,7 +149,7 @@ class AudioUtilsTest {
 
     Exception exception =
         assertThrows(
-            InternalJavabuilderError.class,
+            InternalServerRuntimeError.class,
             () -> {
               AudioUtils.readSamplesFromAssetFile(TEST_FILE_NAME);
             });

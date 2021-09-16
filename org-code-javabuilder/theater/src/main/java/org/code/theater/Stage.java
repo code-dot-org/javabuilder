@@ -1,13 +1,17 @@
 package org.code.theater;
 
+import static org.code.protocol.AllowedFileNames.THEATER_AUDIO_NAME;
+import static org.code.protocol.AllowedFileNames.THEATER_IMAGE_NAME;
+
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.util.HashMap;
-import org.code.media.AudioWriter;
+import org.code.media.*;
 import org.code.media.Color;
+import org.code.media.Font;
 import org.code.media.Image;
 import org.code.protocol.*;
 
@@ -21,6 +25,7 @@ public class Stage {
   private final ByteArrayOutputStream audioOutputStream;
   private final AudioWriter audioWriter;
   private final InstrumentSampleLoader instrumentSampleLoader;
+  private final FontHelper fontHelper;
   private java.awt.Color strokeColor;
   private java.awt.Color fillColor;
   private boolean hasPlayed;
@@ -28,8 +33,6 @@ public class Stage {
   private static final int WIDTH = 400;
   private static final int HEIGHT = 400;
   private static final java.awt.Color DEFAULT_COLOR = java.awt.Color.BLACK;
-  private static final String IMAGE_FILENAME = "theaterImage.gif";
-  private static final String AUDIO_FILENAME = "theaterAudio.wav";
 
   /**
    * Initialize Stage with a default image. Stage should be initialized outside of org.code.theater
@@ -63,6 +66,7 @@ public class Stage {
     this.audioOutputStream = new ByteArrayOutputStream();
     this.audioWriter = audioWriterFactory.createAudioWriter(this.audioOutputStream);
     this.instrumentSampleLoader = instrumentSampleLoader;
+    this.fontHelper = new FontHelper();
     this.hasPlayed = false;
 
     // set up the image for drawing (set a white background and black stroke/fill)
@@ -188,13 +192,50 @@ public class Stage {
    * @param text the text to draw
    * @param x the distance from the left side of the image to draw the text.
    * @param y the distance from the top of the image to draw the text.
-   * @param color the color to draw the text, using any CSS color string (e.g. #234 or green)
-   * @param font the name of the font to draw the text in
+   * @param color the color to draw the text.
+   * @param font the name of the font to draw the text in.
+   * @param fontStyle the name of the font style to draw the text in.
    * @param height the height of the text in pixels.
    * @param rotation the rotation or tilt of the text, in degrees
    */
   public void drawText(
-      String text, int x, int y, String color, String font, int height, double rotation) {}
+      String text,
+      int x,
+      int y,
+      Color color,
+      Font font,
+      FontStyle fontStyle,
+      int height,
+      double rotation) {
+    AffineTransform originalTransform = this.graphics.getTransform();
+    if (rotation != 0) {
+      this.graphics.rotate(Math.toRadians(rotation), x, y);
+    }
+    java.awt.Font sizedFont = this.fontHelper.getFont(font, fontStyle).deriveFont((float) height);
+    this.graphics.setFont(sizedFont);
+    this.graphics.setColor(Color.convertToAWTColor(color));
+    this.graphics.drawString(text, x, y);
+    if (rotation != 0) {
+      // reset to original transform if we rotated
+      this.graphics.setTransform(originalTransform);
+    }
+  }
+
+  /**
+   * Draws text on the image with a normal font style
+   *
+   * @param text the text to draw
+   * @param x the distance from the left side of the image to draw the text.
+   * @param y the distance from the top of the image to draw the text.
+   * @param color the color to draw the text.
+   * @param font the name of the font to draw the text in.
+   * @param height the height of the text in pixels.
+   * @param rotation the rotation or tilt of the text, in degrees.
+   */
+  public void drawText(
+      String text, int x, int y, Color color, Font font, int height, double rotation) {
+    this.drawText(text, x, y, color, font, FontStyle.NORMAL, height, rotation);
+  }
 
   /**
    * Draw a line on the canvas.
@@ -368,19 +409,11 @@ public class Stage {
     if (this.hasPlayed) {
       throw new TheaterRuntimeException(ExceptionKeys.DUPLICATE_PLAY_COMMAND);
     } else {
+      this.outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.GENERATING_RESULTS));
       this.gifWriter.writeToGif(this.image, 0);
       this.gifWriter.close();
       this.audioWriter.writeToAudioStreamAndClose();
-
-      // If we are in local mode, write output data directly to output adapter
-      if (GlobalProtocol.getInstance().getDashboardHostname().contains("localhost")) {
-        this.outputAdapter.sendMessage(ImageEncoder.encodeStreamToMessage(this.imageOutputStream));
-        this.outputAdapter.sendMessage(SoundEncoder.encodeStreamToMessage(this.audioOutputStream));
-      } else {
-        // otherwise write image and audio to file
-        this.writeImageAndAudioToFile();
-      }
-
+      this.writeImageAndAudioToFile();
       this.hasPlayed = true;
     }
   }
@@ -407,10 +440,10 @@ public class Stage {
     try {
       String imageUrl =
           this.fileWriter.writeToFile(
-              IMAGE_FILENAME, this.imageOutputStream.toByteArray(), "image/gif");
+              THEATER_IMAGE_NAME, this.imageOutputStream.toByteArray(), "image/gif");
       String audioUrl =
           this.fileWriter.writeToFile(
-              AUDIO_FILENAME, this.audioOutputStream.toByteArray(), "audio/wav");
+              THEATER_AUDIO_NAME, this.audioOutputStream.toByteArray(), "audio/wav");
 
       HashMap<String, String> imageMessage = new HashMap<>();
       imageMessage.put("url", imageUrl);
@@ -423,7 +456,7 @@ public class Stage {
       // we should not hit this (caused by too many file writes)
       // in normal execution as it is only called via play,
       // and play can only be called once.
-      throw new InternalJavabuilderError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e);
+      throw new InternalServerRuntimeError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e);
     }
   }
 

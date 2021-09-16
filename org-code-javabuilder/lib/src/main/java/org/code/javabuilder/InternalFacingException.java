@@ -4,8 +4,9 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 
 /**
- * Exception intended to eventually bubble up to a logger (i.e. CloudWatch) but not to the user.
- * These should generally be used after the user's code has finished running.
+ * Exception intended to eventually bubble up to a logger (i.e. CloudWatch) but have no functional
+ * effect on the user. These should generally be used in code that executes after the user's code
+ * has finished running.
  */
 public class InternalFacingException extends Exception {
   public InternalFacingException(String errorMessage, Throwable cause) {
