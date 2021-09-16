@@ -1,9 +1,6 @@
 package org.code.playground;
 
 import java.io.FileNotFoundException;
-import org.code.media.Color;
-import org.code.media.Font;
-import org.code.media.FontStyle;
 
 public class Board {
     /**
@@ -11,14 +8,14 @@ public class Board {
      * 
      * @return the width of the board in pixels.
      */
-    public int getWidth();
+    public int getWidth() { return -1; }
 
     /**
      * Returns the height of the board. This will always be 400.
      * 
      * @return the height of the board in pixels.
      */
-    public int getHeight();
+    public int getHeight() { return -1; }
 
     /**
      * Sets the background of the board to the provided image. The image will
@@ -30,7 +27,7 @@ public class Board {
      * @throws FileNotFoundException if the file cannot be found in the asset
      *                               manager
      */
-    public void setBackgroundImage(String filename) throws FileNotFoundException;
+    public void setBackgroundImage(String filename) throws FileNotFoundException {}
 
     /**
      * Adds a clickable image to the board.
@@ -38,7 +35,7 @@ public class Board {
      * @param image the image to add. If the image is already on the board,
      *              this method does nothing.
      */
-    public void addClickableImage(ClickableImage image);
+    public void addClickableImage(ClickableImage image) {}
 
     /**
      * Removes the clickable image from the board.
@@ -46,7 +43,7 @@ public class Board {
      * @param image the image to remove. If the image is not on the board, this
      *             method does nothing.
      */
-    public void removeClickableImage(ClickableImage item);
+    public void removeClickableImage(ClickableImage image) {}
 
     /**
      * Adds a non-clickable item to the board. 
@@ -54,7 +51,7 @@ public class Board {
      * @param item the item to add. If the item is already on the board,
      *             this method does nothing.
      */
-    public void addItem(Item item);
+    public void addItem(Item item) {}
 
     /**
      * Removes the non-clickable item from the board.
@@ -62,15 +59,15 @@ public class Board {
      * @param item the item to remove. If the image is not on the board, this
      *             method does nothing.
      */
-    public void removeItem(Item item);
-    
+    public void removeItem(Item item) {}
+
      /**
      * Plays a sound from the asset manager.
      * 
      * @param filename the name of the sound file from the asset manager to play
      * @throws FileNotFoundException when the sound file cannot be found.
      */
-    public void playSound(String filename) throws FileNotFoundException;
+    public void playSound(String filename) throws FileNotFoundException {}
 
     /**
      * Starts the playground game, waiting for the user to click on images and
@@ -97,5 +94,5 @@ public class Board {
      * @throws PlaygroundException if the run() method has not been
      *                                       called.
      */
-    public void exit();
+    public void exit() {}
 }
