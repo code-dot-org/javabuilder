@@ -4,44 +4,49 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.io.IOException;
-import org.code.protocol.InputAdapter;
+import java.nio.charset.StandardCharsets;
+import org.code.protocol.InputHandler;
+import org.code.protocol.InputMessageType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class InputRedirectionStreamTest {
   private InputRedirectionStream stream;
-  private InputAdapter inputAdapter;
+  private InputHandler inputHandler;
 
   @BeforeEach
   public void setUp() {
-    inputAdapter = mock(InputAdapter.class);
-    stream = new InputRedirectionStream(inputAdapter);
+    inputHandler = mock(InputHandler.class);
+    stream = new InputRedirectionStream(inputHandler);
   }
 
   @Test
   public void readsTheFirstByteFromTheInputAdapter() {
-    when(inputAdapter.getNextMessage()).thenReturn("hi");
+    when(inputHandler.getNextMessageForType(InputMessageType.SYSTEM_IN)).thenReturn("hi");
     assertEquals(stream.read(), 'h');
   }
 
   @Test
   public void cachesBytesFromInputAdapter() {
-    when(inputAdapter.getNextMessage()).thenReturn("hi");
+    when(inputHandler.getNextMessageForType(InputMessageType.SYSTEM_IN)).thenReturn("hi");
     stream.read();
     assertEquals(stream.read(), 'i');
-    verify(inputAdapter, times(1)).getNextMessage();
+    verify(inputHandler, times(1)).getNextMessageForType(InputMessageType.SYSTEM_IN);
   }
 
   @Test
   public void availableReturnsRemainingSizeOfStream() {
-    when(inputAdapter.getNextMessage()).thenReturn("hello world");
+    String input = "hello world";
+    when(inputHandler.getNextMessageForType(InputMessageType.SYSTEM_IN)).thenReturn(input);
     stream.read();
-    assertEquals(stream.available(), 10);
+    // Use System.lineSeparator as different OS's have different lineSeparators.
+    int expectedSize = (input + System.lineSeparator()).length() - 1;
+    assertEquals(expectedSize, stream.available()); // characters + newline - 1 for the read.
   }
 
   @Test
   public void arrayReadFillsSpecifiedSpace() {
-    when(inputAdapter.getNextMessage()).thenReturn("hello world");
+    when(inputHandler.getNextMessageForType(InputMessageType.SYSTEM_IN)).thenReturn("hello world");
     byte[] b = new byte[7];
     stream.read(b, 1, 5);
 
@@ -50,7 +55,7 @@ public class InputRedirectionStreamTest {
 
   @Test
   public void unboundedArrayReadFillsArray() {
-    when(inputAdapter.getNextMessage()).thenReturn("hello world");
+    when(inputHandler.getNextMessageForType(InputMessageType.SYSTEM_IN)).thenReturn("hello world");
     byte[] b = new byte[5];
     stream.read(b);
 
@@ -59,11 +64,18 @@ public class InputRedirectionStreamTest {
 
   @Test
   public void arrayReadStopsWhenInputEnds() {
-    when(inputAdapter.getNextMessage()).thenReturn("hi");
-    byte[] b = new byte[3];
-    stream.read(b);
+    String input = "hi";
+    when(inputHandler.getNextMessageForType(InputMessageType.SYSTEM_IN)).thenReturn(input);
+    // Use System.lineSeparator as different OS's have different lineSeparators.
+    byte[] message = (input + System.lineSeparator()).getBytes(StandardCharsets.UTF_8);
+    byte[] expected = new byte[5];
 
-    assertArrayEquals(new byte[] {'h', 'i', 0}, b);
+    // expected should be longer than message
+    System.arraycopy(message, 0, expected, 0, message.length);
+
+    byte[] actual = new byte[5];
+    stream.read(actual);
+    assertArrayEquals(expected, actual);
   }
 
   @Test

@@ -16,7 +16,7 @@ public class UserProjectFileParserTest {
   }
 
   @Test
-  public void canParseValidFileJson() throws UserFacingException, UserInitiatedException {
+  public void canParseValidFileJson() throws InternalServerError, UserInitiatedException {
     String validJson =
         "{\"source\":{\"HelloWorld.java\":{\"text\":\"my code\",\"visible\":true}},\"animations\":{}}";
     String expectedCode = "my code";
@@ -29,16 +29,16 @@ public class UserProjectFileParserTest {
   }
 
   @Test
-  public void throwsExceptionOnInvalidJson() throws UserFacingException, UserInitiatedException {
+  public void throwsExceptionOnInvalidJson() throws InternalServerError, UserInitiatedException {
     String invalidJson =
         "{\"source\":{\"HelloWorld.java\":{\"text\":\"public class HelloWorld {\\n";
 
     assertThrows(
-        UserFacingException.class, () -> this.userProjectFileParser.parseFileJson(invalidJson));
+        InternalServerError.class, () -> this.userProjectFileParser.parseFileJson(invalidJson));
   }
 
   @Test
-  public void canParseMultipleFiles() throws UserFacingException, UserInitiatedException {
+  public void canParseMultipleFiles() throws InternalServerError, UserInitiatedException {
     String validJson =
         "{\"source\":{\"HelloWorld.java\":{\"text\":\"my code\",\"visible\":true},"
             + "\"HelloWorld2.java\":{\"text\":\"my code\",\"visible\":true},"

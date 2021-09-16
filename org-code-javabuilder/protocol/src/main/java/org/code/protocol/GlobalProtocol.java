@@ -11,22 +11,25 @@ package org.code.protocol;
 public class GlobalProtocol {
   private static GlobalProtocol protocolInstance;
   private final OutputAdapter outputAdapter;
-  private final InputAdapter inputAdapter;
+  private final InputHandler inputHandler;
   private final JavabuilderFileWriter fileWriter;
   private final String dashboardHostname;
   private final String channelId;
+  private final AssetUrlGenerator assetUrlGenerator;
 
   private GlobalProtocol(
       OutputAdapter outputAdapter,
-      InputAdapter inputAdapter,
+      InputHandler inputHandler,
       String dashboardHostname,
       String channelId,
-      JavabuilderFileWriter fileWriter) {
+      JavabuilderFileWriter fileWriter,
+      AssetUrlGenerator assetUrlGenerator) {
     this.outputAdapter = outputAdapter;
-    this.inputAdapter = inputAdapter;
+    this.inputHandler = inputHandler;
     this.dashboardHostname = dashboardHostname;
     this.channelId = channelId;
     this.fileWriter = fileWriter;
+    this.assetUrlGenerator = assetUrlGenerator;
   }
 
   public static void create(
@@ -34,14 +37,21 @@ public class GlobalProtocol {
       InputAdapter inputAdapter,
       String dashboardHostname,
       String channelId,
+      String levelId,
       JavabuilderFileWriter fileWriter) {
     GlobalProtocol.protocolInstance =
-        new GlobalProtocol(outputAdapter, inputAdapter, dashboardHostname, channelId, fileWriter);
+        new GlobalProtocol(
+            outputAdapter,
+            new InputHandler(inputAdapter),
+            dashboardHostname,
+            channelId,
+            fileWriter,
+            new AssetUrlGenerator(dashboardHostname, channelId, levelId));
   }
 
   public static GlobalProtocol getInstance() {
     if (GlobalProtocol.protocolInstance == null) {
-      throw new InternalJavabuilderError(InternalErrorKey.INTERNAL_EXCEPTION);
+      throw new InternalServerRuntimeError(InternalErrorKey.INTERNAL_EXCEPTION);
     }
 
     return GlobalProtocol.protocolInstance;
@@ -51,8 +61,8 @@ public class GlobalProtocol {
     return this.outputAdapter;
   }
 
-  public InputAdapter getInputAdapter() {
-    return this.inputAdapter;
+  public InputHandler getInputHandler() {
+    return this.inputHandler;
   }
 
   public JavabuilderFileWriter getFileWriter() {
@@ -60,17 +70,10 @@ public class GlobalProtocol {
   }
 
   public String generateAssetUrl(String filename) {
-    // append timestamp to asset url to avoid cached 404s.
-    return String.format(
-        "%s/v3/assets/%s/%s?t=%d",
-        this.dashboardHostname, this.channelId, filename, System.currentTimeMillis());
+    return this.assetUrlGenerator.generateAssetUrl(filename);
   }
 
   public String generateSourcesUrl() {
     return String.format("%s/v3/sources/%s", this.dashboardHostname, this.channelId);
-  }
-
-  public String getDashboardHostname() {
-    return this.dashboardHostname;
   }
 }
