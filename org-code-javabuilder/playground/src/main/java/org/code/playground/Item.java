@@ -1,7 +1,7 @@
 package org.code.playground;
 
 interface Item {
-   /**
+  /**
    * Set the X position for the item.
    *
    * @param x the distance, in pixels, from the left side of the board

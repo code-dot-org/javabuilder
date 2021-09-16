@@ -4,6 +4,6 @@ import org.code.protocol.JavabuilderException;
 
 public class PlaygroundException extends JavabuilderException {
   protected PlaygroundException(ExceptionKeys key) {
-        super(key);
-    }
+    super(key);
+  }
 }
