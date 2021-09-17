@@ -22,6 +22,8 @@ public class WebSocketOutputAdapter implements OutputAdapter {
       endpoint.sendText(message.getFormattedMessage());
     } catch (IOException e) {
       e.printStackTrace();
+    } catch (IllegalStateException e) {
+      // this happens if the endpoint has been closed. Fail silently.
     }
   }
 
@@ -35,6 +37,8 @@ public class WebSocketOutputAdapter implements OutputAdapter {
       endpoint.sendText(message.getFormattedMessage());
     } catch (IOException e) {
       e.printStackTrace();
+    } catch (IllegalStateException e) {
+      // this happens if the endpoint has been closed. Fail silently.
     }
   }
 }
