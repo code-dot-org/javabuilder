@@ -92,8 +92,10 @@ feature-rich.
 
 ### Developing with AWS
 For development purposes, you generally shouldn't need a dev deploy of Javabuilder. See
-the [repo-level README]() for instructions on when a dev deploy of Javabuilder is 
-required and how to carry out such a deployment.
+the 
+[repo-level README](https://github.com/code-dot-org/javabuilder/blob/main/README.md#dev-deploy-of-javabuilder)
+for instructions on when a dev deploy of Javabuilder is required and how to carry out
+such a deployment.
 
 ### Developing in isolation
 To run Javabuilder in isolation, run the `LocalMain` class from you Java IDE. This will
