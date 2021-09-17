@@ -3,6 +3,8 @@ package org.code.playground;
 import java.io.FileNotFoundException;
 
 public class Board {
+  protected Board() {}
+
   /**
    * Returns the width of the board. This will always be 400.
    *
