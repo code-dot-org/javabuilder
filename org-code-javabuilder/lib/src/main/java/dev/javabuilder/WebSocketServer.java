@@ -30,6 +30,7 @@ public class WebSocketServer {
   private WebSocketOutputAdapter outputAdapter;
   private Handler logHandler;
   private Logger logger;
+  private Thread codeExecutor;
 
   /**
    * This acts as the main function for the WebSocket server. Therefore, we do many of the same
@@ -76,12 +77,19 @@ public class WebSocketServer {
             levelId,
             dashboardHostname,
             useNeighborhood);
-    Thread codeExecutor =
+    CodeBuilderWrapperRunnable codeBuilderWrapper =
+        new CodeBuilderWrapperRunnable(fileLoader, outputAdapter);
+    this.codeExecutor = new Thread(codeBuilderWrapper);
+    this.codeExecutor.start();
+    Thread waitToCleanup =
         new Thread(
             () -> {
-              CodeBuilderWrapperRunnable codeBuilderWrapper =
-                  new CodeBuilderWrapperRunnable(fileLoader, outputAdapter);
-              codeBuilderWrapper.executeCodeBuilder();
+              try {
+                this.codeExecutor.join();
+              } catch (InterruptedException e) {
+                // ignore this exception, it likely means the end user stopped
+                // their program.
+              }
               try {
                 session.close();
                 logger.removeHandler(this.logHandler);
@@ -89,12 +97,17 @@ public class WebSocketServer {
                 e.printStackTrace();
               }
             });
-    codeExecutor.start();
+    waitToCleanup.start();
   }
 
   @OnClose
   public void myOnClose() {
-    Logger.getLogger(MAIN_LOGGER).info("WebSocket Closed");
+    if (this.codeExecutor != null && this.codeExecutor.isAlive()) {
+      this.codeExecutor.interrupt();
+      Logger.getLogger(MAIN_LOGGER).info("WebSocket has been closed, interrupted running program");
+    } else {
+      Logger.getLogger(MAIN_LOGGER).info("WebSocket Closed");
+    }
   }
 
   /**
