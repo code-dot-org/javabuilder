@@ -24,6 +24,10 @@ as the code for the `org.code` Java packages that are used in the Java Lab mini 
   contains a package that can be imported by the user to interact with the theater 
   mini-app, an image and sound editing app created for AP CSA and used in standalone Java
   Lab projects.
+* [playground](https://github.com/code-dot-org/javabuilder/tree/main/org-code-javabuilder/playground)
+  is a prototype built to explore the idea of click-interactivity in Javabuilder and AP
+  CSA. It contains a package that can be imported by the user to interact with the playground
+  mini-app. Playground is primarily used for board game style programs.
 
 ## Local Development
 ### Setup your project
@@ -38,14 +42,21 @@ git clone git@github.com:code-dot-org/javabuilder.git
 cd javabuilder/org-code-javabuilder
 ./gradlew build
 ```
-That's it! Now you can open the project in your IDE and start developing. Here are some
-other useful commands:
+That's it! Now you can open the project in your IDE and start developing. If you are
+using IntelliJ, import the project as a gradle project: File -> New -> Project from
+Existing Sources...
+
+It is not required, but you can also install gradle. If you do, you can use gradle
+directly rather than from the gradlew file. Instead of running `./gradlew build`, for
+example, you would run `gradle build`.
+
+Here are some other useful commands:
 
 **Launch the local Javabuilder WebSocket server**
 ```
 ./gradlew appRun
 ```
-*Note: the Javabuilder server will be ready to use when you see
+*Note: the Javabuilder server will be ready to use after a few seconds when you see
 `Press any key to stop the server.` It will never reach `100% EXECUTING`.*
 
 **Run all tests**
@@ -80,51 +91,9 @@ Postman is a good wscat alternative. It is in beta, but has a gui and is more
 feature-rich.
 
 ### Developing with AWS
-For development purposes, you generally shouldn't need to deploy Javabuilder. Some cases
-that do need a dev deployment of Javabuilder:
-* Editing the API Gateway Route Lambdas.
-* Editing the Javabuilder Authorizer Lambda.
-* Editing the Javabuilder Cloud Formation template or deploy script.
-* Editing the Lambda-specific portions of the build and run Lambda. These are all
-  prefixed with `AWS` or `Lambda` in the org-code-javabuilder directory.
-
-**Deploying Javabuilder**  
-To deploy a development version of Javabuilder, see the
-[Deploying Javabuilder](https://docs.google.com/document/d/1mMQK6HhniLsz9lynzhUcm7Tcw_2WVLBxADe0WzqL6rM/edit#)
-instruction doc.
-
-Once you have deployed Javabuilder, you can run a basic connection to it with
-```
-wscat -c wss://<host-name>/?Authorization=connectivityTest
-```
-**Developing with deployed Javabuilder**  
-If you need to test against a level's Java code, use the following steps:
-1. Log in to https://staging-studio.code.org 
-1. Navigate to the level or project you'd like to test against
-1. Open the network tab on your browser developer tools
-1. Click "Run" in Javalab
-1. Look for the network request to 
-   https://staging-studio.code.org/javabuilder/access_token?projectUrl=...
-   in the response, there will be a token. Copy the entire token, without quotes around
-   it.
-1. Open up Postman. Choose new-> WebSocket Request 
-1. Put the url of your javabuilder instance in the server url section (such as 
-   wss://javabuilder-myname.dev-code.org)
-1. Under Params add the key `Authorization` with the value of the token you copied earlier
-1. Under Headers add the key `Origin` with the value https://staging-studio.code.org
-1. Click connect
-
-You should now start seeing messages from Javabuilder! Your token will last for 15
-minutes. If you make changes to the code, you do not need to re-generate your token.
-
-**Developing with deployed Javabuilder and an adhoc environment**  
-1. Deploy javabuilder with the instructions above
-1. In the code-dot-org repo, edit the `javabuilder_url` value in 
-   [cdo.rb](https://github.com/code-dot-org/code-dot-org/blob/3219e5866689117e086d9891effe0fb39b9ae3f0/lib/cdo.rb#L131)
-   to point to your local dev deployment.
-1. Deploy the adhoc using the instructions in the 
-   [How to Provision an adhoc Environment](https://docs.google.com/document/d/1nWeQEmEQF1B2l93JTQPyeRpLEFzCzY5NdgJ8kgprcDk/edit)
-   document.
+For development purposes, you generally shouldn't need a dev deploy of Javabuilder. See
+the [repo-level README]() for instructions on when a dev deploy of Javabuilder is 
+required and how to carry out such a deployment.
 
 ### Developing in isolation
 To run Javabuilder in isolation, run the `LocalMain` class from you Java IDE. This will
