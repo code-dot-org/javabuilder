@@ -25,7 +25,8 @@ public class LocalMain {
     GlobalProtocol.create(outputAdapter, inputAdapter, "", "", "", new LocalFileWriter());
 
     // Create and invoke the code execution environment
-    CodeBuilderWrapper codeBuilderWrapper = new CodeBuilderWrapper(fileLoader, outputAdapter);
+    CodeBuilderWrapperRunnable codeBuilderWrapper =
+        new CodeBuilderWrapperRunnable(fileLoader, outputAdapter);
     codeBuilderWrapper.executeCodeBuilder();
   }
 }

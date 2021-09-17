@@ -29,8 +29,9 @@ def on_connect(event, context)
   end
   # -- Create SQS for this session --
   sqs_client = Aws::SQS::Client.new(region: region)
+  queue_name = get_session_id(event) + '.fifo'
   sqs_queue = sqs_client.create_queue(
-    queue_name: get_session_id(event) + '.fifo',
+    queue_name: queue_name,
     attributes: {"FifoQueue" => "true"}
   )
 
@@ -45,7 +46,8 @@ def on_connect(event, context)
     :options => authorizer["options"],
     :iss => authorizer["iss"],
     :channelId => authorizer["channel_id"],
-    :javabuilderSessionId => authorizer['sid']
+    :javabuilderSessionId => authorizer['sid'],
+    :queueName => queue_name
   }
   response = lambda_client.invoke({
     function_name: ENV['BUILD_AND_RUN_PROJECT_LAMBDA_ARN'] || 'javaBuilderExecuteCode:13',

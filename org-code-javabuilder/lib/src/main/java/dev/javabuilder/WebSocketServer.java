@@ -79,8 +79,8 @@ public class WebSocketServer {
     Thread codeExecutor =
         new Thread(
             () -> {
-              CodeBuilderWrapper codeBuilderWrapper =
-                  new CodeBuilderWrapper(fileLoader, outputAdapter);
+              CodeBuilderWrapperRunnable codeBuilderWrapper =
+                  new CodeBuilderWrapperRunnable(fileLoader, outputAdapter);
               codeBuilderWrapper.executeCodeBuilder();
               try {
                 session.close();
