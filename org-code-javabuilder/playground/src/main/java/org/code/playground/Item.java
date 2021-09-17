@@ -1,6 +1,6 @@
 package org.code.playground;
 
-public abstract class Item {
+abstract class Item {
   /**
    * Set the X position for the item.
    *
