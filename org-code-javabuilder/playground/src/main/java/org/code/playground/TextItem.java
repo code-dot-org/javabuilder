@@ -4,7 +4,7 @@ import org.code.media.Color;
 import org.code.media.Font;
 import org.code.media.FontStyle;
 
-public class TextItem implements Item {
+public class TextItem extends Item {
   /**
    * Creates text item that can be placed the board.
    *
@@ -118,53 +118,5 @@ public class TextItem implements Item {
    */
   public double getRotation() {
     return -1.0;
-  }
-
-  /**
-   * Set the X position for the item.
-   *
-   * @param x the distance, in pixels, from the left side of the board
-   */
-  public void setX(int x) {}
-
-  /**
-   * Get the X position for the item.
-   *
-   * @return the distance, in pixels, from the left side of the board
-   */
-  public int getX() {
-    return -1;
-  }
-
-  /**
-   * Set the Y position for the item.
-   *
-   * @param y the distance, in pixels, from the top of the board
-   */
-  public void setY(int y) {}
-
-  /**
-   * Get the Y position for the item.
-   *
-   * @return the distance, in pixels, from the top of the board
-   */
-  public int getY() {
-    return -1;
-  }
-
-  /**
-   * Set the height for the text.
-   *
-   * @param height the height of the text, in pixels
-   */
-  public void setHeight(int height) {}
-
-  /**
-   * Get the height for the text.
-   *
-   * @return the height of the text, in pixels
-   */
-  public int getHeight() {
-    return -1;
   }
 }
