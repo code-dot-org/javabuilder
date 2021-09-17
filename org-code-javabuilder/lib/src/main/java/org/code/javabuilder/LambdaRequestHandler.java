@@ -7,6 +7,7 @@ import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.apigatewaymanagementapi.AmazonApiGatewayManagementApi;
 import com.amazonaws.services.apigatewaymanagementapi.AmazonApiGatewayManagementApiClientBuilder;
 import com.amazonaws.services.apigatewaymanagementapi.model.DeleteConnectionRequest;
+import com.amazonaws.services.apigatewaymanagementapi.model.GoneException;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.s3.AmazonS3;
@@ -43,6 +44,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     final String connectionId = lambdaInput.get("connectionId");
     final String apiEndpoint = lambdaInput.get("apiEndpoint");
     final String queueUrl = lambdaInput.get("queueUrl");
+    final String queueName = lambdaInput.get("queueName");
     final String levelId = lambdaInput.get("levelId");
     final String channelId = lambdaInput.get("channelId");
     final String dashboardHostname = "https://" + lambdaInput.get("iss");
@@ -75,7 +77,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
 
     // Create user input handlers
     final AmazonSQS sqsClient = AmazonSQSClientBuilder.defaultClient();
-    final AWSInputAdapter inputAdapter = new AWSInputAdapter(sqsClient, queueUrl);
+    final AWSInputAdapter inputAdapter = new AWSInputAdapter(sqsClient, queueUrl, queueName);
 
     final AmazonS3 s3Client = AmazonS3ClientBuilder.standard().build();
     final AWSFileWriter fileWriter =
@@ -118,9 +120,20 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
 
     try {
       // Load files to memory and create and invoke the code execution environment
-      CodeBuilderWrapper codeBuilderWrapper =
-          new CodeBuilderWrapper(userProjectFileLoader, outputAdapter);
-      codeBuilderWrapper.executeCodeBuilder();
+      CodeBuilderWrapperRunnable codeBuilderWrapper =
+          new CodeBuilderWrapperRunnable(userProjectFileLoader, outputAdapter);
+      Thread codeBuilderThread = new Thread(codeBuilderWrapper);
+      codeBuilderThread.start();
+      while (codeBuilderThread.isAlive()) {
+        try {
+          Thread.sleep(500);
+        } catch (InterruptedException interruptedException) {
+          // no-op if we have an interrupted exception
+        }
+        if (!inputAdapter.hasActiveConnection() || !outputAdapter.hasActiveConnection()) {
+          codeBuilderThread.interrupt();
+        }
+      }
     } finally {
       cleanUpResources(connectionId, api);
     }
@@ -132,6 +145,10 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
         new DeleteConnectionRequest().withConnectionId(connectionId);
     // Deleting the API Gateway connection should always be the last thing executed because the
     // delete action cleans up the AWS resources associated with this lambda
-    api.deleteConnection(deleteConnectionRequest);
+    try {
+      api.deleteConnection(deleteConnectionRequest);
+    } catch (GoneException e) {
+      // if the connection is already gone, we don't need to delete the connection.
+    }
   }
 }

@@ -24,6 +24,11 @@ public class WebSocketInputAdapter implements InputAdapter {
     return messages.remove();
   }
 
+  @Override
+  public boolean hasActiveConnection() {
+    return true;
+  }
+
   public void appendMessage(String message) {
     messages.add(message);
   }

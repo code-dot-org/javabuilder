@@ -25,6 +25,11 @@ public class WebSocketOutputAdapter implements OutputAdapter {
     }
   }
 
+  @Override
+  public boolean hasActiveConnection() {
+    return true;
+  }
+
   public void sendDebuggingMessage(ClientMessage message) {
     try {
       endpoint.sendText(message.getFormattedMessage());

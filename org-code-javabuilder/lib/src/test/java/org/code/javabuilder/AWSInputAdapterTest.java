@@ -20,7 +20,7 @@ public class AWSInputAdapterTest {
   @BeforeEach
   public void setUp() {
     sqsMock = mock(AmazonSQS.class);
-    inputAdapter = new AWSInputAdapter(sqsMock, "url");
+    inputAdapter = new AWSInputAdapter(sqsMock, "url", "name");
   }
 
   /**
