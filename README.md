@@ -84,10 +84,13 @@ You should now start seeing messages from Javabuilder! Your token will last for 
 minutes. If you make changes to the code, you do not need to re-generate your token.
 
 **Developing with deployed Javabuilder and an adhoc environment**
-1. Deploy javabuilder with the instructions above
+1. Deploy Javabuilder with the instructions above
 1. In the code-dot-org repo, edit the `javabuilder_url` value in
    [cdo.rb](https://github.com/code-dot-org/code-dot-org/blob/3219e5866689117e086d9891effe0fb39b9ae3f0/lib/cdo.rb#L131)
    to point to your local dev deployment.
+1. In the code-dot-org repo, also edit the `upgrade_insecure_requests` list to include
+   the deployed Javabuilder hostname. 
+   [example](https://github.com/code-dot-org/code-dot-org/commit/945fa3ad38be6d85cb7c7aaeda5b3bf2e0fde60c#diff-19cc5be92c36ff06b63767f0ff922d2b9b7b9b8bebe4eaf38e0f331a14b0b528R53)
 1. Deploy the adhoc using the instructions in the
    [How to Provision an adhoc Environment](https://docs.google.com/document/d/1nWeQEmEQF1B2l93JTQPyeRpLEFzCzY5NdgJ8kgprcDk/edit)
    document.

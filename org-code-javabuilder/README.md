@@ -90,6 +90,10 @@ Alternatively, you can test in "headless" mode
 Postman is a good wscat alternative. It is in beta, but has a gui and is more
 feature-rich.
 
+_Note: non-Java files used or created by the program (for example `grid.txt` in the
+Neighborhood) will be added to the root of the repo. In production, the runtime directory
+is changed to the tmp directory, so cleanup of these files is not necessary there._
+
 ### Developing with AWS
 For development purposes, you generally shouldn't need a dev deploy of Javabuilder. See
 the 
