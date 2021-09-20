@@ -56,6 +56,7 @@ public class TextItem extends Item {
     this.text = text;
     this.color = color;
     this.font = font;
+    this.fontStyle = FontStyle.NORMAL;
     this.rotation = rotation;
   }
 
