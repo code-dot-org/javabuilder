@@ -52,12 +52,7 @@ public class TextItem extends Item {
    * @param rotation the rotation or tilt of the text, in degrees.
    */
   public TextItem(String text, int x, int y, Color color, Font font, int height, double rotation) {
-    super(x, y, height);
-    this.text = text;
-    this.color = color;
-    this.font = font;
-    this.fontStyle = FontStyle.NORMAL;
-    this.rotation = rotation;
+    this(text, x, y, color, font, FontStyle.NORMAL, height, rotation);
   }
 
   /**
