@@ -2,7 +2,7 @@ package org.code.playground;
 
 import java.io.FileNotFoundException;
 
-public class ImageItem implements Item {
+public class ImageItem extends Item {
   /**
    * Creates an item that can be displayed in the Playground. An item consists of an image,
    * referenced by the name of the image file in the asset manager. The image for the item will be
@@ -16,7 +16,9 @@ public class ImageItem implements Item {
    * @throws FileNotFoundException if the file specified is not the in the asset manager
    */
   public ImageItem(String filename, int x, int y, int width, int height)
-      throws FileNotFoundException {}
+      throws FileNotFoundException {
+    super(x, y, height);
+  }
 
   /**
    * Retrieve the filename for this item.
@@ -30,42 +32,10 @@ public class ImageItem implements Item {
   /**
    * Sets the filename for this item.
    *
-   * @param filename the filename in the asset manager for the image to associat with this item
+   * @param filename the filename in the asset manager for the image to associate with this item
    * @throws FileNotFoundException if the file specified is not the in the asset manager
    */
   public void setFilename(String filename) throws FileNotFoundException {}
-
-  /**
-   * Set the X position for the item.
-   *
-   * @param x the distance, in pixels, from the left side of the board
-   */
-  public void setX(int x) {}
-
-  /**
-   * Get the X position for the item.
-   *
-   * @return the distance, in pixels, from the left side of the board
-   */
-  public int getX() {
-    return -1;
-  }
-
-  /**
-   * Set the Y position for the item.
-   *
-   * @param y the distance, in pixels, from the top of the board
-   */
-  public void setY(int y) {}
-
-  /**
-   * Get the Y position for the item.
-   *
-   * @return the distance, in pixels, from the top of the board
-   */
-  public int getY() {
-    return -1;
-  }
 
   /**
    * Set the width for the item.
@@ -80,22 +50,6 @@ public class ImageItem implements Item {
    * @return the width of the item, in pixels
    */
   public int getWidth() {
-    return -1;
-  }
-
-  /**
-   * Set the height for the item.
-   *
-   * @param height the height of the item, in pixels
-   */
-  public void setHeight(int height) {}
-
-  /**
-   * Get the height for the item.
-   *
-   * @return the height of the item, in pixels
-   */
-  public int getHeight() {
     return -1;
   }
 }
