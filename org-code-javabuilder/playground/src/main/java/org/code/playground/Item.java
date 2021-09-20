@@ -1,14 +1,24 @@
 package org.code.playground;
 
 public abstract class Item {
-  Item(int x, int y, int height) {}
+  private int xLocation;
+  private int yLocation;
+  private int height;
+
+  Item(int x, int y, int height) {
+    this.xLocation = x;
+    this.yLocation = y;
+    this.height = height;
+  }
 
   /**
    * Set the X position for the item.
    *
    * @param x the distance, in pixels, from the left side of the board
    */
-  public void setX(int x) {}
+  public void setX(int x) {
+    this.xLocation = x;
+  }
 
   /**
    * Get the X position for the item.
@@ -16,7 +26,7 @@ public abstract class Item {
    * @return the distance, in pixels, from the left side of the board
    */
   public int getX() {
-    return -1;
+    return this.xLocation;
   }
 
   /**
@@ -24,7 +34,9 @@ public abstract class Item {
    *
    * @param y the distance, in pixels, from the top of the board
    */
-  public void setY(int y) {}
+  public void setY(int y) {
+    this.yLocation = y;
+  }
 
   /**
    * Get the Y position for the item.
@@ -32,7 +44,7 @@ public abstract class Item {
    * @return the distance, in pixels, from the top of the board
    */
   public int getY() {
-    return -1;
+    return this.yLocation;
   }
 
   /**
@@ -40,7 +52,9 @@ public abstract class Item {
    *
    * @param height the height of the item, in pixels
    */
-  public void setHeight(int height) {}
+  public void setHeight(int height) {
+    this.height = height;
+  }
 
   /**
    * Get the height for the item.
@@ -48,6 +62,6 @@ public abstract class Item {
    * @return the height of the item, in pixels
    */
   public int getHeight() {
-    return -1;
+    return this.height;
   }
 }
