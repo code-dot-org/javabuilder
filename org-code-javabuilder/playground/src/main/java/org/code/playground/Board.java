@@ -1,9 +1,32 @@
 package org.code.playground;
 
 import java.io.FileNotFoundException;
+import java.util.HashMap;
+import org.code.protocol.GlobalProtocol;
+import org.code.protocol.InputHandler;
+import org.code.protocol.InputMessageType;
 
 public class Board {
-  protected Board() {}
+
+  private static final int BOARD_WIDTH = 400;
+  private static final int BOARD_HEIGHT = 400;
+
+  private final PlaygroundMessageHandler playgroundMessageHandler;
+  private final InputHandler inputHandler;
+
+  private boolean firstRunStarted;
+  private boolean isRunning;
+
+  protected Board() {
+    this(PlaygroundMessageHandler.getInstance(), GlobalProtocol.getInstance().getInputHandler());
+  }
+
+  Board(PlaygroundMessageHandler playgroundMessageHandler, InputHandler inputHandler) {
+    this.playgroundMessageHandler = playgroundMessageHandler;
+    this.inputHandler = inputHandler;
+    this.firstRunStarted = false;
+    this.isRunning = false;
+  }
 
   /**
    * Returns the width of the board. This will always be 400.
@@ -11,7 +34,7 @@ public class Board {
    * @return the width of the board in pixels.
    */
   public int getWidth() {
-    return -1;
+    return BOARD_WIDTH;
   }
 
   /**
@@ -20,7 +43,7 @@ public class Board {
    * @return the height of the board in pixels.
    */
   public int getHeight() {
-    return -1;
+    return BOARD_HEIGHT;
   }
 
   /**
@@ -70,12 +93,30 @@ public class Board {
 
   /**
    * Starts the playground game, waiting for the user to click on images and executing the
-   * appropriate code. To end the game, call the end() method. The run() method may only be called
+   * appropriate code. To end the game, call the exit() method. The run() method may only be called
    * once per execution of a program.
    *
    * @throws PlaygroundException if the run() method has already been called.
    */
-  public void run() throws PlaygroundException {}
+  public void run() throws PlaygroundException {
+    if (this.firstRunStarted) {
+      throw new PlaygroundException(PlaygroundExceptionKeys.PLAYGROUND_RUNNING);
+    }
+
+    this.playgroundMessageHandler.sendMessage(
+        new PlaygroundMessage(PlaygroundSignalKey.RUN, new HashMap<>()));
+
+    this.firstRunStarted = true;
+    this.isRunning = true;
+
+    // Keep waiting for user input while game is running
+    while (this.isRunning) {
+      final String message = this.inputHandler.getNextMessageForType(InputMessageType.PLAYGROUND);
+      if (message != null) {
+        this.handleClickEvent(message);
+      }
+    }
+  }
 
   /**
    * Ends the game, plays the sound supplied, and stops program execution.
@@ -92,5 +133,17 @@ public class Board {
    *
    * @throws PlaygroundException if the run() method has not been called.
    */
-  public void exit() {}
+  public void exit() throws PlaygroundException {
+    if (!this.isRunning) {
+      throw new PlaygroundException(PlaygroundExceptionKeys.PLAYGROUND_NOT_RUNNING);
+    }
+
+    this.playgroundMessageHandler.sendMessage(
+        new PlaygroundMessage(PlaygroundSignalKey.EXIT, new HashMap<>()));
+    this.isRunning = false;
+  }
+
+  private void handleClickEvent(String id) {
+    // TODO: Handle updates
+  }
 }
