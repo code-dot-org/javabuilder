@@ -1,5 +1,6 @@
 package org.code.javabuilder;
 
+import com.amazonaws.AbortedException;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -42,6 +43,9 @@ public class AWSFileWriter implements JavabuilderFileWriter {
 
     try {
       this.s3Client.putObject(this.outputBucketName, filePath, inputStream, metadata);
+    } catch (AbortedException e) {
+      // this is most likely because the end user interrupted program execution. We can safely
+      // ignore this.
     } catch (SdkClientException e) {
       // We couldn't write to S3, send a message to the user and fail. The S3 SDK includes retries.
       throw new InternalServerError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e);
