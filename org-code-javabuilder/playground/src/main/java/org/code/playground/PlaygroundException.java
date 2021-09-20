@@ -3,7 +3,7 @@ package org.code.playground;
 import org.code.protocol.JavabuilderException;
 
 public class PlaygroundException extends JavabuilderException {
-  protected PlaygroundException(ExceptionKeys key) {
+  protected PlaygroundException(PlaygroundExceptionKeys key) {
     super(key);
   }
 }
