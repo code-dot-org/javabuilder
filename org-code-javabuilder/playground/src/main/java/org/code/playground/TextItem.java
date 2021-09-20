@@ -5,6 +5,12 @@ import org.code.media.Font;
 import org.code.media.FontStyle;
 
 public class TextItem extends Item {
+  private String text;
+  private Color color;
+  private Font font;
+  private FontStyle fontStyle;
+  private double rotation;
+
   /**
    * Creates text item that can be placed the board.
    *
@@ -27,6 +33,11 @@ public class TextItem extends Item {
       int height,
       double rotation) {
     super(x, y, height);
+    this.text = text;
+    this.color = color;
+    this.font = font;
+    this.fontStyle = fontStyle;
+    this.rotation = rotation;
   }
 
   /**
@@ -41,7 +52,7 @@ public class TextItem extends Item {
    * @param rotation the rotation or tilt of the text, in degrees.
    */
   public TextItem(String text, int x, int y, Color color, Font font, int height, double rotation) {
-    super(x, y, height);
+    this(text, x, y, color, font, FontStyle.NORMAL, height, rotation);
   }
 
   /**
@@ -49,7 +60,9 @@ public class TextItem extends Item {
    *
    * @param text the content for the item
    */
-  public void setText(String text) {}
+  public void setText(String text) {
+    this.text = text;
+  }
 
   /**
    * Get the text content for the item.
@@ -57,7 +70,7 @@ public class TextItem extends Item {
    * @return text the content for the item
    */
   public String getText() {
-    return "text";
+    return this.text;
   }
 
   /**
@@ -65,7 +78,9 @@ public class TextItem extends Item {
    *
    * @param color the text color
    */
-  public void setColor(Color color) {}
+  public void setColor(Color color) {
+    this.color = color;
+  }
 
   /**
    * Get the text color for the item.
@@ -73,7 +88,7 @@ public class TextItem extends Item {
    * @return the text color for the item
    */
   public Color getColor() {
-    return Color.BLACK;
+    return this.color;
   }
 
   /**
@@ -81,7 +96,9 @@ public class TextItem extends Item {
    *
    * @param font the font for the text.
    */
-  public void setFont(Font font) {}
+  public void setFont(Font font) {
+    this.font = font;
+  }
 
   /**
    * Get the font for the text.
@@ -89,7 +106,7 @@ public class TextItem extends Item {
    * @return the font for the text.
    */
   public Font getFont() {
-    return Font.MONO;
+    return this.font;
   }
 
   /**
@@ -97,7 +114,9 @@ public class TextItem extends Item {
    *
    * @param fontStyle the font style for the item
    */
-  public void setFontStyle(FontStyle fontStyle) {}
+  public void setFontStyle(FontStyle fontStyle) {
+    this.fontStyle = fontStyle;
+  }
 
   /**
    * Get the font style for the text.
@@ -105,7 +124,7 @@ public class TextItem extends Item {
    * @return the font style for the item
    */
   public FontStyle getFontStyle() {
-    return FontStyle.NORMAL;
+    return this.fontStyle;
   }
 
   /**
@@ -113,7 +132,9 @@ public class TextItem extends Item {
    *
    * @param rotation the rotation for the text, in degrees
    */
-  public void setRotation(double rotation) {}
+  public void setRotation(double rotation) {
+    this.rotation = rotation;
+  }
 
   /**
    * Get the rotation for the text.
@@ -121,6 +142,6 @@ public class TextItem extends Item {
    * @return the rotation for the text, in degrees
    */
   public double getRotation() {
-    return -1.0;
+    return this.rotation;
   }
 }
