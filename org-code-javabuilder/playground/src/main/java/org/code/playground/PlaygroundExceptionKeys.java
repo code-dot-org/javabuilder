@@ -1,6 +1,6 @@
 package org.code.playground;
 
-public enum ExceptionKeys {
+public enum PlaygroundExceptionKeys {
   PLAYGROUND_RUNNING,
   PLAYGROUND_NOT_RUNNING
 }
