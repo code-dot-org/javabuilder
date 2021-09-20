@@ -3,6 +3,9 @@ package org.code.playground;
 import java.io.FileNotFoundException;
 
 public class ImageItem extends Item {
+  private int width;
+  private String filename;
+
   /**
    * Creates an item that can be displayed in the Playground. An item consists of an image,
    * referenced by the name of the image file in the asset manager. The image for the item will be
@@ -18,6 +21,8 @@ public class ImageItem extends Item {
   public ImageItem(String filename, int x, int y, int width, int height)
       throws FileNotFoundException {
     super(x, y, height);
+    this.width = width;
+    this.filename = filename;
   }
 
   /**
@@ -26,7 +31,7 @@ public class ImageItem extends Item {
    * @return the filename in the asset manager for the image associated with this item.
    */
   public String getFilename() {
-    return "filename";
+    return this.filename;
   }
 
   /**
@@ -35,14 +40,18 @@ public class ImageItem extends Item {
    * @param filename the filename in the asset manager for the image to associate with this item
    * @throws FileNotFoundException if the file specified is not the in the asset manager
    */
-  public void setFilename(String filename) throws FileNotFoundException {}
+  public void setFilename(String filename) throws FileNotFoundException {
+    this.filename = filename;
+  }
 
   /**
    * Set the width for the item.
    *
    * @param width the width of the item, in pixels
    */
-  public void setWidth(int width) {}
+  public void setWidth(int width) {
+    this.width = width;
+  }
 
   /**
    * Get the width for the item.
@@ -50,6 +59,6 @@ public class ImageItem extends Item {
    * @return the width of the item, in pixels
    */
   public int getWidth() {
-    return -1;
+    return this.width;
   }
 }
