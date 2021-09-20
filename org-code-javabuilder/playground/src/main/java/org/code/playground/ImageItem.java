@@ -16,7 +16,9 @@ public class ImageItem extends Item {
    * @throws FileNotFoundException if the file specified is not the in the asset manager
    */
   public ImageItem(String filename, int x, int y, int width, int height)
-      throws FileNotFoundException {}
+      throws FileNotFoundException {
+    super(x, y, height);
+  }
 
   /**
    * Retrieve the filename for this item.
@@ -30,7 +32,7 @@ public class ImageItem extends Item {
   /**
    * Sets the filename for this item.
    *
-   * @param filename the filename in the asset manager for the image to associat with this item
+   * @param filename the filename in the asset manager for the image to associate with this item
    * @throws FileNotFoundException if the file specified is not the in the asset manager
    */
   public void setFilename(String filename) throws FileNotFoundException {}

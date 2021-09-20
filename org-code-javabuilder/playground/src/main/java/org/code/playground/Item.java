@@ -1,6 +1,8 @@
 package org.code.playground;
 
 public abstract class Item {
+  Item(int x, int y, int height) {}
+
   /**
    * Set the X position for the item.
    *
