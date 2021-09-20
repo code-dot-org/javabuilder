@@ -130,7 +130,9 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
         } catch (InterruptedException interruptedException) {
           // no-op if we have an interrupted exception
         }
-        if (!inputAdapter.hasActiveConnection() || !outputAdapter.hasActiveConnection()) {
+        if (codeBuilderThread.isAlive()
+            && (!inputAdapter.hasActiveConnection() || !outputAdapter.hasActiveConnection())) {
+          Logger.getLogger(MAIN_LOGGER).info("interrupting code builder thread!");
           codeBuilderThread.interrupt();
         }
       }

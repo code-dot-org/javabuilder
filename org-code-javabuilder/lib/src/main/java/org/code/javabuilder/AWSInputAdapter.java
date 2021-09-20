@@ -1,5 +1,7 @@
 package org.code.javabuilder;
 
+import static org.code.protocol.LoggerNames.MAIN_LOGGER;
+
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.model.GetQueueUrlRequest;
 import com.amazonaws.services.sqs.model.Message;
@@ -8,6 +10,7 @@ import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.logging.Logger;
 import org.code.protocol.InputAdapter;
 
 /** Accesses Amazon SQS to get user input for the currently running program. */
@@ -61,6 +64,10 @@ public class AWSInputAdapter implements InputAdapter {
 
   @Override
   public boolean hasActiveConnection() {
+    Logger.getLogger(MAIN_LOGGER)
+        .info(
+            "input adapter: checking active connection, it is currently "
+                + this.hasActiveConnection);
     if (!this.hasActiveConnection) {
       return false;
     }
@@ -70,6 +77,8 @@ public class AWSInputAdapter implements InputAdapter {
     } catch (QueueDoesNotExistException e) {
       this.hasActiveConnection = false;
     }
+    Logger.getLogger(MAIN_LOGGER)
+        .info("input adapter: checked active connection, it is now " + this.hasActiveConnection);
     return this.hasActiveConnection;
   }
 }
