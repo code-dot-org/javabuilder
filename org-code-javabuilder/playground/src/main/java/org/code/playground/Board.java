@@ -89,7 +89,14 @@ public class Board {
    * @param filename the name of the sound file from the asset manager to play
    * @throws FileNotFoundException when the sound file cannot be found.
    */
-  public void playSound(String filename) throws FileNotFoundException {}
+  public void playSound(String filename) throws FileNotFoundException {
+    HashMap<String, String> details = new HashMap<>();
+    details.put("filename", filename);
+
+    PlaygroundMessage playSoundMessage =
+        new PlaygroundMessage(PlaygroundSignalKey.PLAY_SOUND, details);
+    this.playgroundMessageHandler.sendMessage(playSoundMessage);
+  }
 
   /**
    * Starts the playground game, waiting for the user to click on images and executing the
@@ -126,7 +133,10 @@ public class Board {
    * @throws PlaygroundException if the run() method has not been called.
    * @throws FileNotFoundException if the sound file cannot be found.
    */
-  public void exit(String endingSound) throws PlaygroundException, FileNotFoundException {}
+  public void exit(String endingSound) throws PlaygroundException, FileNotFoundException {
+    this.playSound(endingSound);
+    this.exit();
+  }
 
   /**
    * Ends the game and stops program execution.
