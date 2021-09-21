@@ -45,10 +45,9 @@ class BoardTest {
     verify(playgroundMessageHandler).sendMessage(messageCaptor.capture());
     final PlaygroundMessage message = messageCaptor.getValue();
     assertEquals(PlaygroundSignalKey.SET_BACKGROUND_IMAGE.toString(), message.getValue());
-    assertTrue(message.getDetail().has(ClientMessageDetailKeys.FILENAME.toString()));
+    assertTrue(message.getDetail().has(ClientMessageDetailKeys.FILENAME));
     assertEquals(
-        backgroundFilename,
-        message.getDetail().getString(ClientMessageDetailKeys.FILENAME.toString()));
+        backgroundFilename, message.getDetail().getString(ClientMessageDetailKeys.FILENAME));
   }
 
   @Test

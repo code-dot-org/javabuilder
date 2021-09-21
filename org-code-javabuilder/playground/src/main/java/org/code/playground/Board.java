@@ -56,7 +56,7 @@ public class Board {
    */
   public void setBackgroundImage(String filename) throws FileNotFoundException {
     final HashMap<String, String> details = new HashMap<>();
-    details.put(ClientMessageDetailKeys.FILENAME.toString(), filename);
+    details.put(ClientMessageDetailKeys.FILENAME, filename);
 
     this.playgroundMessageHandler.sendMessage(
         new PlaygroundMessage(PlaygroundSignalKey.SET_BACKGROUND_IMAGE, details));
