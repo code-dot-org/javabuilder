@@ -1,5 +1,6 @@
 package org.code.media;
 
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -156,17 +157,38 @@ public class Image {
    * @throws FileNotFoundException if the file is not found
    */
   public static BufferedImage getImageAssetFromFile(String filename) throws FileNotFoundException {
+    BufferedImage originalImage;
     try {
-      BufferedImage image =
+      originalImage =
           ImageIO.read(new URL(GlobalProtocol.getInstance().generateAssetUrl(filename)));
-      if (image == null) {
+      if (originalImage == null) {
         // this can happen if the filename is not associated with an image
         throw new MediaRuntimeException(MediaRuntimeExceptionKeys.IMAGE_LOAD_ERROR);
       }
-      return image;
     } catch (IOException e) {
       throw new FileNotFoundException("Could not find file " + filename);
     }
+
+    // Resize the image to a max size of 400x400px while maintaining the aspect ratio.
+    int height = originalImage.getHeight();
+    int width = originalImage.getWidth();
+    if (width <= 400 && height <= 400) {
+      return originalImage;
+    }
+    int targetHeight, targetWidth;
+    if (height > width) {
+      targetHeight = 400;
+      targetWidth = (int) ((double) width / height * 400);
+    } else {
+      targetWidth = 400;
+      targetHeight = (int) ((double) height / width * 400);
+    }
+    BufferedImage image = new BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_RGB);
+    Graphics2D graphics2D = image.createGraphics();
+    graphics2D.drawImage(originalImage, 0, 0, targetWidth, targetHeight, null);
+    graphics2D.dispose();
+
+    return image;
   }
 
   /** Create a 2d array of pixels from this.bufferedImage */
