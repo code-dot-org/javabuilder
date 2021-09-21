@@ -74,6 +74,7 @@ public class TextItem extends Item {
    */
   public void setText(String text) {
     this.text = text;
+    this.sendChangeMessage(TEXT_KEY, text);
   }
 
   /**
@@ -173,4 +174,6 @@ public class TextItem extends Item {
     details.put(ROTATION_KEY, Double.toString(this.getRotation()));
     return details;
   }
+
+  private void setColorHelper(Color color) {}
 }
