@@ -1,14 +1,18 @@
 package org.code.playground;
 
+import java.util.UUID;
+
 public abstract class Item {
   private int xLocation;
   private int yLocation;
   private int height;
+  private String id;
 
   Item(int x, int y, int height) {
     this.xLocation = x;
     this.yLocation = y;
     this.height = height;
+    this.id = UUID.randomUUID().toString();
   }
 
   /**
@@ -63,5 +67,9 @@ public abstract class Item {
    */
   public int getHeight() {
     return this.height;
+  }
+
+  protected String getId() {
+    return this.id;
   }
 }
