@@ -46,6 +46,7 @@ public class ImageItem extends Item {
    */
   public void setFilename(String filename) throws FileNotFoundException {
     this.filename = filename;
+    this.sendChangeMessage(FILENAME_KEY, filename);
   }
 
   /**
@@ -55,6 +56,7 @@ public class ImageItem extends Item {
    */
   public void setWidth(int width) {
     this.width = width;
+    this.sendChangeMessage(WIDTH_KEY, Integer.toString(width));
   }
 
   /**
