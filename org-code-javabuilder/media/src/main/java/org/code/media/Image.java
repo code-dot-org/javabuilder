@@ -170,6 +170,7 @@ public class Image {
     }
 
     // Resize the image to a max size of 400x400px while maintaining the aspect ratio.
+    // This allows us to save time when students run on pixel manipulation on an entire image.
     int height = originalImage.getHeight();
     int width = originalImage.getWidth();
     if (width <= 400 && height <= 400) {
