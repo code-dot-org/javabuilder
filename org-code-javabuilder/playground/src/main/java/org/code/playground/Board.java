@@ -18,6 +18,10 @@ public class Board {
   private boolean firstRunStarted;
   private boolean isRunning;
 
+  private final HashMap<String, ClickableImage> clickableImages;
+  private final HashMap<String, Item> items;
+  private int nextItemIndex;
+
   protected Board() {
     this(PlaygroundMessageHandler.getInstance(), GlobalProtocol.getInstance().getInputHandler());
   }
@@ -27,6 +31,9 @@ public class Board {
     this.inputHandler = inputHandler;
     this.firstRunStarted = false;
     this.isRunning = false;
+    this.items = new HashMap<>();
+    this.clickableImages = new HashMap<>();
+    this.nextItemIndex = 0;
   }
 
   /**
@@ -67,28 +74,66 @@ public class Board {
    *
    * @param image the image to add. If the image is already on the board, this method does nothing.
    */
-  public void addClickableImage(ClickableImage image) {}
+  public void addClickableImage(ClickableImage image) {
+    if (this.clickableImages.containsKey(image.getId())) {
+      return;
+    }
+    HashMap<String, String> details = image.getDetails();
+    this.addIndexToDetails(details);
+    this.clickableImages.put(image.getId(), image);
+    this.playgroundMessageHandler.sendMessage(
+        new PlaygroundMessage(PlaygroundSignalKey.ADD_CLICKABLE_ITEM, details));
+  }
 
   /**
    * Removes the clickable image from the board.
    *
    * @param image the image to remove. If the image is not on the board, this method does nothing.
    */
-  public void removeClickableImage(ClickableImage image) {}
+  public void removeClickableImage(ClickableImage image) {
+    if (!this.clickableImages.containsKey(image.getId())) {
+      return;
+    }
+    this.clickableImages.remove(image.getId());
+    HashMap<String, String> details = image.getRemoveDetails();
+    this.playgroundMessageHandler.sendMessage(
+        new PlaygroundMessage(PlaygroundSignalKey.REMOVE_ITEM, details));
+  }
 
   /**
-   * Adds a non-clickable item to the board.
+   * Adds a non-clickable ImageItem to the board.
    *
-   * @param item the item to add. If the item is already on the board, this method does nothing.
+   * @param item the image item to add. If the item is already on the board, this method does
+   *     nothing.
    */
-  public void addItem(Item item) {}
+  public void addImageItem(ImageItem item) {
+    this.addItemHelper(item, PlaygroundSignalKey.ADD_IMAGE_ITEM);
+  }
+
+  /**
+   * Adds a TextItem to the board.
+   *
+   * @param item the text item to add. If the item is already on the board, this method does
+   *     nothing.
+   */
+  public void addTextItem(TextItem item) {
+    this.addItemHelper(item, PlaygroundSignalKey.ADD_TEXT_ITEM);
+  }
 
   /**
    * Removes the non-clickable item from the board.
    *
    * @param item the item to remove. If the image is not on the board, this method does nothing.
    */
-  public void removeItem(Item item) {}
+  public void removeItem(Item item) {
+    if (!this.items.containsKey(item.getId())) {
+      return;
+    }
+    this.items.remove(item.getId());
+    HashMap<String, String> details = item.getRemoveDetails();
+    this.playgroundMessageHandler.sendMessage(
+        new PlaygroundMessage(PlaygroundSignalKey.REMOVE_ITEM, details));
+  }
 
   /**
    * Plays a sound from the asset manager.
@@ -152,5 +197,20 @@ public class Board {
 
   private void handleClickEvent(String id) {
     // TODO: Handle updates
+  }
+
+  private void addItemHelper(Item item, PlaygroundSignalKey signalKey) {
+    if (this.items.containsKey(item.getId())) {
+      return;
+    }
+    this.items.put(item.getId(), item);
+    HashMap<String, String> itemDetails = item.getDetails();
+    this.addIndexToDetails(itemDetails);
+    this.playgroundMessageHandler.sendMessage(new PlaygroundMessage(signalKey, itemDetails));
+  }
+
+  private void addIndexToDetails(HashMap<String, String> details) {
+    details.put("index", Integer.toString(this.nextItemIndex));
+    this.nextItemIndex++;
   }
 }
