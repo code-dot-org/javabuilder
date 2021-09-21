@@ -1,12 +1,18 @@
 package org.code.playground;
 
+import java.util.HashMap;
 import java.util.UUID;
 
 public abstract class Item {
   private int xLocation;
   private int yLocation;
   private int height;
-  private String id;
+  private final String id;
+
+  private final String HEIGHT_KEY = "height";
+  private final String X_KEY = "x";
+  private final String Y_KEY = "y";
+  private final String ID_KEY = "id";
 
   Item(int x, int y, int height) {
     this.xLocation = x;
@@ -71,5 +77,20 @@ public abstract class Item {
 
   protected String getId() {
     return this.id;
+  }
+
+  protected HashMap<String, String> getDetails() {
+    HashMap<String, String> details = new HashMap<>();
+    details.put(HEIGHT_KEY, Integer.toString(this.getHeight()));
+    details.put(X_KEY, Integer.toString(this.getX()));
+    details.put(Y_KEY, Integer.toString(this.getY()));
+    details.put(ID_KEY, this.getId());
+    return details;
+  }
+
+  protected HashMap<String, String> getRemoveDetails() {
+    HashMap<String, String> details = new HashMap<>();
+    details.put(ID_KEY, this.getId());
+    return details;
   }
 }

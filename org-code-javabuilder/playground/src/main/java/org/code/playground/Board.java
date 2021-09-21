@@ -17,8 +17,8 @@ public class Board {
   private boolean firstRunStarted;
   private boolean isRunning;
 
-  private HashMap<String, ClickableImage> clickableImages;
-  private HashMap<String, Item> items;
+  private final HashMap<String, ClickableImage> clickableImages;
+  private final HashMap<String, Item> items;
   private int nextItemIndex;
 
   protected Board() {
@@ -71,7 +71,8 @@ public class Board {
     if (this.clickableImages.containsKey(image.getId())) {
       return;
     }
-    HashMap<String, String> details = this.getImageItemDetails(image);
+    HashMap<String, String> details = image.getDetails();
+    this.addIndexToDetails(details);
     this.clickableImages.put(image.getId(), image);
     this.playgroundMessageHandler.sendMessage(
         new PlaygroundMessage(PlaygroundSignalKey.ADD_CLICKABLE_ITEM, details));
@@ -87,7 +88,7 @@ public class Board {
       return;
     }
     this.clickableImages.remove(image.getId());
-    HashMap<String, String> details = this.getRemoveItemDetails(image);
+    HashMap<String, String> details = image.getRemoveDetails();
     this.playgroundMessageHandler.sendMessage(
         new PlaygroundMessage(PlaygroundSignalKey.REMOVE_ITEM, details));
   }
@@ -99,13 +100,7 @@ public class Board {
    *     nothing.
    */
   public void addImageItem(ImageItem item) {
-    if (this.items.containsKey(item.getId())) {
-      return;
-    }
-    this.items.put(item.getId(), item);
-    HashMap<String, String> itemDetails = this.getImageItemDetails(item);
-    this.playgroundMessageHandler.sendMessage(
-        new PlaygroundMessage(PlaygroundSignalKey.ADD_IMAGE_ITEM, itemDetails));
+    this.addItemHelper(item, PlaygroundSignalKey.ADD_IMAGE_ITEM);
   }
 
   /**
@@ -115,13 +110,7 @@ public class Board {
    *     nothing.
    */
   public void addTextItem(TextItem item) {
-    if (this.items.containsKey(item.getId())) {
-      return;
-    }
-    this.items.put(item.getId(), item);
-    HashMap<String, String> itemDetails = this.getTextItemDetails(item);
-    this.playgroundMessageHandler.sendMessage(
-        new PlaygroundMessage(PlaygroundSignalKey.ADD_TEXT_ITEM, itemDetails));
+    this.addItemHelper(item, PlaygroundSignalKey.ADD_TEXT_ITEM);
   }
 
   /**
@@ -130,11 +119,11 @@ public class Board {
    * @param item the item to remove. If the image is not on the board, this method does nothing.
    */
   public void removeItem(Item item) {
-    if (!(this.items.containsKey(item.getId()) || this.clickableImages.containsKey(item.getId()))) {
+    if (!this.items.containsKey(item.getId())) {
       return;
     }
     this.items.remove(item.getId());
-    HashMap<String, String> details = this.getRemoveItemDetails(item);
+    HashMap<String, String> details = item.getRemoveDetails();
     this.playgroundMessageHandler.sendMessage(
         new PlaygroundMessage(PlaygroundSignalKey.REMOVE_ITEM, details));
   }
@@ -203,39 +192,18 @@ public class Board {
     // TODO: Handle updates
   }
 
-  private HashMap<String, String> getTextItemDetails(TextItem item) {
-    HashMap<String, String> details = this.getItemDetails(item);
-    details.put("text", item.getText());
-    details.put("colorRed", Integer.toString(item.getColor().getRed()));
-    details.put("colorGreen", Integer.toString(item.getColor().getGreen()));
-    details.put("colorBlue", Integer.toString(item.getColor().getBlue()));
-    details.put("font", item.getFont().toString());
-    details.put("fontStyle", item.getFontStyle().toString());
-    details.put("rotation", Double.toString(item.getRotation()));
-    return details;
+  private void addItemHelper(Item item, PlaygroundSignalKey signalKey) {
+    if (this.items.containsKey(item.getId())) {
+      return;
+    }
+    this.items.put(item.getId(), item);
+    HashMap<String, String> itemDetails = item.getDetails();
+    this.addIndexToDetails(itemDetails);
+    this.playgroundMessageHandler.sendMessage(new PlaygroundMessage(signalKey, itemDetails));
   }
 
-  private HashMap<String, String> getImageItemDetails(ImageItem image) {
-    HashMap<String, String> details = this.getItemDetails(image);
-    details.put("filename", image.getFilename());
-    details.put("width", Integer.toString(image.getWidth()));
-    return details;
-  }
-
-  private HashMap<String, String> getItemDetails(Item item) {
-    HashMap<String, String> details = new HashMap<>();
-    details.put("height", Integer.toString(item.getHeight()));
-    details.put("x", Integer.toString(item.getX()));
-    details.put("y", Integer.toString(item.getY()));
-    details.put("id", item.getId());
+  private void addIndexToDetails(HashMap<String, String> details) {
     details.put("index", Integer.toString(this.nextItemIndex));
     this.nextItemIndex++;
-    return details;
-  }
-
-  private HashMap<String, String> getRemoveItemDetails(Item item) {
-    HashMap<String, String> details = new HashMap<>();
-    details.put("id", item.getId());
-    return details;
   }
 }

@@ -155,7 +155,7 @@ class BoardTest {
     unitUnderTest.addClickableImage(testClickableImage);
     unitUnderTest.addTextItem(testTextItem);
     unitUnderTest.addImageItem(testImage);
-    unitUnderTest.removeItem(testClickableImage);
+    unitUnderTest.removeClickableImage(testClickableImage);
     unitUnderTest.removeItem(testTextItem);
     unitUnderTest.removeItem(testImage);
 
