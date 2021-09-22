@@ -200,6 +200,7 @@ public class Board {
       return;
     }
     ClickableImage image = this.clickableImages.get(id);
+    image.onClick();
   }
 
   private void addItemHelper(Item item, PlaygroundSignalKey signalKey) {
