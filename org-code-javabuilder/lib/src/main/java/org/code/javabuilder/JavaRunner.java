@@ -6,10 +6,7 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.List;
-import org.code.protocol.JavabuilderRuntimeException;
-import org.code.protocol.OutputAdapter;
-import org.code.protocol.StatusMessage;
-import org.code.protocol.StatusMessageKey;
+import org.code.protocol.*;
 
 /** The class that executes the student's code */
 public class JavaRunner {
@@ -32,8 +29,7 @@ public class JavaRunner {
    * @throws InternalFacingException When we hit an internal error after the user's code has
    *     finished executing.
    */
-  public void runCode()
-      throws InternalServerError, InternalFacingException, UserInitiatedException {
+  public void runCode() throws InternalFacingException, JavabuilderException {
     // Include the user-facing api jars in the code we are loading so student code can access them.
     URL[] classLoaderUrls = Util.getAllJarURLs(this.executableLocation);
 
@@ -53,9 +49,12 @@ public class JavaRunner {
       throw new UserInitiatedException(UserInitiatedExceptionKey.ILLEGAL_METHOD_ACCESS, e);
     } catch (InvocationTargetException e) {
       this.outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.EXITED));
+      // If the invocation exception is wrapping another JavabuilderException or
+      // JavabuilderRuntimeException, we don't need to wrap it in a UserInitiatedException
+      if (e.getCause() instanceof JavabuilderException) {
+        throw (JavabuilderException) e.getCause();
+      }
       if (e.getCause() instanceof JavabuilderRuntimeException) {
-        // If the invocation exception is wrapping another JavabuilderRuntimeException, we don't
-        // need to wrap it in a UserInitiatedException
         throw (JavabuilderRuntimeException) e.getCause();
       }
       throw new UserInitiatedException(UserInitiatedExceptionKey.RUNTIME_ERROR, e);
