@@ -141,7 +141,14 @@ public class Board {
    * @param filename the name of the sound file from the asset manager to play
    * @throws FileNotFoundException when the sound file cannot be found.
    */
-  public void playSound(String filename) throws FileNotFoundException {}
+  public void playSound(String filename) throws FileNotFoundException {
+    HashMap<String, String> details = new HashMap<>();
+    details.put(ClientMessageDetailKeys.FILENAME, filename);
+
+    PlaygroundMessage playSoundMessage =
+        new PlaygroundMessage(PlaygroundSignalKey.PLAY_SOUND, details);
+    this.playgroundMessageHandler.sendMessage(playSoundMessage);
+  }
 
   /**
    * Starts the playground game, waiting for the user to click on images and executing the
@@ -178,7 +185,11 @@ public class Board {
    * @throws PlaygroundException if the run() method has not been called.
    * @throws FileNotFoundException if the sound file cannot be found.
    */
-  public void exit(String endingSound) throws PlaygroundException, FileNotFoundException {}
+  public void exit(String endingSound) throws PlaygroundException, FileNotFoundException {
+    this.confirmIsRunning();
+    this.playSound(endingSound);
+    this.sendExitMessageAndEndRun();
+  }
 
   /**
    * Ends the game and stops program execution.
@@ -186,13 +197,8 @@ public class Board {
    * @throws PlaygroundException if the run() method has not been called.
    */
   public void exit() throws PlaygroundException {
-    if (!this.isRunning) {
-      throw new PlaygroundException(PlaygroundExceptionKeys.PLAYGROUND_NOT_RUNNING);
-    }
-
-    this.playgroundMessageHandler.sendMessage(
-        new PlaygroundMessage(PlaygroundSignalKey.EXIT, new HashMap<>()));
-    this.isRunning = false;
+    this.confirmIsRunning();
+    this.sendExitMessageAndEndRun();
   }
 
   private void handleClickEvent(String id) {
@@ -212,5 +218,17 @@ public class Board {
   private void addIndexToDetails(HashMap<String, String> details) {
     details.put("index", Integer.toString(this.nextItemIndex));
     this.nextItemIndex++;
+  }
+
+  private void sendExitMessageAndEndRun() {
+    this.playgroundMessageHandler.sendMessage(
+        new PlaygroundMessage(PlaygroundSignalKey.EXIT, new HashMap<>()));
+    this.isRunning = false;
+  }
+
+  private void confirmIsRunning() throws PlaygroundException {
+    if (!this.isRunning) {
+      throw new PlaygroundException(PlaygroundExceptionKeys.PLAYGROUND_NOT_RUNNING);
+    }
   }
 }
