@@ -2,6 +2,7 @@ package org.code.playground;
 
 import java.io.FileNotFoundException;
 import java.util.HashMap;
+import org.code.protocol.ClientMessageDetailKeys;
 import org.code.protocol.GlobalProtocol;
 import org.code.protocol.InputHandler;
 import org.code.protocol.InputMessageType;
@@ -60,7 +61,13 @@ public class Board {
    * @param filename the name of the file from the asset manager to put in the background
    * @throws FileNotFoundException if the file cannot be found in the asset manager
    */
-  public void setBackgroundImage(String filename) throws FileNotFoundException {}
+  public void setBackgroundImage(String filename) throws FileNotFoundException {
+    final HashMap<String, String> details = new HashMap<>();
+    details.put(ClientMessageDetailKeys.FILENAME, filename);
+
+    this.playgroundMessageHandler.sendMessage(
+        new PlaygroundMessage(PlaygroundSignalKey.SET_BACKGROUND_IMAGE, details));
+  }
 
   /**
    * Adds a clickable image to the board.
