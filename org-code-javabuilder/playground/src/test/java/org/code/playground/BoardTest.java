@@ -41,6 +41,18 @@ class BoardTest {
   }
 
   @Test
+  public void testPlaySoundSendsMessage() throws FileNotFoundException {
+    String filename = "test_file.wav";
+
+    unitUnderTest.playSound(filename);
+    verify(playgroundMessageHandler).sendMessage(messageCaptor.capture());
+    assertEquals(
+        PlaygroundSignalKey.PLAY_SOUND.toString(), messageCaptor.getAllValues().get(0).getValue());
+    assertEquals(
+        filename,
+        messageCaptor.getAllValues().get(0).getDetail().get(ClientMessageDetailKeys.FILENAME));
+  }
+
   public void testSetBackgroundImageSendsMessage() throws FileNotFoundException {
     final String backgroundFilename = "background.png";
 
@@ -102,6 +114,30 @@ class BoardTest {
     verify(playgroundMessageHandler, times(2)).sendMessage(messageCaptor.capture());
     assertEquals(
         PlaygroundSignalKey.EXIT.toString(), messageCaptor.getAllValues().get(1).getValue());
+  }
+
+  @Test
+  public void testExitWithSoundSendsPlaySoundAndExitMessages()
+      throws PlaygroundException, FileNotFoundException {
+    String filename = "test_file.wav";
+
+    // Ensure that exit() is called while running to avoid exception
+    when(inputHandler.getNextMessageForType(InputMessageType.PLAYGROUND))
+        .thenAnswer(
+            invocation -> {
+              unitUnderTest.exit(filename);
+              return "id";
+            });
+    unitUnderTest.run();
+
+    verify(playgroundMessageHandler, times(3)).sendMessage(messageCaptor.capture());
+    assertEquals(
+        PlaygroundSignalKey.PLAY_SOUND.toString(), messageCaptor.getAllValues().get(1).getValue());
+    assertEquals(
+        filename,
+        messageCaptor.getAllValues().get(1).getDetail().get(ClientMessageDetailKeys.FILENAME));
+    assertEquals(
+        PlaygroundSignalKey.EXIT.toString(), messageCaptor.getAllValues().get(2).getValue());
   }
 
   @Test
