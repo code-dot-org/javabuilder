@@ -89,8 +89,7 @@ public abstract class Item {
   }
 
   protected HashMap<String, String> getRemoveDetails() {
-    HashMap<String, String> details = this.getIdDetails();
-    return details;
+    return this.getIdDetails();
   }
 
   protected void sendChangeMessage(String key, String value) {
