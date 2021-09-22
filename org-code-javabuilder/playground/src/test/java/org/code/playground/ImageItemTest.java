@@ -42,13 +42,17 @@ public class ImageItemTest {
   @Test
   public void settersSendChangeMessages() throws FileNotFoundException {
     ImageItem imageItem = new ImageItem("test", 0, 0, 10, 10);
-    imageItem.setFilename("new_filename");
-    imageItem.setWidth(100);
+
+    String newFilename = "new_filename";
+    int newWidth = 100;
+    imageItem.setFilename(newFilename);
+    imageItem.setWidth(newWidth);
 
     verify(playgroundMessageHandler, times(2)).sendMessage(messageCaptor.capture());
     List<PlaygroundMessage> messages = messageCaptor.getAllValues();
     assertEquals(PlaygroundSignalKey.CHANGE_ITEM.toString(), messages.get(0).getValue());
-    assertEquals("new_filename", messages.get(0).getDetail().get("filename"));
-    assertEquals("100", messages.get(1).getDetail().get("width"));
+    assertEquals(newFilename, messages.get(0).getDetail().get(ClientMessageDetailKeys.FILENAME));
+    assertEquals(
+        Integer.toString(newWidth), messages.get(1).getDetail().get(ClientMessageDetailKeys.WIDTH));
   }
 }

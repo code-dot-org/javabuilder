@@ -53,8 +53,12 @@ public class ItemTest {
     verify(playgroundMessageHandler, times(3)).sendMessage(messageCaptor.capture());
     List<PlaygroundMessage> messages = messageCaptor.getAllValues();
     assertEquals(PlaygroundSignalKey.CHANGE_ITEM.toString(), messages.get(0).getValue());
-    assertEquals(Integer.toString(newX), messages.get(0).getDetail().get("x"));
-    assertEquals(Integer.toString(newY), messages.get(1).getDetail().get("y"));
-    assertEquals(Integer.toString(newHeight), messages.get(2).getDetail().get("height"));
+    assertEquals(
+        Integer.toString(newX), messages.get(0).getDetail().get(ClientMessageDetailKeys.X));
+    assertEquals(
+        Integer.toString(newY), messages.get(1).getDetail().get(ClientMessageDetailKeys.Y));
+    assertEquals(
+        Integer.toString(newHeight),
+        messages.get(2).getDetail().get(ClientMessageDetailKeys.HEIGHT));
   }
 }

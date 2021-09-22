@@ -2,6 +2,7 @@ package org.code.playground;
 
 import java.util.HashMap;
 import java.util.UUID;
+import org.code.protocol.ClientMessageDetailKeys;
 
 public abstract class Item {
   private int xLocation;
@@ -9,11 +10,6 @@ public abstract class Item {
   private int height;
   private final String id;
   private final PlaygroundMessageHandler playgroundMessageHandler;
-
-  private final String HEIGHT_KEY = "height";
-  private final String X_KEY = "x";
-  private final String Y_KEY = "y";
-  private final String ID_KEY = "id";
 
   Item(int x, int y, int height) {
     this.xLocation = x;
@@ -30,7 +26,7 @@ public abstract class Item {
    */
   public void setX(int x) {
     this.xLocation = x;
-    this.sendChangeMessage(X_KEY, Integer.toString(x));
+    this.sendChangeMessage(ClientMessageDetailKeys.X, Integer.toString(x));
   }
 
   /**
@@ -49,7 +45,7 @@ public abstract class Item {
    */
   public void setY(int y) {
     this.yLocation = y;
-    this.sendChangeMessage(Y_KEY, Integer.toString(y));
+    this.sendChangeMessage(ClientMessageDetailKeys.Y, Integer.toString(y));
   }
 
   /**
@@ -68,7 +64,7 @@ public abstract class Item {
    */
   public void setHeight(int height) {
     this.height = height;
-    this.sendChangeMessage(HEIGHT_KEY, Integer.toString(height));
+    this.sendChangeMessage(ClientMessageDetailKeys.HEIGHT, Integer.toString(height));
   }
 
   /**
@@ -86,9 +82,9 @@ public abstract class Item {
 
   protected HashMap<String, String> getDetails() {
     HashMap<String, String> details = this.getIdDetails();
-    details.put(HEIGHT_KEY, Integer.toString(this.getHeight()));
-    details.put(X_KEY, Integer.toString(this.getX()));
-    details.put(Y_KEY, Integer.toString(this.getY()));
+    details.put(ClientMessageDetailKeys.HEIGHT, Integer.toString(this.getHeight()));
+    details.put(ClientMessageDetailKeys.X, Integer.toString(this.getX()));
+    details.put(ClientMessageDetailKeys.Y, Integer.toString(this.getY()));
     return details;
   }
 
@@ -105,14 +101,14 @@ public abstract class Item {
   }
 
   protected void sendChangeMessage(HashMap<String, String> changeDetails) {
-    changeDetails.put(ID_KEY, this.getId());
+    changeDetails.put(ClientMessageDetailKeys.ID, this.getId());
     this.playgroundMessageHandler.sendMessage(
         new PlaygroundMessage(PlaygroundSignalKey.CHANGE_ITEM, changeDetails));
   }
 
   private HashMap<String, String> getIdDetails() {
     HashMap<String, String> idDetails = new HashMap<>();
-    idDetails.put(ID_KEY, this.getId());
+    idDetails.put(ClientMessageDetailKeys.ID, this.getId());
     return idDetails;
   }
 }
