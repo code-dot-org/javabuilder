@@ -56,15 +56,15 @@ class BoardTest {
 
   @Test
   public void testRunSendsMessageAndWaitsForInput() throws PlaygroundException {
-    // Need to make sure exit() is called so run() terminates
+    // Need to make sure end() is called so start() terminates
     when(inputHandler.getNextMessageForType(InputMessageType.PLAYGROUND))
         .thenAnswer(
             invocation -> {
-              unitUnderTest.exit();
+              unitUnderTest.end();
               return "id";
             });
 
-    unitUnderTest.run();
+    unitUnderTest.start();
 
     verify(playgroundMessageHandler, times(2)).sendMessage(messageCaptor.capture());
     assertEquals(
@@ -74,30 +74,30 @@ class BoardTest {
 
   @Test
   public void testRunThrowsExceptionIfCalledTwice() throws PlaygroundException {
-    // Need to make sure exit() is called so run() terminates
+    // Need to make sure end() is called so start() terminates
     when(inputHandler.getNextMessageForType(InputMessageType.PLAYGROUND))
         .thenAnswer(
             invocation -> {
-              unitUnderTest.exit();
+              unitUnderTest.end();
               return "id";
             });
 
-    unitUnderTest.run();
+    unitUnderTest.start();
     final PlaygroundException e =
-        assertThrows(PlaygroundException.class, () -> unitUnderTest.run());
+        assertThrows(PlaygroundException.class, () -> unitUnderTest.start());
     assertEquals(PlaygroundExceptionKeys.PLAYGROUND_RUNNING.toString(), e.getMessage());
   }
 
   @Test
   public void testExitSendsExitMessage() throws PlaygroundException {
-    // Ensure that exit() is called while running to avoid exception
+    // Ensure that end() is called while running to avoid exception
     when(inputHandler.getNextMessageForType(InputMessageType.PLAYGROUND))
         .thenAnswer(
             invocation -> {
-              unitUnderTest.exit();
+              unitUnderTest.end();
               return "id";
             });
-    unitUnderTest.run();
+    unitUnderTest.start();
 
     verify(playgroundMessageHandler, times(2)).sendMessage(messageCaptor.capture());
     assertEquals(
@@ -107,7 +107,7 @@ class BoardTest {
   @Test
   public void testExitThrowsExceptionIfNotRunning() {
     final PlaygroundException e =
-        assertThrows(PlaygroundException.class, () -> unitUnderTest.exit());
+        assertThrows(PlaygroundException.class, () -> unitUnderTest.end());
     assertEquals(PlaygroundExceptionKeys.PLAYGROUND_NOT_RUNNING.toString(), e.getMessage());
   }
 
