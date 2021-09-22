@@ -7,10 +7,7 @@ import java.util.List;
 import org.code.media.Color;
 import org.code.media.Font;
 import org.code.media.FontStyle;
-import org.code.protocol.GlobalProtocol;
-import org.code.protocol.InputAdapter;
-import org.code.protocol.JavabuilderFileWriter;
-import org.code.protocol.OutputAdapter;
+import org.code.protocol.*;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -64,8 +61,21 @@ public class TextItemTest {
     verify(playgroundMessageHandler, times(5)).sendMessage(messageCaptor.capture());
     List<PlaygroundMessage> messages = messageCaptor.getAllValues();
     assertEquals(PlaygroundSignalKey.CHANGE_ITEM.toString(), messages.get(0).getValue());
-    assertEquals(newText, messages.get(0).getDetail().get("text"));
+    assertEquals(newText, messages.get(0).getDetail().get(ClientMessageDetailKeys.TEXT));
     JSONObject colorDetails = messages.get(1).getDetail();
-    assertEquals(Integer.toString(newColor.getRed()), colorDetails.get("colorRed"));
+    assertEquals(
+        Integer.toString(newColor.getRed()), colorDetails.get(ClientMessageDetailKeys.COLOR_RED));
+    assertEquals(
+        Integer.toString(newColor.getBlue()), colorDetails.get(ClientMessageDetailKeys.COLOR_BLUE));
+    assertEquals(
+        Integer.toString(newColor.getGreen()),
+        colorDetails.get(ClientMessageDetailKeys.COLOR_GREEN));
+    assertEquals(newFont.toString(), messages.get(2).getDetail().get(ClientMessageDetailKeys.FONT));
+    assertEquals(
+        newFontStyle.toString(),
+        messages.get(3).getDetail().get(ClientMessageDetailKeys.FONT_STYLE));
+    assertEquals(
+        Double.toString(newRotation),
+        messages.get(4).getDetail().get(ClientMessageDetailKeys.ROTATION));
   }
 }

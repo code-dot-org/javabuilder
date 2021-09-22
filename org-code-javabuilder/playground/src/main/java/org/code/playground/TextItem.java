@@ -4,6 +4,7 @@ import java.util.HashMap;
 import org.code.media.Color;
 import org.code.media.Font;
 import org.code.media.FontStyle;
+import org.code.protocol.ClientMessageDetailKeys;
 
 public class TextItem extends Item {
   private String text;
@@ -14,14 +15,6 @@ public class TextItem extends Item {
   private int colorRed;
   private int colorGreen;
   private int colorBlue;
-
-  private final String TEXT_KEY = "text";
-  private final String COLOR_RED_KEY = "colorRed";
-  private final String COLOR_BLUE_KEY = "colorBlue";
-  private final String COLOR_GREEN_KEY = "colorGreen";
-  private final String FONT_KEY = "font";
-  private final String FONT_STYLE_KEY = "fontStyle";
-  private final String ROTATION_KEY = "rotation";
 
   /**
    * Creates text item that can be placed the board.
@@ -74,7 +67,7 @@ public class TextItem extends Item {
    */
   public void setText(String text) {
     this.text = text;
-    this.sendChangeMessage(TEXT_KEY, text);
+    this.sendChangeMessage(ClientMessageDetailKeys.TEXT, text);
   }
 
   /**
@@ -114,7 +107,7 @@ public class TextItem extends Item {
    */
   public void setFont(Font font) {
     this.font = font;
-    this.sendChangeMessage(FONT_KEY, font.toString());
+    this.sendChangeMessage(ClientMessageDetailKeys.FONT, font.toString());
   }
 
   /**
@@ -133,7 +126,7 @@ public class TextItem extends Item {
    */
   public void setFontStyle(FontStyle fontStyle) {
     this.fontStyle = fontStyle;
-    this.sendChangeMessage(FONT_STYLE_KEY, fontStyle.toString());
+    this.sendChangeMessage(ClientMessageDetailKeys.FONT_STYLE, fontStyle.toString());
   }
 
   /**
@@ -152,7 +145,7 @@ public class TextItem extends Item {
    */
   public void setRotation(double rotation) {
     this.rotation = rotation;
-    this.sendChangeMessage(ROTATION_KEY, Double.toString(rotation));
+    this.sendChangeMessage(ClientMessageDetailKeys.ROTATION, Double.toString(rotation));
   }
 
   /**
@@ -167,11 +160,11 @@ public class TextItem extends Item {
   @Override
   protected HashMap<String, String> getDetails() {
     HashMap<String, String> details = super.getDetails();
-    details.put(TEXT_KEY, this.getText());
+    details.put(ClientMessageDetailKeys.TEXT, this.getText());
     this.addColorToDetails(details);
-    details.put(FONT_KEY, this.getFont().toString());
-    details.put(FONT_STYLE_KEY, this.getFontStyle().toString());
-    details.put(ROTATION_KEY, Double.toString(this.getRotation()));
+    details.put(ClientMessageDetailKeys.FONT, this.getFont().toString());
+    details.put(ClientMessageDetailKeys.FONT_STYLE, this.getFontStyle().toString());
+    details.put(ClientMessageDetailKeys.ROTATION, Double.toString(this.getRotation()));
     return details;
   }
 
@@ -184,8 +177,8 @@ public class TextItem extends Item {
   }
 
   private void addColorToDetails(HashMap<String, String> details) {
-    details.put(COLOR_RED_KEY, Integer.toString(this.colorRed));
-    details.put(COLOR_GREEN_KEY, Integer.toString(this.colorGreen));
-    details.put(COLOR_BLUE_KEY, Integer.toString(this.colorBlue));
+    details.put(ClientMessageDetailKeys.COLOR_RED, Integer.toString(this.colorRed));
+    details.put(ClientMessageDetailKeys.COLOR_GREEN, Integer.toString(this.colorGreen));
+    details.put(ClientMessageDetailKeys.COLOR_BLUE, Integer.toString(this.colorBlue));
   }
 }
