@@ -1,7 +1,6 @@
 package org.code.playground;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.io.FileNotFoundException;
@@ -44,6 +43,20 @@ class BoardTest {
   @Test
   public void testGetHeightReturnsDefaultHeight() {
     assertEquals(400, unitUnderTest.getHeight());
+  }
+
+  @Test
+  public void testSetBackgroundImageSendsMessage() throws FileNotFoundException {
+    final String backgroundFilename = "background.png";
+
+    unitUnderTest.setBackgroundImage(backgroundFilename);
+
+    verify(playgroundMessageHandler).sendMessage(messageCaptor.capture());
+    final PlaygroundMessage message = messageCaptor.getValue();
+    assertEquals(PlaygroundSignalKey.SET_BACKGROUND_IMAGE.toString(), message.getValue());
+    assertTrue(message.getDetail().has(ClientMessageDetailKeys.FILENAME));
+    assertEquals(
+        backgroundFilename, message.getDetail().getString(ClientMessageDetailKeys.FILENAME));
   }
 
   @Test
