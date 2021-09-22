@@ -2,8 +2,12 @@ package org.code.playground;
 
 import java.io.FileNotFoundException;
 import java.util.HashMap;
+import org.code.protocol.AssetFileHelper;
+import org.code.protocol.GlobalProtocol;
 
 public class ImageItem extends Item {
+  private final AssetFileHelper assetFileHelper;
+
   private int width;
   private String filename;
 
@@ -24,7 +28,17 @@ public class ImageItem extends Item {
    */
   public ImageItem(String filename, int x, int y, int width, int height)
       throws FileNotFoundException {
+    this(filename, x, y, width, height, GlobalProtocol.getInstance().getAssetFileHelper());
+  }
+
+  // Visible for testing only
+  ImageItem(String filename, int x, int y, int width, int height, AssetFileHelper assetFileHelper)
+      throws FileNotFoundException {
     super(x, y, height);
+
+    this.assetFileHelper = assetFileHelper;
+    this.assetFileHelper.verifyAssetFilename(filename);
+
     this.width = width;
     this.filename = filename;
   }
@@ -45,6 +59,7 @@ public class ImageItem extends Item {
    * @throws FileNotFoundException if the file specified is not the in the asset manager
    */
   public void setFilename(String filename) throws FileNotFoundException {
+    this.assetFileHelper.verifyAssetFilename(filename);
     this.filename = filename;
   }
 
