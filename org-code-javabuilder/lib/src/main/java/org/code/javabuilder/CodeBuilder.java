@@ -47,8 +47,7 @@ public class CodeBuilder implements AutoCloseable {
   /**
    * Replaces System.in and System.out with our custom implementation and executes the user's code.
    */
-  public void runUserCode()
-      throws InternalServerError, InternalFacingException, UserInitiatedException {
+  public void runUserCode() throws InternalFacingException, JavabuilderException {
     System.setOut(new OutputPrintStream(this.outputAdapter));
     System.setIn(new InputRedirectionStream(this.inputHandler));
     JavaRunner runner;
