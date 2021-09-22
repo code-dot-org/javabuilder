@@ -143,7 +143,7 @@ public class Board {
    */
   public void playSound(String filename) throws FileNotFoundException {
     HashMap<String, String> details = new HashMap<>();
-    details.put("filename", filename);
+    details.put(ClientMessageDetailKeys.FILENAME, filename);
 
     PlaygroundMessage playSoundMessage =
         new PlaygroundMessage(PlaygroundSignalKey.PLAY_SOUND, details);
