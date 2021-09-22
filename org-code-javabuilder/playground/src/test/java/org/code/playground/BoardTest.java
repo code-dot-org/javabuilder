@@ -1,7 +1,6 @@
 package org.code.playground;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.io.FileNotFoundException;
@@ -9,6 +8,7 @@ import java.util.List;
 import org.code.media.Color;
 import org.code.media.Font;
 import org.code.media.FontStyle;
+import org.code.protocol.ClientMessageDetailKeys;
 import org.code.protocol.InputHandler;
 import org.code.protocol.InputMessageType;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,6 +49,19 @@ class BoardTest {
     assertEquals(
         PlaygroundSignalKey.PLAY_SOUND.toString(), messageCaptor.getAllValues().get(0).getValue());
     assertEquals(filename, messageCaptor.getAllValues().get(0).getDetail().get("filename"));
+  }
+
+  public void testSetBackgroundImageSendsMessage() throws FileNotFoundException {
+    final String backgroundFilename = "background.png";
+
+    unitUnderTest.setBackgroundImage(backgroundFilename);
+
+    verify(playgroundMessageHandler).sendMessage(messageCaptor.capture());
+    final PlaygroundMessage message = messageCaptor.getValue();
+    assertEquals(PlaygroundSignalKey.SET_BACKGROUND_IMAGE.toString(), message.getValue());
+    assertTrue(message.getDetail().has(ClientMessageDetailKeys.FILENAME));
+    assertEquals(
+        backgroundFilename, message.getDetail().getString(ClientMessageDetailKeys.FILENAME));
   }
 
   @Test
