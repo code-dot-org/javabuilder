@@ -48,7 +48,9 @@ class BoardTest {
     verify(playgroundMessageHandler).sendMessage(messageCaptor.capture());
     assertEquals(
         PlaygroundSignalKey.PLAY_SOUND.toString(), messageCaptor.getAllValues().get(0).getValue());
-    assertEquals(filename, messageCaptor.getAllValues().get(0).getDetail().get("filename"));
+    assertEquals(
+        filename,
+        messageCaptor.getAllValues().get(0).getDetail().get(ClientMessageDetailKeys.FILENAME));
   }
 
   public void testSetBackgroundImageSendsMessage() throws FileNotFoundException {
@@ -131,7 +133,9 @@ class BoardTest {
     verify(playgroundMessageHandler, times(3)).sendMessage(messageCaptor.capture());
     assertEquals(
         PlaygroundSignalKey.PLAY_SOUND.toString(), messageCaptor.getAllValues().get(1).getValue());
-    assertEquals(filename, messageCaptor.getAllValues().get(1).getDetail().get("filename"));
+    assertEquals(
+        filename,
+        messageCaptor.getAllValues().get(1).getDetail().get(ClientMessageDetailKeys.FILENAME));
     assertEquals(
         PlaygroundSignalKey.EXIT.toString(), messageCaptor.getAllValues().get(2).getValue());
   }
