@@ -8,26 +8,40 @@ import java.util.List;
 import org.code.media.Color;
 import org.code.media.Font;
 import org.code.media.FontStyle;
-import org.code.protocol.ClientMessageDetailKeys;
-import org.code.protocol.InputHandler;
-import org.code.protocol.InputMessageType;
+import org.code.protocol.*;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.MockedStatic;
 
 class BoardTest {
 
   private PlaygroundMessageHandler playgroundMessageHandler;
   private InputHandler inputHandler;
+  private AssetFileHelper assetFileHelper;
   private ArgumentCaptor<PlaygroundMessage> messageCaptor;
+  private MockedStatic<GlobalProtocol> globalProtocol;
   private Board unitUnderTest;
 
   @BeforeEach
   public void setUp() {
     playgroundMessageHandler = mock(PlaygroundMessageHandler.class);
     messageCaptor = ArgumentCaptor.forClass(PlaygroundMessage.class);
+    assetFileHelper = mock(AssetFileHelper.class);
     inputHandler = mock(InputHandler.class);
-    unitUnderTest = new Board(playgroundMessageHandler, inputHandler);
+
+    globalProtocol = mockStatic(GlobalProtocol.class);
+    final GlobalProtocol globalProtocolInstance = mock(GlobalProtocol.class);
+    globalProtocol.when(GlobalProtocol::getInstance).thenReturn(globalProtocolInstance);
+    when(globalProtocolInstance.getAssetFileHelper()).thenReturn(assetFileHelper);
+
+    unitUnderTest = new Board(playgroundMessageHandler, inputHandler, assetFileHelper);
+  }
+
+  @AfterEach
+  public void tearDown() {
+    globalProtocol.close();
   }
 
   @Test
@@ -53,6 +67,18 @@ class BoardTest {
         messageCaptor.getAllValues().get(0).getDetail().get(ClientMessageDetailKeys.FILENAME));
   }
 
+  @Test
+  public void testPlaySoundThrowsExceptionIfFileNotFound() throws FileNotFoundException {
+    final FileNotFoundException expected = new FileNotFoundException();
+    doThrow(expected).when(assetFileHelper).verifyAssetFilename(anyString());
+
+    final FileNotFoundException actual =
+        assertThrows(FileNotFoundException.class, () -> unitUnderTest.playSound("test_file.wav"));
+
+    assertSame(expected, actual);
+  }
+
+  @Test
   public void testSetBackgroundImageSendsMessage() throws FileNotFoundException {
     final String backgroundFilename = "background.png";
 
@@ -64,6 +90,18 @@ class BoardTest {
     assertTrue(message.getDetail().has(ClientMessageDetailKeys.FILENAME));
     assertEquals(
         backgroundFilename, message.getDetail().getString(ClientMessageDetailKeys.FILENAME));
+  }
+
+  @Test
+  public void testSetBackgroundImageExceptionIfFileNotFound() throws FileNotFoundException {
+    final FileNotFoundException expected = new FileNotFoundException();
+    doThrow(expected).when(assetFileHelper).verifyAssetFilename(anyString());
+
+    final FileNotFoundException actual =
+        assertThrows(
+            FileNotFoundException.class, () -> unitUnderTest.setBackgroundImage("background.png"));
+
+    assertSame(expected, actual);
   }
 
   @Test
@@ -138,6 +176,28 @@ class BoardTest {
         messageCaptor.getAllValues().get(1).getDetail().get(ClientMessageDetailKeys.FILENAME));
     assertEquals(
         PlaygroundSignalKey.EXIT.toString(), messageCaptor.getAllValues().get(2).getValue());
+  }
+
+  @Test
+  public void testExitWithSoundThrowsExceptionIfFileNotFound()
+      throws PlaygroundException, FileNotFoundException {
+    final FileNotFoundException expected = new FileNotFoundException();
+    doThrow(expected).when(assetFileHelper).verifyAssetFilename(anyString());
+
+    when(inputHandler.getNextMessageForType(InputMessageType.PLAYGROUND))
+        .thenAnswer(
+            invocation -> {
+              final FileNotFoundException actual =
+                  assertThrows(
+                      FileNotFoundException.class, () -> unitUnderTest.end("test_file.wav"));
+              assertSame(expected, actual);
+
+              // Need to still call end() to ensure start() terminates
+              unitUnderTest.end();
+              return "id";
+            });
+
+    unitUnderTest.start();
   }
 
   @Test
