@@ -179,8 +179,9 @@ public class Board {
    * @throws FileNotFoundException if the sound file cannot be found.
    */
   public void exit(String endingSound) throws PlaygroundException, FileNotFoundException {
+    this.confirmIsRunning();
     this.playSound(endingSound);
-    this.exit();
+    this.sendExitMessageAndEndRun();
   }
 
   /**
@@ -189,13 +190,8 @@ public class Board {
    * @throws PlaygroundException if the run() method has not been called.
    */
   public void exit() throws PlaygroundException {
-    if (!this.isRunning) {
-      throw new PlaygroundException(PlaygroundExceptionKeys.PLAYGROUND_NOT_RUNNING);
-    }
-
-    this.playgroundMessageHandler.sendMessage(
-        new PlaygroundMessage(PlaygroundSignalKey.EXIT, new HashMap<>()));
-    this.isRunning = false;
+    this.confirmIsRunning();
+    this.sendExitMessageAndEndRun();
   }
 
   private void handleClickEvent(String id) {
@@ -215,5 +211,17 @@ public class Board {
   private void addIndexToDetails(HashMap<String, String> details) {
     details.put("index", Integer.toString(this.nextItemIndex));
     this.nextItemIndex++;
+  }
+
+  private void sendExitMessageAndEndRun() {
+    this.playgroundMessageHandler.sendMessage(
+        new PlaygroundMessage(PlaygroundSignalKey.EXIT, new HashMap<>()));
+    this.isRunning = false;
+  }
+
+  private void confirmIsRunning() throws PlaygroundException {
+    if (!this.isRunning) {
+      throw new PlaygroundException(PlaygroundExceptionKeys.PLAYGROUND_NOT_RUNNING);
+    }
   }
 }
