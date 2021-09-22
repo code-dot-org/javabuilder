@@ -121,14 +121,14 @@ class BoardTest {
       throws PlaygroundException, FileNotFoundException {
     String filename = "test_file.wav";
 
-    // Ensure that exit() is called while running to avoid exception
+    // Ensure that end() is called while running to avoid exception
     when(inputHandler.getNextMessageForType(InputMessageType.PLAYGROUND))
         .thenAnswer(
             invocation -> {
-              unitUnderTest.exit(filename);
+              unitUnderTest.end(filename);
               return "id";
             });
-    unitUnderTest.run();
+    unitUnderTest.start();
 
     verify(playgroundMessageHandler, times(3)).sendMessage(messageCaptor.capture());
     assertEquals(
