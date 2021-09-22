@@ -145,12 +145,12 @@ public class Board {
 
   /**
    * Starts the playground game, waiting for the user to click on images and executing the
-   * appropriate code. To end the game, call the exit() method. The run() method may only be called
+   * appropriate code. To end the game, call the end() method. The start() method may only be called
    * once per execution of a program.
    *
-   * @throws PlaygroundException if the run() method has already been called.
+   * @throws PlaygroundException if the start() method has already been called.
    */
-  public void run() throws PlaygroundException {
+  public void start() throws PlaygroundException {
     if (this.firstRunStarted) {
       throw new PlaygroundException(PlaygroundExceptionKeys.PLAYGROUND_RUNNING);
     }
@@ -175,17 +175,17 @@ public class Board {
    *
    * @param endingSound the name of a sound file in the asset manager to play at the end of the
    *     game.
-   * @throws PlaygroundException if the run() method has not been called.
+   * @throws PlaygroundException if the start() method has not been called.
    * @throws FileNotFoundException if the sound file cannot be found.
    */
-  public void exit(String endingSound) throws PlaygroundException, FileNotFoundException {}
+  public void end(String endingSound) throws PlaygroundException, FileNotFoundException {}
 
   /**
    * Ends the game and stops program execution.
    *
-   * @throws PlaygroundException if the run() method has not been called.
+   * @throws PlaygroundException if the start() method has not been called.
    */
-  public void exit() throws PlaygroundException {
+  public void end() throws PlaygroundException {
     if (!this.isRunning) {
       throw new PlaygroundException(PlaygroundExceptionKeys.PLAYGROUND_NOT_RUNNING);
     }
