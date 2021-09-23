@@ -8,9 +8,7 @@ import java.util.List;
 import org.code.media.Color;
 import org.code.media.Font;
 import org.code.media.FontStyle;
-import org.code.protocol.ClientMessageDetailKeys;
-import org.code.protocol.InputHandler;
-import org.code.protocol.InputMessageType;
+import org.code.protocol.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -28,6 +26,13 @@ class BoardTest {
     messageCaptor = ArgumentCaptor.forClass(PlaygroundMessage.class);
     inputHandler = mock(InputHandler.class);
     unitUnderTest = new Board(playgroundMessageHandler, inputHandler);
+    GlobalProtocol.create(
+        mock(OutputAdapter.class),
+        mock(InputAdapter.class),
+        "",
+        "",
+        "",
+        mock(JavabuilderFileWriter.class));
   }
 
   @Test

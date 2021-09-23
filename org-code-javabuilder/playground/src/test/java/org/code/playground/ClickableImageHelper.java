@@ -2,6 +2,7 @@ package org.code.playground;
 
 import java.io.FileNotFoundException;
 
+// a basic implementation of ClickableImage to use for testing
 public class ClickableImageHelper extends ClickableImage {
   /**
    * Creates an item that can be displayed in the Playground and respond to click events. An item
