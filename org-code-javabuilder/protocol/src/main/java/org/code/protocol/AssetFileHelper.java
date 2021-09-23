@@ -47,7 +47,7 @@ public class AssetFileHelper {
 
     if (!this.starterAssetFilenames.contains(filename)
         && !this.userAssetFilenames.contains(filename)) {
-      throw new FileNotFoundException("Could not find file: " + filename);
+      throw new FileNotFoundException(filename);
     }
   }
 

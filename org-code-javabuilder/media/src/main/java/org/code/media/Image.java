@@ -165,7 +165,7 @@ public class Image {
       }
       return image;
     } catch (IOException e) {
-      throw new FileNotFoundException("Could not find file " + filename);
+      throw new FileNotFoundException(filename);
     }
   }
 

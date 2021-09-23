@@ -179,7 +179,7 @@ class AudioUtils {
               AudioSystem.getAudioInputStream(audioFileUrl));
       return AudioUtils.readSamplesFromInputStream(audioInputStream);
     } catch (IOException e) {
-      throw new FileNotFoundException("Could not find file: " + filename);
+      throw new FileNotFoundException(filename);
     } catch (UnsupportedAudioFileException e) {
       throw new SoundException(SoundExceptionKeys.INVALID_AUDIO_FILE_FORMAT);
     }
@@ -199,7 +199,7 @@ class AudioUtils {
           AudioUtils.convertStreamToDefaultAudioFormat(
               AudioSystem.getAudioInputStream(new File(filepath))));
     } catch (IOException e) {
-      throw new FileNotFoundException("Could not find file: " + filepath);
+      throw new FileNotFoundException(filepath);
     } catch (UnsupportedAudioFileException e) {
       throw new SoundException(SoundExceptionKeys.INVALID_AUDIO_FILE_FORMAT);
     }
