@@ -169,4 +169,18 @@ class AssetFileHelperTest {
   public void testVerifyAssetFilenameDoesNotThrowIfFileIsUserAsset() {
     assertDoesNotThrow(() -> unitUnderTest.verifyAssetFilename(USER_ASSET_FILE));
   }
+
+  @Test
+  public void testVerifyAssetFilenameThrowsExceptionIfFileListsAreEmpty() {
+    final String emptyStarterAssets = new JSONObject().toString();
+    final String emptyUserAssets = new JSONArray().toString();
+
+    when(httpResponse.body()).thenReturn(emptyStarterAssets, emptyUserAssets);
+
+    // Should not throw any JSON exceptions
+    final FileNotFoundException e =
+        assertThrows(
+            FileNotFoundException.class, () -> unitUnderTest.verifyAssetFilename(USER_ASSET_FILE));
+    assertTrue(e.getMessage().contains(USER_ASSET_FILE));
+  }
 }
