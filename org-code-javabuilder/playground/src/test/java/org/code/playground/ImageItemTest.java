@@ -1,6 +1,6 @@
 package org.code.playground;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.io.FileNotFoundException;
@@ -16,6 +16,7 @@ public class ImageItemTest {
   private PlaygroundMessageHandler playgroundMessageHandler;
   private ArgumentCaptor<PlaygroundMessage> messageCaptor;
   private MockedStatic<PlaygroundMessageHandler> messageHandlerMockedStatic;
+  private AssetFileHelper assetFileHelper;
 
   @BeforeEach
   public void setUp() {
@@ -32,6 +33,7 @@ public class ImageItemTest {
     messageHandlerMockedStatic
         .when(PlaygroundMessageHandler::getInstance)
         .thenReturn(playgroundMessageHandler);
+    assetFileHelper = mock(AssetFileHelper.class);
   }
 
   @AfterEach
@@ -41,7 +43,7 @@ public class ImageItemTest {
 
   @Test
   public void settersSendChangeMessages() throws FileNotFoundException {
-    ImageItem imageItem = new ImageItem("test", 0, 0, 10, 10);
+    ImageItem imageItem = new ImageItem("test", 0, 0, 10, 10, assetFileHelper);
 
     String newFilename = "new_filename";
     int newWidth = 100;
@@ -54,5 +56,31 @@ public class ImageItemTest {
     assertEquals(newFilename, messages.get(0).getDetail().get(ClientMessageDetailKeys.FILENAME));
     assertEquals(
         Integer.toString(newWidth), messages.get(1).getDetail().get(ClientMessageDetailKeys.WIDTH));
+  }
+
+  @Test
+  public void testConstructorThrowsExceptionIfFileNotFound() throws FileNotFoundException {
+    final FileNotFoundException expected = new FileNotFoundException();
+    doThrow(expected).when(assetFileHelper).verifyAssetFilename(anyString());
+
+    final FileNotFoundException actual =
+        assertThrows(
+            FileNotFoundException.class,
+            () -> new ImageItem("test", 0, 0, 10, 10, assetFileHelper));
+
+    assertSame(expected, actual);
+  }
+
+  @Test
+  public void testSetFilenameThrowsExceptionIfFileNotFound() throws FileNotFoundException {
+    ImageItem imageItem = new ImageItem("test", 0, 0, 10, 10, assetFileHelper);
+
+    final FileNotFoundException expected = new FileNotFoundException();
+    doThrow(expected).when(assetFileHelper).verifyAssetFilename(anyString());
+
+    final FileNotFoundException actual =
+        assertThrows(FileNotFoundException.class, () -> imageItem.setFilename("otherFile"));
+
+    assertSame(expected, actual);
   }
 }
