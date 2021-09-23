@@ -3,8 +3,8 @@ package org.code.playground;
 import java.io.FileNotFoundException;
 import java.util.HashMap;
 import org.code.protocol.AssetFileHelper;
-import org.code.protocol.GlobalProtocol;
 import org.code.protocol.ClientMessageDetailKeys;
+import org.code.protocol.GlobalProtocol;
 
 public class ImageItem extends Item {
   private final AssetFileHelper assetFileHelper;
