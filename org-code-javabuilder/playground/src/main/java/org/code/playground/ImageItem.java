@@ -2,13 +2,11 @@ package org.code.playground;
 
 import java.io.FileNotFoundException;
 import java.util.HashMap;
+import org.code.protocol.ClientMessageDetailKeys;
 
 public class ImageItem extends Item {
   private int width;
   private String filename;
-
-  private final String FILENAME_KEY = "filename";
-  private final String WIDTH_KEY = "width";
 
   /**
    * Creates an item that can be displayed in the Playground. An item consists of an image,
@@ -46,6 +44,7 @@ public class ImageItem extends Item {
    */
   public void setFilename(String filename) throws FileNotFoundException {
     this.filename = filename;
+    this.sendChangeMessage(ClientMessageDetailKeys.FILENAME, filename);
   }
 
   /**
@@ -55,6 +54,7 @@ public class ImageItem extends Item {
    */
   public void setWidth(int width) {
     this.width = width;
+    this.sendChangeMessage(ClientMessageDetailKeys.WIDTH, Integer.toString(width));
   }
 
   /**
@@ -69,8 +69,8 @@ public class ImageItem extends Item {
   @Override
   protected HashMap<String, String> getDetails() {
     HashMap<String, String> details = super.getDetails();
-    details.put(FILENAME_KEY, this.getFilename());
-    details.put(WIDTH_KEY, Integer.toString(this.getWidth()));
+    details.put(ClientMessageDetailKeys.FILENAME, this.getFilename());
+    details.put(ClientMessageDetailKeys.WIDTH, Integer.toString(this.getWidth()));
     return details;
   }
 }

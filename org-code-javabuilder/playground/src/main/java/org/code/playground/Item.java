@@ -2,23 +2,21 @@ package org.code.playground;
 
 import java.util.HashMap;
 import java.util.UUID;
+import org.code.protocol.ClientMessageDetailKeys;
 
 public abstract class Item {
   private int xLocation;
   private int yLocation;
   private int height;
   private final String id;
-
-  private final String HEIGHT_KEY = "height";
-  private final String X_KEY = "x";
-  private final String Y_KEY = "y";
-  private final String ID_KEY = "id";
+  private final PlaygroundMessageHandler playgroundMessageHandler;
 
   Item(int x, int y, int height) {
     this.xLocation = x;
     this.yLocation = y;
     this.height = height;
     this.id = UUID.randomUUID().toString();
+    this.playgroundMessageHandler = PlaygroundMessageHandler.getInstance();
   }
 
   /**
@@ -28,6 +26,7 @@ public abstract class Item {
    */
   public void setX(int x) {
     this.xLocation = x;
+    this.sendChangeMessage(ClientMessageDetailKeys.X, Integer.toString(x));
   }
 
   /**
@@ -46,6 +45,7 @@ public abstract class Item {
    */
   public void setY(int y) {
     this.yLocation = y;
+    this.sendChangeMessage(ClientMessageDetailKeys.Y, Integer.toString(y));
   }
 
   /**
@@ -64,6 +64,7 @@ public abstract class Item {
    */
   public void setHeight(int height) {
     this.height = height;
+    this.sendChangeMessage(ClientMessageDetailKeys.HEIGHT, Integer.toString(height));
   }
 
   /**
@@ -80,17 +81,33 @@ public abstract class Item {
   }
 
   protected HashMap<String, String> getDetails() {
-    HashMap<String, String> details = new HashMap<>();
-    details.put(HEIGHT_KEY, Integer.toString(this.getHeight()));
-    details.put(X_KEY, Integer.toString(this.getX()));
-    details.put(Y_KEY, Integer.toString(this.getY()));
-    details.put(ID_KEY, this.getId());
+    HashMap<String, String> details = this.getIdDetails();
+    details.put(ClientMessageDetailKeys.HEIGHT, Integer.toString(this.getHeight()));
+    details.put(ClientMessageDetailKeys.X, Integer.toString(this.getX()));
+    details.put(ClientMessageDetailKeys.Y, Integer.toString(this.getY()));
     return details;
   }
 
   protected HashMap<String, String> getRemoveDetails() {
-    HashMap<String, String> details = new HashMap<>();
-    details.put(ID_KEY, this.getId());
-    return details;
+    return this.getIdDetails();
+  }
+
+  protected void sendChangeMessage(String key, String value) {
+    HashMap<String, String> details = this.getIdDetails();
+    details.put(key, value);
+    this.playgroundMessageHandler.sendMessage(
+        new PlaygroundMessage(PlaygroundSignalKey.CHANGE_ITEM, details));
+  }
+
+  protected void sendChangeMessage(HashMap<String, String> changeDetails) {
+    changeDetails.put(ClientMessageDetailKeys.ID, this.getId());
+    this.playgroundMessageHandler.sendMessage(
+        new PlaygroundMessage(PlaygroundSignalKey.CHANGE_ITEM, changeDetails));
+  }
+
+  private HashMap<String, String> getIdDetails() {
+    HashMap<String, String> idDetails = new HashMap<>();
+    idDetails.put(ClientMessageDetailKeys.ID, this.getId());
+    return idDetails;
   }
 }

@@ -202,7 +202,11 @@ public class Board {
   }
 
   private void handleClickEvent(String id) {
-    // TODO: Handle updates
+    if (!this.clickableImages.containsKey(id)) {
+      return;
+    }
+    ClickableImage image = this.clickableImages.get(id);
+    image.onClick();
   }
 
   private void addItemHelper(Item item, PlaygroundSignalKey signalKey) {
