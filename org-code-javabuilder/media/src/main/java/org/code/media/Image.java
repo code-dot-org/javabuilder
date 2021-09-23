@@ -14,6 +14,8 @@ public class Image {
   private int height;
   private static final Color DEFAULT_BACKGROUND_COLOR = Color.WHITE;
   private BufferedImage bufferedImage;
+  private static final int MAX_WIDTH = 400;
+  private static final int MAX_HEIGHT = 400;
 
   /**
    * Creates a new image object, using the pixel information from the file uploaded to the asset
@@ -169,22 +171,22 @@ public class Image {
       throw new FileNotFoundException("Could not find file " + filename);
     }
 
-    // Resize the image to a max size of 400x400px while maintaining the aspect ratio.
+    // Resize the image to its max size while maintaining the aspect ratio.
     // This allows us to save time when students run on pixel manipulation on an entire image.
     int height = originalImage.getHeight();
     int width = originalImage.getWidth();
-    if (width <= 400 && height <= 400) {
+    if (width <= MAX_WIDTH && height <= MAX_HEIGHT) {
       return originalImage;
     }
     int targetHeight, targetWidth;
     if (height > width) {
-      targetHeight = 400;
-      targetWidth = (int) ((double) width / height * 400);
+      targetHeight = MAX_HEIGHT;
+      targetWidth = (int) ((double) width / height * MAX_HEIGHT);
     } else {
-      targetWidth = 400;
-      targetHeight = (int) ((double) height / width * 400);
+      targetWidth = MAX_WIDTH;
+      targetHeight = (int) ((double) height / width * MAX_WIDTH);
     }
-    BufferedImage image = new BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_RGB);
+    BufferedImage image = new BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_ARGB);
     Graphics2D graphics2D = image.createGraphics();
     graphics2D.drawImage(originalImage, 0, 0, targetWidth, targetHeight, null);
     graphics2D.dispose();
