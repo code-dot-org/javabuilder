@@ -15,7 +15,7 @@ public class GlobalProtocol {
   private final JavabuilderFileWriter fileWriter;
   private final String dashboardHostname;
   private final String channelId;
-  private final AssetUrlGenerator assetUrlGenerator;
+  private final AssetFileHelper assetFileHelper;
 
   private GlobalProtocol(
       OutputAdapter outputAdapter,
@@ -23,13 +23,13 @@ public class GlobalProtocol {
       String dashboardHostname,
       String channelId,
       JavabuilderFileWriter fileWriter,
-      AssetUrlGenerator assetUrlGenerator) {
+      AssetFileHelper assetFileHelper) {
     this.outputAdapter = outputAdapter;
     this.inputHandler = inputHandler;
     this.dashboardHostname = dashboardHostname;
     this.channelId = channelId;
     this.fileWriter = fileWriter;
-    this.assetUrlGenerator = assetUrlGenerator;
+    this.assetFileHelper = assetFileHelper;
   }
 
   public static void create(
@@ -46,7 +46,7 @@ public class GlobalProtocol {
             dashboardHostname,
             channelId,
             fileWriter,
-            new AssetUrlGenerator(dashboardHostname, channelId, levelId));
+            new AssetFileHelper(dashboardHostname, channelId, levelId));
   }
 
   public static GlobalProtocol getInstance() {
@@ -70,7 +70,11 @@ public class GlobalProtocol {
   }
 
   public String generateAssetUrl(String filename) {
-    return this.assetUrlGenerator.generateAssetUrl(filename);
+    return this.assetFileHelper.generateAssetUrl(filename);
+  }
+
+  public AssetFileHelper getAssetFileHelper() {
+    return this.assetFileHelper;
   }
 
   public String generateSourcesUrl() {
