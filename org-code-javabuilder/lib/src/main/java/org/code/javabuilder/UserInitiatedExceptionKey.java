@@ -17,5 +17,7 @@ public enum UserInitiatedExceptionKey {
   // The user is writing to file too many times
   TOO_MANY_WRITES,
   // The user tried to run a file without a class definition
-  CLASS_NOT_FOUND
+  CLASS_NOT_FOUND,
+  // The user's code threw a FileNotFoundException
+  FILE_NOT_FOUND
 }
