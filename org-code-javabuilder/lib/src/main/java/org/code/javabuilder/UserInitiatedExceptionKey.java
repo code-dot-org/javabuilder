@@ -19,5 +19,9 @@ public enum UserInitiatedExceptionKey {
   // The user tried to run a file without a class definition
   CLASS_NOT_FOUND,
   // The user's code threw a FileNotFoundException
-  FILE_NOT_FOUND
+  FILE_NOT_FOUND,
+  // The user's project has a Java file with an invalid file name
+  INVALID_JAVA_FILE_NAME,
+  // The user's project has a non-Java project file with a blank file name
+  MISSING_PROJECT_FILE_NAME
 }

@@ -130,6 +130,6 @@ public class ImageTest {
             () -> {
               Image.getImageAssetFromFile(imageFileName);
             });
-    assertEquals(exception.getMessage(), ("Could not find file " + imageFileName));
+    assertEquals(exception.getMessage(), (imageFileName));
   }
 }
