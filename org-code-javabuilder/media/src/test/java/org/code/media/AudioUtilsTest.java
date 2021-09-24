@@ -71,7 +71,7 @@ class AudioUtilsTest {
             () -> {
               AudioUtils.readSamplesFromAssetFile(TEST_FILE_NAME);
             });
-    assertTrue(exception.getMessage().contains("Could not find file: " + TEST_FILE_NAME));
+    assertTrue(exception.getMessage().contains(TEST_FILE_NAME));
   }
 
   @Test

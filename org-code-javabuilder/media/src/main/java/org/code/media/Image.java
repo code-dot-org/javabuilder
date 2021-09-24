@@ -168,7 +168,7 @@ public class Image {
         throw new MediaRuntimeException(MediaRuntimeExceptionKeys.IMAGE_LOAD_ERROR);
       }
     } catch (IOException e) {
-      throw new FileNotFoundException("Could not find file " + filename);
+      throw new FileNotFoundException(filename);
     }
 
     // Resize the image to its max size while maintaining the aspect ratio.

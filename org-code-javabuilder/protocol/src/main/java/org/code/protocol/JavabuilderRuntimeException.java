@@ -21,9 +21,12 @@ public abstract class JavabuilderRuntimeException extends RuntimeException
 
   public JavabuilderThrowableMessage getExceptionMessage() {
     HashMap<String, String> detail = new HashMap<>();
-    detail.put("connectionId", Properties.getConnectionId());
+    detail.put(ClientMessageDetailKeys.CONNECTION_ID, Properties.getConnectionId());
     if (this.getCause() != null) {
-      detail.put("cause", this.getLoggingString());
+      detail.put(ClientMessageDetailKeys.CAUSE, this.getLoggingString());
+      if (this.getCause().getMessage() != null) {
+        detail.put(ClientMessageDetailKeys.CAUSE_MESSAGE, this.getCause().getMessage());
+      }
     }
 
     return new JavabuilderThrowableMessage(this.key, detail);
