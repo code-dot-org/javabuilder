@@ -1,5 +1,6 @@
 package org.code.media;
 
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -13,6 +14,8 @@ public class Image {
   private int height;
   private static final Color DEFAULT_BACKGROUND_COLOR = Color.WHITE;
   private BufferedImage bufferedImage;
+  private static final int MAX_WIDTH = 400;
+  private static final int MAX_HEIGHT = 400;
 
   /**
    * Creates a new image object, using the pixel information from the file uploaded to the asset
@@ -156,17 +159,39 @@ public class Image {
    * @throws FileNotFoundException if the file is not found
    */
   public static BufferedImage getImageAssetFromFile(String filename) throws FileNotFoundException {
+    BufferedImage originalImage;
     try {
-      BufferedImage image =
+      originalImage =
           ImageIO.read(new URL(GlobalProtocol.getInstance().generateAssetUrl(filename)));
-      if (image == null) {
+      if (originalImage == null) {
         // this can happen if the filename is not associated with an image
         throw new MediaRuntimeException(MediaRuntimeExceptionKeys.IMAGE_LOAD_ERROR);
       }
-      return image;
     } catch (IOException e) {
       throw new FileNotFoundException("Could not find file " + filename);
     }
+
+    // Resize the image to its max size while maintaining the aspect ratio.
+    // This allows us to save time when students run on pixel manipulation on an entire image.
+    int height = originalImage.getHeight();
+    int width = originalImage.getWidth();
+    if (width <= MAX_WIDTH && height <= MAX_HEIGHT) {
+      return originalImage;
+    }
+    int targetHeight, targetWidth;
+    if (height > width) {
+      targetHeight = MAX_HEIGHT;
+      targetWidth = (int) ((double) width / height * MAX_HEIGHT);
+    } else {
+      targetWidth = MAX_WIDTH;
+      targetHeight = (int) ((double) height / width * MAX_WIDTH);
+    }
+    BufferedImage image = new BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_ARGB);
+    Graphics2D graphics2D = image.createGraphics();
+    graphics2D.drawImage(originalImage, 0, 0, targetWidth, targetHeight, null);
+    graphics2D.dispose();
+
+    return image;
   }
 
   /** Create a 2d array of pixels from this.bufferedImage */
