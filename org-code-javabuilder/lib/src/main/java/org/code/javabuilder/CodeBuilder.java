@@ -84,7 +84,7 @@ public class CodeBuilder implements AutoCloseable {
   }
 
   /** Save any non-source code files to storage */
-  private void saveProjectAssets() throws InternalServerError {
+  private void saveProjectAssets() throws InternalServerError, UserInitiatedException {
     // Save all text files to current folder.
     List<TextProjectFile> textProjectFiles = this.userProjectFiles.getTextFiles();
     for (TextProjectFile projectFile : textProjectFiles) {
@@ -92,6 +92,10 @@ public class CodeBuilder implements AutoCloseable {
       try {
         Files.writeString(Path.of(filePath), projectFile.getFileContents());
       } catch (IOException e) {
+        if (filePath.isBlank()) {
+          // If the file name is empty, indicate to the user that the file name is invalid
+          throw new UserInitiatedException(UserInitiatedExceptionKey.MISSING_PROJECT_FILE_NAME, e);
+        }
         throw new InternalServerError(InternalErrorKey.INTERNAL_COMPILER_EXCEPTION, e);
       }
     }
