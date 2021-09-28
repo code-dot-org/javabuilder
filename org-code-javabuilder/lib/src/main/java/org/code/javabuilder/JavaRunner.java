@@ -1,5 +1,6 @@
 package org.code.javabuilder;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -56,6 +57,11 @@ public class JavaRunner {
       }
       if (e.getCause() instanceof JavabuilderRuntimeException) {
         throw (JavabuilderRuntimeException) e.getCause();
+      }
+      // FileNotFoundExceptions may be thrown from student code, so we treat them as a
+      // specific case of a UserInitiatedException
+      if (e.getCause() instanceof FileNotFoundException) {
+        throw new UserInitiatedException(UserInitiatedExceptionKey.FILE_NOT_FOUND, e.getCause());
       }
       throw new UserInitiatedException(UserInitiatedExceptionKey.RUNTIME_ERROR, e);
     }
