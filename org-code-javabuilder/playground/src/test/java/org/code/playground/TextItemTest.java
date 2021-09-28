@@ -1,6 +1,7 @@
 package org.code.playground;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.mockito.Mockito.*;
 
 import java.util.List;
@@ -51,14 +52,20 @@ public class TextItemTest {
     Font newFont = Font.SERIF;
     FontStyle newFontStyle = FontStyle.ITALIC;
     double newRotation = 15;
+    int colorRed = 50;
+    int colorGreen = 100;
+    int colorBlue = 150;
 
     textItem.setText(newText);
     textItem.setColor(newColor);
     textItem.setFont(newFont);
     textItem.setFontStyle(newFontStyle);
     textItem.setRotation(newRotation);
+    textItem.setRed(colorRed);
+    textItem.setGreen(colorGreen);
+    textItem.setBlue(colorBlue);
 
-    verify(playgroundMessageHandler, times(5)).sendMessage(messageCaptor.capture());
+    verify(playgroundMessageHandler, times(8)).sendMessage(messageCaptor.capture());
     List<PlaygroundMessage> messages = messageCaptor.getAllValues();
     assertEquals(PlaygroundSignalKey.CHANGE_ITEM.toString(), messages.get(0).getValue());
     assertEquals(newText, messages.get(0).getDetail().get(ClientMessageDetailKeys.TEXT));
@@ -77,5 +84,35 @@ public class TextItemTest {
     assertEquals(
         Double.toString(newRotation),
         messages.get(4).getDetail().get(ClientMessageDetailKeys.ROTATION));
+    assertEquals(
+        Integer.toString(colorRed),
+        messages.get(5).getDetail().get(ClientMessageDetailKeys.COLOR_RED));
+    assertEquals(
+        Integer.toString(colorGreen),
+        messages.get(6).getDetail().get(ClientMessageDetailKeys.COLOR_GREEN));
+    assertEquals(
+        Integer.toString(colorBlue),
+        messages.get(7).getDetail().get(ClientMessageDetailKeys.COLOR_BLUE));
+  }
+
+  @Test
+  public void testGetColorReturnsCopyOfColor() {
+    final Color color = Color.AQUA;
+    final TextItem textItem = new TextItem("text", 0, 0, color, Font.SANS, 0, 0);
+
+    // Should be a different instance but have the same values
+    assertNotSame(color, textItem.getColor());
+    assertEquals(color.getRed(), textItem.getColor().getRed());
+    assertEquals(color.getGreen(), textItem.getColor().getGreen());
+    assertEquals(color.getBlue(), textItem.getColor().getBlue());
+
+    final Color newColor = Color.BEIGE;
+    textItem.setColor(newColor);
+
+    // Should be a different instance but have the same values
+    assertNotSame(newColor, textItem.getColor());
+    assertEquals(newColor.getRed(), textItem.getColor().getRed());
+    assertEquals(newColor.getGreen(), textItem.getColor().getGreen());
+    assertEquals(newColor.getBlue(), textItem.getColor().getBlue());
   }
 }
