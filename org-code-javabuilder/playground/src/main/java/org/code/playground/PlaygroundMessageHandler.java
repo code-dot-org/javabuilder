@@ -25,6 +25,9 @@ class PlaygroundMessageHandler {
   }
 
   public void sendMessage(PlaygroundMessage message) {
-    this.outputAdapter.sendMessage(message);
+    // only send messages if playground has not ended.
+    if (!Playground.board.hasEnded()) {
+      this.outputAdapter.sendMessage(message);
+    }
   }
 }
