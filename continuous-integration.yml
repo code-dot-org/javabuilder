@@ -44,26 +44,6 @@ Parameters:
     Type: String
     Description: AWS Route53 Hosted Zone ID for base domain name.
     Default: Z07248463JGJ44FME5BZ5
-  SlackApprovalChannel:
-    Type: String
-    Description: Slack channel for manual approval actions
-  SlackSigningSecret:
-    Type: String
-    NoEcho: true
-    Description: Slack signing secret for manual approval actions
-  SlackToken:
-    Type: String
-    NoEcho: true
-    Description: Slack app Oauth token
-  SlackPipelineChannel:
-    Type: String
-    Description: Slack channel ID for pipeline event notifications
-
-Globals:
-  Function:
-    Runtime: nodejs14.x
-    Timeout: 10
-    MemorySize: 3008
 
 Resources:
   Pipeline:
@@ -160,7 +140,6 @@ Resources:
                 Provider: Manual
                 Version: 1
               Configuration:
-                NotificationArn: !Ref BuildApprovalSNS
                 CustomData: !Sub "${SubDomainName} build awaiting approval to Production."
             - Name: Deploy
               RunOrder: 3
@@ -210,7 +189,6 @@ Resources:
               OUTPUT_TEMPLATE: output.yml
               SUB_DOMAIN: ${SubDomainName}
               STAGING_SUB_DOMAIN: ${StagingSubDomainName}
-              PROVISIONED_CONCURRENT_EXECUTIONS: 10
               TEMPLATE_CONFIG: configuration.json
               STAGING_TEMPLATE_CONFIG: configuration-staging.json
           phases:
@@ -228,60 +206,3 @@ Resources:
               - output.yml
               - configuration.json
               - configuration-staging.json
-  BuildApprovalSNS:
-    Type: AWS::SNS::Topic
-  ApprovalRequest:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: ./ciApproval
-      Handler: request.requestApproval
-      Role: !ImportValue JavabuilderLambdaExecutionRole
-      Environment:
-        Variables:
-          SLACK_CHANNEL: !Ref SlackApprovalChannel
-          SLACK_TOKEN: !Ref SlackToken
-          STACK_NAME: !Ref SubDomainName
-      Events:
-        ApprovalRequest:
-          Type: SNS
-          Properties:
-            Topic: !Ref BuildApprovalSNS
-  ApprovalRespond:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: ./ciApproval
-      Handler: response.respondApproval
-      Role: !ImportValue JavabuilderLambdaExecutionRole
-      Environment:
-        Variables:
-          SLACK_SIGNING_SECRET: !Ref SlackSigningSecret
-      Events:
-        ApprovalRespond:
-          Type: Api
-          Properties:
-            Path: /
-            Method: post
-  SlackPipelineEvent:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: ./ciApproval
-      Handler: stateChange.handler
-      Role: !ImportValue JavabuilderLambdaExecutionRole
-      Environment:
-        Variables:
-          SLACK_CHANNEL: !Ref SlackPipelineChannel
-          SLACK_TOKEN: !Ref SlackToken
-      Events:
-        Pipeline:
-          Type: CloudWatchEvent
-          Properties:
-            Pattern:
-              detail-type:
-                - CodePipeline Stage Execution State Change
-              detail:
-                pipeline:
-                  - !Ref Pipeline
-Outputs:
-  ApprovalResponseUrl:
-    Description: "Approval Response URL"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
