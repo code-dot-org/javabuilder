@@ -8,7 +8,6 @@ import org.code.protocol.ClientMessageDetailKeys;
 
 public class TextItem extends Item {
   private String text;
-  private Color color;
   private Font font;
   private FontStyle fontStyle;
   private double rotation;
@@ -92,12 +91,45 @@ public class TextItem extends Item {
   }
 
   /**
+   * Set the amount of red (ranging from 0 to 255). Values below 0 will be ignored and set to 0, and
+   * values above 255 will be ignored and set to 255.
+   *
+   * @param colorRed the amount of red (ranging from 0 to 255) in the color of the text.
+   */
+  public void setRed(int colorRed) {
+    this.colorRed = Math.max(Math.min(colorRed, 255), 0);
+    this.sendChangeMessage(ClientMessageDetailKeys.COLOR_RED, Integer.toString(this.colorRed));
+  }
+
+  /**
+   * Set the amount of green (ranging from 0 to 255). Values below 0 will be ignored and set to 0,
+   * and values above 255 will be ignored and set to 255.
+   *
+   * @param colorGreen the amount of green (ranging from 0 to 255) in the color of the text.
+   */
+  public void setGreen(int colorGreen) {
+    this.colorGreen = Math.max(Math.min(colorGreen, 255), 0);
+    this.sendChangeMessage(ClientMessageDetailKeys.COLOR_GREEN, Integer.toString(this.colorGreen));
+  }
+
+  /**
+   * Set the amount of blue (ranging from 0 to 255). Values below 0 will be ignored and set to 0,
+   * and values above 255 will be ignored and set to 255.
+   *
+   * @param colorBlue the amount of blue (ranging from 0 to 255) in the color of the text.
+   */
+  public void setBlue(int colorBlue) {
+    this.colorBlue = Math.max(Math.min(colorBlue, 255), 0);
+    this.sendChangeMessage(ClientMessageDetailKeys.COLOR_BLUE, Integer.toString(this.colorBlue));
+  }
+
+  /**
    * Get the text color for the item.
    *
    * @return the text color for the item
    */
   public Color getColor() {
-    return this.color;
+    return new Color(this.colorRed, this.colorGreen, this.colorBlue);
   }
 
   /**
@@ -169,7 +201,6 @@ public class TextItem extends Item {
   }
 
   private void setColorHelper(Color color) {
-    this.color = color;
     // we lock the color rgb values to what is currently set in color
     this.colorRed = color.getRed();
     this.colorBlue = color.getBlue();
