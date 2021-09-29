@@ -48,28 +48,52 @@ public class TextItemTest {
     TextItem textItem = new TextItem("text", 0, 0, Color.BLUE, Font.SANS, FontStyle.BOLD, 10, 0);
 
     String newText = "new text";
-    Color newColor = Color.GREEN;
     Font newFont = Font.SERIF;
     FontStyle newFontStyle = FontStyle.ITALIC;
     double newRotation = 15;
+
+    textItem.setText(newText);
+    textItem.setFont(newFont);
+    textItem.setFontStyle(newFontStyle);
+    textItem.setRotation(newRotation);
+
+    verify(playgroundMessageHandler, times(4)).sendMessage(messageCaptor.capture());
+    List<PlaygroundMessage> messages = messageCaptor.getAllValues();
+    assertEquals(PlaygroundSignalKey.CHANGE_ITEM.toString(), messages.get(0).getValue());
+    assertEquals(newText, messages.get(0).getDetail().get(ClientMessageDetailKeys.TEXT));
+    assertEquals(newFont.toString(), messages.get(1).getDetail().get(ClientMessageDetailKeys.FONT));
+    assertEquals(
+        newFontStyle.toString(),
+        messages.get(2).getDetail().get(ClientMessageDetailKeys.FONT_STYLE));
+    assertEquals(
+        Double.toString(newRotation),
+        messages.get(3).getDetail().get(ClientMessageDetailKeys.ROTATION));
+  }
+
+  @Test
+  public void testColorSettersSendMessages() {
+    TextItem textItem = new TextItem("text", 0, 0, Color.BLUE, Font.SANS, FontStyle.BOLD, 10, 0);
+
+    Color newColor = Color.GREEN;
+
     int colorRed = 50;
     int colorGreen = 100;
     int colorBlue = 150;
 
-    textItem.setText(newText);
+    int outOfBoundsColorRed = 300;
+    int outOfBoundsColorBlue = -100;
+
     textItem.setColor(newColor);
-    textItem.setFont(newFont);
-    textItem.setFontStyle(newFontStyle);
-    textItem.setRotation(newRotation);
     textItem.setRed(colorRed);
     textItem.setGreen(colorGreen);
     textItem.setBlue(colorBlue);
+    textItem.setRed(outOfBoundsColorRed);
+    textItem.setBlue(outOfBoundsColorBlue);
 
-    verify(playgroundMessageHandler, times(8)).sendMessage(messageCaptor.capture());
+    verify(playgroundMessageHandler, times(6)).sendMessage(messageCaptor.capture());
     List<PlaygroundMessage> messages = messageCaptor.getAllValues();
-    assertEquals(PlaygroundSignalKey.CHANGE_ITEM.toString(), messages.get(0).getValue());
-    assertEquals(newText, messages.get(0).getDetail().get(ClientMessageDetailKeys.TEXT));
-    JSONObject colorDetails = messages.get(1).getDetail();
+
+    JSONObject colorDetails = messages.get(0).getDetail();
     assertEquals(
         Integer.toString(newColor.getRed()), colorDetails.get(ClientMessageDetailKeys.COLOR_RED));
     assertEquals(
@@ -77,22 +101,21 @@ public class TextItemTest {
     assertEquals(
         Integer.toString(newColor.getGreen()),
         colorDetails.get(ClientMessageDetailKeys.COLOR_GREEN));
-    assertEquals(newFont.toString(), messages.get(2).getDetail().get(ClientMessageDetailKeys.FONT));
-    assertEquals(
-        newFontStyle.toString(),
-        messages.get(3).getDetail().get(ClientMessageDetailKeys.FONT_STYLE));
-    assertEquals(
-        Double.toString(newRotation),
-        messages.get(4).getDetail().get(ClientMessageDetailKeys.ROTATION));
+
     assertEquals(
         Integer.toString(colorRed),
-        messages.get(5).getDetail().get(ClientMessageDetailKeys.COLOR_RED));
+        messages.get(1).getDetail().get(ClientMessageDetailKeys.COLOR_RED));
     assertEquals(
         Integer.toString(colorGreen),
-        messages.get(6).getDetail().get(ClientMessageDetailKeys.COLOR_GREEN));
+        messages.get(2).getDetail().get(ClientMessageDetailKeys.COLOR_GREEN));
     assertEquals(
         Integer.toString(colorBlue),
-        messages.get(7).getDetail().get(ClientMessageDetailKeys.COLOR_BLUE));
+        messages.get(3).getDetail().get(ClientMessageDetailKeys.COLOR_BLUE));
+
+    assertEquals(
+        Integer.toString(255), messages.get(4).getDetail().get(ClientMessageDetailKeys.COLOR_RED));
+    assertEquals(
+        Integer.toString(0), messages.get(5).getDetail().get(ClientMessageDetailKeys.COLOR_BLUE));
   }
 
   @Test
