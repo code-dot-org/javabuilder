@@ -8,13 +8,10 @@ import org.code.protocol.ClientMessageDetailKeys;
 
 public class TextItem extends Item {
   private String text;
-  private Color color;
   private Font font;
   private FontStyle fontStyle;
   private double rotation;
-  private int colorRed;
-  private int colorGreen;
-  private int colorBlue;
+  private Color color;
 
   /**
    * Creates text item that can be placed the board.
@@ -39,7 +36,8 @@ public class TextItem extends Item {
       double rotation) {
     super(x, y, height);
     this.text = text;
-    this.setColorHelper(color);
+    // Copy to new color to store the values only, and not a reference to the original color object
+    this.color = new Color(color);
     this.font = font;
     this.fontStyle = fontStyle;
     this.rotation = rotation;
@@ -85,10 +83,47 @@ public class TextItem extends Item {
    * @param color the text color
    */
   public void setColor(Color color) {
-    this.setColorHelper(color);
+    // Copy to new color to store the values only, and not a reference to the original color object
+    this.color = new Color(color);
     HashMap<String, String> colorDetails = new HashMap<>();
     this.addColorToDetails(colorDetails);
     this.sendChangeMessage(colorDetails);
+  }
+
+  /**
+   * Set the amount of red (ranging from 0 to 255). Values below 0 will be ignored and set to 0, and
+   * values above 255 will be ignored and set to 255.
+   *
+   * @param colorRed the amount of red (ranging from 0 to 255) in the color of the text.
+   */
+  public void setRed(int colorRed) {
+    this.color = new Color(colorRed, this.color.getGreen(), this.color.getBlue());
+    this.sendChangeMessage(
+        ClientMessageDetailKeys.COLOR_RED, Integer.toString(this.color.getRed()));
+  }
+
+  /**
+   * Set the amount of green (ranging from 0 to 255). Values below 0 will be ignored and set to 0,
+   * and values above 255 will be ignored and set to 255.
+   *
+   * @param colorGreen the amount of green (ranging from 0 to 255) in the color of the text.
+   */
+  public void setGreen(int colorGreen) {
+    this.color = new Color(this.color.getRed(), colorGreen, this.color.getBlue());
+    this.sendChangeMessage(
+        ClientMessageDetailKeys.COLOR_GREEN, Integer.toString(this.color.getGreen()));
+  }
+
+  /**
+   * Set the amount of blue (ranging from 0 to 255). Values below 0 will be ignored and set to 0,
+   * and values above 255 will be ignored and set to 255.
+   *
+   * @param colorBlue the amount of blue (ranging from 0 to 255) in the color of the text.
+   */
+  public void setBlue(int colorBlue) {
+    this.color = new Color(this.color.getRed(), this.color.getGreen(), colorBlue);
+    this.sendChangeMessage(
+        ClientMessageDetailKeys.COLOR_BLUE, Integer.toString(this.color.getBlue()));
   }
 
   /**
@@ -97,7 +132,9 @@ public class TextItem extends Item {
    * @return the text color for the item
    */
   public Color getColor() {
-    return this.color;
+    // TODO: wrapping this.color in a new Color object will not be necessary once Color is
+    // immutable.
+    return new Color(this.color);
   }
 
   /**
@@ -168,17 +205,9 @@ public class TextItem extends Item {
     return details;
   }
 
-  private void setColorHelper(Color color) {
-    this.color = color;
-    // we lock the color rgb values to what is currently set in color
-    this.colorRed = color.getRed();
-    this.colorBlue = color.getBlue();
-    this.colorGreen = color.getGreen();
-  }
-
   private void addColorToDetails(HashMap<String, String> details) {
-    details.put(ClientMessageDetailKeys.COLOR_RED, Integer.toString(this.colorRed));
-    details.put(ClientMessageDetailKeys.COLOR_GREEN, Integer.toString(this.colorGreen));
-    details.put(ClientMessageDetailKeys.COLOR_BLUE, Integer.toString(this.colorBlue));
+    details.put(ClientMessageDetailKeys.COLOR_RED, Integer.toString(this.color.getRed()));
+    details.put(ClientMessageDetailKeys.COLOR_GREEN, Integer.toString(this.color.getGreen()));
+    details.put(ClientMessageDetailKeys.COLOR_BLUE, Integer.toString(this.color.getBlue()));
   }
 }
