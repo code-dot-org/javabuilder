@@ -174,6 +174,8 @@ Resources:
         Type: CODEPIPELINE
       Environment:
         ComputeType: BUILD_GENERAL1_MEDIUM
+        # https://docs.aws.amazon.com/codebuild/latest/userguide/build-env-ref-available.html
+        # https://github.com/aws/aws-codebuild-docker-images/blob/master/al2/x86_64/standard/3.0/Dockerfile
         Image: aws/codebuild/amazonlinux2-x86_64-standard:3.0
         Type: LINUX_CONTAINER
       ServiceRole: !ImportValue JavabuilderCodeBuildRole
@@ -194,6 +196,8 @@ Resources:
           phases:
             install:
               runtime-versions:
+                # This appears to currently be Ruby 2.7.2
+                # https://github.com/aws/aws-codebuild-docker-images/master/al2/x86_64/standard/3.0/Dockerfile#L448-L450
                 ruby: 2.7
                 java: corretto11
               commands:
