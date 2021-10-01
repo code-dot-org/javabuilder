@@ -25,6 +25,12 @@ class PlaygroundMessageHandler {
   }
 
   public void sendMessage(PlaygroundMessage message) {
-    this.outputAdapter.sendMessage(message);
+    // only send messages if playground has not ended. Otherwise throw a runtime exception.
+    if (Playground.board.hasEnded()) {
+      throw new PlaygroundRuntimeException(
+          PlaygroundExceptionKeys.INVALID_MESSAGE_PLAYGROUND_ENDED);
+    } else {
+      this.outputAdapter.sendMessage(message);
+    }
   }
 }
