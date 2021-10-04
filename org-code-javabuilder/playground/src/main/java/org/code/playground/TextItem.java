@@ -97,7 +97,7 @@ public class TextItem extends Item {
    * @param colorRed the amount of red (ranging from 0 to 255) in the color of the text.
    */
   public void setRed(int colorRed) {
-    this.color = new Color(colorRed, this.color.getGreen(), this.color.getBlue());
+    this.color = Color.copyWithRed(this.color, colorRed);
     this.sendChangeMessage(
         ClientMessageDetailKeys.COLOR_RED, Integer.toString(this.color.getRed()));
   }
@@ -109,7 +109,7 @@ public class TextItem extends Item {
    * @param colorGreen the amount of green (ranging from 0 to 255) in the color of the text.
    */
   public void setGreen(int colorGreen) {
-    this.color = new Color(this.color.getRed(), colorGreen, this.color.getBlue());
+    this.color = Color.copyWithGreen(this.color, colorGreen);
     this.sendChangeMessage(
         ClientMessageDetailKeys.COLOR_GREEN, Integer.toString(this.color.getGreen()));
   }
@@ -121,7 +121,7 @@ public class TextItem extends Item {
    * @param colorBlue the amount of blue (ranging from 0 to 255) in the color of the text.
    */
   public void setBlue(int colorBlue) {
-    this.color = new Color(this.color.getRed(), this.color.getGreen(), colorBlue);
+    this.color = Color.copyWithBlue(this.color, colorBlue);
     this.sendChangeMessage(
         ClientMessageDetailKeys.COLOR_BLUE, Integer.toString(this.color.getBlue()));
   }
