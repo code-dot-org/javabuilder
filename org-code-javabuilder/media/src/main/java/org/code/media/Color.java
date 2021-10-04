@@ -3,6 +3,8 @@ package org.code.media;
 import java.util.Map;
 
 public class Color {
+  private static final int MAX_VALUE = 255;
+  private static final int MIN_VALUE = 0;
 
   private final int red;
   private final int green;
@@ -36,7 +38,7 @@ public class Color {
     this.red = colorToCopy.getRed();
     this.green = colorToCopy.getGreen();
     this.blue = colorToCopy.getBlue();
-    this.alpha = 255;
+    this.alpha = MAX_VALUE;
   }
 
   /**
@@ -48,7 +50,7 @@ public class Color {
    * @param blue the blue value from 0 - 255
    */
   public Color(int red, int green, int blue) {
-    this(red, green, blue, 255);
+    this(red, green, blue, MAX_VALUE);
   }
 
   /**
@@ -131,13 +133,10 @@ public class Color {
    * @return value if it was in the expected range, or a valid value based on the reset logic.
    */
   private int sanitizeValue(int value) {
-    if (value < 0) {
-      return 0;
+    if (value < MIN_VALUE) {
+      return MIN_VALUE;
     }
-    if (value > 255) {
-      return 255;
-    }
-    return value;
+    return Math.min(value, MAX_VALUE);
   }
 
   public static java.awt.Color convertToAWTColor(Color c) {

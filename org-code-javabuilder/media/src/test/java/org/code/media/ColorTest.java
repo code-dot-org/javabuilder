@@ -1,6 +1,7 @@
 package org.code.media;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 
 import org.junit.jupiter.api.Test;
 
@@ -17,7 +18,9 @@ public class ColorTest {
     final int green = 150;
     final int blue = 200;
     final int newRed = 50;
-    final Color copied = Color.copyWithRed(new Color(red, green, blue), newRed);
+    final Color original = new Color(red, green, blue);
+    final Color copied = Color.copyWithRed(original, newRed);
+    assertNotSame(copied, original);
     assertEquals(newRed, copied.getRed());
     assertEquals(green, copied.getGreen());
     assertEquals(blue, copied.getBlue());
@@ -29,7 +32,9 @@ public class ColorTest {
     final int green = 150;
     final int blue = 200;
     final int newGreen = 50;
-    final Color copied = Color.copyWithGreen(new Color(red, green, blue), newGreen);
+    final Color original = new Color(red, green, blue);
+    final Color copied = Color.copyWithGreen(original, newGreen);
+    assertNotSame(copied, original);
     assertEquals(red, copied.getRed());
     assertEquals(newGreen, copied.getGreen());
     assertEquals(blue, copied.getBlue());
@@ -41,7 +46,9 @@ public class ColorTest {
     final int green = 150;
     final int blue = 200;
     final int newBlue = 50;
-    final Color copied = Color.copyWithBlue(new Color(red, green, blue), newBlue);
+    final Color original = new Color(red, green, blue);
+    final Color copied = Color.copyWithBlue(original, newBlue);
+    assertNotSame(copied, original);
     assertEquals(red, copied.getRed());
     assertEquals(green, copied.getGreen());
     assertEquals(newBlue, copied.getBlue());
