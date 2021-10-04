@@ -42,6 +42,7 @@ public class ItemTest {
   @Test
   public void settersSendChangeMessages() {
     Item item = new ItemHelper(0, 0, 15);
+    item.turnOnChangeMessages();
 
     int newX = 5;
     int newY = 10;

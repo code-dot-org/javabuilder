@@ -44,6 +44,7 @@ public class ImageItemTest {
   @Test
   public void settersSendChangeMessages() throws FileNotFoundException {
     ImageItem imageItem = new ImageItem("test", 0, 0, 10, 10, assetFileHelper);
+    imageItem.turnOnChangeMessages();
 
     String newFilename = "new_filename";
     int newWidth = 100;
