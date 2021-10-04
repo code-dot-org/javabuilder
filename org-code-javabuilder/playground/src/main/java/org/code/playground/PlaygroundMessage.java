@@ -8,4 +8,8 @@ public class PlaygroundMessage extends ClientMessage {
   PlaygroundMessage(PlaygroundSignalKey key, HashMap<String, String> detail) {
     super(ClientMessageType.PLAYGROUND, key.toString(), detail);
   }
+
+  PlaygroundMessage(PlaygroundSignalKey key) {
+    super(ClientMessageType.PLAYGROUND, key.toString());
+  }
 }
