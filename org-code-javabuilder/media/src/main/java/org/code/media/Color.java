@@ -4,10 +4,22 @@ import java.util.Map;
 
 public class Color {
 
-  private int red;
-  private int green;
-  private int blue;
-  private int alpha;
+  private final int red;
+  private final int green;
+  private final int blue;
+  private final int alpha;
+
+  public static Color copyWithRed(Color color, int redValue) {
+    return new Color(redValue, color.getGreen(), color.getBlue());
+  }
+
+  public static Color copyWithGreen(Color color, int greenValue) {
+    return new Color(color.getRed(), greenValue, color.getBlue());
+  }
+
+  public static Color copyWithBlue(Color color, int blueValue) {
+    return new Color(color.getRed(), color.getGreen(), blueValue);
+  }
 
   /**
    * Creates a color from a string representation.
@@ -24,7 +36,7 @@ public class Color {
     this.red = colorToCopy.getRed();
     this.green = colorToCopy.getGreen();
     this.blue = colorToCopy.getBlue();
-    this.setFullOpacity();
+    this.alpha = 255;
   }
 
   /**
@@ -36,10 +48,7 @@ public class Color {
    * @param blue the blue value from 0 - 255
    */
   public Color(int red, int green, int blue) {
-    this.red = this.sanitizeValue(red);
-    this.green = this.sanitizeValue(green);
-    this.blue = this.sanitizeValue(blue);
-    this.setFullOpacity();
+    this(red, green, blue, 255);
   }
 
   /**
@@ -107,42 +116,6 @@ public class Color {
   }
 
   /**
-   * Sets the amount of red (ranging from 0 to 255). Values below 0 will be ignored and set to 0,
-   * and values above 255 will be ignored and set to 255.
-   *
-   * @param value the amount of red (ranging from 0 to 255) in the color of the pixel.
-   */
-  public void setRed(int value) {
-    this.red = this.sanitizeValue(value);
-    // for now, setting the color implies we want full opacity
-    this.setFullOpacity();
-  }
-
-  /**
-   * Sets the amount of green (ranging from 0 to 255). Values below 0 will be ignored and set to 0,
-   * and values above 255 will be ignored and set to 255.
-   *
-   * @param value the amount of green (ranging from 0 to 255) in the color of the pixel.
-   */
-  public void setGreen(int value) {
-    this.green = this.sanitizeValue(value);
-    // for now, setting the color implies we want full opacity
-    this.setFullOpacity();
-  }
-
-  /**
-   * Sets the amount of blue (ranging from 0 to 255). Values below 0 will be ignored and set to 0, *
-   * and values above 255 will be ignored and set to 255.
-   *
-   * @param value the amount of blue (ranging from 0 to 255) in the color of the pixel.
-   */
-  public void setBlue(int value) {
-    this.blue = this.sanitizeValue(value);
-    // for now, setting the color implies we want full opacity
-    this.setFullOpacity();
-  }
-
-  /**
    * @return the combined RGB integer value consisting of the alpha component in bits 24-31, the red
    *     component in bits 16-23, the green component in bits 8-15, and the blue component in bits
    *     0-7.
@@ -165,10 +138,6 @@ public class Color {
       return 255;
     }
     return value;
-  }
-
-  private void setFullOpacity() {
-    this.alpha = 255;
   }
 
   public static java.awt.Color convertToAWTColor(Color c) {
@@ -225,6 +194,7 @@ public class Color {
           Map.entry("ORANGE", ORANGE),
           Map.entry("GOLD", GOLD),
           Map.entry("BROWN", BROWN),
+          Map.entry("CHOCOLATE", CHOCOLATE),
           Map.entry("TAN", TAN),
           Map.entry("TURQUOISE", TURQUOISE),
           Map.entry("INDIGO", INDIGO),

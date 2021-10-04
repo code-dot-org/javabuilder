@@ -103,7 +103,7 @@ public class Pixel {
    * @param value the amount of red (ranging from 0 to 255) in the color of the pixel.
    */
   public void setRed(int value) {
-    this.color.setRed(value);
+    this.color = Color.copyWithRed(this.color, value);
   }
 
   /**
@@ -113,7 +113,7 @@ public class Pixel {
    * @param value the amount of green (ranging from 0 to 255) in the color of the pixel.
    */
   public void setGreen(int value) {
-    this.color.setGreen(value);
+    this.color = Color.copyWithGreen(this.color, value);
   }
 
   /**
@@ -122,6 +122,6 @@ public class Pixel {
    * @param value the amount of blue (ranging from 0 to 255) in the color of the pixel.
    */
   public void setBlue(int value) {
-    this.color.setBlue(value);
+    this.color = Color.copyWithBlue(this.color, value);
   }
 }
