@@ -92,6 +92,7 @@ public class Board {
     this.clickableImages.put(image.getId(), image);
     this.playgroundMessageHandler.sendMessage(
         new PlaygroundMessage(PlaygroundSignalKey.ADD_CLICKABLE_ITEM, details));
+    image.turnOnChangeMessages();
   }
 
   /**
@@ -107,6 +108,7 @@ public class Board {
     HashMap<String, String> details = image.getRemoveDetails();
     this.playgroundMessageHandler.sendMessage(
         new PlaygroundMessage(PlaygroundSignalKey.REMOVE_ITEM, details));
+    image.turnOffChangeMessages();
   }
 
   /**
@@ -142,6 +144,7 @@ public class Board {
     HashMap<String, String> details = item.getRemoveDetails();
     this.playgroundMessageHandler.sendMessage(
         new PlaygroundMessage(PlaygroundSignalKey.REMOVE_ITEM, details));
+    item.turnOffChangeMessages();
   }
 
   /**
@@ -232,6 +235,7 @@ public class Board {
     HashMap<String, String> itemDetails = item.getDetails();
     this.addIndexToDetails(itemDetails);
     this.playgroundMessageHandler.sendMessage(new PlaygroundMessage(signalKey, itemDetails));
+    item.turnOnChangeMessages();
   }
 
   private void addIndexToDetails(HashMap<String, String> details) {
@@ -244,6 +248,7 @@ public class Board {
         new PlaygroundMessage(PlaygroundSignalKey.EXIT, new HashMap<>()));
     this.isRunning = false;
     this.hasEnded = true;
+    this.playgroundMessageHandler.disableMessages();
   }
 
   private void confirmIsRunning() throws PlaygroundException {

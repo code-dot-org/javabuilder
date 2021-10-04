@@ -5,6 +5,7 @@ import org.code.protocol.OutputAdapter;
 
 class PlaygroundMessageHandler {
   private static PlaygroundMessageHandler instance;
+  private boolean messagesEnabled;
 
   static PlaygroundMessageHandler getInstance() {
     if (instance == null) {
@@ -21,16 +22,24 @@ class PlaygroundMessageHandler {
 
   // Visible for testing only
   PlaygroundMessageHandler(OutputAdapter outputAdapter) {
+    this.messagesEnabled = true;
     this.outputAdapter = outputAdapter;
   }
 
   public void sendMessage(PlaygroundMessage message) {
     // only send messages if playground has not ended. Otherwise throw a runtime exception.
-    if (Playground.board.hasEnded()) {
-      throw new PlaygroundRuntimeException(
-          PlaygroundExceptionKeys.INVALID_MESSAGE_PLAYGROUND_ENDED);
+    if (!this.messagesEnabled) {
+      throw new PlaygroundRuntimeException(PlaygroundExceptionKeys.INVALID_MESSAGE);
     } else {
       this.outputAdapter.sendMessage(message);
     }
+  }
+
+  protected void enableMessages() {
+    this.messagesEnabled = true;
+  }
+
+  protected void disableMessages() {
+    this.messagesEnabled = false;
   }
 }
