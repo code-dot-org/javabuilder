@@ -18,5 +18,7 @@ public enum PlaygroundSignalKey {
   // Play a sound
   PLAY_SOUND,
   // Set the background image of the Playground
-  SET_BACKGROUND_IMAGE
+  SET_BACKGROUND_IMAGE,
+  // Indicate that the current update cycle has completed
+  UPDATE_COMPLETE
 }

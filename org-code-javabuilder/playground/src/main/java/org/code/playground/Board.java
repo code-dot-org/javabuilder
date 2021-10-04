@@ -173,8 +173,7 @@ public class Board {
       throw new PlaygroundException(PlaygroundExceptionKeys.PLAYGROUND_RUNNING);
     }
 
-    this.playgroundMessageHandler.sendMessage(
-        new PlaygroundMessage(PlaygroundSignalKey.RUN, new HashMap<>()));
+    this.playgroundMessageHandler.sendMessage(new PlaygroundMessage(PlaygroundSignalKey.RUN));
 
     this.firstRunStarted = true;
     this.isRunning = true;
@@ -184,6 +183,11 @@ public class Board {
       final String message = this.inputHandler.getNextMessageForType(InputMessageType.PLAYGROUND);
       if (message != null) {
         this.handleClickEvent(message);
+      }
+      if (this.isRunning) {
+        // Only need to send update complete if the game is still running
+        this.playgroundMessageHandler.sendMessage(
+            new PlaygroundMessage(PlaygroundSignalKey.UPDATE_COMPLETE));
       }
     }
   }
@@ -240,8 +244,7 @@ public class Board {
   }
 
   private void sendExitMessageAndEndRun() {
-    this.playgroundMessageHandler.sendMessage(
-        new PlaygroundMessage(PlaygroundSignalKey.EXIT, new HashMap<>()));
+    this.playgroundMessageHandler.sendMessage(new PlaygroundMessage(PlaygroundSignalKey.EXIT));
     this.isRunning = false;
     this.hasEnded = true;
   }
