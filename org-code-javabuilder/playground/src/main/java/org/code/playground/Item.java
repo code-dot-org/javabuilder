@@ -10,6 +10,7 @@ public abstract class Item {
   private int height;
   private final String id;
   private final PlaygroundMessageHandler playgroundMessageHandler;
+  private boolean shouldSendMessages;
 
   Item(int x, int y, int height) {
     this.xLocation = x;
@@ -17,6 +18,7 @@ public abstract class Item {
     this.height = height;
     this.id = UUID.randomUUID().toString();
     this.playgroundMessageHandler = PlaygroundMessageHandler.getInstance();
+    this.shouldSendMessages = false;
   }
 
   /**
@@ -93,16 +95,28 @@ public abstract class Item {
   }
 
   protected void sendChangeMessage(String key, String value) {
-    HashMap<String, String> details = this.getIdDetails();
-    details.put(key, value);
-    this.playgroundMessageHandler.sendMessage(
-        new PlaygroundMessage(PlaygroundSignalKey.CHANGE_ITEM, details));
+    if (this.shouldSendMessages) {
+      HashMap<String, String> details = this.getIdDetails();
+      details.put(key, value);
+      this.playgroundMessageHandler.sendMessage(
+          new PlaygroundMessage(PlaygroundSignalKey.CHANGE_ITEM, details));
+    }
   }
 
   protected void sendChangeMessage(HashMap<String, String> changeDetails) {
-    changeDetails.put(ClientMessageDetailKeys.ID, this.getId());
-    this.playgroundMessageHandler.sendMessage(
-        new PlaygroundMessage(PlaygroundSignalKey.CHANGE_ITEM, changeDetails));
+    if (this.shouldSendMessages) {
+      changeDetails.put(ClientMessageDetailKeys.ID, this.getId());
+      this.playgroundMessageHandler.sendMessage(
+          new PlaygroundMessage(PlaygroundSignalKey.CHANGE_ITEM, changeDetails));
+    }
+  }
+
+  protected void turnOnChangeMessages() {
+    this.shouldSendMessages = true;
+  }
+
+  protected void turnOffChangeMessages() {
+    this.shouldSendMessages = false;
   }
 
   private HashMap<String, String> getIdDetails() {

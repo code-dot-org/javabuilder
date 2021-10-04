@@ -46,6 +46,7 @@ public class TextItemTest {
   @Test
   public void settersSendChangeMessages() {
     TextItem textItem = new TextItem("text", 0, 0, Color.BLUE, Font.SANS, FontStyle.BOLD, 10, 0);
+    textItem.turnOnChangeMessages();
 
     String newText = "new text";
     Font newFont = Font.SERIF;
@@ -73,6 +74,7 @@ public class TextItemTest {
   @Test
   public void testColorSettersSendMessages() {
     TextItem textItem = new TextItem("text", 0, 0, Color.BLUE, Font.SANS, FontStyle.BOLD, 10, 0);
+    textItem.turnOnChangeMessages();
 
     Color newColor = Color.GREEN;
 
