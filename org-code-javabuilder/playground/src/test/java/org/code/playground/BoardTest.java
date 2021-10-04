@@ -105,7 +105,7 @@ class BoardTest {
   }
 
   @Test
-  public void testRunSendsMessageAndWaitsForInput() throws PlaygroundException {
+  public void testStartSendsMessageAndWaitsForInput() throws PlaygroundException {
     // Need to make sure end() is called so start() terminates
     when(inputHandler.getNextMessageForType(InputMessageType.PLAYGROUND))
         .thenAnswer(
@@ -123,7 +123,7 @@ class BoardTest {
   }
 
   @Test
-  public void testRunThrowsExceptionIfCalledTwice() throws PlaygroundException {
+  public void testStartThrowsExceptionIfCalledTwice() throws PlaygroundException {
     // Need to make sure end() is called so start() terminates
     when(inputHandler.getNextMessageForType(InputMessageType.PLAYGROUND))
         .thenAnswer(
@@ -139,7 +139,32 @@ class BoardTest {
   }
 
   @Test
-  public void testExitSendsExitMessage() throws PlaygroundException {
+  public void testStartSendsUpdateCompleteIfGameNotEnded() throws PlaygroundException {
+    // Simulate three messages with end only being called on the last
+    when(inputHandler.getNextMessageForType(InputMessageType.PLAYGROUND))
+        .thenReturn("id")
+        .thenReturn("id")
+        .thenAnswer(
+            invocation -> {
+              unitUnderTest.end();
+              return "id";
+            });
+
+    unitUnderTest.start();
+
+    verify(playgroundMessageHandler, times(4)).sendMessage(messageCaptor.capture());
+
+    // UPDATE_COMPLETE should only be sent after the first two messages, not the last
+    assertEquals(
+        PlaygroundSignalKey.UPDATE_COMPLETE.toString(),
+        messageCaptor.getAllValues().get(1).getValue());
+    assertEquals(
+        PlaygroundSignalKey.UPDATE_COMPLETE.toString(),
+        messageCaptor.getAllValues().get(2).getValue());
+  }
+
+  @Test
+  public void testEndSendsExitMessage() throws PlaygroundException {
     // Ensure that end() is called while running to avoid exception
     when(inputHandler.getNextMessageForType(InputMessageType.PLAYGROUND))
         .thenAnswer(
@@ -155,7 +180,7 @@ class BoardTest {
   }
 
   @Test
-  public void testExitWithSoundSendsPlaySoundAndExitMessages()
+  public void testEndWithSoundSendsPlaySoundAndExitMessages()
       throws PlaygroundException, FileNotFoundException {
     String filename = "test_file.wav";
 
@@ -179,7 +204,7 @@ class BoardTest {
   }
 
   @Test
-  public void testExitWithSoundThrowsExceptionIfFileNotFound()
+  public void testEndWithSoundThrowsExceptionIfFileNotFound()
       throws PlaygroundException, FileNotFoundException {
     final FileNotFoundException expected = new FileNotFoundException();
     doThrow(expected).when(assetFileHelper).verifyAssetFilename(anyString());
@@ -201,7 +226,7 @@ class BoardTest {
   }
 
   @Test
-  public void testExitThrowsExceptionIfNotRunning() {
+  public void testEndThrowsExceptionIfNotRunning() {
     final PlaygroundException e =
         assertThrows(PlaygroundException.class, () -> unitUnderTest.end());
     assertEquals(PlaygroundExceptionKeys.PLAYGROUND_NOT_RUNNING.toString(), e.getMessage());
