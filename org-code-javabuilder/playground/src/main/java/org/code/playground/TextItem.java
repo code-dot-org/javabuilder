@@ -36,8 +36,7 @@ public class TextItem extends Item {
       double rotation) {
     super(x, y, height);
     this.text = text;
-    // Copy to new color to store the values only, and not a reference to the original color object
-    this.color = new Color(color);
+    this.color = color;
     this.font = font;
     this.fontStyle = fontStyle;
     this.rotation = rotation;
@@ -83,8 +82,7 @@ public class TextItem extends Item {
    * @param color the text color
    */
   public void setColor(Color color) {
-    // Copy to new color to store the values only, and not a reference to the original color object
-    this.color = new Color(color);
+    this.color = color;
     HashMap<String, String> colorDetails = new HashMap<>();
     this.addColorToDetails(colorDetails);
     this.sendChangeMessage(colorDetails);
@@ -132,9 +130,7 @@ public class TextItem extends Item {
    * @return the text color for the item
    */
   public Color getColor() {
-    // TODO: wrapping this.color in a new Color object will not be necessary once Color is
-    // immutable.
-    return new Color(this.color);
+    return this.color;
   }
 
   /**
