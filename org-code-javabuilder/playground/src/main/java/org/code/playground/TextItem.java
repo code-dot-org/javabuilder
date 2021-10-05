@@ -36,8 +36,7 @@ public class TextItem extends Item {
       double rotation) {
     super(x, y, height);
     this.text = text;
-    // Copy to new color to store the values only, and not a reference to the original color object
-    this.color = new Color(color);
+    this.color = color;
     this.font = font;
     this.fontStyle = fontStyle;
     this.rotation = rotation;
@@ -83,8 +82,7 @@ public class TextItem extends Item {
    * @param color the text color
    */
   public void setColor(Color color) {
-    // Copy to new color to store the values only, and not a reference to the original color object
-    this.color = new Color(color);
+    this.color = color;
     HashMap<String, String> colorDetails = new HashMap<>();
     this.addColorToDetails(colorDetails);
     this.sendChangeMessage(colorDetails);
@@ -97,7 +95,7 @@ public class TextItem extends Item {
    * @param colorRed the amount of red (ranging from 0 to 255) in the color of the text.
    */
   public void setRed(int colorRed) {
-    this.color = new Color(colorRed, this.color.getGreen(), this.color.getBlue());
+    this.color = Color.copyWithRed(this.color, colorRed);
     this.sendChangeMessage(
         ClientMessageDetailKeys.COLOR_RED, Integer.toString(this.color.getRed()));
   }
@@ -109,7 +107,7 @@ public class TextItem extends Item {
    * @param colorGreen the amount of green (ranging from 0 to 255) in the color of the text.
    */
   public void setGreen(int colorGreen) {
-    this.color = new Color(this.color.getRed(), colorGreen, this.color.getBlue());
+    this.color = Color.copyWithGreen(this.color, colorGreen);
     this.sendChangeMessage(
         ClientMessageDetailKeys.COLOR_GREEN, Integer.toString(this.color.getGreen()));
   }
@@ -121,7 +119,7 @@ public class TextItem extends Item {
    * @param colorBlue the amount of blue (ranging from 0 to 255) in the color of the text.
    */
   public void setBlue(int colorBlue) {
-    this.color = new Color(this.color.getRed(), this.color.getGreen(), colorBlue);
+    this.color = Color.copyWithBlue(this.color, colorBlue);
     this.sendChangeMessage(
         ClientMessageDetailKeys.COLOR_BLUE, Integer.toString(this.color.getBlue()));
   }
@@ -132,9 +130,7 @@ public class TextItem extends Item {
    * @return the text color for the item
    */
   public Color getColor() {
-    // TODO: wrapping this.color in a new Color object will not be necessary once Color is
-    // immutable.
-    return new Color(this.color);
+    return this.color;
   }
 
   /**
