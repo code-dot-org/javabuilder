@@ -42,8 +42,9 @@ public class ImageItemTest {
   }
 
   @Test
-  public void settersSendChangeMessages() throws FileNotFoundException {
+  public void settersSendChangeMessagesIfTheyAreOn() throws FileNotFoundException {
     ImageItem imageItem = new ImageItem("test", 0, 0, 10, 10, assetFileHelper);
+    imageItem.turnOnChangeMessages();
 
     String newFilename = "new_filename";
     int newWidth = 100;
@@ -56,6 +57,21 @@ public class ImageItemTest {
     assertEquals(newFilename, messages.get(0).getDetail().get(ClientMessageDetailKeys.FILENAME));
     assertEquals(
         Integer.toString(newWidth), messages.get(1).getDetail().get(ClientMessageDetailKeys.WIDTH));
+  }
+
+  @Test
+  public void settersDoNotSendChangeMessagesByDefault() throws FileNotFoundException {
+    ImageItem imageItem = new ImageItem("test", 0, 0, 10, 10, assetFileHelper);
+    String newFilename = "new_filename";
+    int newWidth = 100;
+
+    // change messages are off by default, no messages should be sent but values should change
+    imageItem.setFilename(newFilename);
+    imageItem.setWidth(newWidth);
+
+    verify(playgroundMessageHandler, times(0)).sendMessage(messageCaptor.capture());
+    assertEquals(newWidth, imageItem.getWidth());
+    assertEquals(newFilename, imageItem.getFilename());
   }
 
   @Test
