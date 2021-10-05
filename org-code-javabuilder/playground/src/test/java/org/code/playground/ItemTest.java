@@ -40,7 +40,7 @@ public class ItemTest {
   }
 
   @Test
-  public void settersSendChangeMessages() {
+  public void settersSendChangeMessagesIfTheyAreOn() {
     Item item = new ItemHelper(0, 0, 15);
     item.turnOnChangeMessages();
 
@@ -61,5 +61,22 @@ public class ItemTest {
     assertEquals(
         Integer.toString(newHeight),
         messages.get(2).getDetail().get(ClientMessageDetailKeys.HEIGHT));
+  }
+
+  @Test
+  public void settersDoNotSendChangeMessagesByDefault() {
+    Item item = new ItemHelper(0, 0, 15);
+
+    int newX = 5;
+    int newY = 10;
+    int newHeight = 100;
+    item.setX(newX);
+    item.setY(newY);
+    item.setHeight(newHeight);
+
+    verify(playgroundMessageHandler, times(0)).sendMessage(messageCaptor.capture());
+    assertEquals(newHeight, item.getHeight());
+    assertEquals(newX, item.getX());
+    assertEquals(newY, item.getY());
   }
 }
