@@ -1,7 +1,6 @@
 package org.code.playground;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.List;
@@ -119,12 +118,11 @@ public class TextItemTest {
   }
 
   @Test
-  public void testGetColorReturnsCopyOfColor() {
+  public void testGetColorReturnsColor() {
     final Color color = Color.AQUA;
     final TextItem textItem = new TextItem("text", 0, 0, color, Font.SANS, 0, 0);
 
-    // Should be a different instance but have the same values
-    assertNotSame(color, textItem.getColor());
+    assertSame(color, textItem.getColor());
     assertEquals(color.getRed(), textItem.getColor().getRed());
     assertEquals(color.getGreen(), textItem.getColor().getGreen());
     assertEquals(color.getBlue(), textItem.getColor().getBlue());
@@ -132,8 +130,7 @@ public class TextItemTest {
     final Color newColor = Color.BEIGE;
     textItem.setColor(newColor);
 
-    // Should be a different instance but have the same values
-    assertNotSame(newColor, textItem.getColor());
+    assertSame(newColor, textItem.getColor());
     assertEquals(newColor.getRed(), textItem.getColor().getRed());
     assertEquals(newColor.getGreen(), textItem.getColor().getGreen());
     assertEquals(newColor.getBlue(), textItem.getColor().getBlue());
