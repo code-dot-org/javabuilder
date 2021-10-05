@@ -95,20 +95,14 @@ public abstract class Item {
   }
 
   protected void sendChangeMessage(String key, String value) {
-    if (this.shouldSendMessages) {
-      HashMap<String, String> details = this.getIdDetails();
-      details.put(key, value);
-      this.playgroundMessageHandler.sendMessage(
-          new PlaygroundMessage(PlaygroundSignalKey.CHANGE_ITEM, details));
-    }
+    HashMap<String, String> details = this.getIdDetails();
+    details.put(key, value);
+    this.sendChangeMessageHelper(details);
   }
 
   protected void sendChangeMessage(HashMap<String, String> changeDetails) {
-    if (this.shouldSendMessages) {
-      changeDetails.put(ClientMessageDetailKeys.ID, this.getId());
-      this.playgroundMessageHandler.sendMessage(
-          new PlaygroundMessage(PlaygroundSignalKey.CHANGE_ITEM, changeDetails));
-    }
+    changeDetails.put(ClientMessageDetailKeys.ID, this.getId());
+    this.sendChangeMessageHelper(changeDetails);
   }
 
   protected void turnOnChangeMessages() {
@@ -123,5 +117,12 @@ public abstract class Item {
     HashMap<String, String> idDetails = new HashMap<>();
     idDetails.put(ClientMessageDetailKeys.ID, this.getId());
     return idDetails;
+  }
+
+  private void sendChangeMessageHelper(HashMap<String, String> changeDetails) {
+    if (this.shouldSendMessages) {
+      this.playgroundMessageHandler.sendMessage(
+          new PlaygroundMessage(PlaygroundSignalKey.CHANGE_ITEM, changeDetails));
+    }
   }
 }
