@@ -46,10 +46,8 @@ public class JavaRunner {
       mainMethod.invoke(null, new Object[] {null});
     } catch (IllegalAccessException e) {
       // TODO: this error message may not be not very friendly
-      this.outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.EXITED));
       throw new UserInitiatedException(UserInitiatedExceptionKey.ILLEGAL_METHOD_ACCESS, e);
     } catch (InvocationTargetException e) {
-      this.outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.EXITED));
       // If the invocation exception is wrapping another JavabuilderException or
       // JavabuilderRuntimeException, we don't need to wrap it in a UserInitiatedException
       if (e.getCause() instanceof JavabuilderException) {
@@ -66,7 +64,6 @@ public class JavaRunner {
       throw new UserInitiatedException(UserInitiatedExceptionKey.RUNTIME_ERROR, e);
     }
     try {
-      this.outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.EXITED));
       urlClassLoader.close();
     } catch (IOException e) {
       // The user code has finished running. We don't want to confuse them at this point with an
