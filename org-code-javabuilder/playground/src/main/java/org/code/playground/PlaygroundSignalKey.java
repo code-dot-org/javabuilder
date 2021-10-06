@@ -20,5 +20,7 @@ public enum PlaygroundSignalKey {
   // Set the background image of the Playground
   SET_BACKGROUND_IMAGE,
   // Indicate that the current update cycle has completed
-  UPDATE_COMPLETE
+  UPDATE_COMPLETE,
+  // Send a batch of updates to the board
+  UPDATE
 }

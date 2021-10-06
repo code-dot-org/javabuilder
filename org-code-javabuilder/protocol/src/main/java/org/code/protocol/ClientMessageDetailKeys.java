@@ -17,6 +17,7 @@ public class ClientMessageDetailKeys {
   public static final String FONT = "font";
   public static final String FONT_STYLE = "fontStyle";
   public static final String ROTATION = "rotation";
+  public static final String UPDATES = "updates";
 
   // Exception specific
   public static final String CONNECTION_ID = "connectionId";
