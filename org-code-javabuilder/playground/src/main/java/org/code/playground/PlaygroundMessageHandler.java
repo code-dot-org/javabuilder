@@ -49,8 +49,6 @@ class PlaygroundMessageHandler implements MessageHandler {
       return;
     }
     JSONArray messages = new JSONArray();
-    // copy existing queue so any new messages that come in during parsing
-    // will be handled in next batch
     for (PlaygroundMessage message : this.queuedMessages) {
       messages.put(new JSONObject(message.getFormattedMessage()));
     }
