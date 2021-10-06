@@ -57,10 +57,10 @@ class PlaygroundMessageHandler implements MessageHandler {
     while (this.queuedMessages.peek() != null) {
       PlaygroundMessage message = this.queuedMessages.remove();
       String messageStr = message.getFormattedMessage();
-      // If we have existing messages and this message would put us
-      // over our limit, send existing messages.
-      // Note: we could still potentially send a too large message if
-      // a single message was too large.
+      // If we have existing messages and this message would put us over our limit, send existing
+      // messages.
+      // Note: we could still potentially send a too large message if a single message was too
+      // large.
       // This is extremely unlikely as it would require either a filename or text item equivalent
       // to more than 30 pages of text. In this case it's fine to attempt the message and fail, as
       // this is bad user behavior.
