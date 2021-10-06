@@ -175,8 +175,8 @@ public class Board {
     if (this.firstRunStarted) {
       throw new PlaygroundException(PlaygroundExceptionKeys.PLAYGROUND_RUNNING);
     }
-    // send any setup messages now
     this.playgroundMessageHandler.sendMessage(new PlaygroundMessage(PlaygroundSignalKey.RUN));
+    // send all initial setup messages now
     this.playgroundMessageHandler.sendBatchedMessages();
 
     this.firstRunStarted = true;
