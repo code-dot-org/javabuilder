@@ -52,7 +52,6 @@ class PlaygroundMessageHandler implements MessageHandler {
       return;
     }
     JSONArray messages = new JSONArray();
-
     int currentLength = 0;
     while (this.queuedMessages.peek() != null) {
       PlaygroundMessage message = this.queuedMessages.remove();
