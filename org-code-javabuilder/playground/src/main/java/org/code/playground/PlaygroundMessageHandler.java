@@ -1,9 +1,10 @@
 package org.code.playground;
 
 import org.code.protocol.GlobalProtocol;
+import org.code.protocol.MessageHandler;
 import org.code.protocol.OutputAdapter;
 
-class PlaygroundMessageHandler {
+class PlaygroundMessageHandler implements MessageHandler {
   private static PlaygroundMessageHandler instance;
   private boolean messagesEnabled;
 
@@ -18,6 +19,7 @@ class PlaygroundMessageHandler {
 
   private PlaygroundMessageHandler() {
     this(GlobalProtocol.getInstance().getOutputAdapter());
+    GlobalProtocol.getInstance().registerMessageHandler(this);
   }
 
   // Visible for testing only
@@ -35,11 +37,18 @@ class PlaygroundMessageHandler {
     }
   }
 
-  protected void enableMessages() {
+  @Override
+  public void exit() {
+    // TODO: Once batching is added, send any remaining messages here
+  }
+
+  @Override
+  public void enableMessages() {
     this.messagesEnabled = true;
   }
 
-  protected void disableMessages() {
+  @Override
+  public void disableMessages() {
     this.messagesEnabled = false;
   }
 }
