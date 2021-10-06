@@ -12,8 +12,7 @@ import org.json.JSONObject;
 class PlaygroundMessageHandler implements MessageHandler {
   private static PlaygroundMessageHandler instance;
   private boolean messagesEnabled;
-  private Queue<PlaygroundMessage> queuedMessages;
-  private boolean sendInProgress;
+  private final Queue<PlaygroundMessage> queuedMessages;
 
   static PlaygroundMessageHandler getInstance() {
     if (instance == null) {
@@ -34,7 +33,6 @@ class PlaygroundMessageHandler implements MessageHandler {
     this.messagesEnabled = true;
     this.outputAdapter = outputAdapter;
     this.queuedMessages = new LinkedList<>();
-    this.sendInProgress = false;
   }
 
   public void sendMessage(PlaygroundMessage message) {
@@ -47,23 +45,20 @@ class PlaygroundMessageHandler implements MessageHandler {
   }
 
   public void sendBatchedMessages() {
-    if (this.queuedMessages.isEmpty() || this.sendInProgress) {
+    if (this.queuedMessages.isEmpty()) {
       return;
     }
-    this.sendInProgress = true;
     JSONArray messages = new JSONArray();
     // copy existing queue so any new messages that come in during parsing
     // will be handled in next batch
-    Queue<PlaygroundMessage> queueCopy = new LinkedList<>(this.queuedMessages);
-    this.queuedMessages.clear();
-    for (PlaygroundMessage message : queueCopy) {
+    for (PlaygroundMessage message : this.queuedMessages) {
       messages.put(new JSONObject(message.getFormattedMessage()));
     }
+    this.queuedMessages.clear();
     JSONObject messageObject = new JSONObject();
     messageObject.put(ClientMessageDetailKeys.UPDATES, messages);
     this.outputAdapter.sendMessage(
         new PlaygroundMessage(PlaygroundSignalKey.UPDATE, messageObject));
-    this.sendInProgress = false;
   }
 
   @Override
