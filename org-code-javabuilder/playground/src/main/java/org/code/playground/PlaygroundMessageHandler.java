@@ -15,7 +15,7 @@ class PlaygroundMessageHandler implements MessageHandler {
   private final Queue<PlaygroundMessage> queuedMessages;
   // A websocket request can be up to 128 kb, which is around 131,000 characters.
   // Make sure we don't get close to this limit.
-  private final int MAX_CHARACTERS_PER_MESSAGE = 120000;
+  private static final int MAX_CHARACTERS_PER_MESSAGE = 120000;
 
   static PlaygroundMessageHandler getInstance() {
     if (instance == null) {
