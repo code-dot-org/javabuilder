@@ -1,12 +1,19 @@
 package org.code.playground;
 
+import java.util.LinkedList;
+import java.util.Queue;
+import org.code.protocol.ClientMessageDetailKeys;
 import org.code.protocol.GlobalProtocol;
 import org.code.protocol.MessageHandler;
 import org.code.protocol.OutputAdapter;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 class PlaygroundMessageHandler implements MessageHandler {
   private static PlaygroundMessageHandler instance;
   private boolean messagesEnabled;
+  private Queue<PlaygroundMessage> queuedMessages;
+  private boolean sendInProgress;
 
   static PlaygroundMessageHandler getInstance() {
     if (instance == null) {
@@ -26,6 +33,8 @@ class PlaygroundMessageHandler implements MessageHandler {
   PlaygroundMessageHandler(OutputAdapter outputAdapter) {
     this.messagesEnabled = true;
     this.outputAdapter = outputAdapter;
+    this.queuedMessages = new LinkedList<>();
+    this.sendInProgress = false;
   }
 
   public void sendMessage(PlaygroundMessage message) {
@@ -33,13 +42,33 @@ class PlaygroundMessageHandler implements MessageHandler {
     if (!this.messagesEnabled) {
       throw new PlaygroundRuntimeException(PlaygroundExceptionKeys.INVALID_MESSAGE);
     } else {
-      this.outputAdapter.sendMessage(message);
+      this.queuedMessages.add(message);
     }
+  }
+
+  public void sendBatchedMessages() {
+    if (this.queuedMessages.isEmpty() || this.sendInProgress) {
+      return;
+    }
+    this.sendInProgress = true;
+    JSONArray messages = new JSONArray();
+    // copy existing queue so any new messages that come in during parsing
+    // will be handled in next batch
+    Queue<PlaygroundMessage> queueCopy = new LinkedList<>(this.queuedMessages);
+    this.queuedMessages.clear();
+    for (PlaygroundMessage message : queueCopy) {
+      messages.put(new JSONObject(message.getFormattedMessage()));
+    }
+    JSONObject messageObject = new JSONObject();
+    messageObject.put(ClientMessageDetailKeys.UPDATES, messages);
+    this.outputAdapter.sendMessage(
+        new PlaygroundMessage(PlaygroundSignalKey.UPDATE, messageObject));
+    this.sendInProgress = false;
   }
 
   @Override
   public void exit() {
-    // TODO: Once batching is added, send any remaining messages here
+    this.sendBatchedMessages();
   }
 
   @Override

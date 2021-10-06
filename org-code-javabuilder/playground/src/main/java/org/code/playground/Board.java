@@ -175,8 +175,9 @@ public class Board {
     if (this.firstRunStarted) {
       throw new PlaygroundException(PlaygroundExceptionKeys.PLAYGROUND_RUNNING);
     }
-
+    // send any setup messages now
     this.playgroundMessageHandler.sendMessage(new PlaygroundMessage(PlaygroundSignalKey.RUN));
+    this.playgroundMessageHandler.sendBatchedMessages();
 
     this.firstRunStarted = true;
     this.isRunning = true;
@@ -192,6 +193,7 @@ public class Board {
         this.playgroundMessageHandler.sendMessage(
             new PlaygroundMessage(PlaygroundSignalKey.UPDATE_COMPLETE));
       }
+      this.playgroundMessageHandler.sendBatchedMessages();
     }
   }
 
@@ -249,6 +251,7 @@ public class Board {
 
   private void sendExitMessageAndEndRun() {
     this.playgroundMessageHandler.sendMessage(new PlaygroundMessage(PlaygroundSignalKey.EXIT));
+    this.playgroundMessageHandler.sendBatchedMessages();
     this.isRunning = false;
     this.hasEnded = true;
     this.playgroundMessageHandler.disableMessages();
