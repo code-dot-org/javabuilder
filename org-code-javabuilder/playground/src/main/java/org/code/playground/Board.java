@@ -15,7 +15,6 @@ public class Board {
 
   private boolean firstRunStarted;
   private boolean isRunning;
-  private boolean hasEnded;
 
   private final HashMap<String, ClickableImage> clickableImages;
   private final HashMap<String, Item> items;
@@ -40,7 +39,6 @@ public class Board {
     this.items = new HashMap<>();
     this.clickableImages = new HashMap<>();
     this.nextItemIndex = 0;
-    this.hasEnded = false;
   }
 
   /**
@@ -175,8 +173,9 @@ public class Board {
     if (this.firstRunStarted) {
       throw new PlaygroundException(PlaygroundExceptionKeys.PLAYGROUND_RUNNING);
     }
-
     this.playgroundMessageHandler.sendMessage(new PlaygroundMessage(PlaygroundSignalKey.RUN));
+    // send all initial setup messages now
+    this.playgroundMessageHandler.sendBatchedMessages();
 
     this.firstRunStarted = true;
     this.isRunning = true;
@@ -192,6 +191,7 @@ public class Board {
         this.playgroundMessageHandler.sendMessage(
             new PlaygroundMessage(PlaygroundSignalKey.UPDATE_COMPLETE));
       }
+      this.playgroundMessageHandler.sendBatchedMessages();
     }
   }
 
@@ -217,10 +217,6 @@ public class Board {
   public void end() throws PlaygroundException {
     this.confirmIsRunning();
     this.sendExitMessageAndEndRun();
-  }
-
-  protected boolean hasEnded() {
-    return this.hasEnded;
   }
 
   private void handleClickEvent(String id) {
@@ -250,7 +246,6 @@ public class Board {
   private void sendExitMessageAndEndRun() {
     this.playgroundMessageHandler.sendMessage(new PlaygroundMessage(PlaygroundSignalKey.EXIT));
     this.isRunning = false;
-    this.hasEnded = true;
     this.playgroundMessageHandler.disableMessages();
   }
 
