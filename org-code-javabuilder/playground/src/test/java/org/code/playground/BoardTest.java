@@ -117,6 +117,8 @@ class BoardTest {
     unitUnderTest.start();
 
     verify(playgroundMessageHandler, times(2)).sendMessage(messageCaptor.capture());
+    // expect to send 1 batch when run starts, and 1 after input message received
+    verify(playgroundMessageHandler, times(2)).sendBatchedMessages();
     assertEquals(
         PlaygroundSignalKey.RUN.toString(), messageCaptor.getAllValues().get(0).getValue());
     verify(inputHandler).getNextMessageForType(InputMessageType.PLAYGROUND);
@@ -161,6 +163,25 @@ class BoardTest {
     assertEquals(
         PlaygroundSignalKey.UPDATE_COMPLETE.toString(),
         messageCaptor.getAllValues().get(2).getValue());
+  }
+
+  @Test
+  public void testSendsBatchAfterEveryInputMessage() throws PlaygroundException {
+    // Simulate three messages with end being called on the last
+    when(inputHandler.getNextMessageForType(InputMessageType.PLAYGROUND))
+        .thenReturn("id")
+        .thenReturn("id")
+        .thenAnswer(
+            invocation -> {
+              unitUnderTest.end();
+              return "id";
+            });
+
+    unitUnderTest.start();
+
+    // send 1 batch at start, and 1 after each input event for a total of 4. Should still send
+    // a batch on end
+    verify(playgroundMessageHandler, times(4)).sendBatchedMessages();
   }
 
   @Test
