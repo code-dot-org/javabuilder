@@ -2,6 +2,9 @@ package org.code.playground;
 
 import static org.mockito.Mockito.*;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import org.code.protocol.ClientMessageDetailKeys;
 import org.code.protocol.OutputAdapter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,5 +37,22 @@ class PlaygroundMessageHandlerTest {
     unitUnderTest.sendMessage(secondMessage);
     unitUnderTest.sendBatchedMessages();
     verify(outputAdapter, times(1)).sendMessage(any(PlaygroundMessage.class));
+  }
+
+  @Test
+  public void testSendBatchedMessagesSplitsLargeBatch() {
+    HashMap<String, String> largeDetails = new HashMap<>();
+    char[] largeCharArray = new char[50000];
+    Arrays.fill(largeCharArray, 'a');
+    largeDetails.put(ClientMessageDetailKeys.TEXT, new String(largeCharArray));
+    PlaygroundMessage sampleLargeMessage =
+        new PlaygroundMessage(PlaygroundSignalKey.ADD_TEXT_ITEM, largeDetails);
+    unitUnderTest.sendMessage(sampleLargeMessage);
+    unitUnderTest.sendMessage(sampleLargeMessage);
+    unitUnderTest.sendMessage(sampleLargeMessage);
+    unitUnderTest.sendBatchedMessages();
+    // 3 50,000 character messages will should be split into 2 messages, since our limit is 120,000
+    // characters
+    verify(outputAdapter, times(2)).sendMessage(any(PlaygroundMessage.class));
   }
 }
