@@ -72,6 +72,9 @@ public class CodeBuilderWrapperRunnable implements Runnable {
 
       // Additionally, these may have affected the user. For now, let's tell them about it.
       outputAdapter.sendMessage(error.getExceptionMessage());
+    } finally {
+      GlobalProtocol.getInstance().cleanUpResources();
+      this.outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.EXITED));
     }
   }
 }

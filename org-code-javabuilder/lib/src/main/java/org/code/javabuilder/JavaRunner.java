@@ -1,15 +1,13 @@
 package org.code.javabuilder;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.List;
-import org.code.protocol.JavabuilderRuntimeException;
-import org.code.protocol.OutputAdapter;
-import org.code.protocol.StatusMessage;
-import org.code.protocol.StatusMessageKey;
+import org.code.protocol.*;
 
 /** The class that executes the student's code */
 public class JavaRunner {
@@ -32,8 +30,7 @@ public class JavaRunner {
    * @throws InternalFacingException When we hit an internal error after the user's code has
    *     finished executing.
    */
-  public void runCode()
-      throws InternalServerError, InternalFacingException, UserInitiatedException {
+  public void runCode() throws InternalFacingException, JavabuilderException {
     // Include the user-facing api jars in the code we are loading so student code can access them.
     URL[] classLoaderUrls = Util.getAllJarURLs(this.executableLocation);
 
@@ -49,19 +46,24 @@ public class JavaRunner {
       mainMethod.invoke(null, new Object[] {null});
     } catch (IllegalAccessException e) {
       // TODO: this error message may not be not very friendly
-      this.outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.EXITED));
       throw new UserInitiatedException(UserInitiatedExceptionKey.ILLEGAL_METHOD_ACCESS, e);
     } catch (InvocationTargetException e) {
-      this.outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.EXITED));
+      // If the invocation exception is wrapping another JavabuilderException or
+      // JavabuilderRuntimeException, we don't need to wrap it in a UserInitiatedException
+      if (e.getCause() instanceof JavabuilderException) {
+        throw (JavabuilderException) e.getCause();
+      }
       if (e.getCause() instanceof JavabuilderRuntimeException) {
-        // If the invocation exception is wrapping another JavabuilderRuntimeException, we don't
-        // need to wrap it in a UserInitiatedException
         throw (JavabuilderRuntimeException) e.getCause();
+      }
+      // FileNotFoundExceptions may be thrown from student code, so we treat them as a
+      // specific case of a UserInitiatedException
+      if (e.getCause() instanceof FileNotFoundException) {
+        throw new UserInitiatedException(UserInitiatedExceptionKey.FILE_NOT_FOUND, e.getCause());
       }
       throw new UserInitiatedException(UserInitiatedExceptionKey.RUNTIME_ERROR, e);
     }
     try {
-      this.outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.EXITED));
       urlClassLoader.close();
     } catch (IOException e) {
       // The user code has finished running. We don't want to confuse them at this point with an

@@ -51,7 +51,7 @@ public class UserCodeCompiler {
   }
 
   private CompilationTask getCompilationTask(DiagnosticCollector<JavaFileObject> diagnostics)
-      throws InternalServerError {
+      throws InternalServerError, UserInitiatedException {
     JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 
     // set output of compilation to be a temporary folder
@@ -67,8 +67,16 @@ public class UserCodeCompiler {
     // create file for user-provided code
     List<JavaFileObject> files = new ArrayList<>();
     for (JavaProjectFile projectFile : this.javaFiles) {
-      files.add(
-          new JavaSourceFromString(projectFile.getClassName(), projectFile.getFileContents()));
+      try {
+        files.add(
+            new JavaSourceFromString(projectFile.getClassName(), projectFile.getFileContents()));
+      } catch (IllegalArgumentException e) {
+        // Thrown if the project file name is invalid. Wrap the original filename in an exception so
+        // it can be surfaced to the user
+        throw new UserInitiatedException(
+            UserInitiatedExceptionKey.INVALID_JAVA_FILE_NAME,
+            new Exception(projectFile.getFileName()));
+      }
     }
 
     // Include the user-facing api jars in the student code classpath so the student code can use
