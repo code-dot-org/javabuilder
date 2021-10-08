@@ -425,10 +425,10 @@ public class Stage {
       double widthScale = (double) width / image.getWidth();
       double heightScale = (double) height / image.getHeight();
       // create a transform that moves the location of the image to (x,y), rotates around
-      // the center of the image and scales the image to width and height
+      // the top left corner of the image and scales the image to width and height
       // Note: order of transforms is important, do not reorder these calls
       transform.translate(x, y);
-      transform.rotate(Math.toRadians(degrees), width / 2, height / 2);
+      transform.rotate(Math.toRadians(degrees), 0, 0);
       transform.scale(widthScale, heightScale);
       this.graphics.drawImage(image, transform, null);
     } else {

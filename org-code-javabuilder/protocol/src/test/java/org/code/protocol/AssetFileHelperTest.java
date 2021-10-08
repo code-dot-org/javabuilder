@@ -4,18 +4,20 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.List;
 import java.util.Map;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class AssetUrlGeneratorTest {
+class AssetFileHelperTest {
   private static final String STARTER_ASSET_FILE = "file1.png";
   private static final String STARTER_ASSET_DATA =
       new JSONObject(
@@ -27,13 +29,20 @@ class AssetUrlGeneratorTest {
                   "otherKey",
                   "otherValue"))
           .toString();
+  private static final String USER_ASSET_FILE = "userFile1.png";
+  private static final String USER_ASSET_DATA =
+      new JSONArray(
+              List.of(
+                  Map.of("filename", USER_ASSET_FILE, "otherKey", "otherValue"),
+                  Map.of("otherKey", "otherValue")))
+          .toString();
   private static final String DASHBOARD_URL = "https://localhost-studio.code.org";
   private static final String CHANNEL_ID = "channelId";
   private static final String LEVEL_ID = "levelId";
 
   private HttpClient httpClient;
   private HttpResponse<String> httpResponse;
-  private AssetUrlGenerator unitUnderTest;
+  private AssetFileHelper unitUnderTest;
 
   @BeforeEach
   public void setUp() throws InterruptedException, IOException {
@@ -43,9 +52,10 @@ class AssetUrlGeneratorTest {
     when(httpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class)))
         .thenReturn(httpResponse);
     when(httpResponse.statusCode()).thenReturn(200);
-    when(httpResponse.body()).thenReturn(STARTER_ASSET_DATA);
+    // Return starter assets for first request and user assets for second request
+    when(httpResponse.body()).thenReturn(STARTER_ASSET_DATA, USER_ASSET_DATA);
 
-    unitUnderTest = new AssetUrlGenerator(DASHBOARD_URL, CHANNEL_ID, LEVEL_ID, httpClient);
+    unitUnderTest = new AssetFileHelper(DASHBOARD_URL, CHANNEL_ID, LEVEL_ID, httpClient);
   }
 
   @Test
@@ -113,9 +123,64 @@ class AssetUrlGeneratorTest {
     verify(httpClient, never()).send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class));
 
     unitUnderTest.generateAssetUrl("file1.wav");
-    verify(httpClient, times(1)).send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class));
+    verify(httpClient, times(2)).send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class));
 
+    // Should not call httpClient.send() again
     unitUnderTest.generateAssetUrl("file2.wav");
-    verify(httpClient, times(1)).send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class));
+    verify(httpClient, times(2)).send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class));
+  }
+
+  @Test
+  public void testVerifyAssetFilenameLoadsFilenamesIfNotLoaded()
+      throws IOException, InterruptedException {
+    unitUnderTest.verifyAssetFilename(USER_ASSET_FILE);
+
+    verify(httpClient, times(2)).send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class));
+  }
+
+  @Test
+  public void testVerifyAssetFilenameDoesNotLoadFilenamesIfAlreadyLoaded()
+      throws IOException, InterruptedException {
+    verify(httpClient, never()).send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class));
+
+    unitUnderTest.verifyAssetFilename(USER_ASSET_FILE);
+    verify(httpClient, times(2)).send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class));
+
+    // Should not call httpClient.send() again
+    unitUnderTest.verifyAssetFilename(USER_ASSET_FILE);
+    verify(httpClient, times(2)).send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class));
+  }
+
+  @Test
+  public void testVerifyAssetFilenameThrowsExceptionIfFileNotInProject() {
+    final String filename = "otherFile.jpg";
+    final FileNotFoundException e =
+        assertThrows(
+            FileNotFoundException.class, () -> unitUnderTest.verifyAssetFilename(filename));
+    assertTrue(e.getMessage().contains(filename));
+  }
+
+  @Test
+  public void testVerifyAssetFilenameDoesNotThrowIfFileIsStarterAsset() {
+    assertDoesNotThrow(() -> unitUnderTest.verifyAssetFilename(STARTER_ASSET_FILE));
+  }
+
+  @Test
+  public void testVerifyAssetFilenameDoesNotThrowIfFileIsUserAsset() {
+    assertDoesNotThrow(() -> unitUnderTest.verifyAssetFilename(USER_ASSET_FILE));
+  }
+
+  @Test
+  public void testVerifyAssetFilenameThrowsExceptionIfFileListsAreEmpty() {
+    final String emptyStarterAssets = new JSONObject().toString();
+    final String emptyUserAssets = new JSONArray().toString();
+
+    when(httpResponse.body()).thenReturn(emptyStarterAssets, emptyUserAssets);
+
+    // Should not throw any JSON exceptions
+    final FileNotFoundException e =
+        assertThrows(
+            FileNotFoundException.class, () -> unitUnderTest.verifyAssetFilename(USER_ASSET_FILE));
+    assertTrue(e.getMessage().contains(USER_ASSET_FILE));
   }
 }

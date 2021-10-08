@@ -1,5 +1,8 @@
 package org.code.protocol;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * This sets up the protocols that are used across jars in Javabuilder. It allows the input and
  * output adapters to be set at the entrypoint of the system (i.e. LambdaRequestHandler, LocalMain,
@@ -15,7 +18,8 @@ public class GlobalProtocol {
   private final JavabuilderFileWriter fileWriter;
   private final String dashboardHostname;
   private final String channelId;
-  private final AssetUrlGenerator assetUrlGenerator;
+  private final AssetFileHelper assetFileHelper;
+  private Set<MessageHandler> messageHandlers;
 
   private GlobalProtocol(
       OutputAdapter outputAdapter,
@@ -23,13 +27,14 @@ public class GlobalProtocol {
       String dashboardHostname,
       String channelId,
       JavabuilderFileWriter fileWriter,
-      AssetUrlGenerator assetUrlGenerator) {
+      AssetFileHelper assetFileHelper) {
     this.outputAdapter = outputAdapter;
     this.inputHandler = inputHandler;
     this.dashboardHostname = dashboardHostname;
     this.channelId = channelId;
     this.fileWriter = fileWriter;
-    this.assetUrlGenerator = assetUrlGenerator;
+    this.assetFileHelper = assetFileHelper;
+    this.messageHandlers = new HashSet<>();
   }
 
   public static void create(
@@ -46,7 +51,7 @@ public class GlobalProtocol {
             dashboardHostname,
             channelId,
             fileWriter,
-            new AssetUrlGenerator(dashboardHostname, channelId, levelId));
+            new AssetFileHelper(dashboardHostname, channelId, levelId));
   }
 
   public static GlobalProtocol getInstance() {
@@ -70,10 +75,25 @@ public class GlobalProtocol {
   }
 
   public String generateAssetUrl(String filename) {
-    return this.assetUrlGenerator.generateAssetUrl(filename);
+    return this.assetFileHelper.generateAssetUrl(filename);
+  }
+
+  public AssetFileHelper getAssetFileHelper() {
+    return this.assetFileHelper;
   }
 
   public String generateSourcesUrl() {
     return String.format("%s/v3/sources/%s", this.dashboardHostname, this.channelId);
+  }
+
+  public void registerMessageHandler(MessageHandler handler) {
+    this.messageHandlers.add(handler);
+  }
+
+  // Clean up resources that require explicit clean up before exiting
+  public void cleanUpResources() {
+    for (MessageHandler handler : this.messageHandlers) {
+      handler.exit();
+    }
   }
 }
