@@ -58,6 +58,15 @@ public class WebSocketServer {
       useNeighborhood = Boolean.parseBoolean(useNeighborhoodStr);
     }
 
+    final String executionTypeString =
+        queryInput.has("execution_type") ? queryInput.getString("execution_type") : null;
+    // TODO: in order to not break current behavior in Javalab, execution type defaults to 'RUN'.
+    // Once Javalab is sending the execution type parameter, remove this fallback
+    final ExecutionType executionType =
+        executionTypeString == null
+            ? ExecutionType.RUN
+            : ExecutionType.valueOf(executionTypeString);
+
     this.logger = Logger.getLogger(MAIN_LOGGER);
     this.logHandler = new LocalLogHandler(System.out, levelId, channelId);
     this.logger.addHandler(this.logHandler);
@@ -81,7 +90,7 @@ public class WebSocketServer {
             () -> {
               CodeBuilderWrapper codeBuilderWrapper =
                   new CodeBuilderWrapper(fileLoader, outputAdapter);
-              codeBuilderWrapper.executeCodeBuilder();
+              codeBuilderWrapper.executeCodeBuilder(executionType);
               try {
                 session.close();
                 logger.removeHandler(this.logHandler);
