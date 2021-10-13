@@ -21,13 +21,18 @@ public class CodeBuilderWrapper {
     this.outputAdapter = outputAdapter;
   }
 
-  public void executeCodeBuilder() {
+  public void executeCodeBuilder(ExecutionType executionType) {
     try {
       UserProjectFiles userProjectFiles = fileLoader.loadFiles();
       try (CodeBuilder codeBuilder =
           new CodeBuilder(GlobalProtocol.getInstance(), userProjectFiles)) {
         codeBuilder.buildUserCode();
-        codeBuilder.runUserCode();
+
+        if (executionType == ExecutionType.RUN) {
+          codeBuilder.runUserCode();
+        } else if (executionType == ExecutionType.TEST) {
+          codeBuilder.runUserTests();
+        }
       }
     } catch (InternalServerError | InternalServerRuntimeError e) {
       // The error was caused by us (essentially an HTTP 5xx error). Log it so we can fix it.
@@ -61,6 +66,9 @@ public class CodeBuilderWrapper {
 
       // Additionally, these may have affected the user. For now, let's tell them about it.
       outputAdapter.sendMessage(error.getExceptionMessage());
+    } finally {
+      GlobalProtocol.getInstance().cleanUpResources();
+      this.outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.EXITED));
     }
   }
 }

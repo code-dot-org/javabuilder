@@ -53,14 +53,6 @@ public class ImageTest {
   }
 
   @Test
-  public void canModifyColorAndItModifiesPixel() {
-    Image test = new Image(500, 300);
-    Color c = test.getPixel(50, 200).getColor();
-    c.setBlue(50);
-    assertEquals(50, test.getPixel(50, 200).getBlue());
-  }
-
-  @Test
   public void canCreateBufferedImage() {
     Image test = new Image(500, 300);
     // set one pixel to a specific color

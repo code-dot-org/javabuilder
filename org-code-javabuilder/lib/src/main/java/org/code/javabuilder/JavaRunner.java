@@ -30,7 +30,7 @@ public class JavaRunner {
    * @throws InternalFacingException When we hit an internal error after the user's code has
    *     finished executing.
    */
-  public void runCode() throws InternalFacingException, JavabuilderException {
+  public void runMain() throws InternalFacingException, JavabuilderException {
     // Include the user-facing api jars in the code we are loading so student code can access them.
     URL[] classLoaderUrls = Util.getAllJarURLs(this.executableLocation);
 
@@ -46,10 +46,8 @@ public class JavaRunner {
       mainMethod.invoke(null, new Object[] {null});
     } catch (IllegalAccessException e) {
       // TODO: this error message may not be not very friendly
-      this.outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.EXITED));
       throw new UserInitiatedException(UserInitiatedExceptionKey.ILLEGAL_METHOD_ACCESS, e);
     } catch (InvocationTargetException e) {
-      this.outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.EXITED));
       // If the invocation exception is wrapping another JavabuilderException or
       // JavabuilderRuntimeException, we don't need to wrap it in a UserInitiatedException
       if (e.getCause() instanceof JavabuilderException) {
@@ -66,7 +64,6 @@ public class JavaRunner {
       throw new UserInitiatedException(UserInitiatedExceptionKey.RUNTIME_ERROR, e);
     }
     try {
-      this.outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.EXITED));
       urlClassLoader.close();
     } catch (IOException e) {
       // The user code has finished running. We don't want to confuse them at this point with an
@@ -75,16 +72,19 @@ public class JavaRunner {
     }
   }
 
+  public void runTests() {
+    // TODO: Find and run tests
+  }
+
   /**
    * Finds the main method in the set of files in fileManager if it exists.
    *
    * @param urlClassLoader class loader pointing to location of compiled classes
    * @return the main method if it is found
-   * @throws InternalServerError if there is an issue loading a class
-   * @throws UserInitiatedException if there is more than one main method or no main method
+   * @throws UserInitiatedException if there is more than one main method or no main method, or if
+   *     the class definition is empty
    */
-  public Method findMainMethod(URLClassLoader urlClassLoader)
-      throws InternalServerError, UserInitiatedException {
+  private Method findMainMethod(URLClassLoader urlClassLoader) throws UserInitiatedException {
 
     Method mainMethod = null;
     for (JavaProjectFile file : this.javaFiles) {
