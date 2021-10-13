@@ -38,9 +38,9 @@ public class JavaRunner {
     // preserved.
     URLClassLoader urlClassLoader =
         new URLClassLoader(classLoaderUrls, JavaRunner.class.getClassLoader());
-
     try {
       // load and run the main method of the class
+      this.setSecurityManager();
       Method mainMethod = this.findMainMethod(urlClassLoader);
       this.outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.RUNNING));
       mainMethod.invoke(null, new Object[] {null});
@@ -109,5 +109,10 @@ public class JavaRunner {
       throw new UserInitiatedException(UserInitiatedExceptionKey.NO_MAIN_METHOD);
     }
     return mainMethod;
+  }
+
+  private void setSecurityManager() {
+    SecurityManager newSecurityManager = new JavabuilderSecurityManager();
+    System.setSecurityManager(newSecurityManager);
   }
 }
