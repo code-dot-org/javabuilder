@@ -93,14 +93,15 @@ def get_public_key(origin)
     stage_name = "staging"
   elsif origin.include? "levelbuilder"
     stage_name = "levelbuilder"
-  elsif origin.include? "test"
-    stage_name = "test"
   elsif origin.include? "adhoc"
     stage_name = "adhoc"
+  elsif origin.include? "test"
+    stage_name = "test"
   else
     stage_name = "production"
   end
   # End of temporary code
+  puts "stage name is " + stage_name
 
   public_key = ENV["rsa_pub_#{stage_name}"]
   # Environment variables can't contain newlines

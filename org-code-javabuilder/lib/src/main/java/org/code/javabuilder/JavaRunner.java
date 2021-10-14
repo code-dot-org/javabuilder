@@ -1,5 +1,7 @@
 package org.code.javabuilder;
 
+import static org.code.protocol.LoggerNames.MAIN_LOGGER;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -7,6 +9,7 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.List;
+import java.util.logging.Logger;
 import org.code.protocol.*;
 
 /** The class that executes the student's code */
@@ -117,5 +120,6 @@ public class JavaRunner {
   private void setSecurityManager() {
     SecurityManager newSecurityManager = new JavabuilderSecurityManager();
     System.setSecurityManager(newSecurityManager);
+    Logger.getLogger(MAIN_LOGGER).info("just created security manager");
   }
 }

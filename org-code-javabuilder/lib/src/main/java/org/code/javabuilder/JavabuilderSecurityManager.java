@@ -1,6 +1,10 @@
 package org.code.javabuilder;
 
+import static org.code.protocol.LoggerNames.MAIN_LOGGER;
+
 import java.security.Permission;
+import java.util.Arrays;
+import java.util.logging.Logger;
 
 public class JavabuilderSecurityManager extends SecurityManager {
   @Override
@@ -19,7 +23,7 @@ public class JavabuilderSecurityManager extends SecurityManager {
 
   @Override
   public void checkPackageAccess(String pkg) {
-    System.out.println("checking package access for: " + pkg);
+    // System.out.println("checking package access for: " + pkg);
     //        if(pkg.equals("org.code.protocol")) {
     //            throw new SecurityException("can't access org.code.protocol!");
     //        }
@@ -29,16 +33,15 @@ public class JavabuilderSecurityManager extends SecurityManager {
 
   @Override
   public void checkPermission(Permission perm) {
-    // System.out.println("checking permission: " + perm.getName());
-    //        String[] allowedPermNames = new String[]{"closeClassLoader", "accessDeclaredMembers",
-    // "suppressAccessChecks", "setIO"};
-    //        if (Arrays.asList(allowedPermNames).contains(perm.getName())) {
-    //            return;
-    //        }
+    String[] allowedPermNames =
+        new String[] {"closeClassLoader", "accessDeclaredMembers", "control", "getClassLoader"};
+    if (Arrays.asList(allowedPermNames).contains(perm.getName())) {
+      return;
+    }
     try {
       super.checkPermission(perm);
     } catch (SecurityException e) {
-      System.out.println("security exception would have been thrown for " + perm);
+      Logger.getLogger(MAIN_LOGGER).info("would have thrown error for permission " + perm);
     }
   }
 }
