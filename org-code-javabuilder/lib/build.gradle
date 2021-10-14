@@ -71,17 +71,23 @@ task installGitHook(type: Copy) {
     fileMode 0777
 }
 
-build.dependsOn installGitHook
-build.dependsOn buildZip
-
-afterEvaluate {
-    tasks.processResources.dependsOn project(':neighborhood').getTasksByName('build', false)
-    tasks.processResources.dependsOn project(':theater').getTasksByName('build', false)
-    tasks.processResources.dependsOn project(':playground').getTasksByName('build', false)
-}
-
 clean.doFirst {
     delete "${projectDir}/src/main/resources/jars"
 }
 
-compileJava.dependsOn clean
+build.dependsOn installGitHook
+build.dependsOn buildZip
+
+afterEvaluate {
+    // Clean and build before a production deploy
+    tasks.compileJava.dependsOn clean
+    tasks.processResources.dependsOn project(':neighborhood').getTasksByName('build', false)
+    tasks.processResources.dependsOn project(':theater').getTasksByName('build', false)
+    tasks.processResources.dependsOn project(':playground').getTasksByName('build', false)
+
+    // Clean and build before setting up the local server
+    tasks.prepareInplaceWebAppFolder.dependsOn clean
+    tasks.prepareInplaceWebAppFolder.dependsOn project(':neighborhood').getTasksByName('buildNeighborhood', false)
+    tasks.prepareInplaceWebAppFolder.dependsOn project(':theater').getTasksByName('buildTheater', false)
+    tasks.prepareInplaceWebAppFolder.dependsOn project(':playground').getTasksByName('buildPlayground', false)
+}
