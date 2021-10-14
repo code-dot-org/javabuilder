@@ -41,3 +41,5 @@ task buildPlayground(type: Jar) {
     }
     destinationDirectory = project(':lib').project.layout.projectDirectory.dir('src/main/resources/jars')
 }
+
+build.dependsOn buildPlayground
