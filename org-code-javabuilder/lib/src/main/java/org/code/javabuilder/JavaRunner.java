@@ -30,7 +30,7 @@ public class JavaRunner {
    * @throws InternalFacingException When we hit an internal error after the user's code has
    *     finished executing.
    */
-  public void runCode() throws InternalFacingException, JavabuilderException {
+  public void runMain() throws InternalFacingException, JavabuilderException {
     // Include the user-facing api jars in the code we are loading so student code can access them.
     URL[] classLoaderUrls = Util.getAllJarURLs(this.executableLocation);
 
@@ -72,16 +72,19 @@ public class JavaRunner {
     }
   }
 
+  public void runTests() {
+    // TODO: Find and run tests
+  }
+
   /**
    * Finds the main method in the set of files in fileManager if it exists.
    *
    * @param urlClassLoader class loader pointing to location of compiled classes
    * @return the main method if it is found
-   * @throws InternalServerError if there is an issue loading a class
-   * @throws UserInitiatedException if there is more than one main method or no main method
+   * @throws UserInitiatedException if there is more than one main method or no main method, or if
+   *     the class definition is empty
    */
-  public Method findMainMethod(URLClassLoader urlClassLoader)
-      throws InternalServerError, UserInitiatedException {
+  private Method findMainMethod(URLClassLoader urlClassLoader) throws UserInitiatedException {
 
     Method mainMethod = null;
     for (JavaProjectFile file : this.javaFiles) {

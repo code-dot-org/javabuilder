@@ -44,23 +44,14 @@ public class CodeBuilder implements AutoCloseable {
     codeCompiler.compileProgram();
   }
 
-  /**
-   * Replaces System.in and System.out with our custom implementation and executes the user's code.
-   */
+  /** Runs the main method of the student's code */
   public void runUserCode() throws InternalFacingException, JavabuilderException {
-    System.setOut(new OutputPrintStream(this.outputAdapter));
-    System.setIn(new InputRedirectionStream(this.inputHandler));
-    JavaRunner runner;
-    try {
-      runner =
-          new JavaRunner(
-              this.tempFolder.toURI().toURL(),
-              this.userProjectFiles.getJavaFiles(),
-              this.outputAdapter);
-    } catch (MalformedURLException e) {
-      throw new InternalServerError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e);
-    }
-    runner.runCode();
+    this.createJavaRunner().runMain();
+  }
+
+  /** Runs all tests in the student's code */
+  public void runUserTests() throws InternalFacingException, JavabuilderException {
+    this.createJavaRunner().runTests();
   }
 
   /**
@@ -80,6 +71,23 @@ public class CodeBuilder implements AutoCloseable {
       } catch (IOException e) {
         throw new InternalFacingException(e.toString(), e);
       }
+    }
+  }
+
+  /**
+   * Replaces System.in and System.out with our custom implementation and creates a runner for
+   * executing code
+   */
+  private JavaRunner createJavaRunner() throws InternalServerError {
+    System.setOut(new OutputPrintStream(this.outputAdapter));
+    System.setIn(new InputRedirectionStream(this.inputHandler));
+    try {
+      return new JavaRunner(
+          this.tempFolder.toURI().toURL(),
+          this.userProjectFiles.getJavaFiles(),
+          this.outputAdapter);
+    } catch (MalformedURLException e) {
+      throw new InternalServerError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e);
     }
   }
 
