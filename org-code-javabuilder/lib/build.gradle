@@ -41,6 +41,7 @@ dependencies {
     compileOnly group: 'javax.websocket', name: 'javax.websocket-api', version: '1.1'
     // https://mvnrepository.com/artifact/javax.servlet/javax.servlet-api
     compileOnly group: 'javax.servlet', name: 'javax.servlet-api', version: '4.0.1'
+
 }
 
 test {
@@ -58,6 +59,9 @@ gretty {
 }
 
 task buildZip(type: Zip) {
+    from project(':neighborhood').getTasksByName('buildNeighborhood', false)
+    from project(':theater').getTasksByName('buildTheater', false)
+    from project(':playground').getTasksByName('buildPlayground', false)
     from compileJava
     from processResources
     into('lib') {
@@ -71,17 +75,13 @@ task installGitHook(type: Copy) {
     fileMode 0777
 }
 
-build.dependsOn installGitHook
 build.dependsOn buildZip
+build.dependsOn installGitHook
 
 afterEvaluate {
-    tasks.processResources.dependsOn project(':neighborhood').getTasksByName('build', false)
-    tasks.processResources.dependsOn project(':theater').getTasksByName('build', false)
-    tasks.processResources.dependsOn project(':playground').getTasksByName('build', false)
+    tasks.prepareInplaceWebAppFolder.dependsOn project(':neighborhood').getTasksByName('buildNeighborhood', false)
+    tasks.prepareInplaceWebAppFolder.dependsOn project(':theater').getTasksByName('buildTheater', false)
+    tasks.prepareInplaceWebAppFolder.dependsOn project(':playground').getTasksByName('buildPlayground', false)
+    // This ensures updates to the githook will be installed
+    tasks.prepareInplaceWebAppFolder.dependsOn installGitHook
 }
-
-clean.doFirst {
-    delete "${projectDir}/src/main/resources/jars"
-}
-
-compileJava.dependsOn clean
