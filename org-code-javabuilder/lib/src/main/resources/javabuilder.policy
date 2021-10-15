@@ -1,0 +1,7 @@
+grant codeBase "/tmp/*/" {
+
+};
+
+grant codeBase "jrt:/org.code.javabuilder" {
+    permission java.io.FilePermission, "*", "read";
+};

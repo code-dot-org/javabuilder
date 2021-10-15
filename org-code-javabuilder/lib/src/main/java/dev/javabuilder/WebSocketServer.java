@@ -73,6 +73,10 @@ public class WebSocketServer {
     // turn off the default console logger
     this.logger.setUseParentHandlers(false);
 
+    java.util.Properties props = System.getProperties();
+    String policyPath = getClass().getClassLoader().getResource("javabuilder.policy").getPath();
+    props.put("java.security.policy", policyPath);
+
     Properties.setConnectionId(connectionId);
 
     outputAdapter = new WebSocketOutputAdapter(session);

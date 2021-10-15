@@ -103,6 +103,8 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     java.util.Properties props = System.getProperties();
     // /opt is the folder all layer files go into.
     props.put("sun.awt.fontconfig", "/opt/fontconfig.properties");
+    String policyPath = getClass().getClassLoader().getResource("javabuilder.policy").getPath();
+    props.put("java.security.policy", policyPath);
 
     try {
       // Delete any leftover contents of the tmp folder from previous lambda invocations
