@@ -58,6 +58,14 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
       useNeighborhood = Boolean.parseBoolean(useNeighborhoodStr);
     }
 
+    final String executionTypeString = lambdaInput.get("executionType");
+    // TODO: in order to not break current behavior in Javalab, execution type defaults to 'RUN'.
+    // Once Javalab is sending the execution type parameter, remove this fallback
+    final ExecutionType executionType =
+        executionTypeString == null
+            ? ExecutionType.RUN
+            : ExecutionType.valueOf(executionTypeString);
+
     Logger logger = Logger.getLogger(MAIN_LOGGER);
     logger.addHandler(
         new LambdaLogHandler(
@@ -121,7 +129,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     try {
       // Load files to memory and create and invoke the code execution environment
       CodeBuilderWrapperRunnable codeBuilderWrapper =
-          new CodeBuilderWrapperRunnable(userProjectFileLoader, outputAdapter);
+          new CodeBuilderWrapperRunnable(userProjectFileLoader, outputAdapter, executionType);
       Thread codeBuilderThread = new Thread(codeBuilderWrapper);
       codeBuilderThread.start();
       while (codeBuilderThread.isAlive()) {

@@ -26,7 +26,7 @@ public class LocalMain {
 
     // Create and invoke the code execution environment
     CodeBuilderWrapperRunnable codeBuilderWrapper =
-        new CodeBuilderWrapperRunnable(fileLoader, outputAdapter);
+        new CodeBuilderWrapperRunnable(fileLoader, outputAdapter, ExecutionType.RUN);
     codeBuilderWrapper.executeCodeBuilder();
   }
 }
