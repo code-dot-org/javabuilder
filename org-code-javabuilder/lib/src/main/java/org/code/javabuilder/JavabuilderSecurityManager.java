@@ -42,6 +42,9 @@ public class JavabuilderSecurityManager extends SecurityManager {
       super.checkPermission(perm);
     } catch (SecurityException e) {
       Logger.getLogger(MAIN_LOGGER).info("would have thrown error for permission " + perm);
+      Logger.getLogger(MAIN_LOGGER)
+          .info("class context: " + Arrays.toString(this.getClassContext()));
+      // Logger.getLogger(MAIN_LOGGER).info("security context: " + this.getSecurityContext());
     }
   }
 }

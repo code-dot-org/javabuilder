@@ -73,9 +73,13 @@ public class WebSocketServer {
     // turn off the default console logger
     this.logger.setUseParentHandlers(false);
 
-    java.util.Properties props = System.getProperties();
-    String policyPath = getClass().getClassLoader().getResource("javabuilder.policy").getPath();
-    props.put("java.security.policy", policyPath);
+    //    String policyPath =
+    // getClass().getClassLoader().getResource("javabuilder.policy").getPath();
+    //    System.setProperty("java.security.debug", "policy, access");
+    //    //System.setProperty("java.security.policy", "=" + policyPath);
+    //    java.util.Properties props = System.getProperties();
+    //    props.list(System.out);
+    //    System.out.println("security policy: " + props.get("java.security.policy"));
 
     Properties.setConnectionId(connectionId);
 
