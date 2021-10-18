@@ -43,8 +43,8 @@ public class CodeBuilderWrapperRunnable implements Runnable {
         }
       }
     } catch (InternalServerError | InternalServerRuntimeError e) {
-      if (e.getCause().equals(InterruptedException.class)) {
-        // interrupted exception is thrown if the code was manually shut down.
+      if (e.getCause().getClass().equals(InterruptedException.class)) {
+        // Interrupted Exception is thrown if the code was manually shut down.
         // Ignore this exception
         return;
       }
