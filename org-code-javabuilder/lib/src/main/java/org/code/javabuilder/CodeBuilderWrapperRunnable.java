@@ -15,10 +15,13 @@ import org.json.JSONObject;
 public class CodeBuilderWrapperRunnable implements Runnable {
   private final ProjectFileLoader fileLoader;
   private final OutputAdapter outputAdapter;
+  private final ExecutionType executionType;
 
-  public CodeBuilderWrapperRunnable(ProjectFileLoader fileLoader, OutputAdapter outputAdapter) {
+  public CodeBuilderWrapperRunnable(
+      ProjectFileLoader fileLoader, OutputAdapter outputAdapter, ExecutionType executionType) {
     this.fileLoader = fileLoader;
     this.outputAdapter = outputAdapter;
+    this.executionType = executionType;
   }
 
   @Override
@@ -32,7 +35,12 @@ public class CodeBuilderWrapperRunnable implements Runnable {
       try (CodeBuilder codeBuilder =
           new CodeBuilder(GlobalProtocol.getInstance(), userProjectFiles)) {
         codeBuilder.buildUserCode();
-        codeBuilder.runUserCode();
+
+        if (this.executionType == ExecutionType.RUN) {
+          codeBuilder.runUserCode();
+        } else if (this.executionType == ExecutionType.TEST) {
+          codeBuilder.runUserTests();
+        }
       }
     } catch (InternalServerError | InternalServerRuntimeError e) {
       if (e.getCause().equals(InterruptedException.class)) {
