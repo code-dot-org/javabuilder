@@ -15,8 +15,11 @@ import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import org.code.protocol.*;
 import org.json.JSONObject;
 
@@ -45,6 +48,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     final String queueUrl = lambdaInput.get("queueUrl");
     final String levelId = lambdaInput.get("levelId");
     final String channelId = lambdaInput.get("channelId");
+    final ExecutionType executionType = ExecutionType.valueOf(lambdaInput.get("executionType"));
     final String dashboardHostname = "https://" + lambdaInput.get("iss");
     final JSONObject options = new JSONObject(lambdaInput.get("options"));
     final String javabuilderSessionId = lambdaInput.get("javabuilderSessionId");
@@ -55,14 +59,18 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
       String useNeighborhoodStr = options.getString("useNeighborhood");
       useNeighborhood = Boolean.parseBoolean(useNeighborhoodStr);
     }
-
-    final String executionTypeString = lambdaInput.get("executionType");
-    // TODO: in order to not break current behavior in Javalab, execution type defaults to 'RUN'.
-    // Once Javalab is sending the execution type parameter, remove this fallback
-    final ExecutionType executionType =
-        executionTypeString == null
-            ? ExecutionType.RUN
-            : ExecutionType.valueOf(executionTypeString);
+    final List<String> compileList;
+    if (options.has("compileList")) {
+      compileList =
+          options
+              .getJSONArray("compileList")
+              .toList()
+              .stream()
+              .map(filename -> (String) filename)
+              .collect(Collectors.toList());
+    } else {
+      compileList = new ArrayList<>();
+    }
 
     Logger logger = Logger.getLogger(MAIN_LOGGER);
     logger.addHandler(
@@ -128,7 +136,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
       // Load files to memory and create and invoke the code execution environment
       CodeBuilderWrapper codeBuilderWrapper =
           new CodeBuilderWrapper(userProjectFileLoader, outputAdapter);
-      codeBuilderWrapper.executeCodeBuilder(executionType);
+      codeBuilderWrapper.executeCodeBuilder(executionType, compileList);
     } finally {
       cleanUpResources(connectionId, api);
     }
