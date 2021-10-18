@@ -12,12 +12,12 @@ import org.json.JSONObject;
  * are caught. This allows us to log our errors and communicate failure states to the user. This may
  * be thought of as similar to an HTTP error handler.
  */
-public class CodeBuilderWrapperRunnable implements Runnable {
+public class CodeBuilderRunnable implements Runnable {
   private final ProjectFileLoader fileLoader;
   private final OutputAdapter outputAdapter;
   private final ExecutionType executionType;
 
-  public CodeBuilderWrapperRunnable(
+  public CodeBuilderRunnable(
       ProjectFileLoader fileLoader, OutputAdapter outputAdapter, ExecutionType executionType) {
     this.fileLoader = fileLoader;
     this.outputAdapter = outputAdapter;
@@ -29,7 +29,7 @@ public class CodeBuilderWrapperRunnable implements Runnable {
     this.executeCodeBuilder();
   }
 
-  public void executeCodeBuilder() {
+  private void executeCodeBuilder() {
     try {
       UserProjectFiles userProjectFiles = fileLoader.loadFiles();
       try (CodeBuilder codeBuilder =
