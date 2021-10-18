@@ -48,11 +48,11 @@ public class CodeBuilderRunnable implements Runnable {
         // Ignore this exception
         return;
       }
-      // The error was caused by us (essentially an HTTP 5xx error). Log it so we can fix it.
       JSONObject eventData = new JSONObject();
       eventData.put("exceptionMessage", e.getExceptionMessage());
       eventData.put("loggingString", e.getLoggingString());
       eventData.put("cause", e.getCause());
+      // The error was caused by us (essentially an HTTP 5xx error). Log it so we can fix it.
       Logger.getLogger(MAIN_LOGGER).severe(eventData.toString());
 
       // The error affected the user. Tell them about it.

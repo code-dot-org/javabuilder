@@ -51,6 +51,7 @@ public class AWSInputAdapter implements InputAdapter {
           sqsClient.deleteMessage(queueUrl, message.getReceiptHandle());
         }
       } catch (QueueDoesNotExistException e) {
+        // if we tried to send a message and got queue does not exist, we have lost our connection
         this.hasActiveConnection = false;
         return null;
       }
@@ -59,12 +60,15 @@ public class AWSInputAdapter implements InputAdapter {
     return messages.remove();
   }
 
+  /** Check if we still have an active connection to AWS. */
   @Override
   public boolean hasActiveConnection() {
     if (!this.hasActiveConnection) {
       return false;
     }
     try {
+      // The simplest way to determine if we have an active connection is to make a queue
+      // url request.
       GetQueueUrlRequest queueUrlRequest = new GetQueueUrlRequest(this.queueName);
       sqsClient.getQueueUrl(queueUrlRequest);
     } catch (QueueDoesNotExistException e) {
