@@ -115,7 +115,7 @@ public class JavaRunner {
   }
 
   private void setSecurityManager() {
-    SecurityManager newSecurityManager = new JavabuilderSecurityManager();
+    SecurityManager newSecurityManager = new SecurityManager();
     System.setSecurityManager(newSecurityManager);
   }
 }

@@ -15,6 +15,7 @@ import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.security.Policy;
 import java.util.Map;
 import java.util.logging.Logger;
 import org.code.protocol.*;
@@ -105,6 +106,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     props.put("sun.awt.fontconfig", "/opt/fontconfig.properties");
     String policyPath = getClass().getClassLoader().getResource("javabuilder.policy").getPath();
     props.put("java.security.policy", policyPath);
+    Policy.getPolicy().refresh();
 
     try {
       // Delete any leftover contents of the tmp folder from previous lambda invocations

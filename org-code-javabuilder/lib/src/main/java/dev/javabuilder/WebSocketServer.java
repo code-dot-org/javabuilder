@@ -4,6 +4,7 @@ import static org.code.protocol.LoggerNames.MAIN_LOGGER;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.security.Policy;
 import java.util.Base64;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
@@ -73,13 +74,9 @@ public class WebSocketServer {
     // turn off the default console logger
     this.logger.setUseParentHandlers(false);
 
-    //    String policyPath =
-    // getClass().getClassLoader().getResource("javabuilder.policy").getPath();
-    //    System.setProperty("java.security.debug", "policy, access");
-    //    //System.setProperty("java.security.policy", "=" + policyPath);
-    //    java.util.Properties props = System.getProperties();
-    //    props.list(System.out);
-    //    System.out.println("security policy: " + props.get("java.security.policy"));
+    String policyPath = getClass().getClassLoader().getResource("javabuilder.policy").getPath();
+    System.setProperty("java.security.policy", policyPath);
+    Policy.getPolicy().refresh();
 
     Properties.setConnectionId(connectionId);
 
