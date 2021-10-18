@@ -37,6 +37,9 @@ public class InputRedirectionStream extends InputStream {
       // Rather than adding an arbitrary line separator from the client, we instead add the
       // separator here so we can use a line separator that Scanner will recognize.
       final String stringMessage = inputAdapter.getNextMessageForType(InputMessageType.SYSTEM_IN);
+      // a null message means we've lost connection to the input adapter and won't receive any more
+      // messages.
+      // Therefore we can safely return -1 (end of input).
       if (stringMessage == null) {
         return -1;
       }

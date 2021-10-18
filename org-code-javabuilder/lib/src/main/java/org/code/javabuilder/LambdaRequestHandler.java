@@ -28,6 +28,8 @@ import org.json.JSONObject;
  * https://github.com/awsdocs/aws-lambda-developer-guide/tree/main/sample-apps/blank-java
  */
 public class LambdaRequestHandler implements RequestHandler<Map<String, String>, String> {
+
+  private static final int CHECK_THREAD_INTERVAL_MS = 500;
   /**
    * This is the implementation of the long-running-lambda where user code will be compiled and
    * executed.
@@ -132,9 +134,15 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
       CodeBuilderRunnable codeBuilderRunnable =
           new CodeBuilderRunnable(userProjectFileLoader, outputAdapter, executionType);
       Thread codeBuilderThread = new Thread(codeBuilderRunnable);
+      // start code build and execute in a thread
       codeBuilderThread.start();
       while (codeBuilderThread.isAlive()) {
-        Thread.sleep(500);
+        // sleep for CHECK_THREAD_INTERVAL_MS, then check if we've lost the connection to the
+        // input or output adapter. This means we have lost connection to the end user (either
+        // because
+        // they terminated their program or some other issue), and we should stop executing their
+        // code.
+        Thread.sleep(CHECK_THREAD_INTERVAL_MS);
         if (codeBuilderThread.isAlive()
             && (!inputAdapter.hasActiveConnection() || !outputAdapter.hasActiveConnection())) {
           codeBuilderThread.interrupt();

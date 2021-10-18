@@ -32,12 +32,19 @@ public class AWSOutputAdapter implements OutputAdapter {
     this.sendMessageHelper(post);
   }
 
+  /**
+   * Check if we still have an active connection to AWS.
+   *
+   * @return boolean
+   */
   @Override
   public boolean hasActiveConnection() {
     if (!this.hasActiveConnection) {
       return false;
     }
     try {
+      // The simplest way to find out if we have an active connection is to attempt to get
+      // a connection.
       GetConnectionRequest connectionRequest = new GetConnectionRequest();
       connectionRequest.setConnectionId(connectionId);
       this.api.getConnection(connectionRequest);
