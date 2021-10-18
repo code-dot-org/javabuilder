@@ -129,9 +129,9 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
 
     try {
       // Load files to memory and create and invoke the code execution environment
-      CodeBuilderWrapperRunnable codeBuilderWrapper =
-          new CodeBuilderWrapperRunnable(userProjectFileLoader, outputAdapter, executionType);
-      Thread codeBuilderThread = new Thread(codeBuilderWrapper);
+      CodeBuilderRunnable codeBuilderRunnable =
+          new CodeBuilderRunnable(userProjectFileLoader, outputAdapter, executionType);
+      Thread codeBuilderThread = new Thread(codeBuilderRunnable);
       codeBuilderThread.start();
       while (codeBuilderThread.isAlive()) {
         Thread.sleep(500);

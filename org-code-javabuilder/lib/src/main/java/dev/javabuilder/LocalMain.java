@@ -12,7 +12,7 @@ import org.code.protocol.*;
  * resources folder is the "user program." Output goes to the console.
  */
 public class LocalMain {
-  public static void main(String[] args) {
+  public static void main(String[] args) throws InterruptedException {
     final LocalInputAdapter inputAdapter = new LocalInputAdapter();
     final LocalOutputAdapter outputAdapter = new LocalOutputAdapter(System.out);
     final LocalProjectFileLoader fileLoader = new LocalProjectFileLoader();
@@ -25,8 +25,10 @@ public class LocalMain {
     GlobalProtocol.create(outputAdapter, inputAdapter, "", "", "", new LocalFileWriter());
 
     // Create and invoke the code execution environment
-    CodeBuilderWrapperRunnable codeBuilderWrapper =
-        new CodeBuilderWrapperRunnable(fileLoader, outputAdapter, ExecutionType.RUN);
-    codeBuilderWrapper.executeCodeBuilder();
+    CodeBuilderRunnable codeBuilderRunnable =
+        new CodeBuilderRunnable(fileLoader, outputAdapter, ExecutionType.RUN);
+    Thread codeBuilderExecutor = new Thread(codeBuilderRunnable);
+    codeBuilderExecutor.start();
+    codeBuilderExecutor.join();
   }
 }

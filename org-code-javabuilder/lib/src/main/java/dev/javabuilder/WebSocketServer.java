@@ -86,9 +86,9 @@ public class WebSocketServer {
             levelId,
             dashboardHostname,
             useNeighborhood);
-    CodeBuilderWrapperRunnable codeBuilderWrapper =
-        new CodeBuilderWrapperRunnable(fileLoader, outputAdapter, executionType);
-    this.codeExecutor = new Thread(codeBuilderWrapper);
+    CodeBuilderRunnable codeBuilderRunnable =
+        new CodeBuilderRunnable(fileLoader, outputAdapter, executionType);
+    this.codeExecutor = new Thread(codeBuilderRunnable);
     this.codeExecutor.start();
     Thread waitToCleanup =
         new Thread(
