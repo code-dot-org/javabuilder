@@ -36,11 +36,34 @@ public class CodeBuilder implements AutoCloseable {
    * @throws InternalServerError if the user's code contains a compiler error or if we are unable to
    *     compile due to internal errors.
    */
-  public void buildUserCode() throws InternalServerError, UserInitiatedException {
+  public void buildAllUserCode() throws InternalServerError, UserInitiatedException {
+    this.compileCode(this.userProjectFiles.getJavaFiles());
+  }
+
+  /**
+   * Saves non-source code assets to storage and compiles a subset of the user's code.
+   *
+   * @param compileList a list of file names to compile
+   * @throws InternalServerError if there is an internal error compiling or saving
+   * @throws UserInitiatedException if no matching file names are found, or there is an issue
+   *     compiling
+   */
+  public void buildUserCode(List<String> compileList)
+      throws InternalServerError, UserInitiatedException {
+    final List<JavaProjectFile> javaProjectFiles =
+        this.userProjectFiles.getMatchingJavaFiles(compileList);
+    if (javaProjectFiles.isEmpty()) {
+      throw new UserInitiatedException(UserInitiatedExceptionKey.NO_FILES_TO_COMPILE);
+    }
+
+    this.compileCode(javaProjectFiles);
+  }
+
+  private void compileCode(List<JavaProjectFile> javaProjectFiles)
+      throws InternalServerError, UserInitiatedException {
     this.saveProjectAssets();
     UserCodeCompiler codeCompiler =
-        new UserCodeCompiler(
-            this.userProjectFiles.getJavaFiles(), this.tempFolder, this.outputAdapter);
+        new UserCodeCompiler(javaProjectFiles, this.tempFolder, this.outputAdapter);
     codeCompiler.compileProgram();
   }
 
