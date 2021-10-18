@@ -17,6 +17,7 @@ import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Map;
+import java.util.logging.Handler;
 import java.util.logging.Logger;
 import org.code.protocol.*;
 import org.json.JSONObject;
@@ -133,17 +134,16 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
       Thread codeBuilderThread = new Thread(codeBuilderWrapper);
       codeBuilderThread.start();
       while (codeBuilderThread.isAlive()) {
-        try {
-          Thread.sleep(500);
-        } catch (InterruptedException interruptedException) {
-          // no-op if we have an interrupted exception
-        }
+        Thread.sleep(500);
         if (codeBuilderThread.isAlive()
             && (!inputAdapter.hasActiveConnection() || !outputAdapter.hasActiveConnection())) {
-          Logger.getLogger(MAIN_LOGGER).info("interrupting code builder thread!");
           codeBuilderThread.interrupt();
+          break;
         }
       }
+    } catch (InterruptedException interruptedException) {
+      // no-op if we have an interrupted exception, as it happened due to a user ending their
+      // program.
     } finally {
       cleanUpResources(connectionId, api);
     }
@@ -159,6 +159,11 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
       api.deleteConnection(deleteConnectionRequest);
     } catch (GoneException e) {
       // if the connection is already gone, we don't need to delete the connection.
+    }
+    // clean up log handler to avoid duplicate logs in future runs.
+    Handler[] allHandlers = Logger.getLogger(MAIN_LOGGER).getHandlers();
+    for (int i = 0; i < allHandlers.length; i++) {
+      Logger.getLogger(MAIN_LOGGER).removeHandler(allHandlers[i]);
     }
   }
 }

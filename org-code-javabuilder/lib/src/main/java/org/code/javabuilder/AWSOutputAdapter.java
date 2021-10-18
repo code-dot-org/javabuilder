@@ -1,13 +1,10 @@
 package org.code.javabuilder;
 
-import static org.code.protocol.LoggerNames.MAIN_LOGGER;
-
 import com.amazonaws.services.apigatewaymanagementapi.AmazonApiGatewayManagementApi;
 import com.amazonaws.services.apigatewaymanagementapi.model.GetConnectionRequest;
 import com.amazonaws.services.apigatewaymanagementapi.model.GoneException;
 import com.amazonaws.services.apigatewaymanagementapi.model.PostToConnectionRequest;
 import java.nio.ByteBuffer;
-import java.util.logging.Logger;
 import org.code.protocol.*;
 
 /** Sends messages to Amazon API Gateway from the user's program. */
@@ -37,10 +34,6 @@ public class AWSOutputAdapter implements OutputAdapter {
 
   @Override
   public boolean hasActiveConnection() {
-    Logger.getLogger(MAIN_LOGGER)
-        .info(
-            "output adapter: checking active connection, it is currently "
-                + this.hasActiveConnection);
     if (!this.hasActiveConnection) {
       return false;
     }
@@ -51,8 +44,6 @@ public class AWSOutputAdapter implements OutputAdapter {
     } catch (GoneException e) {
       this.hasActiveConnection = false;
     }
-    Logger.getLogger(MAIN_LOGGER)
-        .info("output adapter: checked active connection, it is now " + this.hasActiveConnection);
     return this.hasActiveConnection;
   }
 
