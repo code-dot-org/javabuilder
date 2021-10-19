@@ -25,6 +25,9 @@ public class Prompter {
     getImageDetails.put(ClientMessageDetailKeys.PROMPT, prompt);
     this.outputAdapter.sendMessage(new TheaterMessage(TheaterSignalKey.GET_IMAGE, getImageDetails));
 
+    // TO DO: get provided image from Javalab.
+    // https://codedotorg.atlassian.net/browse/CSA-936
+
     return null;
   }
 }
