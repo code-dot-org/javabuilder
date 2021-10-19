@@ -2,6 +2,7 @@ package org.code.javabuilder;
 
 import static org.code.protocol.LoggerNames.MAIN_LOGGER;
 
+import java.util.List;
 import java.util.logging.Logger;
 import org.code.protocol.*;
 import org.json.JSONObject;
@@ -21,17 +22,24 @@ public class CodeBuilderWrapper {
     this.outputAdapter = outputAdapter;
   }
 
-  public void executeCodeBuilder(ExecutionType executionType) {
+  public void executeCodeBuilder(ExecutionType executionType, List<String> compileList) {
     try {
       UserProjectFiles userProjectFiles = fileLoader.loadFiles();
       try (CodeBuilder codeBuilder =
           new CodeBuilder(GlobalProtocol.getInstance(), userProjectFiles)) {
-        codeBuilder.buildUserCode();
 
-        if (executionType == ExecutionType.RUN) {
-          codeBuilder.runUserCode();
-        } else if (executionType == ExecutionType.TEST) {
-          codeBuilder.runUserTests();
+        switch (executionType) {
+          case COMPILE_ONLY:
+            codeBuilder.buildUserCode(compileList);
+            break;
+          case RUN:
+            codeBuilder.buildAllUserCode();
+            codeBuilder.runUserCode();
+            break;
+          case TEST:
+            codeBuilder.buildAllUserCode();
+            codeBuilder.runUserTests();
+            break;
         }
       }
     } catch (InternalServerError | InternalServerRuntimeError e) {

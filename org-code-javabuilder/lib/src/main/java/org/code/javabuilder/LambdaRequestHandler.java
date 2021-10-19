@@ -15,6 +15,7 @@ import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 import org.code.protocol.*;
@@ -45,24 +46,15 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     final String queueUrl = lambdaInput.get("queueUrl");
     final String levelId = lambdaInput.get("levelId");
     final String channelId = lambdaInput.get("channelId");
+    final ExecutionType executionType = ExecutionType.valueOf(lambdaInput.get("executionType"));
     final String dashboardHostname = "https://" + lambdaInput.get("iss");
     final JSONObject options = new JSONObject(lambdaInput.get("options"));
     final String javabuilderSessionId = lambdaInput.get("javabuilderSessionId");
     final String outputBucketName = System.getenv("OUTPUT_BUCKET_NAME");
     final String getOutputUrl = System.getenv("GET_OUTPUT_URL");
-    boolean useNeighborhood = false;
-    if (options.has("useNeighborhood")) {
-      String useNeighborhoodStr = options.getString("useNeighborhood");
-      useNeighborhood = Boolean.parseBoolean(useNeighborhoodStr);
-    }
-
-    final String executionTypeString = lambdaInput.get("executionType");
-    // TODO: in order to not break current behavior in Javalab, execution type defaults to 'RUN'.
-    // Once Javalab is sending the execution type parameter, remove this fallback
-    final ExecutionType executionType =
-        executionTypeString == null
-            ? ExecutionType.RUN
-            : ExecutionType.valueOf(executionTypeString);
+    final boolean useNeighborhood =
+        JSONUtils.booleanFromJSONObjectMember(options, "useNeighborhood");
+    final List<String> compileList = JSONUtils.listFromJSONObjectMember(options, "compileList");
 
     Logger logger = Logger.getLogger(MAIN_LOGGER);
     logger.addHandler(
@@ -128,7 +120,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
       // Load files to memory and create and invoke the code execution environment
       CodeBuilderWrapper codeBuilderWrapper =
           new CodeBuilderWrapper(userProjectFileLoader, outputAdapter);
-      codeBuilderWrapper.executeCodeBuilder(executionType);
+      codeBuilderWrapper.executeCodeBuilder(executionType, compileList);
     } finally {
       cleanUpResources(connectionId, api);
     }

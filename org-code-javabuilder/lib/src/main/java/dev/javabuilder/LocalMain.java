@@ -2,6 +2,7 @@ package dev.javabuilder;
 
 import static org.code.protocol.LoggerNames.MAIN_LOGGER;
 
+import java.util.ArrayList;
 import java.util.logging.Logger;
 import org.code.javabuilder.*;
 import org.code.protocol.*;
@@ -26,6 +27,6 @@ public class LocalMain {
 
     // Create and invoke the code execution environment
     CodeBuilderWrapper codeBuilderWrapper = new CodeBuilderWrapper(fileLoader, outputAdapter);
-    codeBuilderWrapper.executeCodeBuilder(ExecutionType.RUN);
+    codeBuilderWrapper.executeCodeBuilder(ExecutionType.RUN, new ArrayList<>());
   }
 }
