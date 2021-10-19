@@ -2,8 +2,7 @@ package org.code.javabuilder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.io.InputStream;
 import java.io.PrintStream;
@@ -36,6 +35,14 @@ public class CodeBuilderTest {
     }
     assertEquals(sysout, System.out);
     assertEquals(sysin, System.in);
+  }
+
+  @Test
+  public void testBuildUserCodeThrowsExceptionFileListIsNull() {
+    final Exception exception =
+        assertThrows(UserInitiatedException.class, () -> codeBuilder.buildUserCode(null));
+    assertEquals(UserInitiatedExceptionKey.NO_FILES_TO_COMPILE.toString(), exception.getMessage());
+    verify(userProjectFiles, never()).getMatchingJavaFiles(anyList());
   }
 
   @Test

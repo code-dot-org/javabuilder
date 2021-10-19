@@ -34,10 +34,6 @@ public class UserProjectFiles {
     return this.getMatchingProjectFiles(filenames, this.javaFiles);
   }
 
-  public List<TextProjectFile> getMatchingTextFiles(List<String> filenames) {
-    return this.getMatchingProjectFiles(filenames, this.textFiles);
-  }
-
   private <T extends ProjectFile> List<T> getMatchingProjectFiles(
       List<String> filenames, List<T> projectFiles) {
     return projectFiles

@@ -50,6 +50,9 @@ public class CodeBuilder implements AutoCloseable {
    */
   public void buildUserCode(List<String> compileList)
       throws InternalServerError, UserInitiatedException {
+    if (compileList == null) {
+      throw new UserInitiatedException(UserInitiatedExceptionKey.NO_FILES_TO_COMPILE);
+    }
     final List<JavaProjectFile> javaProjectFiles =
         this.userProjectFiles.getMatchingJavaFiles(compileList);
     if (javaProjectFiles.isEmpty()) {
