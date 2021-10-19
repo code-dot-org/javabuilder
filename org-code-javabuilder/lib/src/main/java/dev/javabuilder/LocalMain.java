@@ -26,7 +26,7 @@ public class LocalMain {
 
     // Create and invoke the code execution environment
     CodeBuilderRunnable codeBuilderRunnable =
-        new CodeBuilderRunnable(fileLoader, outputAdapter, ExecutionType.RUN);
+        new CodeBuilderRunnable(fileLoader, outputAdapter, ExecutionType.RUN, null);
     Thread codeBuilderExecutor = new Thread(codeBuilderRunnable);
     codeBuilderExecutor.start();
     codeBuilderExecutor.join();
