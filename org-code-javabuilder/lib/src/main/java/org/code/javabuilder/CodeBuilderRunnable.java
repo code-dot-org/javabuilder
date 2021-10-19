@@ -2,6 +2,7 @@ package org.code.javabuilder;
 
 import static org.code.protocol.LoggerNames.MAIN_LOGGER;
 
+import java.util.List;
 import java.util.logging.Logger;
 import org.code.protocol.*;
 import org.json.JSONObject;
@@ -16,12 +17,17 @@ public class CodeBuilderRunnable implements Runnable {
   private final ProjectFileLoader fileLoader;
   private final OutputAdapter outputAdapter;
   private final ExecutionType executionType;
+  private final List<String> compileList;
 
   public CodeBuilderRunnable(
-      ProjectFileLoader fileLoader, OutputAdapter outputAdapter, ExecutionType executionType) {
+      ProjectFileLoader fileLoader,
+      OutputAdapter outputAdapter,
+      ExecutionType executionType,
+      List<String> compileList) {
     this.fileLoader = fileLoader;
     this.outputAdapter = outputAdapter;
     this.executionType = executionType;
+    this.compileList = compileList;
   }
 
   @Override
@@ -34,12 +40,19 @@ public class CodeBuilderRunnable implements Runnable {
       UserProjectFiles userProjectFiles = fileLoader.loadFiles();
       try (CodeBuilder codeBuilder =
           new CodeBuilder(GlobalProtocol.getInstance(), userProjectFiles)) {
-        codeBuilder.buildUserCode();
 
-        if (this.executionType == ExecutionType.RUN) {
-          codeBuilder.runUserCode();
-        } else if (this.executionType == ExecutionType.TEST) {
-          codeBuilder.runUserTests();
+        switch (this.executionType) {
+          case COMPILE_ONLY:
+            codeBuilder.buildUserCode(this.compileList);
+            break;
+          case RUN:
+            codeBuilder.buildAllUserCode();
+            codeBuilder.runUserCode();
+            break;
+          case TEST:
+            codeBuilder.buildAllUserCode();
+            codeBuilder.runUserTests();
+            break;
         }
       }
     } catch (InternalServerError | InternalServerRuntimeError e) {

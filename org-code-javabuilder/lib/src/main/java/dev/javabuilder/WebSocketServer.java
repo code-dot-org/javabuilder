@@ -5,6 +5,7 @@ import static org.code.protocol.LoggerNames.MAIN_LOGGER;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Base64;
+import java.util.List;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
 import javax.websocket.OnClose;
@@ -51,22 +52,13 @@ public class WebSocketServer {
     final String connectionId = "LocalhostWebSocketConnection";
     final String levelId = queryInput.getString("level_id");
     final String channelId = queryInput.getString("channel_id");
+    final ExecutionType executionType =
+        ExecutionType.valueOf(queryInput.getString("execution_type"));
     final String dashboardHostname = "http://" + queryInput.get("iss") + ":3000";
     final JSONObject options = new JSONObject(queryInput.getString("options"));
-    boolean useNeighborhood = false;
-    if (options.has("useNeighborhood")) {
-      String useNeighborhoodStr = options.getString("useNeighborhood");
-      useNeighborhood = Boolean.parseBoolean(useNeighborhoodStr);
-    }
-
-    final String executionTypeString =
-        queryInput.has("execution_type") ? queryInput.getString("execution_type") : null;
-    // TODO: in order to not break current behavior in Javalab, execution type defaults to 'RUN'.
-    // Once Javalab is sending the execution type parameter, remove this fallback
-    final ExecutionType executionType =
-        executionTypeString == null
-            ? ExecutionType.RUN
-            : ExecutionType.valueOf(executionTypeString);
+    final boolean useNeighborhood =
+        JSONUtils.booleanFromJSONObjectMember(options, "useNeighborhood");
+    final List<String> compileList = JSONUtils.listFromJSONObjectMember(options, "compileList");
 
     this.logger = Logger.getLogger(MAIN_LOGGER);
     this.logHandler = new LocalLogHandler(System.out, levelId, channelId);
@@ -87,7 +79,7 @@ public class WebSocketServer {
             dashboardHostname,
             useNeighborhood);
     CodeBuilderRunnable codeBuilderRunnable =
-        new CodeBuilderRunnable(fileLoader, outputAdapter, executionType);
+        new CodeBuilderRunnable(fileLoader, outputAdapter, executionType, compileList);
     this.codeExecutor = new Thread(codeBuilderRunnable);
     this.codeExecutor.start();
     Thread waitToCleanup =
