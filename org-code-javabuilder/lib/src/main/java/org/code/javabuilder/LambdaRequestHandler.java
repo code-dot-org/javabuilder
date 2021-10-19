@@ -15,11 +15,9 @@ import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 import org.code.protocol.*;
 import org.json.JSONObject;
 
@@ -54,23 +52,9 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     final String javabuilderSessionId = lambdaInput.get("javabuilderSessionId");
     final String outputBucketName = System.getenv("OUTPUT_BUCKET_NAME");
     final String getOutputUrl = System.getenv("GET_OUTPUT_URL");
-    boolean useNeighborhood = false;
-    if (options.has("useNeighborhood")) {
-      String useNeighborhoodStr = options.getString("useNeighborhood");
-      useNeighborhood = Boolean.parseBoolean(useNeighborhoodStr);
-    }
-    final List<String> compileList;
-    if (options.has("compileList")) {
-      compileList =
-          options
-              .getJSONArray("compileList")
-              .toList()
-              .stream()
-              .map(filename -> (String) filename)
-              .collect(Collectors.toList());
-    } else {
-      compileList = new ArrayList<>();
-    }
+    final boolean useNeighborhood =
+        JSONUtils.booleanFromJSONObjectMember(options, "useNeighborhood");
+    final List<String> compileList = JSONUtils.listFromJSONObjectMember(options, "compileList");
 
     Logger logger = Logger.getLogger(MAIN_LOGGER);
     logger.addHandler(
