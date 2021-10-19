@@ -19,6 +19,9 @@ public class ClientMessageDetailKeys {
   public static final String ROTATION = "rotation";
   public static final String UPDATES = "updates";
 
+  // Theater specific
+  public static final String PROMPT = "prompt";
+
   // Exception specific
   public static final String CONNECTION_ID = "connectionId";
   public static final String CAUSE = "cause";
