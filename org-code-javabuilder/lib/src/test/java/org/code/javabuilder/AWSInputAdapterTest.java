@@ -1,11 +1,12 @@
 package org.code.javabuilder;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.model.Message;
+import com.amazonaws.services.sqs.model.QueueDoesNotExistException;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 import com.amazonaws.services.sqs.model.ReceiveMessageResult;
 import java.util.ArrayList;
@@ -20,7 +21,7 @@ public class AWSInputAdapterTest {
   @BeforeEach
   public void setUp() {
     sqsMock = mock(AmazonSQS.class);
-    inputAdapter = new AWSInputAdapter(sqsMock, "url");
+    inputAdapter = new AWSInputAdapter(sqsMock, "url", "name");
   }
 
   /**
@@ -39,6 +40,11 @@ public class AWSInputAdapterTest {
     ReceiveMessageResult result = mock(ReceiveMessageResult.class);
     when(result.getMessages()).thenReturn(messageList);
     when(sqsMock.receiveMessage(any(ReceiveMessageRequest.class))).thenReturn(result);
+  }
+
+  private void mockLostConnection() {
+    when(sqsMock.receiveMessage(any(ReceiveMessageRequest.class)))
+        .thenThrow(QueueDoesNotExistException.class);
   }
 
   @Test
@@ -79,5 +85,13 @@ public class AWSInputAdapterTest {
     inputAdapter.getNextMessage();
     inputAdapter.getNextMessage();
     verify(sqsMock, times(1)).receiveMessage(any(ReceiveMessageRequest.class));
+  }
+
+  @Test
+  void returnsNullOnLostConnection() {
+    this.mockLostConnection();
+    String result = inputAdapter.getNextMessage();
+    assertNull(result);
+    assertFalse(inputAdapter.hasActiveConnection());
   }
 }
