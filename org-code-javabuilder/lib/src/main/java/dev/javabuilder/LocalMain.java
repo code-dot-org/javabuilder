@@ -2,7 +2,6 @@ package dev.javabuilder;
 
 import static org.code.protocol.LoggerNames.MAIN_LOGGER;
 
-import java.util.ArrayList;
 import java.util.logging.Logger;
 import org.code.javabuilder.*;
 import org.code.protocol.*;
@@ -13,7 +12,7 @@ import org.code.protocol.*;
  * resources folder is the "user program." Output goes to the console.
  */
 public class LocalMain {
-  public static void main(String[] args) {
+  public static void main(String[] args) throws InterruptedException {
     final LocalInputAdapter inputAdapter = new LocalInputAdapter();
     final LocalOutputAdapter outputAdapter = new LocalOutputAdapter(System.out);
     final LocalProjectFileLoader fileLoader = new LocalProjectFileLoader();
@@ -26,7 +25,10 @@ public class LocalMain {
     GlobalProtocol.create(outputAdapter, inputAdapter, "", "", "", new LocalFileWriter());
 
     // Create and invoke the code execution environment
-    CodeBuilderWrapper codeBuilderWrapper = new CodeBuilderWrapper(fileLoader, outputAdapter);
-    codeBuilderWrapper.executeCodeBuilder(ExecutionType.RUN, new ArrayList<>());
+    CodeBuilderRunnable codeBuilderRunnable =
+        new CodeBuilderRunnable(fileLoader, outputAdapter, ExecutionType.RUN, null);
+    Thread codeBuilderExecutor = new Thread(codeBuilderRunnable);
+    codeBuilderExecutor.start();
+    codeBuilderExecutor.join();
   }
 }

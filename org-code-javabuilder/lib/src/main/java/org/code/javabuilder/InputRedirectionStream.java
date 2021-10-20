@@ -36,8 +36,14 @@ public class InputRedirectionStream extends InputStream {
       // The Java Lab console is an <input> element that uses the enter key to trigger onSubmit.
       // Rather than adding an arbitrary line separator from the client, we instead add the
       // separator here so we can use a line separator that Scanner will recognize.
-      final String messageWithNewline =
-          inputAdapter.getNextMessageForType(InputMessageType.SYSTEM_IN) + System.lineSeparator();
+      final String stringMessage = inputAdapter.getNextMessageForType(InputMessageType.SYSTEM_IN);
+      // a null message means we've lost connection to the input adapter and won't receive any more
+      // messages.
+      // Therefore we can safely return -1 (end of input).
+      if (stringMessage == null) {
+        return -1;
+      }
+      final String messageWithNewline = stringMessage + System.lineSeparator();
       byte[] message = messageWithNewline.getBytes(StandardCharsets.UTF_8);
       for (byte b : message) {
         queue.add(b);

@@ -13,24 +13,37 @@ import org.json.JSONObject;
  * are caught. This allows us to log our errors and communicate failure states to the user. This may
  * be thought of as similar to an HTTP error handler.
  */
-public class CodeBuilderWrapper {
+public class CodeBuilderRunnable implements Runnable {
   private final ProjectFileLoader fileLoader;
   private final OutputAdapter outputAdapter;
+  private final ExecutionType executionType;
+  private final List<String> compileList;
 
-  public CodeBuilderWrapper(ProjectFileLoader fileLoader, OutputAdapter outputAdapter) {
+  public CodeBuilderRunnable(
+      ProjectFileLoader fileLoader,
+      OutputAdapter outputAdapter,
+      ExecutionType executionType,
+      List<String> compileList) {
     this.fileLoader = fileLoader;
     this.outputAdapter = outputAdapter;
+    this.executionType = executionType;
+    this.compileList = compileList;
   }
 
-  public void executeCodeBuilder(ExecutionType executionType, List<String> compileList) {
+  @Override
+  public void run() {
+    this.executeCodeBuilder();
+  }
+
+  private void executeCodeBuilder() {
     try {
       UserProjectFiles userProjectFiles = fileLoader.loadFiles();
       try (CodeBuilder codeBuilder =
           new CodeBuilder(GlobalProtocol.getInstance(), userProjectFiles)) {
 
-        switch (executionType) {
+        switch (this.executionType) {
           case COMPILE_ONLY:
-            codeBuilder.buildUserCode(compileList);
+            codeBuilder.buildUserCode(this.compileList);
             break;
           case RUN:
             codeBuilder.buildAllUserCode();
@@ -43,10 +56,16 @@ public class CodeBuilderWrapper {
         }
       }
     } catch (InternalServerError | InternalServerRuntimeError e) {
-      // The error was caused by us (essentially an HTTP 5xx error). Log it so we can fix it.
+      if (e.getCause().getClass().equals(InterruptedException.class)) {
+        // Interrupted Exception is thrown if the code was manually shut down.
+        // Ignore this exception
+        return;
+      }
       JSONObject eventData = new JSONObject();
       eventData.put("exceptionMessage", e.getExceptionMessage());
       eventData.put("loggingString", e.getLoggingString());
+      eventData.put("cause", e.getCause());
+      // The error was caused by us (essentially an HTTP 5xx error). Log it so we can fix it.
       Logger.getLogger(MAIN_LOGGER).severe(eventData.toString());
 
       // The error affected the user. Tell them about it.

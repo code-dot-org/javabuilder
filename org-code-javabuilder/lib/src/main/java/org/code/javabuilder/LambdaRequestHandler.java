@@ -7,6 +7,7 @@ import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.apigatewaymanagementapi.AmazonApiGatewayManagementApi;
 import com.amazonaws.services.apigatewaymanagementapi.AmazonApiGatewayManagementApiClientBuilder;
 import com.amazonaws.services.apigatewaymanagementapi.model.DeleteConnectionRequest;
+import com.amazonaws.services.apigatewaymanagementapi.model.GoneException;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.s3.AmazonS3;
@@ -17,6 +18,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Handler;
 import java.util.logging.Logger;
 import org.code.protocol.*;
 import org.json.JSONObject;
@@ -27,6 +29,8 @@ import org.json.JSONObject;
  * https://github.com/awsdocs/aws-lambda-developer-guide/tree/main/sample-apps/blank-java
  */
 public class LambdaRequestHandler implements RequestHandler<Map<String, String>, String> {
+
+  private static final int CHECK_THREAD_INTERVAL_MS = 500;
   /**
    * This is the implementation of the long-running-lambda where user code will be compiled and
    * executed.
@@ -44,6 +48,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     final String connectionId = lambdaInput.get("connectionId");
     final String apiEndpoint = lambdaInput.get("apiEndpoint");
     final String queueUrl = lambdaInput.get("queueUrl");
+    final String queueName = lambdaInput.get("queueName");
     final String levelId = lambdaInput.get("levelId");
     final String channelId = lambdaInput.get("channelId");
     final ExecutionType executionType = ExecutionType.valueOf(lambdaInput.get("executionType"));
@@ -75,7 +80,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
 
     // Create user input handlers
     final AmazonSQS sqsClient = AmazonSQSClientBuilder.defaultClient();
-    final AWSInputAdapter inputAdapter = new AWSInputAdapter(sqsClient, queueUrl);
+    final AWSInputAdapter inputAdapter = new AWSInputAdapter(sqsClient, queueUrl, queueName);
 
     final AmazonS3 s3Client = AmazonS3ClientBuilder.standard().build();
     final AWSFileWriter fileWriter =
@@ -118,9 +123,26 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
 
     try {
       // Load files to memory and create and invoke the code execution environment
-      CodeBuilderWrapper codeBuilderWrapper =
-          new CodeBuilderWrapper(userProjectFileLoader, outputAdapter);
-      codeBuilderWrapper.executeCodeBuilder(executionType, compileList);
+      CodeBuilderRunnable codeBuilderRunnable =
+          new CodeBuilderRunnable(userProjectFileLoader, outputAdapter, executionType, compileList);
+      Thread codeBuilderThread = new Thread(codeBuilderRunnable);
+      // start code build and execute in a thread
+      codeBuilderThread.start();
+      while (codeBuilderThread.isAlive()) {
+        // sleep for CHECK_THREAD_INTERVAL_MS, then check if we've lost the connection to the
+        // input or output adapter. This means we have lost connection to the end user (either
+        // because they terminated their program or some other issue), and we should stop
+        // executing their code.
+        Thread.sleep(CHECK_THREAD_INTERVAL_MS);
+        if (codeBuilderThread.isAlive()
+            && (!inputAdapter.hasActiveConnection() || !outputAdapter.hasActiveConnection())) {
+          codeBuilderThread.interrupt();
+          break;
+        }
+      }
+    } catch (InterruptedException interruptedException) {
+      // no-op if we have an interrupted exception, as it happened due to a user ending their
+      // program.
     } finally {
       cleanUpResources(connectionId, api);
     }
@@ -132,6 +154,15 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
         new DeleteConnectionRequest().withConnectionId(connectionId);
     // Deleting the API Gateway connection should always be the last thing executed because the
     // delete action cleans up the AWS resources associated with this lambda
-    api.deleteConnection(deleteConnectionRequest);
+    try {
+      api.deleteConnection(deleteConnectionRequest);
+    } catch (GoneException e) {
+      // if the connection is already gone, we don't need to delete the connection.
+    }
+    // clean up log handler to avoid duplicate logs in future runs.
+    Handler[] allHandlers = Logger.getLogger(MAIN_LOGGER).getHandlers();
+    for (int i = 0; i < allHandlers.length; i++) {
+      Logger.getLogger(MAIN_LOGGER).removeHandler(allHandlers[i]);
+    }
   }
 }
