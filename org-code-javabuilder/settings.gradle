@@ -14,4 +14,5 @@ include('protocol')
 include('theater')
 include('media')
 include('playground')
+include('studentlib')
 

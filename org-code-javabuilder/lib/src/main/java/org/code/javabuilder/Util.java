@@ -13,9 +13,9 @@ import org.code.protocol.InternalErrorKey;
 
 /** A set of static utility functions that are used in multiple locations */
 public class Util {
-  private static final String NEIGHBORHOOD_JAR = "neighborhood-full.jar";
-  private static final String THEATER_JAR = "theater-full.jar";
-  private static final String PLAYGROUND_JAR = "playground-full.jar";
+  private static final String[] JAR_NAMES = {
+    "neighborhood-full.jar", "theater-full.jar", "playground-full.jar", "studentlib-full.jar"
+  };
 
   /** @return a URL describing the location the given jar */
   private static URL getJarURL(String jarName) {
@@ -24,21 +24,22 @@ public class Util {
 
   /** @return a list of URLs with the location of all user-facing api jars */
   public static URL[] getAllJarURLs(URL executableLocation) {
-    return new URL[] {
-      executableLocation,
-      Util.getJarURL(NEIGHBORHOOD_JAR),
-      Util.getJarURL(THEATER_JAR),
-      Util.getJarURL(PLAYGROUND_JAR)
-    };
+    final URL[] jarUrls = new URL[JAR_NAMES.length + 1];
+    jarUrls[0] = executableLocation;
+    for (int i = 0; i < JAR_NAMES.length; i++) {
+      jarUrls[i + 1] = Util.getJarURL(JAR_NAMES[i]);
+    }
+
+    return jarUrls;
   }
 
   /** @return a joined list of the paths of all user-facing api jars */
   public static String getAllJarPaths() throws InternalServerError {
     ArrayList<String> allJarPaths = new ArrayList<>();
     try {
-      allJarPaths.add(Paths.get(Util.getJarURL(NEIGHBORHOOD_JAR).toURI()).toString());
-      allJarPaths.add(Paths.get(Util.getJarURL(THEATER_JAR).toURI()).toString());
-      allJarPaths.add(Paths.get(Util.getJarURL(PLAYGROUND_JAR).toURI()).toString());
+      for (String jarName : JAR_NAMES) {
+        allJarPaths.add(Paths.get(Util.getJarURL(jarName).toURI()).toString());
+      }
     } catch (URISyntaxException e) {
       throw new InternalServerError(InternalErrorKey.INTERNAL_COMPILER_EXCEPTION, e);
     }
