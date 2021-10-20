@@ -28,6 +28,9 @@ as the code for the `org.code` Java packages that are used in the Java Lab mini 
   is a prototype built to explore the idea of click-interactivity in Javabuilder and AP
   CSA. It contains a package that can be imported by the user to interact with the playground
   mini-app. Playground is primarily used for board game style programs.
+* [studentlib](https://github.com/code-dot-org/javabuilder/tree/main/org-code-javabuilder/studentlib)
+  houses all external dependencies required to run and compile student code that are not already
+  included by other mini-app packages.
 
 ## Local Development
 ### Setup your project

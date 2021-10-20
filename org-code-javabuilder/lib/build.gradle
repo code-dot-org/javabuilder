@@ -79,15 +79,32 @@ build.dependsOn installGitHook
 build.dependsOn buildZip
 
 afterEvaluate {
+    // List of projects to generate jars for along with their specific fat-jar task names
+    def projects = [
+            [':neighborhood', 'buildNeighborhood'],
+            [':theater', 'buildTheater'],
+            [':playground', 'buildPlayground'],
+            [':studentlib', 'buildStudentlib']
+    ]
+
     // Clean and build before a production deploy
     tasks.compileJava.dependsOn clean
-    tasks.processResources.dependsOn project(':neighborhood').getTasksByName('build', false)
-    tasks.processResources.dependsOn project(':theater').getTasksByName('build', false)
-    tasks.processResources.dependsOn project(':playground').getTasksByName('build', false)
 
     // Clean and build before setting up the local server
     tasks.prepareInplaceWebAppFolder.dependsOn clean
-    tasks.prepareInplaceWebAppFolder.dependsOn project(':neighborhood').getTasksByName('buildNeighborhood', false)
-    tasks.prepareInplaceWebAppFolder.dependsOn project(':theater').getTasksByName('buildTheater', false)
-    tasks.prepareInplaceWebAppFolder.dependsOn project(':playground').getTasksByName('buildPlayground', false)
+
+    projects.each {
+        def projectName = it[0]
+        def jarTask = it[1]
+        // Fully build each project for a production deploy
+        tasks.processResources.dependsOn project(projectName).getTasksByName('build', false)
+
+        // Only generate each project's jar for local server
+        tasks.prepareInplaceWebAppFolder.dependsOn project(projectName).getTasksByName(jarTask, false)
+
+        // Ensure all tasks happen after clean
+        project(projectName).getAllTasks(false).each {
+            it.getValue().each { it.dependsOn clean }
+        }
+    }
 }

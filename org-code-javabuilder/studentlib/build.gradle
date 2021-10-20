@@ -1,0 +1,36 @@
+plugins {
+    id 'java'
+}
+
+repositories {
+    mavenCentral()
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
+
+dependencies {
+    // Required to compile student unit tests
+    implementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+// Builds the Studentlib fat-jar (i.e. jar with all dependencies) and copies it to the resources
+// folder in the javabuilder sub-project (currently named 'lib'). This will allow student code to
+// access the Studentlib package.
+task buildStudentlib(type: Jar) {
+    archiveClassifier = 'full'
+    from sourceSets.main.output
+    dependsOn configurations.runtimeClasspath
+    from {
+        configurations.runtimeClasspath.findAll { it.name.endsWith('jar') }.collect { zipTree(it) }
+    }
+    destinationDirectory = project(':lib').project.layout.projectDirectory.dir('src/main/resources/jars')
+}
+
+build.dependsOn buildStudentlib
