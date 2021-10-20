@@ -32,11 +32,13 @@ dependencies {
     // jaxb-api is needed to get rid of warning on run
     // https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api
     implementation group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
+    // https://mvnrepository.com/artifact/org.junit.platform/junit-platform-launcher
+    implementation 'org.junit.platform:junit-platform-launcher:1.8.1'
     implementation project(':protocol')
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
+    implementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
     // https://mvnrepository.com/artifact/org.mockito/mockito-core
-    testImplementation group: 'org.mockito', name: 'mockito-core', version: '3.9.0'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.6.0'
+    testImplementation group: 'org.mockito', name: 'mockito-inline', version: '3.9.0'
+    implementation 'org.junit.jupiter:junit-jupiter-engine:5.6.0'
     // https://mvnrepository.com/artifact/javax.websocket/javax.websocket-api
     compileOnly group: 'javax.websocket', name: 'javax.websocket-api', version: '1.1'
     // https://mvnrepository.com/artifact/javax.servlet/javax.servlet-api
