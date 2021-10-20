@@ -76,6 +76,7 @@ public class WebSocketServer {
 
     String policyPath = getClass().getClassLoader().getResource("javabuilder.policy").getPath();
     System.setProperty("java.security.policy", policyPath);
+    System.setProperty("java.security.debug", "access");
     Policy.getPolicy().refresh();
 
     Properties.setConnectionId(connectionId);
