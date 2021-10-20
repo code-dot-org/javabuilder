@@ -131,9 +131,8 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
       while (codeBuilderThread.isAlive()) {
         // sleep for CHECK_THREAD_INTERVAL_MS, then check if we've lost the connection to the
         // input or output adapter. This means we have lost connection to the end user (either
-        // because
-        // they terminated their program or some other issue), and we should stop executing their
-        // code.
+        // because they terminated their program or some other issue), and we should stop
+        // executing their code.
         Thread.sleep(CHECK_THREAD_INTERVAL_MS);
         if (codeBuilderThread.isAlive()
             && (!inputAdapter.hasActiveConnection() || !outputAdapter.hasActiveConnection())) {
