@@ -1,25 +1,30 @@
 package org.code.javabuilder;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.List;
-import org.code.protocol.*;
+import org.code.protocol.JavabuilderException;
+import org.code.protocol.OutputAdapter;
 
 /** The class that executes the student's code */
 public class JavaRunner {
   private final URL executableLocation;
-  private final List<JavaProjectFile> javaFiles;
-  private final OutputAdapter outputAdapter;
+  private final MainRunner mainRunner;
+  private final TestRunner testRunner;
 
   public JavaRunner(
       URL executableLocation, List<JavaProjectFile> javaFiles, OutputAdapter outputAdapter) {
+    this(
+        executableLocation,
+        new MainRunner(javaFiles, outputAdapter),
+        new TestRunner(javaFiles, outputAdapter));
+  }
+
+  JavaRunner(URL executableLocation, MainRunner mainRunner, TestRunner testRunner) {
     this.executableLocation = executableLocation;
-    this.javaFiles = javaFiles;
-    this.outputAdapter = outputAdapter;
+    this.mainRunner = mainRunner;
+    this.testRunner = testRunner;
   }
 
   /**
@@ -31,6 +36,14 @@ public class JavaRunner {
    *     finished executing.
    */
   public void runMain() throws InternalFacingException, JavabuilderException {
+    this.run(this.mainRunner);
+  }
+
+  public void runTests() throws JavabuilderException, InternalFacingException {
+    this.run(this.testRunner);
+  }
+
+  private void run(CodeRunner runner) throws JavabuilderException, InternalFacingException {
     // Include the user-facing api jars in the code we are loading so student code can access them.
     URL[] classLoaderUrls = Util.getAllJarURLs(this.executableLocation);
 
@@ -39,30 +52,8 @@ public class JavaRunner {
     URLClassLoader urlClassLoader =
         new URLClassLoader(classLoaderUrls, JavaRunner.class.getClassLoader());
 
-    try {
-      // load and run the main method of the class
-      Method mainMethod = this.findMainMethod(urlClassLoader);
-      this.outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.RUNNING));
-      mainMethod.invoke(null, new Object[] {null});
-    } catch (IllegalAccessException e) {
-      // TODO: this error message may not be not very friendly
-      throw new UserInitiatedException(UserInitiatedExceptionKey.ILLEGAL_METHOD_ACCESS, e);
-    } catch (InvocationTargetException e) {
-      // If the invocation exception is wrapping another JavabuilderException or
-      // JavabuilderRuntimeException, we don't need to wrap it in a UserInitiatedException
-      if (e.getCause() instanceof JavabuilderException) {
-        throw (JavabuilderException) e.getCause();
-      }
-      if (e.getCause() instanceof JavabuilderRuntimeException) {
-        throw (JavabuilderRuntimeException) e.getCause();
-      }
-      // FileNotFoundExceptions may be thrown from student code, so we treat them as a
-      // specific case of a UserInitiatedException
-      if (e.getCause() instanceof FileNotFoundException) {
-        throw new UserInitiatedException(UserInitiatedExceptionKey.FILE_NOT_FOUND, e.getCause());
-      }
-      throw new UserInitiatedException(UserInitiatedExceptionKey.RUNTIME_ERROR, e);
-    }
+    runner.run(urlClassLoader);
+
     try {
       urlClassLoader.close();
     } catch (IOException e) {
@@ -70,47 +61,5 @@ public class JavaRunner {
       // error message.
       throw new InternalFacingException("Error closing urlClassLoader: " + e, e);
     }
-  }
-
-  public void runTests() {
-    // TODO: Find and run tests
-  }
-
-  /**
-   * Finds the main method in the set of files in fileManager if it exists.
-   *
-   * @param urlClassLoader class loader pointing to location of compiled classes
-   * @return the main method if it is found
-   * @throws UserInitiatedException if there is more than one main method or no main method, or if
-   *     the class definition is empty
-   */
-  private Method findMainMethod(URLClassLoader urlClassLoader) throws UserInitiatedException {
-
-    Method mainMethod = null;
-    for (JavaProjectFile file : this.javaFiles) {
-      try {
-        Method[] declaredMethods =
-            urlClassLoader.loadClass(file.getClassName()).getDeclaredMethods();
-        for (Method method : declaredMethods) {
-          Class[] parameterTypes = method.getParameterTypes();
-          if (method.getName().equals("main")
-              && parameterTypes.length == 1
-              && parameterTypes[0].equals(String[].class)) {
-            if (mainMethod != null) {
-              throw new UserInitiatedException(UserInitiatedExceptionKey.TWO_MAIN_METHODS);
-            }
-            mainMethod = method;
-          }
-        }
-      } catch (ClassNotFoundException e) {
-        // May be thrown if file is empty or contains only comments
-        throw new UserInitiatedException(UserInitiatedExceptionKey.CLASS_NOT_FOUND, e);
-      }
-    }
-
-    if (mainMethod == null) {
-      throw new UserInitiatedException(UserInitiatedExceptionKey.NO_MAIN_METHOD);
-    }
-    return mainMethod;
   }
 }
