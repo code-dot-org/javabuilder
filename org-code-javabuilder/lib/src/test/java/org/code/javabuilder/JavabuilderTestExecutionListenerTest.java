@@ -68,7 +68,8 @@ public class JavabuilderTestExecutionListenerTest {
     when(testIdentifier.getSource()).thenReturn(Optional.of(methodSource));
     when(testExecutionResult.getStatus()).thenReturn(TestExecutionResult.Status.SUCCESSFUL);
 
-    // Need to call testPlanExecutionStarted() to prevent NPE in SummaryGeneratingListener
+    // Need to call testPlanExecutionStarted() to prevent NullPointerException in
+    // SummaryGeneratingListener
     unitUnderTest.testPlanExecutionStarted(testPlan);
     unitUnderTest.executionFinished(testIdentifier, testExecutionResult);
 
@@ -103,7 +104,8 @@ public class JavabuilderTestExecutionListenerTest {
     when(testExecutionResult.getStatus()).thenReturn(TestExecutionResult.Status.FAILED);
     when(testExecutionResult.getThrowable()).thenReturn(Optional.of(error));
 
-    // Need to call testPlanExecutionStarted() to prevent NPE in SummaryGeneratingListener
+    // Need to call testPlanExecutionStarted() to prevent NullPointerException in
+    // SummaryGeneratingListener
     unitUnderTest.testPlanExecutionStarted(testPlan);
     unitUnderTest.executionFinished(testIdentifier, testExecutionResult);
 
@@ -131,7 +133,8 @@ public class JavabuilderTestExecutionListenerTest {
     when(testExecutionResult.getStatus()).thenReturn(TestExecutionResult.Status.FAILED);
     when(testExecutionResult.getThrowable()).thenReturn(Optional.of(error));
 
-    // Need to call testPlanExecutionStarted() to prevent NPE in SummaryGeneratingListener
+    // Need to call testPlanExecutionStarted() to prevent NullPointerException in
+    // SummaryGeneratingListener
     unitUnderTest.testPlanExecutionStarted(testPlan);
     unitUnderTest.executionFinished(testIdentifier, testExecutionResult);
 
