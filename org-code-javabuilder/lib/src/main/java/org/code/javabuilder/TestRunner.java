@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.code.protocol.InternalErrorKey;
 import org.code.protocol.OutputAdapter;
+import org.junit.platform.commons.PreconditionViolationException;
 import org.junit.platform.engine.discovery.ClassSelector;
 import org.junit.platform.engine.discovery.DiscoverySelectors;
 import org.junit.platform.launcher.Launcher;
@@ -54,7 +55,7 @@ public class TestRunner implements CodeRunner {
         // Execute test plan
         launcher.execute(testPlan);
       }
-    } catch (ClassNotFoundException e) {
+    } catch (PreconditionViolationException | ClassNotFoundException e) {
       throw new InternalServerError(InternalErrorKey.INTERNAL_EXCEPTION, e);
     }
   }
