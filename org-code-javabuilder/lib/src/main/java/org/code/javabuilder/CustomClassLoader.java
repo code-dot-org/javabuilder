@@ -26,13 +26,14 @@ public class CustomClassLoader extends URLClassLoader {
 
   @Override
   public Class<?> loadClass(String name) throws ClassNotFoundException {
+    System.out.println("loading class " + name);
     boolean validClass = false;
     if (this.validClasses.contains(name)) {
       validClass = true;
     }
     // allow .* or .<specific-class> imports from valid packages
-    for (int i = 0; i < validPackages.length; i++) {
-      if (name.contains(validPackages[i])) {
+    for (int i = 0; i < this.validPackages.length; i++) {
+      if (name.contains(this.validPackages[i])) {
         validClass = true;
       }
     }

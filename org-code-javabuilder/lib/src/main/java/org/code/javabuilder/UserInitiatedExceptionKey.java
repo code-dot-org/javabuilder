@@ -27,6 +27,6 @@ public enum UserInitiatedExceptionKey {
   // The supplied compile list was empty, or no matching Java files were found to compile (for the
   // COMPILE_ONLY option)
   NO_FILES_TO_COMPILE,
-  // The user tried to import or use a package we don't allow
-  INVALID_PACKAGE
+  // The user tried to import or use a class we don't allow
+  INVALID_CLASS
 }
