@@ -22,6 +22,9 @@ import org.junit.platform.launcher.listeners.SummaryGeneratingListener;
  * https://junit.org/junit5/docs/5.0.0/api/org/junit/platform/launcher/TestExecutionListener.html
  */
 public class JavabuilderTestExecutionListener extends SummaryGeneratingListener {
+  private static final String CHECK_MARK = "✔";
+  private static final String HEAVY_X = "✖";
+
   private final OutputAdapter outputAdapter;
 
   public JavabuilderTestExecutionListener(OutputAdapter outputAdapter) {
@@ -48,13 +51,13 @@ public class JavabuilderTestExecutionListener extends SummaryGeneratingListener 
    * outcome. This listener publishes the test result and, if the test failed, the error message to
    * the OutputAdapter.
    *
-   * <p>The format of the test result is: [test class name] > [test name] [test result]
+   * <p>The format of the test result is: [icon] [test class name] > [test name] [test result]
    *
    * <p>for example:
    *
-   * <p>MyTestClass > myTest SUCCEEDED
+   * <p>✔ MyTestClass > myTest SUCCEEDED
    *
-   * <p>MyTestClass > myTest FAILED
+   * <p>✖ MyTestClass > myTest FAILED
    *
    * <p>failure message (MyTestClass:1)
    *
@@ -80,8 +83,9 @@ public class JavabuilderTestExecutionListener extends SummaryGeneratingListener 
     }
 
     final TestExecutionResult.Status status = testExecutionResult.getStatus();
+    final String icon = status == TestExecutionResult.Status.SUCCESSFUL ? CHECK_MARK : HEAVY_X;
     final String resultMessage =
-        String.format("%s > %s %s\n", className, testIdentifier.getDisplayName(), status);
+        String.format("%s %s > %s %s\n", icon, className, testIdentifier.getDisplayName(), status);
     this.outputAdapter.sendMessage(new SystemOutMessage(resultMessage));
 
     final Optional<Throwable> throwable = testExecutionResult.getThrowable();
