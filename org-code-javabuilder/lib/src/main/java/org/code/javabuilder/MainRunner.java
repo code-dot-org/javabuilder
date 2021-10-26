@@ -79,6 +79,8 @@ public class MainRunner implements CodeRunner {
       } catch (ClassNotFoundException e) {
         // May be thrown if file is empty or contains only comments
         throw new UserInitiatedException(UserInitiatedExceptionKey.CLASS_NOT_FOUND, e);
+      } catch (NoClassDefFoundError e) {
+        throw new UserInitiatedException(UserInitiatedExceptionKey.INVALID_PACKAGE, e);
       }
     }
 
