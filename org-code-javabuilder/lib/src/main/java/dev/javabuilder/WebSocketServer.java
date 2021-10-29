@@ -73,10 +73,8 @@ public class WebSocketServer {
     this.logger.addHandler(this.logHandler);
     // turn off the default console logger
     this.logger.setUseParentHandlers(false);
-
     String policyPath = getClass().getClassLoader().getResource("javabuilder.policy").getPath();
-    System.setProperty("java.security.policy", policyPath);
-    System.setProperty("java.security.debug", "access");
+    System.setProperty("java.security.policy", "=" + policyPath);
     Policy.getPolicy().refresh();
 
     Properties.setConnectionId(connectionId);
