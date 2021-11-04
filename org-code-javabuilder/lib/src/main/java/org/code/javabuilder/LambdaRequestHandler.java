@@ -31,8 +31,8 @@ import org.json.JSONObject;
 public class LambdaRequestHandler implements RequestHandler<Map<String, String>, String> {
 
   private static final int CHECK_THREAD_INTERVAL_MS = 500;
-  private static final int TIMEOUT_WARNING_MS = 25000;
-  private static final int TIMEOUT_CLEANUP_BUFFER_MS = 10000;
+  private static final int TIMEOUT_WARNING_MS = 20000;
+  private static final int TIMEOUT_CLEANUP_BUFFER_MS = 5000;
   /**
    * This is the implementation of the long-running-lambda where user code will be compiled and
    * executed.
@@ -152,6 +152,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
           timeoutWarningSent = true;
         }
         if (context.getRemainingTimeInMillis() < TIMEOUT_CLEANUP_BUFFER_MS) {
+          outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.TIMEOUT));
           codeBuilderThread.interrupt();
           break;
         }

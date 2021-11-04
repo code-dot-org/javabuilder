@@ -6,5 +6,6 @@ public enum StatusMessageKey {
   RUNNING,
   GENERATING_RESULTS,
   TIMEOUT_WARNING,
+  TIMEOUT,
   EXITED
 }
