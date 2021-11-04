@@ -133,7 +133,6 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
 
       boolean timeoutWarningSent = false;
       while (codeBuilderThread.isAlive()) {
-
         // sleep for CHECK_THREAD_INTERVAL_MS, then check if we've lost the connection to the
         // input or output adapter. This means we have lost connection to the end user (either
         // because they terminated their program or some other issue), and we should stop
@@ -146,7 +145,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
         }
 
         // Check if the lambda is nearing timeout -- send warning message beforehand,
-        // then preempt timeout before it occurs.
+        // then preempt timeout before it occurs and send another message.
         if ((context.getRemainingTimeInMillis() < TIMEOUT_WARNING_MS) && !timeoutWarningSent) {
           outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.TIMEOUT_WARNING));
           timeoutWarningSent = true;
