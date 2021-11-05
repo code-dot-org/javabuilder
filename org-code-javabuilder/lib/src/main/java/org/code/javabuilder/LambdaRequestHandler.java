@@ -31,6 +31,8 @@ import org.json.JSONObject;
 public class LambdaRequestHandler implements RequestHandler<Map<String, String>, String> {
 
   private static final int CHECK_THREAD_INTERVAL_MS = 500;
+  private static final int TIMEOUT_WARNING_MS = 20000;
+  private static final int TIMEOUT_CLEANUP_BUFFER_MS = 5000;
   /**
    * This is the implementation of the long-running-lambda where user code will be compiled and
    * executed.
@@ -128,6 +130,8 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
       Thread codeBuilderThread = new Thread(codeBuilderRunnable);
       // start code build and execute in a thread
       codeBuilderThread.start();
+
+      boolean timeoutWarningSent = false;
       while (codeBuilderThread.isAlive()) {
         // sleep for CHECK_THREAD_INTERVAL_MS, then check if we've lost the connection to the
         // input or output adapter. This means we have lost connection to the end user (either
@@ -136,6 +140,18 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
         Thread.sleep(CHECK_THREAD_INTERVAL_MS);
         if (codeBuilderThread.isAlive()
             && (!inputAdapter.hasActiveConnection() || !outputAdapter.hasActiveConnection())) {
+          codeBuilderThread.interrupt();
+          break;
+        }
+
+        // Check if the lambda is nearing timeout -- send warning message beforehand,
+        // then preempt timeout before it occurs and send another message.
+        if ((context.getRemainingTimeInMillis() < TIMEOUT_WARNING_MS) && !timeoutWarningSent) {
+          outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.TIMEOUT_WARNING));
+          timeoutWarningSent = true;
+        }
+        if (context.getRemainingTimeInMillis() < TIMEOUT_CLEANUP_BUFFER_MS) {
+          outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.TIMEOUT));
           codeBuilderThread.interrupt();
           break;
         }
