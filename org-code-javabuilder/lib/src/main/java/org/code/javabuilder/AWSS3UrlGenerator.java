@@ -9,16 +9,19 @@ public class AWSS3UrlGenerator implements JavabuilderUploadUrlGenerator {
   private final AmazonS3 s3Client;
   private final String bucketName;
   private final String javabuilderSessionId;
+  private final String bucketUrl;
 
-  public AWSS3UrlGenerator(AmazonS3 s3client, String bucketName, String javabuilderSessionId) {
+  public AWSS3UrlGenerator(
+      AmazonS3 s3client, String bucketName, String javabuilderSessionId, String bucketUrl) {
     this.s3Client = s3client;
     this.bucketName = bucketName;
     this.javabuilderSessionId = javabuilderSessionId;
+    this.bucketUrl = bucketUrl;
   }
 
   public String getSignedUrl(String filename) {
     final String key = this.javabuilderSessionId + '/' + filename;
     final URL url = s3Client.generatePresignedUrl(this.bucketName, key, null, HttpMethod.PUT);
-    return url.toString();
+    return this.bucketUrl + '/' + url.getPath();
   }
 }
