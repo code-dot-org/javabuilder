@@ -34,7 +34,7 @@ public class AWSS3UrlGenerator implements JavabuilderUploadUrlGenerator {
     final URL url =
         s3Client.generatePresignedUrl(
             this.bucketName, key, new Date(expirationTimeMs), HttpMethod.PUT);
-    return this.bucketUrl + '/' + url.getPath();
+    return this.bucketUrl + url.getPath() + '?' + url.getQuery();
   }
 
   public String getFileUrl(String filename) {
