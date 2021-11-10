@@ -68,7 +68,7 @@ public class AWSFileManager implements JavabuilderFileManager {
 
   @Override
   public String getUploadUrl(String filename) throws JavabuilderException {
-    if (this.uploads > UPLOADS_PER_SESSION) {
+    if (this.uploads >= UPLOADS_PER_SESSION) {
       throw new UserInitiatedException(UserInitiatedExceptionKey.TOO_MANY_UPLOADS);
     }
     final String key = this.generateKey(filename);
@@ -79,7 +79,7 @@ public class AWSFileManager implements JavabuilderFileManager {
           s3Client.generatePresignedUrl(
               this.outputBucketName, key, new Date(expirationTimeMs), HttpMethod.PUT);
       this.uploads++;
-      return this.getOutputURL + "/" + uploadUrl.getFile();
+      return this.getOutputURL + uploadUrl.getFile();
     } catch (AbortedException e) {
       // this is most likely because the end user interrupted program execution. We can safely
       // ignore this.
