@@ -7,4 +7,9 @@ public class LocalUrlGenerator implements JavabuilderUploadUrlGenerator {
   public String getSignedUrl(String filename) {
     return "NOPE!";
   }
+
+  @Override
+  public String getFileUrl(String filename) {
+    return "NOTTA CHANCE";
+  }
 }

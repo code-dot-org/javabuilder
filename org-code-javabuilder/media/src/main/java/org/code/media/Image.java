@@ -32,6 +32,14 @@ public class Image {
     this.pixels = null;
   }
 
+  public Image(BufferedImage image) throws FileNotFoundException {
+    this.bufferedImage = image;
+    this.width = bufferedImage.getWidth();
+    this.height = bufferedImage.getHeight();
+    // don't create pixel array until we need it
+    this.pixels = null;
+  }
+
   /**
    * Create a new image object, copying the source image provided.
    *
@@ -169,6 +177,41 @@ public class Image {
       }
     } catch (IOException e) {
       throw new FileNotFoundException(filename);
+    }
+
+    // Resize the image to its max size while maintaining the aspect ratio.
+    // This allows us to save time when students run on pixel manipulation on an entire image.
+    int height = originalImage.getHeight();
+    int width = originalImage.getWidth();
+    if (width <= MAX_WIDTH && height <= MAX_HEIGHT) {
+      return originalImage;
+    }
+    int targetHeight, targetWidth;
+    if (height > width) {
+      targetHeight = MAX_HEIGHT;
+      targetWidth = (int) ((double) width / height * MAX_HEIGHT);
+    } else {
+      targetWidth = MAX_WIDTH;
+      targetHeight = (int) ((double) height / width * MAX_WIDTH);
+    }
+    BufferedImage image = new BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_ARGB);
+    Graphics2D graphics2D = image.createGraphics();
+    graphics2D.drawImage(originalImage, 0, 0, targetWidth, targetHeight, null);
+    graphics2D.dispose();
+
+    return image;
+  }
+
+  public static BufferedImage getImageFromUrl(String url) throws FileNotFoundException {
+    BufferedImage originalImage;
+    try {
+      originalImage = ImageIO.read(new URL(url));
+      if (originalImage == null) {
+        // this can happen if the filename is not associated with an image
+        throw new MediaRuntimeException(MediaRuntimeExceptionKeys.IMAGE_LOAD_ERROR);
+      }
+    } catch (IOException e) {
+      throw new FileNotFoundException("filename");
     }
 
     // Resize the image to its max size while maintaining the aspect ratio.

@@ -36,4 +36,8 @@ public class AWSS3UrlGenerator implements JavabuilderUploadUrlGenerator {
             this.bucketName, key, new Date(expirationTimeMs), HttpMethod.PUT);
     return this.bucketUrl + '/' + url.getPath();
   }
+
+  public String getFileUrl(String filename) {
+    return this.bucketUrl + '/' + this.javabuilderSessionId + '/' + filename;
+  }
 }
