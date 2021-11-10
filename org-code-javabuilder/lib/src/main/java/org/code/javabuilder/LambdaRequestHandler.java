@@ -88,7 +88,8 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     final AWSFileWriter fileWriter =
         new AWSFileWriter(s3Client, outputBucketName, javabuilderSessionId, getOutputUrl);
     final AWSS3UrlGenerator urlGenerator =
-        new AWSS3UrlGenerator(s3Client, outputBucketName, javabuilderSessionId, getOutputUrl);
+        new AWSS3UrlGenerator(
+            context, s3Client, outputBucketName, javabuilderSessionId, getOutputUrl);
     GlobalProtocol.create(
         outputAdapter,
         inputAdapter,
