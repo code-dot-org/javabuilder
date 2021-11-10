@@ -85,8 +85,8 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     final AWSInputAdapter inputAdapter = new AWSInputAdapter(sqsClient, queueUrl, queueName);
 
     final AmazonS3 s3Client = AmazonS3ClientBuilder.standard().build();
-    final AWSFileWriter fileWriter =
-        new AWSFileWriter(s3Client, outputBucketName, javabuilderSessionId, getOutputUrl);
+    final AWSFileManager fileWriter =
+        new AWSFileManager(s3Client, outputBucketName, javabuilderSessionId, getOutputUrl, context);
     GlobalProtocol.create(
         outputAdapter, inputAdapter, dashboardHostname, channelId, levelId, fileWriter);
 
