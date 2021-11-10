@@ -16,6 +16,8 @@ public enum UserInitiatedExceptionKey {
   JAVA_EXTENSION_MISSING,
   // The user is writing to file too many times
   TOO_MANY_WRITES,
+  // The user is uploading a file too many times
+  TOO_MANY_UPLOADS,
   // The user tried to run a file without a class definition
   CLASS_NOT_FOUND,
   // The user's code threw a FileNotFoundException

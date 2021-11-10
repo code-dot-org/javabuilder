@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 import org.code.protocol.ClientMessageDetailKeys;
+import org.code.protocol.JavabuilderFileManager;
 import org.code.protocol.OutputAdapter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,12 +12,14 @@ import org.mockito.ArgumentCaptor;
 
 public class PrompterTest {
   private OutputAdapter outputAdapter;
+  private JavabuilderFileManager fileManager;
   private Prompter unitUnderTest;
 
   @BeforeEach
   public void setUp() {
     outputAdapter = mock(OutputAdapter.class);
-    unitUnderTest = new Prompter(outputAdapter);
+    fileManager = mock(JavabuilderFileManager.class);
+    unitUnderTest = new Prompter(outputAdapter, fileManager);
   }
 
   @Test
