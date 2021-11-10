@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 import org.code.protocol.ClientMessageDetailKeys;
+import org.code.protocol.JavabuilderUploadUrlGenerator;
 import org.code.protocol.OutputAdapter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,7 +17,7 @@ public class PrompterTest {
   @BeforeEach
   public void setUp() {
     outputAdapter = mock(OutputAdapter.class);
-    unitUnderTest = new Prompter(outputAdapter);
+    unitUnderTest = new Prompter(outputAdapter, mock(JavabuilderUploadUrlGenerator.class));
   }
 
   @Test
