@@ -292,7 +292,7 @@ Resources:
       BucketName: !If [IsDevCondition, !Sub "cdo-dev-${SubDomainName}-output", !Sub "cdo-${SubDomainName}-output"] 
       CorsConfiguration:
         CorsRules:
-          - AllowedMethods: [GET]
+          - AllowedMethods: [GET, PUT]
             AllowedOrigins: ['*']
             AllowedHeaders: ['*']
       BucketEncryption:
