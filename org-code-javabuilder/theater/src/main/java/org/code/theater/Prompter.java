@@ -6,7 +6,7 @@ import org.code.media.Image;
 import org.code.protocol.*;
 
 public class Prompter {
-  private static final String FILE_NAME = "prompterImage-";
+  private static final String FILE_NAME_PREFIX = "prompterImage-";
   private static final AtomicInteger FILE_INDEX = new AtomicInteger(0);
 
   private final OutputAdapter outputAdapter;
@@ -27,7 +27,7 @@ public class Prompter {
   }
 
   public Image getImage(String prompt) {
-    final String prompterFileName = FILE_NAME + FILE_INDEX.incrementAndGet();
+    final String prompterFileName = FILE_NAME_PREFIX + FILE_INDEX.incrementAndGet();
     final String uploadUrl;
     try {
       uploadUrl = this.fileManager.getUploadUrl(prompterFileName);
