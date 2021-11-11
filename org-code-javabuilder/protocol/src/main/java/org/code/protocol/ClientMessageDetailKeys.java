@@ -21,6 +21,7 @@ public class ClientMessageDetailKeys {
 
   // Theater specific
   public static final String PROMPT = "prompt";
+  public static final String UPLOAD_URL = "uploadUrl";
 
   // Exception specific
   public static final String CONNECTION_ID = "connectionId";

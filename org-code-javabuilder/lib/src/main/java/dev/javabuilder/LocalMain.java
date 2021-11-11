@@ -22,7 +22,7 @@ public class LocalMain {
     // turn off the default console logger
     logger.setUseParentHandlers(false);
 
-    GlobalProtocol.create(outputAdapter, inputAdapter, "", "", "", new LocalFileWriter());
+    GlobalProtocol.create(outputAdapter, inputAdapter, "", "", "", new LocalFileManager());
 
     // Create and invoke the code execution environment
     CodeBuilderRunnable codeBuilderRunnable =
