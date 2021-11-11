@@ -9,9 +9,9 @@ import java.nio.file.Paths;
 import org.code.javabuilder.InternalServerError;
 import org.code.protocol.InternalErrorKey;
 import org.code.protocol.JavabuilderException;
-import org.code.protocol.JavabuilderFileWriter;
+import org.code.protocol.JavabuilderFileManager;
 
-public class LocalFileWriter implements JavabuilderFileWriter {
+public class LocalFileManager implements JavabuilderFileManager {
   @Override
   public String writeToFile(String filename, byte[] inputBytes, String contentType)
       throws JavabuilderException {
@@ -26,5 +26,11 @@ public class LocalFileWriter implements JavabuilderFileWriter {
       throw new InternalServerError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e);
     }
     return String.format("http://localhost:8080/%s/%s", DIRECTORY, filename);
+  }
+
+  @Override
+  public String getUploadUrl(String filename) throws JavabuilderException {
+    // TODO: Return upload URL for localhost uploads
+    return null;
   }
 }

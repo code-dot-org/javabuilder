@@ -26,7 +26,7 @@ public class ItemTest {
         "",
         "",
         "",
-        mock(JavabuilderFileWriter.class));
+        mock(JavabuilderFileManager.class));
 
     messageHandlerMockedStatic = mockStatic(PlaygroundMessageHandler.class);
     messageHandlerMockedStatic
