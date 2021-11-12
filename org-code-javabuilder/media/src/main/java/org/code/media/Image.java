@@ -67,6 +67,19 @@ public class Image {
   }
 
   /**
+   * Creates a new Image from the given BufferedImage. Only meant for internal use.
+   *
+   * @param bufferedImage BufferedImage that backs this Image object
+   */
+  private Image(BufferedImage bufferedImage) {
+    this.bufferedImage = bufferedImage;
+    this.width = bufferedImage.getWidth();
+    this.height = bufferedImage.getHeight();
+    // don't create pixel array until we need it
+    this.pixels = null;
+  }
+
+  /**
    * Get the Pixel at the (x,y) coordinate specified.
    *
    * @param x the x position of the pixel
@@ -152,6 +165,17 @@ public class Image {
   }
 
   /**
+   * Load the given image from a URL and return an Image object
+   *
+   * @param url to load the file from
+   * @return Image object
+   * @throws FileNotFoundException if the file is not found at the URL
+   */
+  public static Image fromUrl(URL url) throws FileNotFoundException {
+    return new Image(Image.getImageFromUrl(url));
+  }
+
+  /**
    * Load the given image asset from file and return it as a BufferedImage
    *
    * @param filename
@@ -159,16 +183,24 @@ public class Image {
    * @throws FileNotFoundException if the file is not found
    */
   public static BufferedImage getImageAssetFromFile(String filename) throws FileNotFoundException {
+    try {
+      return Image.getImageFromUrl(
+          new URL(GlobalProtocol.getInstance().generateAssetUrl(filename)));
+    } catch (IOException e) {
+      throw new FileNotFoundException(filename);
+    }
+  }
+
+  private static BufferedImage getImageFromUrl(URL url) throws FileNotFoundException {
     BufferedImage originalImage;
     try {
-      originalImage =
-          ImageIO.read(new URL(GlobalProtocol.getInstance().generateAssetUrl(filename)));
+      originalImage = ImageIO.read(url);
       if (originalImage == null) {
-        // this can happen if the filename is not associated with an image
+        // this can happen if the URL is not associated with an image
         throw new MediaRuntimeException(MediaRuntimeExceptionKeys.IMAGE_LOAD_ERROR);
       }
     } catch (IOException e) {
-      throw new FileNotFoundException(filename);
+      throw new FileNotFoundException(url.toString());
     }
 
     // Resize the image to its max size while maintaining the aspect ratio.
