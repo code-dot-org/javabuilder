@@ -15,7 +15,7 @@ public class GlobalProtocol {
   private static GlobalProtocol protocolInstance;
   private final OutputAdapter outputAdapter;
   private final InputHandler inputHandler;
-  private final JavabuilderFileWriter fileWriter;
+  private final JavabuilderFileManager fileManager;
   private final String dashboardHostname;
   private final String channelId;
   private final AssetFileHelper assetFileHelper;
@@ -26,13 +26,13 @@ public class GlobalProtocol {
       InputHandler inputHandler,
       String dashboardHostname,
       String channelId,
-      JavabuilderFileWriter fileWriter,
+      JavabuilderFileManager fileManager,
       AssetFileHelper assetFileHelper) {
     this.outputAdapter = outputAdapter;
     this.inputHandler = inputHandler;
     this.dashboardHostname = dashboardHostname;
     this.channelId = channelId;
-    this.fileWriter = fileWriter;
+    this.fileManager = fileManager;
     this.assetFileHelper = assetFileHelper;
     this.messageHandlers = new HashSet<>();
   }
@@ -43,14 +43,14 @@ public class GlobalProtocol {
       String dashboardHostname,
       String channelId,
       String levelId,
-      JavabuilderFileWriter fileWriter) {
+      JavabuilderFileManager fileManager) {
     GlobalProtocol.protocolInstance =
         new GlobalProtocol(
             outputAdapter,
             new InputHandler(inputAdapter),
             dashboardHostname,
             channelId,
-            fileWriter,
+            fileManager,
             new AssetFileHelper(dashboardHostname, channelId, levelId));
   }
 
@@ -70,8 +70,8 @@ public class GlobalProtocol {
     return this.inputHandler;
   }
 
-  public JavabuilderFileWriter getFileWriter() {
-    return this.fileWriter;
+  public JavabuilderFileManager getFileManager() {
+    return this.fileManager;
   }
 
   public String generateAssetUrl(String filename) {
