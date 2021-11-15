@@ -18,7 +18,7 @@ import org.code.protocol.*;
 public class Stage {
   private final BufferedImage image;
   private final OutputAdapter outputAdapter;
-  private final JavabuilderFileWriter fileWriter;
+  private final JavabuilderFileManager fileManager;
   private final GifWriter gifWriter;
   private final ByteArrayOutputStream imageOutputStream;
   private final Graphics2D graphics;
@@ -60,7 +60,7 @@ public class Stage {
     this.image = image;
     this.graphics = this.image.createGraphics();
     this.outputAdapter = GlobalProtocol.getInstance().getOutputAdapter();
-    this.fileWriter = GlobalProtocol.getInstance().getFileWriter();
+    this.fileManager = GlobalProtocol.getInstance().getFileManager();
     this.imageOutputStream = new ByteArrayOutputStream();
     this.gifWriter = gifWriterFactory.createGifWriter(this.imageOutputStream);
     this.audioOutputStream = new ByteArrayOutputStream();
@@ -439,10 +439,10 @@ public class Stage {
   private void writeImageAndAudioToFile() {
     try {
       String imageUrl =
-          this.fileWriter.writeToFile(
+          this.fileManager.writeToFile(
               THEATER_IMAGE_NAME, this.imageOutputStream.toByteArray(), "image/gif");
       String audioUrl =
-          this.fileWriter.writeToFile(
+          this.fileManager.writeToFile(
               THEATER_AUDIO_NAME, this.audioOutputStream.toByteArray(), "audio/wav");
 
       HashMap<String, String> imageMessage = new HashMap<>();
