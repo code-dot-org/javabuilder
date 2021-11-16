@@ -46,10 +46,8 @@ public class PrompterTest {
     when(fileManager.getUploadUrl(anyString())).thenReturn(uploadUrl);
     when(inputHandler.getNextMessageForType(InputMessageType.THEATER)).thenReturn(UPLOAD_SUCCESS);
 
-    final URL fileUrl = mock(URL.class);
-    when(fileManager.getFileUrl(anyString())).thenReturn(fileUrl);
     final Image expectedImage = mock(Image.class);
-    image.when(() -> Image.fromUrl(fileUrl)).thenReturn(expectedImage);
+    image.when(() -> Image.fromMediaFile(anyString())).thenReturn(expectedImage);
 
     assertSame(expectedImage, unitUnderTest.getImage(prompt));
 
@@ -67,7 +65,7 @@ public class PrompterTest {
     when(inputHandler.getNextMessageForType(InputMessageType.THEATER)).thenReturn(UPLOAD_SUCCESS);
 
     when(fileManager.getFileUrl(anyString())).thenReturn(mock(URL.class));
-    image.when(() -> Image.fromUrl(any(URL.class))).thenReturn(mock(Image.class));
+    image.when(() -> Image.fromMediaFile(anyString())).thenReturn(mock(Image.class));
 
     unitUnderTest.getImage("prompt");
     unitUnderTest.getImage("prompt");

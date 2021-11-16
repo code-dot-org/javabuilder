@@ -52,10 +52,9 @@ public class Prompter {
     final String statusMessage = this.inputHandler.getNextMessageForType(InputMessageType.THEATER);
     if (statusMessage.equals(UPLOAD_SUCCESS)) {
       try {
-        return Image.fromUrl(this.fileManager.getFileUrl(prompterFileName));
+        return Image.fromMediaFile(prompterFileName);
       } catch (FileNotFoundException e) {
-        // If the image was uploaded successfully, a FileNotFoundException indicates an error on our
-        // end
+        // If the image was uploaded successfully, a FileNotFoundException means an error on our end
         throw new InternalServerRuntimeError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e);
       }
     } else if (statusMessage.equals(UPLOAD_ERROR)) {
