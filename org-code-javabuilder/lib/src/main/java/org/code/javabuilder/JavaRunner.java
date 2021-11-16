@@ -56,8 +56,8 @@ public class JavaRunner {
 
     // Create a new URLClassLoader. Use the current class loader as the parent so IO settings are
     // preserved.
-    CustomClassLoader urlClassLoader =
-        new CustomClassLoader(
+    UserClassLoader urlClassLoader =
+        new UserClassLoader(
             classLoaderUrls, JavaRunner.class.getClassLoader(), this.javaClassNames);
 
     runner.run(urlClassLoader);
