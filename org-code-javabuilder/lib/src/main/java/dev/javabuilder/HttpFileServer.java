@@ -1,13 +1,13 @@
 package dev.javabuilder;
 
 import static dev.javabuilder.LocalWebserverConstants.DIRECTORY;
-import static org.code.protocol.AllowedFileNames.THEATER_AUDIO_NAME;
-import static org.code.protocol.AllowedFileNames.THEATER_IMAGE_NAME;
+import static org.code.protocol.AllowedFileNames.*;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -20,10 +20,7 @@ import javax.servlet.http.HttpServletResponse;
  */
 @WebServlet(
     name = "FileServlet",
-    urlPatterns = {
-      "/" + DIRECTORY + "/" + THEATER_IMAGE_NAME,
-      "/" + DIRECTORY + "/" + THEATER_AUDIO_NAME
-    })
+    urlPatterns = {"/" + DIRECTORY + "/*"})
 public class HttpFileServer extends HttpServlet {
   /**
    * Returns the file requested by the client. Listens at http://localhost:8080/files/<filename>.
@@ -36,16 +33,48 @@ public class HttpFileServer extends HttpServlet {
     // NOTE: This is _NOT_ a safe method of handling requests from a client. We are serving
     // filesystem files to the user without authentication/authorization. This should _ONLY_ be used
     // for local development.
-    String[] urlParts = request.getRequestURI().split("/");
-    String fileName = urlParts[urlParts.length - 1];
-    if (!fileName.equals(THEATER_IMAGE_NAME) && !fileName.equals(THEATER_AUDIO_NAME)) {
+    final String fileName = this.getFileName(request);
+    if (!this.getAllowed(fileName)) {
       response.sendError(
           403,
-          String.format("Only %s and %s can be accessed.", THEATER_IMAGE_NAME, THEATER_AUDIO_NAME));
+          String.format(
+              "Only %s, %s, and %s files can be accessed.",
+              THEATER_IMAGE_NAME, THEATER_AUDIO_NAME, PROMPTER_FILE_NAME_PREFIX));
       return;
     }
     OutputStream out = response.getOutputStream();
     Files.copy(Paths.get(System.getProperty("java.io.tmpdir"), DIRECTORY, fileName), out);
     out.flush();
+  }
+
+  @Override
+  protected void doPut(HttpServletRequest request, HttpServletResponse response)
+      throws IOException {
+    final String fileName = this.getFileName(request);
+    if (!this.putAllowed(fileName)) {
+      response.sendError(
+          403,
+          String.format("Only files prefixed with %s can be uploaded.", PROMPTER_FILE_NAME_PREFIX));
+      return;
+    }
+    Files.copy(
+        request.getInputStream(),
+        Paths.get(System.getProperty("java.io.tmpdir"), DIRECTORY, fileName),
+        StandardCopyOption.REPLACE_EXISTING);
+  }
+
+  private boolean getAllowed(String fileName) {
+    return fileName.equals(THEATER_IMAGE_NAME)
+        || fileName.equals(THEATER_AUDIO_NAME)
+        || fileName.indexOf(PROMPTER_FILE_NAME_PREFIX) == 0;
+  }
+
+  private boolean putAllowed(String fileName) {
+    return fileName.indexOf(PROMPTER_FILE_NAME_PREFIX) == 0;
+  }
+
+  private String getFileName(HttpServletRequest request) {
+    final String[] urlParts = request.getRequestURI().split("/");
+    return urlParts[urlParts.length - 1];
   }
 }

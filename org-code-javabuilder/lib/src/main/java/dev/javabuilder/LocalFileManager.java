@@ -3,7 +3,9 @@ package dev.javabuilder;
 import static dev.javabuilder.LocalWebserverConstants.DIRECTORY;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -13,6 +15,9 @@ import org.code.protocol.JavabuilderException;
 import org.code.protocol.JavabuilderFileManager;
 
 public class LocalFileManager implements JavabuilderFileManager {
+
+  private static final String SERVER_URL_FORMAT = "http://localhost:8080/%s/%s";
+
   @Override
   public String writeToFile(String filename, byte[] inputBytes, String contentType)
       throws JavabuilderException {
@@ -26,18 +31,25 @@ public class LocalFileManager implements JavabuilderFileManager {
     } catch (IOException e) {
       throw new InternalServerError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e);
     }
-    return String.format("http://localhost:8080/%s/%s", DIRECTORY, filename);
+    return String.format(SERVER_URL_FORMAT, DIRECTORY, filename);
   }
 
   @Override
-  public String getUploadUrl(String filename) throws JavabuilderException {
-    // TODO: Return upload URL for localhost uploads
-    return null;
+  public String getUploadUrl(String filename) {
+    File parentDirectory = Paths.get(System.getProperty("java.io.tmpdir"), DIRECTORY).toFile();
+    if (!parentDirectory.exists()) {
+      parentDirectory.mkdirs();
+    }
+    return String.format(SERVER_URL_FORMAT, DIRECTORY, filename);
   }
 
   @Override
-  public URL getFileUrl(String filename) {
-    // TODO: Return file URL for locally uploaded files
-    return null;
+  public URL getFileUrl(String filename) throws FileNotFoundException {
+    try {
+      // File path will be the same as the upload URL
+      return new URL(this.getUploadUrl(filename));
+    } catch (MalformedURLException e) {
+      throw new FileNotFoundException(filename);
+    }
   }
 }
