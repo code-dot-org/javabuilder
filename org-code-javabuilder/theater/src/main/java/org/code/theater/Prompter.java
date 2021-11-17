@@ -1,5 +1,9 @@
 package org.code.theater;
 
+import static org.code.protocol.InputMessages.UPLOAD_ERROR;
+import static org.code.protocol.InputMessages.UPLOAD_SUCCESS;
+
+import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.code.media.Image;
@@ -11,19 +15,23 @@ public class Prompter {
 
   private final OutputAdapter outputAdapter;
   private final JavabuilderFileManager fileManager;
+  private final InputHandler inputHandler;
 
   // Used in Theater to create Prompter "singleton"
   // accessed by students.
   protected Prompter() {
     this(
         GlobalProtocol.getInstance().getOutputAdapter(),
-        GlobalProtocol.getInstance().getFileManager());
+        GlobalProtocol.getInstance().getFileManager(),
+        GlobalProtocol.getInstance().getInputHandler());
   }
 
   // Used to directly instantiate Prompter in tests.
-  protected Prompter(OutputAdapter outputAdapter, JavabuilderFileManager fileManager) {
+  protected Prompter(
+      OutputAdapter outputAdapter, JavabuilderFileManager fileManager, InputHandler inputHandler) {
     this.outputAdapter = outputAdapter;
     this.fileManager = fileManager;
+    this.inputHandler = inputHandler;
   }
 
   public Image getImage(String prompt) {
@@ -40,9 +48,20 @@ public class Prompter {
     getImageDetails.put(ClientMessageDetailKeys.UPLOAD_URL, uploadUrl);
     this.outputAdapter.sendMessage(new TheaterMessage(TheaterSignalKey.GET_IMAGE, getImageDetails));
 
-    // TO DO: get provided image from Javalab.
-    // https://codedotorg.atlassian.net/browse/CSA-936
-
-    return null;
+    // Wait for an upload status message from Javalab
+    final String statusMessage = this.inputHandler.getNextMessageForType(InputMessageType.THEATER);
+    if (statusMessage.equals(UPLOAD_SUCCESS)) {
+      try {
+        return Image.fromMediaFile(prompterFileName);
+      } catch (FileNotFoundException e) {
+        // If the image was uploaded successfully, a FileNotFoundException means an error on our end
+        throw new InternalServerRuntimeError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e);
+      }
+    } else if (statusMessage.equals(UPLOAD_ERROR)) {
+      throw new InternalServerRuntimeError(
+          InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, new Exception(UPLOAD_ERROR));
+    } else {
+      throw new InternalServerRuntimeError(InternalErrorKey.UNKNOWN_ERROR);
+    }
   }
 }
