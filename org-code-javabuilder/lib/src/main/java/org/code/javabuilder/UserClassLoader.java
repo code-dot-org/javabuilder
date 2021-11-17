@@ -56,7 +56,6 @@ public class UserClassLoader extends URLClassLoader {
 
   @Override
   public Class<?> loadClass(String name) throws ClassNotFoundException {
-    // System.out.println("loading class " + name);
     // Call super for user provided classes, as we need to verify users are not
     // trying to use an unapproved class or package.
     if (this.userProvidedClasses.contains(name)) {
@@ -80,6 +79,10 @@ public class UserClassLoader extends URLClassLoader {
     eventData.put("type", "invalidClass");
     eventData.put("className", name);
     Logger.getLogger(MAIN_LOGGER).warning(eventData.toString());
-    throw new ClassNotFoundException(name);
+    // For now, don't throw an exception, and instead go on to the approved class loader.
+    // We want to ensure we aren't blocking anything needed by users, so we are running this in
+    // silent mode.
+    // throw new ClassNotFoundException(name);
+    return this.approvedClassLoader.loadClass(name);
   }
 }
