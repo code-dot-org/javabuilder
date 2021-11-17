@@ -10,6 +10,10 @@ import java.util.List;
 import java.util.logging.Logger;
 import org.json.JSONObject;
 
+/**
+ * Custom class loader for user-provided code. This class loader only allows certain classes to be
+ * used within a user-provided class.
+ */
 public class UserClassLoader extends URLClassLoader {
   private final List<String> userProvidedClasses;
   private final URLClassLoader approvedClassLoader;
