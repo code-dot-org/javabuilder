@@ -54,8 +54,8 @@ public class JavaRunner {
     // Include the user-facing api jars in the code we are loading so student code can access them.
     URL[] classLoaderUrls = Util.getAllJarURLs(this.executableLocation);
 
-    // Create a new URLClassLoader. Use the current class loader as the parent so IO settings are
-    // preserved.
+    // Create a new UserClassLoader. This class loader handles blocking any disallowed
+    // packages/classes.
     UserClassLoader urlClassLoader =
         new UserClassLoader(
             classLoaderUrls, JavaRunner.class.getClassLoader(), this.javaClassNames);
@@ -71,6 +71,10 @@ public class JavaRunner {
     }
   }
 
+  /**
+   * @param javaFiles List of java files to parse
+   * @return The class names of the given java files, as a list of Strings.
+   */
   private List<String> parseClassNames(List<JavaProjectFile> javaFiles) {
     List<String> classNames = new ArrayList<>();
     for (JavaProjectFile file : javaFiles) {
