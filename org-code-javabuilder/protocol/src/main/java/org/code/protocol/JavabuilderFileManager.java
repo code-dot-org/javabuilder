@@ -1,5 +1,8 @@
 package org.code.protocol;
 
+import java.io.FileNotFoundException;
+import java.net.URL;
+
 /** Manages content files that are created during a Javabuilder session */
 public interface JavabuilderFileManager {
   /**
@@ -23,4 +26,13 @@ public interface JavabuilderFileManager {
    * @throws JavabuilderException if there is an issue generating the URL
    */
   String getUploadUrl(String filename) throws JavabuilderException;
+
+  /**
+   * Get the URL pointing to the specified file
+   *
+   * @param filename name of the file
+   * @return URL pointing to the file
+   * @throws FileNotFoundException if there is an issue creating the URL
+   */
+  URL getFileUrl(String filename) throws FileNotFoundException;
 }

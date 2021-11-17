@@ -7,6 +7,8 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import java.io.ByteArrayInputStream;
+import java.io.FileNotFoundException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Date;
 import org.code.protocol.*;
@@ -88,6 +90,15 @@ public class AWSFileManager implements JavabuilderFileManager {
     }
 
     return null;
+  }
+
+  @Override
+  public URL getFileUrl(String filename) throws FileNotFoundException {
+    try {
+      return new URL(this.getOutputURL + "/" + this.generateKey(filename));
+    } catch (MalformedURLException e) {
+      throw new FileNotFoundException(filename);
+    }
   }
 
   private String generateKey(String filename) {

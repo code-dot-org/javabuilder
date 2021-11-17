@@ -4,6 +4,7 @@ import static dev.javabuilder.LocalWebserverConstants.DIRECTORY;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import org.code.javabuilder.InternalServerError;
@@ -31,6 +32,12 @@ public class LocalFileManager implements JavabuilderFileManager {
   @Override
   public String getUploadUrl(String filename) throws JavabuilderException {
     // TODO: Return upload URL for localhost uploads
+    return null;
+  }
+
+  @Override
+  public URL getFileUrl(String filename) {
+    // TODO: Return file URL for locally uploaded files
     return null;
   }
 }
