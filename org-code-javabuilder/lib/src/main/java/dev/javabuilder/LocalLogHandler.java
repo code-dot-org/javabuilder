@@ -3,6 +3,7 @@ package dev.javabuilder;
 import java.io.PrintStream;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public class LocalLogHandler extends Handler {
@@ -24,10 +25,17 @@ public class LocalLogHandler extends Handler {
 
     JSONObject logData = new JSONObject();
     logData.put("sessionMetadata", sessionMetadata);
-    logData.put("message", record.getMessage());
+
+    String message = record.getMessage();
+    try {
+      JSONObject jsonMessage = new JSONObject(message);
+      logData.put("message", jsonMessage);
+    } catch (JSONException e) {
+      logData.put("message", message);
+    }
     logData.put("level", record.getLevel());
 
-    this.logStream.println(logData.toString());
+    this.logStream.println(logData);
   }
 
   @Override

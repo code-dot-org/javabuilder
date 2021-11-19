@@ -46,6 +46,18 @@ public class MainRunner implements CodeRunner {
       if (e.getCause() instanceof FileNotFoundException) {
         throw new UserInitiatedException(UserInitiatedExceptionKey.FILE_NOT_FOUND, e.getCause());
       }
+      // NoClassDefFoundError is thrown by the class loader if the user attempts to use a disallowed
+      // class.
+      if (e.getCause() instanceof NoClassDefFoundError) {
+        String message = "";
+        if (e.getCause().getMessage() != null) {
+          // the message will be the name of the invalid class, with '.' replaced by '/'.
+          message = e.getCause().getMessage().replace('/', '.');
+        }
+        ClassNotFoundException classNotFoundException = new ClassNotFoundException(message);
+        throw new UserInitiatedException(
+            UserInitiatedExceptionKey.INVALID_CLASS, classNotFoundException);
+      }
       throw new UserInitiatedException(UserInitiatedExceptionKey.RUNTIME_ERROR, e);
     }
   }

@@ -2,8 +2,8 @@ package org.code.javabuilder;
 
 import java.io.IOException;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.code.protocol.JavabuilderException;
 import org.code.protocol.OutputAdapter;
 
@@ -12,19 +12,26 @@ public class JavaRunner {
   private final URL executableLocation;
   private final MainRunner mainRunner;
   private final TestRunner testRunner;
+  private final List<String> javaClassNames;
 
   public JavaRunner(
       URL executableLocation, List<JavaProjectFile> javaFiles, OutputAdapter outputAdapter) {
     this(
         executableLocation,
         new MainRunner(javaFiles, outputAdapter),
-        new TestRunner(javaFiles, outputAdapter));
+        new TestRunner(javaFiles, outputAdapter),
+        javaFiles);
   }
 
-  JavaRunner(URL executableLocation, MainRunner mainRunner, TestRunner testRunner) {
+  JavaRunner(
+      URL executableLocation,
+      MainRunner mainRunner,
+      TestRunner testRunner,
+      List<JavaProjectFile> javaFiles) {
     this.executableLocation = executableLocation;
     this.mainRunner = mainRunner;
     this.testRunner = testRunner;
+    this.javaClassNames = this.parseClassNames(javaFiles);
   }
 
   /**
@@ -47,10 +54,11 @@ public class JavaRunner {
     // Include the user-facing api jars in the code we are loading so student code can access them.
     URL[] classLoaderUrls = Util.getAllJarURLs(this.executableLocation);
 
-    // Create a new URLClassLoader. Use the current class loader as the parent so IO settings are
-    // preserved.
-    URLClassLoader urlClassLoader =
-        new URLClassLoader(classLoaderUrls, JavaRunner.class.getClassLoader());
+    // Create a new UserClassLoader. This class loader handles blocking any disallowed
+    // packages/classes.
+    UserClassLoader urlClassLoader =
+        new UserClassLoader(
+            classLoaderUrls, JavaRunner.class.getClassLoader(), this.javaClassNames);
 
     runner.run(urlClassLoader);
 
@@ -61,5 +69,16 @@ public class JavaRunner {
       // error message.
       throw new InternalFacingException("Error closing urlClassLoader: " + e, e);
     }
+  }
+
+  /**
+   * @param javaFiles List of java files to parse
+   * @return The class names of the given java files, as a list of Strings.
+   */
+  private List<String> parseClassNames(List<JavaProjectFile> javaFiles) {
+    return javaFiles
+        .stream()
+        .map(projectFile -> projectFile.getClassName())
+        .collect(Collectors.toList());
   }
 }
