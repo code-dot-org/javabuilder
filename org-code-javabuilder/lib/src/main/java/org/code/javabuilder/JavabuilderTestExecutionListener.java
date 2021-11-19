@@ -117,15 +117,21 @@ public class JavabuilderTestExecutionListener extends SummaryGeneratingListener 
    */
   private String getErrorMessage(Throwable throwable, String className) {
     final String errorLine = this.errorLine(throwable.getStackTrace(), className);
-    final String errorMessage;
+    String errorMessage;
 
     // If there was an assertion failure, print the failure message. If an exception was thrown,
     // print the exception name.
     if (throwable instanceof AssertionError) {
       errorMessage = String.format("\t%s (%s)\n", throwable.getMessage(), errorLine);
     } else {
+      String additionalMessage = this.getAdditionalErrorMessage(throwable);
       errorMessage =
-          String.format("\t%s thrown at %s\n", throwable.getClass().getSimpleName(), errorLine);
+          String.format("\t%s thrown at %s", this.getThrowableDisplayName(throwable), errorLine);
+      if (additionalMessage != null) {
+        errorMessage = String.format("%s. %s\n", errorMessage, additionalMessage);
+      } else {
+        errorMessage += "\n";
+      }
     }
 
     return errorMessage;
@@ -146,5 +152,29 @@ public class JavabuilderTestExecutionListener extends SummaryGeneratingListener 
       }
     }
     return null;
+  }
+
+  private String getThrowableDisplayName(Throwable throwable) {
+    // A NoClassDefFoundError occurs when a user uses a disallowed class. We should
+    // instead show a ClassNotFoundException.
+    if (throwable instanceof NoClassDefFoundError) {
+      return "ClassNotFoundException";
+    } else {
+      return throwable.getClass().getSimpleName();
+    }
+  }
+
+  private String getAdditionalErrorMessage(Throwable throwable) {
+    // A NoClassDefFoundError occurs when a user uses a disallowed class. We need
+    // to provide additional information in this case.
+    if (throwable instanceof NoClassDefFoundError) {
+      String className = throwable.getMessage();
+      if (className != null) {
+        // the message will be the name of the invalid class, with '.' replaced by '/'.
+        className = className.replace('/', '.');
+        return className + " is not supported.";
+      }
+    }
+    return "";
   }
 }
