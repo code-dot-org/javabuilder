@@ -3,6 +3,7 @@ package org.code.javabuilder;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public class LambdaLogHandler extends Handler {
@@ -35,7 +36,14 @@ public class LambdaLogHandler extends Handler {
 
     JSONObject logData = new JSONObject();
     logData.put("sessionMetadata", sessionMetadata);
-    logData.put("message", record.getMessage());
+    String message = record.getMessage();
+    // try to send message as json if possible.
+    try {
+      JSONObject jsonMessage = new JSONObject(message);
+      logData.put("message", jsonMessage);
+    } catch (JSONException e) {
+      logData.put("message", message);
+    }
     logData.put("level", record.getLevel());
 
     this.logger.log(logData.toString());

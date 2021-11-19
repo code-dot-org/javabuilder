@@ -28,5 +28,7 @@ public enum UserInitiatedExceptionKey {
   MISSING_PROJECT_FILE_NAME,
   // The supplied compile list was empty, or no matching Java files were found to compile (for the
   // COMPILE_ONLY option)
-  NO_FILES_TO_COMPILE
+  NO_FILES_TO_COMPILE,
+  // The user tried to use a class we don't allow.
+  INVALID_CLASS
 }
