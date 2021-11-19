@@ -172,7 +172,7 @@ public class JavabuilderTestExecutionListener extends SummaryGeneratingListener 
       if (className != null) {
         // the message will be the name of the invalid class, with '.' replaced by '/'.
         className = className.replace('/', '.');
-        return className + " is not supported.";
+        return className + " is not supported";
       }
     }
     return "";
