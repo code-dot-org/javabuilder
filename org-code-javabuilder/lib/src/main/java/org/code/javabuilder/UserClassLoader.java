@@ -4,9 +4,9 @@ import static org.code.protocol.LoggerNames.MAIN_LOGGER;
 
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 import org.json.JSONObject;
 
@@ -15,17 +15,19 @@ import org.json.JSONObject;
  * used within a user-provided class.
  */
 public class UserClassLoader extends URLClassLoader {
-  private final List<String> userProvidedClasses;
+  private final Set<String> userProvidedClasses;
   private final URLClassLoader approvedClassLoader;
 
   public UserClassLoader(URL[] urls, ClassLoader parent, List<String> userProvidedClasses) {
     super(urls, parent);
-    this.userProvidedClasses = userProvidedClasses;
+    this.userProvidedClasses = new HashSet<>();
+    this.userProvidedClasses.addAll(userProvidedClasses);
     this.approvedClassLoader = new URLClassLoader(urls, JavaRunner.class.getClassLoader());
   }
 
   @Override
   public Class<?> loadClass(String name) throws ClassNotFoundException {
+    // System.out.println("loading class " + name);
     // Call super for user provided classes, as we need to verify users are not
     // trying to use an unapproved class or package.
     if (this.userProvidedClasses.contains(name)) {
@@ -57,39 +59,34 @@ public class UserClassLoader extends URLClassLoader {
   }
 
   // Allowed individual classes.
-  private static final List<String> allowedClasses =
-      new ArrayList<>(
-          Arrays.asList(
-              "java.io.File",
-              "java.io.IOException",
-              "java.io.PrintStream",
-              "java.io.FileNotFoundException",
-              "java.lang.Object",
-              "java.lang.Integer",
-              "java.lang.Double",
-              "java.lang.String",
-              "java.lang.Math",
-              "java.lang.Comparable",
-              "java.lang.Throwable",
-              "java.lang.Exception",
-              "java.lang.ArithmeticException",
-              "java.lang.NullPointerException",
-              "java.lang.IndexOUtOfBoundsException",
-              "java.lang.ArrayIndexOutOfBoundsException",
-              "java.lang.IllegalArgumentException",
-              "java.lang.SecurityException",
-              "java.lang.System",
-              "java.lang.invoke.StringConcatFactory" // needed for any String concatenation
-              ));
+  private static final Set<String> allowedClasses =
+      Set.of(
+          "java.lang.ArithmeticException",
+          "java.lang.ArrayIndexOutOfBoundsException",
+          "java.lang.Comparable",
+          "java.lang.Double",
+          "java.lang.Exception",
+          "java.lang.IndexOUtOfBoundsException",
+          "java.lang.Integer",
+          "java.lang.invoke.StringConcatFactory", // needed for any String concatenation
+          "java.lang.IllegalArgumentException",
+          "java.lang.Math",
+          "java.lang.NullPointerException",
+          "java.lang.Object",
+          "java.lang.SecurityException",
+          "java.lang.String",
+          "java.lang.System",
+          "java.lang.Throwable");
 
   // Allowed packages (any individual class is allowed from these classes)
   private static final String[] allowedPackages =
       new String[] {
-        "org.junit.jupiter.api",
-        "java.util",
-        "org.code.neighborhood",
-        "org.code.playground",
-        "org.code.theater",
-        "org.code.media"
+        "java.io.",
+        "java.util.",
+        "org.junit.jupiter.api.",
+        "org.code.media.",
+        "org.code.neighborhood.",
+        "org.code.playground.",
+        "org.code.theater.",
       };
 }
