@@ -173,6 +173,6 @@ public class JavabuilderTestExecutionListener extends SummaryGeneratingListener 
         return className + " is not supported";
       }
     }
-    return "";
+    return null;
   }
 }
