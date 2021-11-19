@@ -2,8 +2,8 @@ package org.code.javabuilder;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.code.protocol.JavabuilderException;
 import org.code.protocol.OutputAdapter;
 
@@ -76,10 +76,9 @@ public class JavaRunner {
    * @return The class names of the given java files, as a list of Strings.
    */
   private List<String> parseClassNames(List<JavaProjectFile> javaFiles) {
-    List<String> classNames = new ArrayList<>();
-    for (JavaProjectFile file : javaFiles) {
-      classNames.add(file.getClassName());
-    }
-    return classNames;
+    return javaFiles
+        .stream()
+        .map(projectFile -> projectFile.getClassName())
+        .collect(Collectors.toList());
   }
 }
