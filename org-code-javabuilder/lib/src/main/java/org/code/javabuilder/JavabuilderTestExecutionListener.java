@@ -126,11 +126,9 @@ public class JavabuilderTestExecutionListener extends SummaryGeneratingListener 
     } else {
       String additionalMessage = this.getAdditionalErrorMessage(throwable);
       errorMessage =
-          String.format("\t%s thrown at %s", this.getThrowableDisplayName(throwable), errorLine);
+          String.format("\t%s thrown at %s\n", this.getThrowableDisplayName(throwable), errorLine);
       if (additionalMessage != null) {
-        errorMessage = String.format("%s. %s\n", errorMessage, additionalMessage);
-      } else {
-        errorMessage += "\n";
+        errorMessage = String.format("%s \t%s\n", errorMessage, additionalMessage);
       }
     }
 
