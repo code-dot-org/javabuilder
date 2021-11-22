@@ -63,6 +63,9 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
         JSONUtils.booleanFromJSONObjectMember(options, "useNeighborhood");
     final List<String> compileList = JSONUtils.listFromJSONObjectMember(options, "compileList");
 
+    final String sourcesPath = lambdaInput.get("sourcesPath");
+    final String sourcesBucket = lambdaInput.get("sourcesBucket");
+
     Logger logger = Logger.getLogger(MAIN_LOGGER);
     logger.addHandler(
         new LambdaLogHandler(
@@ -91,12 +94,13 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
         outputAdapter, inputAdapter, dashboardHostname, channelId, levelId, fileWriter);
 
     // Create file loader
-    final UserProjectFileLoader userProjectFileLoader =
-        new UserProjectFileLoader(
-            GlobalProtocol.getInstance().generateSourcesUrl(),
-            levelId,
-            dashboardHostname,
-            useNeighborhood);
+    final ProjectFileLoader userProjectFileLoader =
+        new AWSProjectFileLoader(s3Client, sourcesBucket, sourcesPath);
+    //        new UserProjectFileLoader(
+    //            GlobalProtocol.getInstance().generateSourcesUrl(),
+    //            levelId,
+    //            dashboardHostname,
+    //            useNeighborhood);
 
     // manually set font configuration file since there is no font configuration on a lambda.
     java.util.Properties props = System.getProperties();
