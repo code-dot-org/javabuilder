@@ -50,7 +50,7 @@ def on_connect(event, context)
     :queueName => queue_name,
     :executionType => authorizer['execution_type'],
     :sourcesBucket => authorizer['sources_bucket'],
-    :sourcesDirectory => authorizer['sources_directory']
+    :sourcesDirectory => authorizer['sources_directory'],
     :sourcesPath => authorizer['sources_path']
   }
   response = lambda_client.invoke({
