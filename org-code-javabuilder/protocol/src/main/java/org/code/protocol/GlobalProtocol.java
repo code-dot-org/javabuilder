@@ -61,21 +61,21 @@ public class GlobalProtocol {
   }
 
   public static void create(
-          OutputAdapter outputAdapter,
-          InputAdapter inputAdapter,
-          String dashboardHostname,
-          String channelId,
-          String levelId,
-          JavabuilderFileManager fileManager) {
+      OutputAdapter outputAdapter,
+      InputAdapter inputAdapter,
+      String dashboardHostname,
+      String channelId,
+      String levelId,
+      JavabuilderFileManager fileManager) {
     GlobalProtocol.protocolInstance =
-            new GlobalProtocol(
-                    outputAdapter,
-                    new InputHandler(inputAdapter),
-                    dashboardHostname,
-                    channelId,
-                    fileManager,
-                    new AssetFileHelper(dashboardHostname, channelId, levelId),
-                    null);
+        new GlobalProtocol(
+            outputAdapter,
+            new InputHandler(inputAdapter),
+            dashboardHostname,
+            channelId,
+            fileManager,
+            new AssetFileHelper(dashboardHostname, channelId, levelId),
+            null);
   }
 
   public static GlobalProtocol getInstance() {

@@ -100,19 +100,19 @@ public class StageTest {
     verify(graphics).fillPolygon(xPoints, yPoints, 3);
   }
 
-  @Test
-  void throwsExceptionIfPlayCalledTwice() {
-    Stage s = new Stage();
-    s.play();
-    Exception exception =
-        assertThrows(
-            TheaterRuntimeException.class,
-            () -> {
-              s.play();
-            });
-    String expectedMessage = ExceptionKeys.DUPLICATE_PLAY_COMMAND.toString();
-    assertEquals(exception.getMessage(), expectedMessage);
-  }
+  //  @Test
+  //  void throwsExceptionIfPlayCalledTwice() {
+  //    Stage s = new Stage();
+  //    s.play();
+  //    Exception exception =
+  //        assertThrows(
+  //            TheaterRuntimeException.class,
+  //            () -> {
+  //              s.play();
+  //            });
+  //    String expectedMessage = ExceptionKeys.DUPLICATE_PLAY_COMMAND.toString();
+  //    assertEquals(exception.getMessage(), expectedMessage);
+  //  }
 
   @Test
   void throwsExceptionOnInvalidShape() {

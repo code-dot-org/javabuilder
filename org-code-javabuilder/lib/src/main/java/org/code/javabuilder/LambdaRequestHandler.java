@@ -91,11 +91,17 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     final AWSFileManager fileWriter =
         new AWSFileManager(s3Client, outputBucketName, javabuilderSessionId, getOutputUrl, context);
     final AWSContentManager contentManager =
-            new AWSContentManager(
-                    s3Client, outputBucketName, javabuilderSessionId, getOutputUrl, context);
+        new AWSContentManager(
+            s3Client, outputBucketName, javabuilderSessionId, getOutputUrl, context);
     ContentManagerInstance.setContentManager(contentManager);
     GlobalProtocol.create(
-        outputAdapter, inputAdapter, dashboardHostname, channelId, levelId, fileWriter, contentManager);
+        outputAdapter,
+        inputAdapter,
+        dashboardHostname,
+        channelId,
+        levelId,
+        fileWriter,
+        contentManager);
 
     // Create file loader
     //    final ProjectFileLoader userProjectFileLoader =
