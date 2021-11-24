@@ -7,6 +7,7 @@ import static org.code.protocol.InputMessages.UPLOAD_SUCCESS;
 import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.code.javabuilder.ContentManager;
 import org.code.media.Image;
 import org.code.protocol.*;
 
@@ -14,7 +15,7 @@ public class Prompter {
   private static final AtomicInteger FILE_INDEX = new AtomicInteger(0);
 
   private final OutputAdapter outputAdapter;
-  private final JavabuilderFileManager fileManager;
+  private final ContentManager fileManager;
   private final InputHandler inputHandler;
 
   // Used in Theater to create Prompter "singleton"
@@ -22,13 +23,13 @@ public class Prompter {
   protected Prompter() {
     this(
         GlobalProtocol.getInstance().getOutputAdapter(),
-        GlobalProtocol.getInstance().getFileManager(),
+        GlobalProtocol.getInstance().getContentManager(),
         GlobalProtocol.getInstance().getInputHandler());
   }
 
   // Used to directly instantiate Prompter in tests.
   protected Prompter(
-      OutputAdapter outputAdapter, JavabuilderFileManager fileManager, InputHandler inputHandler) {
+      OutputAdapter outputAdapter, ContentManager fileManager, InputHandler inputHandler) {
     this.outputAdapter = outputAdapter;
     this.fileManager = fileManager;
     this.inputHandler = inputHandler;
@@ -38,7 +39,7 @@ public class Prompter {
     final String prompterFileName = PROMPTER_FILE_NAME_PREFIX + FILE_INDEX.incrementAndGet();
     final String uploadUrl;
     try {
-      uploadUrl = this.fileManager.getUploadUrl(prompterFileName);
+      uploadUrl = this.fileManager.generateUploadUrl(prompterFileName);
     } catch (JavabuilderException e) {
       throw new InternalServerRuntimeError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e);
     }

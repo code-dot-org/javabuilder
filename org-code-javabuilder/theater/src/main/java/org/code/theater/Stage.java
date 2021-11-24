@@ -9,6 +9,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.util.HashMap;
+import org.code.javabuilder.ContentManager;
 import org.code.media.*;
 import org.code.media.Color;
 import org.code.media.Font;
@@ -18,7 +19,7 @@ import org.code.protocol.*;
 public class Stage {
   private final BufferedImage image;
   private final OutputAdapter outputAdapter;
-  private final JavabuilderFileManager fileManager;
+  private final ContentManager fileManager;
   private final GifWriter gifWriter;
   private final ByteArrayOutputStream imageOutputStream;
   private final Graphics2D graphics;
@@ -60,7 +61,7 @@ public class Stage {
     this.image = image;
     this.graphics = this.image.createGraphics();
     this.outputAdapter = GlobalProtocol.getInstance().getOutputAdapter();
-    this.fileManager = GlobalProtocol.getInstance().getFileManager();
+    this.fileManager = GlobalProtocol.getInstance().getContentManager();
     this.imageOutputStream = new ByteArrayOutputStream();
     this.gifWriter = gifWriterFactory.createGifWriter(this.imageOutputStream);
     this.audioOutputStream = new ByteArrayOutputStream();

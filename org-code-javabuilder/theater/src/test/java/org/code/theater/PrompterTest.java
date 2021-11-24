@@ -8,6 +8,8 @@ import static org.mockito.Mockito.*;
 import java.io.FileNotFoundException;
 import java.net.URL;
 import java.util.List;
+
+import org.code.javabuilder.ContentManager;
 import org.code.media.Image;
 import org.code.protocol.*;
 import org.junit.jupiter.api.AfterEach;
@@ -29,7 +31,7 @@ public class PrompterTest {
     fileManager = mock(JavabuilderFileManager.class);
     inputHandler = mock(InputHandler.class);
     image = mockStatic(Image.class);
-    unitUnderTest = new Prompter(outputAdapter, fileManager, inputHandler);
+    unitUnderTest = new Prompter(outputAdapter, mock(ContentManager.class), inputHandler);
   }
 
   @AfterEach

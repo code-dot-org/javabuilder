@@ -179,7 +179,10 @@ public class Image {
     try {
       return new Image(
           Image.getImageFromUrl(
-              GlobalProtocol.getInstance().getFileManager().getFileUrl(filename)));
+              new URL(
+                  GlobalProtocol.getInstance()
+                      .getContentManager()
+                      .getGeneratedInputFileUrl(filename))));
     } catch (IOException e) {
       throw new FileNotFoundException(filename);
     }

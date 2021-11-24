@@ -90,12 +90,16 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     final AmazonS3 s3Client = AmazonS3ClientBuilder.standard().build();
     final AWSFileManager fileWriter =
         new AWSFileManager(s3Client, outputBucketName, javabuilderSessionId, getOutputUrl, context);
+    final AWSContentManager contentManager =
+            new AWSContentManager(
+                    s3Client, outputBucketName, javabuilderSessionId, getOutputUrl, context);
+    ContentManagerInstance.setContentManager(contentManager);
     GlobalProtocol.create(
-        outputAdapter, inputAdapter, dashboardHostname, channelId, levelId, fileWriter);
+        outputAdapter, inputAdapter, dashboardHostname, channelId, levelId, fileWriter, contentManager);
 
     // Create file loader
-    final ProjectFileLoader userProjectFileLoader =
-        new AWSProjectFileLoader(s3Client, sourcesBucket, sourcesPath);
+    //    final ProjectFileLoader userProjectFileLoader =
+    //        new AWSProjectFileLoader(s3Client, sourcesBucket, sourcesPath);
     //        new UserProjectFileLoader(
     //            GlobalProtocol.getInstance().generateSourcesUrl(),
     //            levelId,
@@ -130,7 +134,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     try {
       // Load files to memory and create and invoke the code execution environment
       CodeBuilderRunnable codeBuilderRunnable =
-          new CodeBuilderRunnable(userProjectFileLoader, outputAdapter, executionType, compileList);
+          new CodeBuilderRunnable(contentManager, outputAdapter, executionType, compileList);
       Thread codeBuilderThread = new Thread(codeBuilderRunnable);
       // start code build and execute in a thread
       codeBuilderThread.start();

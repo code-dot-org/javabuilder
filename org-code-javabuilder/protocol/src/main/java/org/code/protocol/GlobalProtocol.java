@@ -2,6 +2,7 @@ package org.code.protocol;
 
 import java.util.HashSet;
 import java.util.Set;
+import org.code.javabuilder.ContentManager;
 
 /**
  * This sets up the protocols that are used across jars in Javabuilder. It allows the input and
@@ -20,6 +21,7 @@ public class GlobalProtocol {
   private final String channelId;
   private final AssetFileHelper assetFileHelper;
   private Set<MessageHandler> messageHandlers;
+  private final ContentManager contentManager;
 
   private GlobalProtocol(
       OutputAdapter outputAdapter,
@@ -27,7 +29,8 @@ public class GlobalProtocol {
       String dashboardHostname,
       String channelId,
       JavabuilderFileManager fileManager,
-      AssetFileHelper assetFileHelper) {
+      AssetFileHelper assetFileHelper,
+      ContentManager contentManager) {
     this.outputAdapter = outputAdapter;
     this.inputHandler = inputHandler;
     this.dashboardHostname = dashboardHostname;
@@ -35,6 +38,7 @@ public class GlobalProtocol {
     this.fileManager = fileManager;
     this.assetFileHelper = assetFileHelper;
     this.messageHandlers = new HashSet<>();
+    this.contentManager = contentManager;
   }
 
   public static void create(
@@ -43,7 +47,8 @@ public class GlobalProtocol {
       String dashboardHostname,
       String channelId,
       String levelId,
-      JavabuilderFileManager fileManager) {
+      JavabuilderFileManager fileManager,
+      ContentManager contentManager) {
     GlobalProtocol.protocolInstance =
         new GlobalProtocol(
             outputAdapter,
@@ -51,7 +56,26 @@ public class GlobalProtocol {
             dashboardHostname,
             channelId,
             fileManager,
-            new AssetFileHelper(dashboardHostname, channelId, levelId));
+            new AssetFileHelper(dashboardHostname, channelId, levelId),
+            contentManager);
+  }
+
+  public static void create(
+          OutputAdapter outputAdapter,
+          InputAdapter inputAdapter,
+          String dashboardHostname,
+          String channelId,
+          String levelId,
+          JavabuilderFileManager fileManager) {
+    GlobalProtocol.protocolInstance =
+            new GlobalProtocol(
+                    outputAdapter,
+                    new InputHandler(inputAdapter),
+                    dashboardHostname,
+                    channelId,
+                    fileManager,
+                    new AssetFileHelper(dashboardHostname, channelId, levelId),
+                    null);
   }
 
   public static GlobalProtocol getInstance() {
@@ -74,8 +98,13 @@ public class GlobalProtocol {
     return this.fileManager;
   }
 
+  public ContentManager getContentManager() {
+    return this.contentManager;
+  }
+
   public String generateAssetUrl(String filename) {
-    return this.assetFileHelper.generateAssetUrl(filename);
+    return this.contentManager.getAssetUrl(
+        filename); // this.assetFileHelper.generateAssetUrl(filename);
   }
 
   public AssetFileHelper getAssetFileHelper() {
