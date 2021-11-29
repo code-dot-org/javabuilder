@@ -19,8 +19,7 @@ import org.code.protocol.InternalServerRuntimeError;
 public class AWSContentManager implements ContentManager, ProjectFileLoader {
   private static final String SOURCES_DIRECTORY_FORMAT = "%s/sources/%s";
   private static final String ASSETS_DIRECTORY_FORMAT = "%s/assets/%s";
-  private static final String GENERATED_INPUT_DIRECTORY_FORMAT = "%s/generated/input/%s";
-  private static final String GENERATED_OUTPUT_DIRECTORY_FORMAT = "%s/generated/output/%s";
+  private static final String OUTPUT_DIRECTORY_FORMAT = "%s/output/%s";
 
   private static final String MAIN_JSON_FILE = "main.json";
   private static final String MAZE_FILE = "grid.txt";
@@ -99,6 +98,7 @@ public class AWSContentManager implements ContentManager, ProjectFileLoader {
   public InputStream getAssetInputStream(String filename) {
     final String key = this.generateKey(ASSETS_DIRECTORY_FORMAT, filename);
     if (!this.s3Client.doesObjectExist(this.contentBucketName, key)) {
+      System.out.printf("Object %s does not exist\n", key);
       return null;
     }
     return this.s3Client.getObject(this.contentBucketName, key).getObjectContent();
@@ -110,7 +110,7 @@ public class AWSContentManager implements ContentManager, ProjectFileLoader {
     if (this.uploads >= UPLOADS_PER_SESSION) {
       throw new UserInitiatedException(UserInitiatedExceptionKey.TOO_MANY_UPLOADS);
     }
-    final String key = this.generateKey(GENERATED_INPUT_DIRECTORY_FORMAT, filename);
+    final String key = this.generateKey(ASSETS_DIRECTORY_FORMAT, filename);
     final long expirationTimeMs = System.currentTimeMillis() + context.getRemainingTimeInMillis();
 
     try {
@@ -135,7 +135,7 @@ public class AWSContentManager implements ContentManager, ProjectFileLoader {
     if (this.writes >= WRITES_PER_SESSION) {
       throw new UserInitiatedException(UserInitiatedExceptionKey.TOO_MANY_WRITES);
     }
-    String filePath = this.generateKey(GENERATED_OUTPUT_DIRECTORY_FORMAT, filename);
+    String filePath = this.generateKey(OUTPUT_DIRECTORY_FORMAT, filename);
     ObjectMetadata metadata = new ObjectMetadata();
     metadata.setContentType(contentType);
     metadata.setContentLength(inputBytes.length);

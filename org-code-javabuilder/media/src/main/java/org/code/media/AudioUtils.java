@@ -183,6 +183,7 @@ class AudioUtils {
               AudioSystem.getAudioInputStream(inputStream));
       return AudioUtils.readSamplesFromInputStream(audioInputStream);
     } catch (IOException e) {
+      System.out.println(e);
       throw new FileNotFoundException(filename);
     } catch (UnsupportedAudioFileException e) {
       throw new SoundException(SoundExceptionKeys.INVALID_AUDIO_FILE_FORMAT);
