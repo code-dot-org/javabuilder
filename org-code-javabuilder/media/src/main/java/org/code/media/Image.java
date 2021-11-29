@@ -196,10 +196,12 @@ public class Image {
    * @throws FileNotFoundException if the file is not found
    */
   public static BufferedImage getImageAssetFromFile(String filename) throws FileNotFoundException {
+    System.out.println(GlobalProtocol.getInstance().generateAssetUrl(filename));
     try {
       return Image.getImageFromUrl(
           new URL(GlobalProtocol.getInstance().generateAssetUrl(filename)));
     } catch (IOException e) {
+      System.out.println(e);
       throw new FileNotFoundException(filename);
     }
   }
@@ -213,6 +215,7 @@ public class Image {
         throw new MediaRuntimeException(MediaRuntimeExceptionKeys.IMAGE_LOAD_ERROR);
       }
     } catch (IOException e) {
+      System.out.println(e);
       throw new FileNotFoundException(url.toString());
     }
 
