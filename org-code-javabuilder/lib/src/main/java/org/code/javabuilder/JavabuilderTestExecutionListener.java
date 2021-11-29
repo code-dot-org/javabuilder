@@ -156,7 +156,7 @@ public class JavabuilderTestExecutionListener extends SummaryGeneratingListener 
     // A NoClassDefFoundError occurs when a user uses a disallowed class. We should
     // instead show a ClassNotFoundException.
     if (throwable instanceof NoClassDefFoundError) {
-      return "ClassNotFoundException";
+      return ClassNotFoundException.class.getSimpleName();
     } else {
       return throwable.getClass().getSimpleName();
     }
