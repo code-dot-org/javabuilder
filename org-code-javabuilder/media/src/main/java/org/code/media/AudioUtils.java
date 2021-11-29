@@ -180,7 +180,7 @@ class AudioUtils {
       // final URL audioFileUrl = new URL(GlobalProtocol.getInstance().generateAssetUrl(filename));
       final AudioInputStream audioInputStream =
           AudioUtils.convertStreamToDefaultAudioFormat(
-              AudioSystem.getAudioInputStream(inputStream));
+              AudioSystem.getAudioInputStream(new BufferedInputStream(inputStream)));
       return AudioUtils.readSamplesFromInputStream(audioInputStream);
     } catch (IOException e) {
       System.out.println(e);
