@@ -96,12 +96,7 @@ public class AWSContentManager implements ContentManager, ProjectFileLoader {
   }
 
   @Override
-  public String getAssetUrl(String filename) {
-    return this.contentOutputUrl + "/" + this.generateKey(ASSETS_DIRECTORY_FORMAT, filename);
-  }
-
-  @Override
-  public InputStream getFileInputStream(String filename) {
+  public InputStream getAssetInputStream(String filename) {
     final String key = this.generateKey(ASSETS_DIRECTORY_FORMAT, filename);
     if (!this.s3Client.doesObjectExist(this.contentBucketName, key)) {
       return null;
@@ -110,14 +105,7 @@ public class AWSContentManager implements ContentManager, ProjectFileLoader {
   }
 
   @Override
-  public String getGeneratedInputFileUrl(String filename) {
-    return this.contentOutputUrl
-        + "/"
-        + this.generateKey(GENERATED_INPUT_DIRECTORY_FORMAT, filename);
-  }
-
-  @Override
-  public String generateUploadUrl(String filename)
+  public String generateAssetUploadUrl(String filename)
       throws UserInitiatedException, InternalServerError {
     if (this.uploads >= UPLOADS_PER_SESSION) {
       throw new UserInitiatedException(UserInitiatedExceptionKey.TOO_MANY_UPLOADS);
@@ -142,7 +130,7 @@ public class AWSContentManager implements ContentManager, ProjectFileLoader {
   }
 
   @Override
-  public String writeToFile(String filename, byte[] inputBytes, String contentType)
+  public String writeToAssetFile(String filename, byte[] inputBytes, String contentType)
       throws UserInitiatedException, InternalServerError {
     if (this.writes >= WRITES_PER_SESSION) {
       throw new UserInitiatedException(UserInitiatedExceptionKey.TOO_MANY_WRITES);

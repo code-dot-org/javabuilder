@@ -61,6 +61,7 @@ public class GlobalProtocol {
             contentManager);
   }
 
+  // prototype - leaving this create method around so tests still compile
   public static void create(
       OutputAdapter outputAdapter,
       InputAdapter inputAdapter,
@@ -103,13 +104,13 @@ public class GlobalProtocol {
     return this.contentManager;
   }
 
-  public String generateAssetUrl(String filename) {
-    return this.contentManager.getAssetUrl(
-        filename); // this.assetFileHelper.generateAssetUrl(filename);
-  }
+  //  public String generateAssetUrl(String filename) {
+  //    return this.contentManager.getAssetUrl(
+  //        filename); // this.assetFileHelper.generateAssetUrl(filename);
+  //  }
 
   public InputStream getAssetInputStream(String filename) {
-    return this.contentManager.getFileInputStream(filename);
+    return this.contentManager.getAssetInputStream(filename);
   }
 
   public AssetFileHelper getAssetFileHelper() {

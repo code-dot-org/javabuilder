@@ -1,7 +1,6 @@
 package org.code.media;
 
 import java.io.*;
-import java.net.URL;
 import java.util.Arrays;
 import javax.sound.sampled.*;
 import org.code.protocol.GlobalProtocol;
@@ -172,11 +171,16 @@ class AudioUtils {
    * @throws FileNotFoundException
    */
   public static double[] readSamplesFromAssetFile(String filename) throws FileNotFoundException {
+    final InputStream inputStream = GlobalProtocol.getInstance().getAssetInputStream(filename);
+    if (inputStream == null) {
+      throw new FileNotFoundException(filename);
+    }
+
     try {
-      final URL audioFileUrl = new URL(GlobalProtocol.getInstance().generateAssetUrl(filename));
+      // final URL audioFileUrl = new URL(GlobalProtocol.getInstance().generateAssetUrl(filename));
       final AudioInputStream audioInputStream =
           AudioUtils.convertStreamToDefaultAudioFormat(
-              AudioSystem.getAudioInputStream(audioFileUrl));
+              AudioSystem.getAudioInputStream(inputStream));
       return AudioUtils.readSamplesFromInputStream(audioInputStream);
     } catch (IOException e) {
       throw new FileNotFoundException(filename);

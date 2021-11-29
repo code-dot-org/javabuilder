@@ -4,14 +4,10 @@ import java.io.InputStream;
 import org.code.protocol.JavabuilderException;
 
 public interface ContentManager {
-  String getAssetUrl(String filename);
+  InputStream getAssetInputStream(String filename);
 
-  InputStream getFileInputStream(String filename);
+  String generateAssetUploadUrl(String filename) throws JavabuilderException;
 
-  String getGeneratedInputFileUrl(String filename);
-
-  String generateUploadUrl(String filename) throws JavabuilderException;
-
-  String writeToFile(String filename, byte[] inputBytes, String contentType)
+  String writeToAssetFile(String filename, byte[] inputBytes, String contentType)
       throws JavabuilderException;
 }

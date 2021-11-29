@@ -39,7 +39,7 @@ public class Prompter {
     final String prompterFileName = PROMPTER_FILE_NAME_PREFIX + FILE_INDEX.incrementAndGet();
     final String uploadUrl;
     try {
-      uploadUrl = this.fileManager.generateUploadUrl(prompterFileName);
+      uploadUrl = this.fileManager.generateAssetUploadUrl(prompterFileName);
     } catch (JavabuilderException e) {
       throw new InternalServerRuntimeError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e);
     }
@@ -53,7 +53,7 @@ public class Prompter {
     final String statusMessage = this.inputHandler.getNextMessageForType(InputMessageType.THEATER);
     if (statusMessage.equals(UPLOAD_SUCCESS)) {
       try {
-        return Image.fromMediaFile(prompterFileName);
+        return new Image(prompterFileName);
       } catch (FileNotFoundException e) {
         // If the image was uploaded successfully, a FileNotFoundException means an error on our end
         throw new InternalServerRuntimeError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e);
