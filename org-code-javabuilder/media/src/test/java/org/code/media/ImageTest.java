@@ -4,8 +4,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.awt.image.BufferedImage;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import org.code.protocol.GlobalProtocol;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -65,63 +63,63 @@ public class ImageTest {
     assertEquals(25, pixelColor.getBlue());
   }
 
-  @Test
-  public void getImageMaintainsSizeIf400Square() throws FileNotFoundException {
-    String imageFileName = "400x400Image.jpg";
-    String testFileURL =
-        Thread.currentThread().getContextClassLoader().getResource(imageFileName).toString();
-    when(globalProtocolInstance.generateAssetUrl(imageFileName)).thenReturn(testFileURL);
-
-    BufferedImage image = Image.getImageAssetFromFile(imageFileName);
-    assertEquals(400, image.getHeight());
-    assertEquals(400, image.getWidth());
-  }
-
-  @Test
-  public void getImageMaintainsSizeIfSmall() throws FileNotFoundException {
-    String imageFileName = "200w300h.png";
-    String testFileURL =
-        Thread.currentThread().getContextClassLoader().getResource(imageFileName).toString();
-    when(globalProtocolInstance.generateAssetUrl(imageFileName)).thenReturn(testFileURL);
-
-    BufferedImage image = Image.getImageAssetFromFile(imageFileName);
-    assertEquals(300, image.getHeight());
-    assertEquals(200, image.getWidth());
-  }
-
-  @Test
-  public void getImageResizesIfWide() throws FileNotFoundException {
-    String imageFileName = "600w300h.png";
-    String testFileURL =
-        Thread.currentThread().getContextClassLoader().getResource(imageFileName).toString();
-    when(globalProtocolInstance.generateAssetUrl(imageFileName)).thenReturn(testFileURL);
-
-    BufferedImage image = Image.getImageAssetFromFile(imageFileName);
-    assertEquals(200, image.getHeight());
-    assertEquals(400, image.getWidth());
-  }
-
-  @Test
-  public void getImageResizesIfTall() throws FileNotFoundException {
-    String imageFileName = "200w800h.png";
-    String testFileURL =
-        Thread.currentThread().getContextClassLoader().getResource(imageFileName).toString();
-    when(globalProtocolInstance.generateAssetUrl(imageFileName)).thenReturn(testFileURL);
-
-    BufferedImage image = Image.getImageAssetFromFile(imageFileName);
-    assertEquals(400, image.getHeight());
-    assertEquals(100, image.getWidth());
-  }
-
-  @Test
-  public void getImageThrowsIOExceptionIfFilenameInvalid() {
-    String imageFileName = "notHere.png";
-    Exception exception =
-        assertThrows(
-            IOException.class,
-            () -> {
-              Image.getImageAssetFromFile(imageFileName);
-            });
-    assertEquals(exception.getMessage(), (imageFileName));
-  }
+  //  @Test
+  //  public void getImageMaintainsSizeIf400Square() throws FileNotFoundException {
+  //    String imageFileName = "400x400Image.jpg";
+  //    String testFileURL =
+  //        Thread.currentThread().getContextClassLoader().getResource(imageFileName).toString();
+  //    when(globalProtocolInstance.generateAssetUrl(imageFileName)).thenReturn(testFileURL);
+  //
+  //    BufferedImage image = Image.getImageAssetFromFile(imageFileName);
+  //    assertEquals(400, image.getHeight());
+  //    assertEquals(400, image.getWidth());
+  //  }
+  //
+  //  @Test
+  //  public void getImageMaintainsSizeIfSmall() throws FileNotFoundException {
+  //    String imageFileName = "200w300h.png";
+  //    String testFileURL =
+  //        Thread.currentThread().getContextClassLoader().getResource(imageFileName).toString();
+  //    when(globalProtocolInstance.generateAssetUrl(imageFileName)).thenReturn(testFileURL);
+  //
+  //    BufferedImage image = Image.getImageAssetFromFile(imageFileName);
+  //    assertEquals(300, image.getHeight());
+  //    assertEquals(200, image.getWidth());
+  //  }
+  //
+  //  @Test
+  //  public void getImageResizesIfWide() throws FileNotFoundException {
+  //    String imageFileName = "600w300h.png";
+  //    String testFileURL =
+  //        Thread.currentThread().getContextClassLoader().getResource(imageFileName).toString();
+  //    when(globalProtocolInstance.generateAssetUrl(imageFileName)).thenReturn(testFileURL);
+  //
+  //    BufferedImage image = Image.getImageAssetFromFile(imageFileName);
+  //    assertEquals(200, image.getHeight());
+  //    assertEquals(400, image.getWidth());
+  //  }
+  //
+  //  @Test
+  //  public void getImageResizesIfTall() throws FileNotFoundException {
+  //    String imageFileName = "200w800h.png";
+  //    String testFileURL =
+  //        Thread.currentThread().getContextClassLoader().getResource(imageFileName).toString();
+  //    when(globalProtocolInstance.generateAssetUrl(imageFileName)).thenReturn(testFileURL);
+  //
+  //    BufferedImage image = Image.getImageAssetFromFile(imageFileName);
+  //    assertEquals(400, image.getHeight());
+  //    assertEquals(100, image.getWidth());
+  //  }
+  //
+  //  @Test
+  //  public void getImageThrowsIOExceptionIfFilenameInvalid() {
+  //    String imageFileName = "notHere.png";
+  //    Exception exception =
+  //        assertThrows(
+  //            IOException.class,
+  //            () -> {
+  //              Image.getImageAssetFromFile(imageFileName);
+  //            });
+  //    assertEquals(exception.getMessage(), (imageFileName));
+  //  }
 }

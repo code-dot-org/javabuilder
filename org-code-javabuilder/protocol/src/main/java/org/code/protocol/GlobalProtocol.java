@@ -1,5 +1,6 @@
 package org.code.protocol;
 
+import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Set;
 import org.code.javabuilder.ContentManager;
@@ -105,6 +106,10 @@ public class GlobalProtocol {
   public String generateAssetUrl(String filename) {
     return this.contentManager.getAssetUrl(
         filename); // this.assetFileHelper.generateAssetUrl(filename);
+  }
+
+  public InputStream getAssetInputStream(String filename) {
+    return this.contentManager.getFileInputStream(filename);
   }
 
   public AssetFileHelper getAssetFileHelper() {

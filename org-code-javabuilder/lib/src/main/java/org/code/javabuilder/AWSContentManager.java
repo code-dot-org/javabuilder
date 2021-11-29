@@ -9,6 +9,7 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
@@ -73,14 +74,19 @@ public class AWSContentManager implements ContentManager, ProjectFileLoader {
   @Override
   public UserProjectFiles loadFiles() throws UserInitiatedException, InternalServerError {
     try {
-      final String mainJsonString =
+      final byte[] mainJsonBytes =
           this.getFileContents(this.generateKey(SOURCES_DIRECTORY_FORMAT, MAIN_JSON_FILE));
+      if (mainJsonBytes == null) {
+        throw new InternalServerError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION);
+      }
+      final String mainJsonString = new String(mainJsonBytes, StandardCharsets.UTF_8);
       System.out.println(mainJsonString);
       final UserProjectFiles projectFiles = this.projectFileParser.parseFileJson(mainJsonString);
-      final String maze =
+      final byte[] mazeBytes =
           this.getFileContents(this.generateKey(SOURCES_DIRECTORY_FORMAT, MAZE_FILE));
-      if (maze != null) {
-        projectFiles.addTextFile(new TextProjectFile(MAZE_FILE, maze));
+      if (mazeBytes != null) {
+        projectFiles.addTextFile(
+            new TextProjectFile(MAZE_FILE, new String(mazeBytes, StandardCharsets.UTF_8)));
       }
       return projectFiles;
     } catch (IOException e) {
@@ -92,6 +98,15 @@ public class AWSContentManager implements ContentManager, ProjectFileLoader {
   @Override
   public String getAssetUrl(String filename) {
     return this.contentOutputUrl + "/" + this.generateKey(ASSETS_DIRECTORY_FORMAT, filename);
+  }
+
+  @Override
+  public InputStream getFileInputStream(String filename) {
+    final String key = this.generateKey(ASSETS_DIRECTORY_FORMAT, filename);
+    if (!this.s3Client.doesObjectExist(this.contentBucketName, key)) {
+      return null;
+    }
+    return this.s3Client.getObject(this.contentBucketName, key).getObjectContent();
   }
 
   @Override
@@ -156,7 +171,7 @@ public class AWSContentManager implements ContentManager, ProjectFileLoader {
     return String.format(pathFormat, this.javabuilderSessionId, filename);
   }
 
-  private String getFileContents(String key) throws IOException {
+  private byte[] getFileContents(String key) throws IOException {
     if (!this.s3Client.doesObjectExist(this.contentBucketName, key)) {
       return null;
     }
@@ -164,6 +179,6 @@ public class AWSContentManager implements ContentManager, ProjectFileLoader {
     final S3Object mainJsonObject = this.s3Client.getObject(this.contentBucketName, key);
     final byte[] content = mainJsonObject.getObjectContent().readAllBytes();
     mainJsonObject.close();
-    return new String(content, StandardCharsets.UTF_8);
+    return content;
   }
 }
