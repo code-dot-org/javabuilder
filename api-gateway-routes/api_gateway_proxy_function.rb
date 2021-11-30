@@ -51,7 +51,19 @@ def on_connect(event, context)
     :executionType => authorizer['execution_type']
   }
   response = lambda_client.invoke({
-    function_name: ENV['BUILD_AND_RUN_PROJECT_NEIGHBORHOOD_LAMBDA_ARN'] || 'javaBuilderExecuteCode:13',
+    function_name: ENV['BUILD_AND_RUN_THEATER_PROJECT_LAMBDA_ARN'], # || 'javaBuilderExecuteCode:13',
+    invocation_type: 'Event',
+    payload: JSON.generate(payload)
+  })
+
+  lambda_client.invoke({
+    function_name: ENV['BUILD_AND_RUN_NEIGHBORHOOD_PROJECT_LAMBDA_ARN'], #|| 'javaBuilderExecuteCode:13',
+    invocation_type: 'Event',
+    payload: JSON.generate(payload)
+  })
+
+  lambda_client.invoke({
+    function_name: ENV['BUILD_AND_RUN_PLAYGROUND_PROJECT_LAMBDA_ARN'], # || 'javaBuilderExecuteCode:13',
     invocation_type: 'Event',
     payload: JSON.generate(payload)
   })
