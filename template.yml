@@ -277,7 +277,7 @@ Resources:
       ProvisionedConcurrencyConfig:
         ProvisionedConcurrentExecutions: !Ref ProvisionedConcurrentExecutions
       Description: Compile and execute a JavaLab project.
-      MemorySize: 1024
+      MemorySize: 1769
       Timeout: 300
       Role:
         Fn::ImportValue: JavabuilderLambdaExecutionRole
