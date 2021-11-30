@@ -3,6 +3,7 @@ package dev.javabuilder;
 import static dev.javabuilder.LocalWebserverConstants.DIRECTORY;
 import static org.code.protocol.AllowedFileNames.*;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
@@ -34,7 +35,7 @@ public class HttpFileServer extends HttpServlet {
     // filesystem files to the user without authentication/authorization. This should _ONLY_ be used
     // for local development.
     final String fileName = this.getFileName(request);
-    if (!this.getAllowed(fileName)) {
+    if (false && !this.getAllowed(fileName)) {
       response.sendError(
           403,
           String.format(
@@ -43,7 +44,8 @@ public class HttpFileServer extends HttpServlet {
       return;
     }
     OutputStream out = response.getOutputStream();
-    Files.copy(Paths.get(System.getProperty("java.io.tmpdir"), DIRECTORY, fileName), out);
+    Files.copy(
+        Paths.get(System.getProperty("java.io.tmpdir"), request.getRequestURI().substring(1)), out);
     out.flush();
   }
 
@@ -60,6 +62,22 @@ public class HttpFileServer extends HttpServlet {
     Files.copy(
         request.getInputStream(),
         Paths.get(System.getProperty("java.io.tmpdir"), DIRECTORY, fileName),
+        StandardCopyOption.REPLACE_EXISTING);
+  }
+
+  @Override
+  protected void doPost(HttpServletRequest request, HttpServletResponse response)
+      throws IOException {
+    System.out.println("POST: " + request.getRequestURI());
+    File directory =
+        Paths.get(System.getProperty("java.io.tmpdir"), request.getRequestURI().substring(1))
+            .toFile();
+    if (!directory.exists()) {
+      directory.mkdirs();
+    }
+    Files.copy(
+        request.getInputStream(),
+        Paths.get(System.getProperty("java.io.tmpdir"), request.getRequestURI().substring(1)),
         StandardCopyOption.REPLACE_EXISTING);
   }
 
