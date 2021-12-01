@@ -138,7 +138,7 @@ public class AWSContentManager implements ContentManager, ProjectFileLoader {
   }
 
   @Override
-  public String writeToAssetFile(String filename, byte[] inputBytes, String contentType)
+  public String writeToOutputFile(String filename, byte[] inputBytes, String contentType)
       throws UserInitiatedException, InternalServerError {
     if (this.writes >= WRITES_PER_SESSION) {
       throw new UserInitiatedException(UserInitiatedExceptionKey.TOO_MANY_WRITES);

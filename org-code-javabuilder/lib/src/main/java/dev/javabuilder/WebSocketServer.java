@@ -59,6 +59,7 @@ public class WebSocketServer {
     final boolean useNeighborhood =
         JSONUtils.booleanFromJSONObjectMember(options, "useNeighborhood");
     final List<String> compileList = JSONUtils.listFromJSONObjectMember(options, "compileList");
+    final String javabuilderSessionId = queryInput.getString("sid");
 
     this.logger = Logger.getLogger(MAIN_LOGGER);
     this.logHandler = new LocalLogHandler(System.out, levelId, channelId);
@@ -68,18 +69,25 @@ public class WebSocketServer {
 
     Properties.setConnectionId(connectionId);
 
+    final LocalContentManager contentManager = new LocalContentManager(javabuilderSessionId);
     outputAdapter = new WebSocketOutputAdapter(session);
     inputAdapter = new WebSocketInputAdapter();
     GlobalProtocol.create(
-        outputAdapter, inputAdapter, dashboardHostname, channelId, levelId, new LocalFileManager());
-    final UserProjectFileLoader fileLoader =
-        new UserProjectFileLoader(
-            GlobalProtocol.getInstance().generateSourcesUrl(),
-            levelId,
-            dashboardHostname,
-            useNeighborhood);
+        outputAdapter,
+        inputAdapter,
+        dashboardHostname,
+        channelId,
+        levelId,
+        new LocalFileManager(),
+        contentManager);
+    //    final UserProjectFileLoader fileLoader =
+    //        new UserProjectFileLoader(
+    //            GlobalProtocol.getInstance().generateSourcesUrl(),
+    //            levelId,
+    //            dashboardHostname,
+    //            useNeighborhood);
     CodeBuilderRunnable codeBuilderRunnable =
-        new CodeBuilderRunnable(fileLoader, outputAdapter, executionType, compileList);
+        new CodeBuilderRunnable(contentManager, outputAdapter, executionType, compileList);
     this.codeExecutor = new Thread(codeBuilderRunnable);
     this.codeExecutor.start();
     Thread waitToCleanup =

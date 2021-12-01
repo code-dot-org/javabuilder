@@ -7,6 +7,6 @@ public interface ContentManager {
 
   String generateAssetUploadUrl(String filename) throws JavabuilderException;
 
-  String writeToAssetFile(String filename, byte[] inputBytes, String contentType)
+  String writeToOutputFile(String filename, byte[] inputBytes, String contentType)
       throws JavabuilderException;
 }

@@ -29,6 +29,7 @@ public class HttpFileServer extends HttpServlet {
   @Override
   protected void doGet(HttpServletRequest request, HttpServletResponse response)
       throws IOException {
+    System.out.println("GET: " + request.getRequestURI());
     // https://docs.oracle.com/javaee/5/api/javax/servlet/ServletResponse.html
     // https://docs.oracle.com/javaee/5/api/javax/servlet/http/HttpServletResponse.html
     // NOTE: This is _NOT_ a safe method of handling requests from a client. We are serving
@@ -52,6 +53,7 @@ public class HttpFileServer extends HttpServlet {
   @Override
   protected void doPut(HttpServletRequest request, HttpServletResponse response)
       throws IOException {
+    System.out.println("PUT: " + request.getRequestURI());
     final String fileName = this.getFileName(request);
     if (!this.putAllowed(fileName)) {
       response.sendError(
@@ -61,7 +63,7 @@ public class HttpFileServer extends HttpServlet {
     }
     Files.copy(
         request.getInputStream(),
-        Paths.get(System.getProperty("java.io.tmpdir"), DIRECTORY, fileName),
+        Paths.get(System.getProperty("java.io.tmpdir"), request.getRequestURI().substring(1)),
         StandardCopyOption.REPLACE_EXISTING);
   }
 
@@ -75,6 +77,8 @@ public class HttpFileServer extends HttpServlet {
     if (!directory.exists()) {
       directory.mkdirs();
     }
+    System.out.println(
+        Paths.get(System.getProperty("java.io.tmpdir"), request.getRequestURI().substring(1)));
     Files.copy(
         request.getInputStream(),
         Paths.get(System.getProperty("java.io.tmpdir"), request.getRequestURI().substring(1)),

@@ -440,10 +440,10 @@ public class Stage {
   private void writeImageAndAudioToFile() {
     try {
       String imageUrl =
-          this.fileManager.writeToAssetFile(
+          this.fileManager.writeToOutputFile(
               THEATER_IMAGE_NAME, this.imageOutputStream.toByteArray(), "image/gif");
       String audioUrl =
-          this.fileManager.writeToAssetFile(
+          this.fileManager.writeToOutputFile(
               THEATER_AUDIO_NAME, this.audioOutputStream.toByteArray(), "audio/wav");
 
       HashMap<String, String> imageMessage = new HashMap<>();
