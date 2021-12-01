@@ -63,6 +63,12 @@ def on_connect(event, context)
   })
 
   lambda_client.invoke({
+    function_name: ENV['BUILD_AND_RUN_CONSOLE_PROJECT_LAMBDA_ARN'], #|| 'javaBuilderExecuteCode:13',
+    invocation_type: 'Event',
+    payload: JSON.generate(payload)
+  })
+
+  lambda_client.invoke({
     function_name: ENV['BUILD_AND_RUN_PLAYGROUND_PROJECT_LAMBDA_ARN'], # || 'javaBuilderExecuteCode:13',
     invocation_type: 'Event',
     payload: JSON.generate(payload)
