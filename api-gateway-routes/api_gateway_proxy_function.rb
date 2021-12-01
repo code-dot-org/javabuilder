@@ -50,29 +50,44 @@ def on_connect(event, context)
     :queueName => queue_name,
     :executionType => authorizer['execution_type']
   }
-  response = lambda_client.invoke({
-    function_name: ENV['BUILD_AND_RUN_THEATER_PROJECT_LAMBDA_ARN'], # || 'javaBuilderExecuteCode:13',
-    invocation_type: 'Event',
-    payload: JSON.generate(payload)
-  })
 
-  lambda_client.invoke({
-    function_name: ENV['BUILD_AND_RUN_NEIGHBORHOOD_PROJECT_LAMBDA_ARN'], #|| 'javaBuilderExecuteCode:13',
-    invocation_type: 'Event',
-    payload: JSON.generate(payload)
-  })
+  response = nil
+  if authorizer['mini_app_type'] == 'neighborhood'
+    response = lambda_client.invoke({
+      function_name: ENV['BUILD_AND_RUN_NEIGHBORHOOD_PROJECT_LAMBDA_ARN'],
+      invocation_type: 'Event',
+      payload: JSON.generate(payload)
+    })
+  elsif authorizer['mini_app_type'] == 'console'
+    response = lambda_client.invoke({
+      function_name: ENV['BUILD_AND_RUN_CONSOLE_PROJECT_LAMBDA_ARN'],
+      invocation_type: 'Event',
+      payload: JSON.generate(payload)
+    })
+  elsif authorizer['mini_app_type'] == 'theater'
+    response = lambda_client.invoke({
+      function_name: ENV['BUILD_AND_RUN_THEATER_PROJECT_LAMBDA_ARN'],
+      invocation_type: 'Event',
+      payload: JSON.generate(payload)
+    })
+  elsif authorizer['mini_app_type'] == 'playground'
+    response = lambda_client.invoke({
+      function_name: ENV['BUILD_AND_RUN_PLAYGROUND_PROJECT_LAMBDA_ARN'],
+      invocation_type: 'Event',
+      payload: JSON.generate(payload)
+    })
+  else
+    # TODO: Return error code if mini-app is malformed or unspecified
+    # return { statusCode: 400, body: "invalid mini-app" }
 
-  lambda_client.invoke({
-    function_name: ENV['BUILD_AND_RUN_CONSOLE_PROJECT_LAMBDA_ARN'], #|| 'javaBuilderExecuteCode:13',
-    invocation_type: 'Event',
-    payload: JSON.generate(payload)
-  })
-
-  lambda_client.invoke({
-    function_name: ENV['BUILD_AND_RUN_PLAYGROUND_PROJECT_LAMBDA_ARN'], # || 'javaBuilderExecuteCode:13',
-    invocation_type: 'Event',
-    payload: JSON.generate(payload)
-  })
+    # For now, invoke the theater lambda. Once the code-dot-org repo has updated with a similar
+    # change, we'll invoke the lambda based on the mini-app.
+    response = lambda_client.invoke({
+      function_name: ENV['BUILD_AND_RUN_THEATER_PROJECT_LAMBDA_ARN'],
+      invocation_type: 'Event',
+      payload: JSON.generate(payload)
+    })
+  end
 
   { statusCode: response['status_code'], body: "done" }
 end

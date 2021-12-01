@@ -281,7 +281,7 @@ Resources:
         ProvisionedConcurrentExecutions: !Ref ProvisionedConcurrentExecutions
       Description: Compile and execute a JavaLab Theater project.
       MemorySize: 1769
-      Timeout: 30 #90
+      Timeout: 300 # 90 -> TODO: Set this to 90 once the code-dot-org repo has updated
       Role:
         Fn::ImportValue: JavabuilderLambdaExecutionRole
       Environment:
@@ -303,7 +303,7 @@ Resources:
         ProvisionedConcurrentExecutions: !Ref ProvisionedConcurrentExecutions
       Description: Compile and execute a JavaLab Neighborhood project.
       MemorySize: 512
-      Timeout: 35 #60
+      Timeout: 60
       Role:
         Fn::ImportValue: JavabuilderLambdaExecutionRole
       Environment:
@@ -325,7 +325,7 @@ Resources:
         ProvisionedConcurrentExecutions: !Ref ProvisionedConcurrentExecutions
       Description: Compile and execute a JavaLab Console project.
       MemorySize: 512
-      Timeout: 40 #60
+      Timeout: 60
       Role:
         Fn::ImportValue: JavabuilderLambdaExecutionRole
       Environment:
@@ -347,7 +347,7 @@ Resources:
         ProvisionedConcurrentExecutions: !Ref ProvisionedConcurrentExecutions
       Description: Compile and execute a JavaLab Playground project.
       MemorySize: 512
-      Timeout: 42 #300
+      Timeout: 300
       Role:
         Fn::ImportValue: JavabuilderLambdaExecutionRole
       Environment:
