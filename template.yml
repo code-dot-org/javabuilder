@@ -188,6 +188,7 @@ Resources:
           BUILD_AND_RUN_THEATER_PROJECT_LAMBDA_ARN: !Ref BuildAndRunJavaTheaterProjectFunctionAliaslive
           BUILD_AND_RUN_NEIGHBORHOOD_PROJECT_LAMBDA_ARN: !Ref BuildAndRunJavaNeighborhoodProjectFunctionAliaslive
           BUILD_AND_RUN_PLAYGROUND_PROJECT_LAMBDA_ARN: !Ref BuildAndRunJavaPlaygroundProjectFunctionAliaslive
+          BUILD_AND_RUN_CONSOLE_PROJECT_LAMBDA_ARN: !Ref BuildAndRunJavaConsoleProjectFunctionAliaslive
   StartSessionAndRelayMessagesPermission:
     Type: AWS::Lambda::Permission
     DependsOn:
@@ -278,9 +279,9 @@ Resources:
       AutoPublishAlias: live
       ProvisionedConcurrencyConfig:
         ProvisionedConcurrentExecutions: !Ref ProvisionedConcurrentExecutions
-      Description: Compile and execute a JavaLab project.
+      Description: Compile and execute a JavaLab Theater project.
       MemorySize: 1769
-      Timeout: 30
+      Timeout: 30 #90
       Role:
         Fn::ImportValue: JavabuilderLambdaExecutionRole
       Environment:
@@ -300,9 +301,31 @@ Resources:
       AutoPublishAlias: live
       ProvisionedConcurrencyConfig:
         ProvisionedConcurrentExecutions: !Ref ProvisionedConcurrentExecutions
-      Description: Compile and execute a JavaLab project.
+      Description: Compile and execute a JavaLab Neighborhood project.
       MemorySize: 512
-      Timeout: 40
+      Timeout: 35 #60
+      Role:
+        Fn::ImportValue: JavabuilderLambdaExecutionRole
+      Environment:
+        Variables:
+          AWS_LAMBDA_EXEC_WRAPPER: /opt/change_runtime_directory
+          OUTPUT_BUCKET_NAME: !Ref OutputBucket
+          GET_OUTPUT_URL: !Sub "https://${OutputDomain}"
+  BuildAndRunJavaConsoleProjectFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Layers:
+        - !Ref FontConfigurationLayer
+        - !Ref ChangeJavaRuntimeDirectoryLayer
+      Handler: org.code.javabuilder.LambdaRequestHandler::handleRequest
+      Runtime: java11
+      CodeUri: org-code-javabuilder/lib/build/distributions/lib.zip
+      AutoPublishAlias: live
+      ProvisionedConcurrencyConfig:
+        ProvisionedConcurrentExecutions: !Ref ProvisionedConcurrentExecutions
+      Description: Compile and execute a JavaLab Console project.
+      MemorySize: 512
+      Timeout: 40 #60
       Role:
         Fn::ImportValue: JavabuilderLambdaExecutionRole
       Environment:
@@ -322,9 +345,9 @@ Resources:
       AutoPublishAlias: live
       ProvisionedConcurrencyConfig:
         ProvisionedConcurrentExecutions: !Ref ProvisionedConcurrentExecutions
-      Description: Compile and execute a JavaLab project.
+      Description: Compile and execute a JavaLab Playground project.
       MemorySize: 512
-      Timeout: 50
+      Timeout: 42 #300
       Role:
         Fn::ImportValue: JavabuilderLambdaExecutionRole
       Environment:
