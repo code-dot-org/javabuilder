@@ -7,9 +7,9 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
@@ -95,13 +95,21 @@ public class AWSContentManager implements ContentManager, ProjectFileLoader {
   }
 
   @Override
-  public InputStream getAssetInputStream(String filename) {
+  public byte[] getAssetData(String filename) throws InternalServerError {
     final String key = this.generateKey(ASSETS_DIRECTORY_FORMAT, filename);
     if (!this.s3Client.doesObjectExist(this.contentBucketName, key)) {
       System.out.printf("Object %s does not exist\n", key);
       return null;
     }
-    return this.s3Client.getObject(this.contentBucketName, key).getObjectContent();
+    final S3ObjectInputStream stream =
+        this.s3Client.getObject(this.contentBucketName, key).getObjectContent();
+    try {
+      final byte[] data = stream.readAllBytes();
+      stream.close();
+      return data;
+    } catch (IOException e) {
+      throw new InternalServerError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e);
+    }
   }
 
   @Override

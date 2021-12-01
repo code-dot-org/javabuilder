@@ -6,6 +6,7 @@ import javax.sound.sampled.*;
 import org.code.protocol.GlobalProtocol;
 import org.code.protocol.InternalErrorKey;
 import org.code.protocol.InternalServerRuntimeError;
+import org.code.protocol.JavabuilderException;
 
 class AudioUtils {
   private static final int MONO_CHANNELS = 1;
@@ -171,16 +172,21 @@ class AudioUtils {
    * @throws FileNotFoundException
    */
   public static double[] readSamplesFromAssetFile(String filename) throws FileNotFoundException {
-    final InputStream inputStream = GlobalProtocol.getInstance().getAssetInputStream(filename);
-    if (inputStream == null) {
-      throw new FileNotFoundException(filename);
+    final byte[] assetData;
+    try {
+      assetData = GlobalProtocol.getInstance().getAssetData(filename);
+      if (assetData == null) {
+        throw new FileNotFoundException(filename);
+      }
+    } catch (JavabuilderException e) {
+      throw new InternalServerRuntimeError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e);
     }
 
     try {
       // final URL audioFileUrl = new URL(GlobalProtocol.getInstance().generateAssetUrl(filename));
       final AudioInputStream audioInputStream =
           AudioUtils.convertStreamToDefaultAudioFormat(
-              AudioSystem.getAudioInputStream(new BufferedInputStream(inputStream)));
+              AudioSystem.getAudioInputStream(new ByteArrayInputStream(assetData)));
       return AudioUtils.readSamplesFromInputStream(audioInputStream);
     } catch (IOException e) {
       System.out.println(e);

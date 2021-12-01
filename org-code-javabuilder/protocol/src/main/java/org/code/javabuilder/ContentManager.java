@@ -1,10 +1,9 @@
 package org.code.javabuilder;
 
-import java.io.InputStream;
 import org.code.protocol.JavabuilderException;
 
 public interface ContentManager {
-  InputStream getAssetInputStream(String filename);
+  byte[] getAssetData(String filename) throws JavabuilderException;
 
   String generateAssetUploadUrl(String filename) throws JavabuilderException;
 

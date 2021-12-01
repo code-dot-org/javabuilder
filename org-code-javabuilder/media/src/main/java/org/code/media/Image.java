@@ -2,6 +2,7 @@ package org.code.media;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,6 +11,7 @@ import javax.imageio.ImageIO;
 import org.code.protocol.GlobalProtocol;
 import org.code.protocol.InternalErrorKey;
 import org.code.protocol.InternalServerRuntimeError;
+import org.code.protocol.JavabuilderException;
 
 public class Image {
   private Pixel[][] pixels;
@@ -199,12 +201,15 @@ public class Image {
    * @throws FileNotFoundException if the file is not found
    */
   public static BufferedImage getImageAssetFromFile(String filename) throws FileNotFoundException {
-    final InputStream inputStream = GlobalProtocol.getInstance().getAssetInputStream(filename);
-    if (inputStream == null) {
-      throw new FileNotFoundException(filename);
+    try {
+      final byte[] assetData = GlobalProtocol.getInstance().getAssetData(filename);
+      if (assetData == null) {
+        throw new FileNotFoundException(filename);
+      }
+      return Image.getImageFromInputStream(new ByteArrayInputStream(assetData));
+    } catch (JavabuilderException e) {
+      throw new InternalServerRuntimeError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e);
     }
-    return Image.getImageFromInputStream(
-        GlobalProtocol.getInstance().getAssetInputStream(filename));
     //    try {
     //    } catch (IOException e) {
     //      System.out.println(e);
@@ -215,7 +220,8 @@ public class Image {
   private static BufferedImage getImageFromInputStream(InputStream inputStream) {
     BufferedImage originalImage;
     try {
-      originalImage = ImageIO.read(inputStream);
+      byte[] b = inputStream.readAllBytes();
+      originalImage = ImageIO.read(new ByteArrayInputStream(b));
       if (originalImage == null) {
         // this can happen if the URL is not associated with an image
         throw new MediaRuntimeException(MediaRuntimeExceptionKeys.IMAGE_LOAD_ERROR);
