@@ -26,7 +26,7 @@ Globals:
     MemorySize: 3008
     Tracing: Active
 Conditions:
-  IsDevCondition: !Equals [!Ref BaseDomainName, "dev-code.org"] 
+  IsDevCondition: !Equals [!Ref BaseDomainName, "dev-code.org"]
 Resources:
   Domain:
     Type: AWS::Route53::RecordSet
@@ -274,6 +274,7 @@ Resources:
       Runtime: java11
       CodeUri: org-code-javabuilder/lib/build/distributions/lib.zip
       AutoPublishAlias: live
+      ReservedConcurrentExecutions: 500
       ProvisionedConcurrencyConfig:
         ProvisionedConcurrentExecutions: !Ref ProvisionedConcurrentExecutions
       Description: Compile and execute a JavaLab project.
@@ -289,7 +290,7 @@ Resources:
   OutputBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !If [IsDevCondition, !Sub "cdo-dev-${SubDomainName}-output", !Sub "cdo-${SubDomainName}-output"] 
+      BucketName: !If [IsDevCondition, !Sub "cdo-dev-${SubDomainName}-output", !Sub "cdo-${SubDomainName}-output"]
       CorsConfiguration:
         CorsRules:
           - AllowedMethods: [GET, PUT]
