@@ -23,6 +23,7 @@ BASE_DOMAIN_HOSTED_ZONE_ID=${BASE_DOMAIN_HOSTED_ZONE_ID-$(get_hosted_zone "${BAS
 STACK=${SUB_DOMAIN}
 
 PROVISIONED_CONCURRENT_EXECUTIONS=${PROVISIONED_CONCURRENT_EXECUTIONS-'1'}
+RESERVED_CONCURRENT_EXECUTIONS=${RESERVED_CONCURRENT_EXECUTIONS-'1'}
 
 TEMPLATE=template.yml
 OUTPUT_TEMPLATE=$(mktemp)
@@ -44,6 +45,6 @@ fi
 
 aws cloudformation deploy \
   --template-file ${OUTPUT_TEMPLATE} \
-  --parameter-overrides SubDomainName=$SUB_DOMAIN BaseDomainName=$BASE_DOMAIN BaseDomainNameHostedZonedID=$BASE_DOMAIN_HOSTED_ZONE_ID ProvisionedConcurrentExecutions=$PROVISIONED_CONCURRENT_EXECUTIONS \
+  --parameter-overrides SubDomainName=$SUB_DOMAIN BaseDomainName=$BASE_DOMAIN BaseDomainNameHostedZonedID=$BASE_DOMAIN_HOSTED_ZONE_ID ProvisionedConcurrentExecutions=$PROVISIONED_CONCURRENT_EXECUTIONS ReservedConcurrentExecutions=$RESERVED_CONCURRENT_EXECUTIONS \
   --stack-name ${STACK} \
   "$@"
