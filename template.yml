@@ -19,6 +19,11 @@ Parameters:
     Description: The amount of provisioned concurrency to allocate for the BuildAndRunJavaProject Lambda.
     MinValue: 1
     Default: 1
+  ReservedConcurrentExecutions:
+    Type: Number
+    Description: The amount of concurrency to allow for the BuildAndRunJavaProject Lambda.
+    MinValue: 1
+    Default: 3
 Globals:
   Function:
     Runtime: ruby2.7
@@ -274,7 +279,7 @@ Resources:
       Runtime: java11
       CodeUri: org-code-javabuilder/lib/build/distributions/lib.zip
       AutoPublishAlias: live
-      ReservedConcurrentExecutions: 500
+      ReservedConcurrentExecutions: !Ref ReservedConcurrentExecutions
       ProvisionedConcurrencyConfig:
         ProvisionedConcurrentExecutions: !Ref ProvisionedConcurrentExecutions
       Description: Compile and execute a JavaLab project.
