@@ -1,11 +1,15 @@
 package org.code.javabuilder;
 
+import static org.code.protocol.LoggerNames.MAIN_LOGGER;
+
 import com.amazonaws.services.apigatewaymanagementapi.AmazonApiGatewayManagementApi;
 import com.amazonaws.services.apigatewaymanagementapi.model.GetConnectionRequest;
 import com.amazonaws.services.apigatewaymanagementapi.model.GoneException;
 import com.amazonaws.services.apigatewaymanagementapi.model.PostToConnectionRequest;
 import java.nio.ByteBuffer;
+import java.util.logging.Logger;
 import org.code.protocol.*;
+import org.json.JSONObject;
 
 /** Sends messages to Amazon API Gateway from the user's program. */
 public class AWSOutputAdapter implements OutputAdapter {
@@ -50,6 +54,7 @@ public class AWSOutputAdapter implements OutputAdapter {
       this.api.getConnection(connectionRequest);
     } catch (GoneException e) {
       this.hasActiveConnection = false;
+      this.sendGoneLog(e);
     }
     return this.hasActiveConnection;
   }
@@ -70,6 +75,15 @@ public class AWSOutputAdapter implements OutputAdapter {
       this.api.postToConnection(post);
     } catch (GoneException e) {
       this.hasActiveConnection = false;
+      this.sendGoneLog(e);
     }
+  }
+
+  private void sendGoneLog(GoneException error) {
+    // Log the error
+    JSONObject eventData = new JSONObject();
+    eventData.put("exceptionMessage", error.getMessage());
+    eventData.put("type", error.getClass().getSimpleName());
+    Logger.getLogger(MAIN_LOGGER).severe(eventData.toString());
   }
 }
