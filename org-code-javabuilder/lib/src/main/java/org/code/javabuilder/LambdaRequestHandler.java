@@ -15,6 +15,7 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
@@ -105,7 +106,11 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
 
     try {
       // Delete any leftover contents of the tmp folder from previous lambda invocations
-      Util.recursivelyClearDirectory(Paths.get(System.getProperty("java.io.tmpdir")));
+      Path toClear = Paths.get(System.getProperty("java.io.tmpdir"));
+      LoggerUtils.sendDiskSpaceLogs();
+      Util.recursivelyClearDirectory(toClear);
+      LoggerUtils.sendClearedDirectoryLog(toClear);
+      LoggerUtils.sendDiskSpaceLogs();
     } catch (IOException e) {
       // Wrap this in our error type so we can log it and tell the user.
       InternalServerError error = new InternalServerError(INTERNAL_EXCEPTION, e);
