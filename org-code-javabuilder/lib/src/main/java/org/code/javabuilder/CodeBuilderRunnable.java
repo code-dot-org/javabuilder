@@ -62,9 +62,9 @@ public class CodeBuilderRunnable implements Runnable {
         return;
       }
       JSONObject eventData = new JSONObject();
-      eventData.put("exceptionMessage", e.getExceptionMessage());
-      eventData.put("loggingString", e.getLoggingString());
-      eventData.put("cause", e.getCause());
+      eventData.put(LoggerConstants.EXCEPTION_MESSAGE, e.getExceptionMessage());
+      eventData.put(LoggerConstants.LOGGING_STRING, e.getLoggingString());
+      eventData.put(LoggerConstants.CAUSE, e.getCause());
       // The error was caused by us (essentially an HTTP 5xx error). Log it so we can fix it.
       Logger.getLogger(MAIN_LOGGER).severe(eventData.toString());
 
@@ -87,8 +87,8 @@ public class CodeBuilderRunnable implements Runnable {
       // Errors we didn't catch. These may have been caused by the JVM, our own setup, or many other
       // unknowns. Log them so we can fix them.
       JSONObject eventData = new JSONObject();
-      eventData.put("exceptionMessage", error.getExceptionMessage());
-      eventData.put("loggingString", error.getLoggingString());
+      eventData.put(LoggerConstants.EXCEPTION_MESSAGE, error.getExceptionMessage());
+      eventData.put(LoggerConstants.LOGGING_STRING, error.getLoggingString());
       Logger.getLogger(MAIN_LOGGER).severe(eventData.toString());
 
       // Additionally, these may have affected the user. For now, let's tell them about it.
