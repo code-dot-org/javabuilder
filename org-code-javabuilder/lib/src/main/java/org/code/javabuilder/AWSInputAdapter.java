@@ -9,6 +9,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import org.code.protocol.InputAdapter;
+import org.code.protocol.LoggerUtils;
 
 /** Accesses Amazon SQS to get user input for the currently running program. */
 public class AWSInputAdapter implements InputAdapter {
@@ -53,6 +54,7 @@ public class AWSInputAdapter implements InputAdapter {
       } catch (QueueDoesNotExistException e) {
         // if we tried to send a message and got queue does not exist, we have lost our connection
         this.hasActiveConnection = false;
+        LoggerUtils.sendWarningForException(e);
         return null;
       }
     }
@@ -73,6 +75,7 @@ public class AWSInputAdapter implements InputAdapter {
       sqsClient.getQueueUrl(queueUrlRequest);
     } catch (QueueDoesNotExistException e) {
       this.hasActiveConnection = false;
+      LoggerUtils.sendWarningForException(e);
     }
     return this.hasActiveConnection;
   }

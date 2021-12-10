@@ -112,8 +112,8 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
 
       // Log the error
       JSONObject eventData = new JSONObject();
-      eventData.put("exceptionMessage", error.getExceptionMessage());
-      eventData.put("loggingString", error.getLoggingString());
+      eventData.put(LoggerConstants.EXCEPTION_MESSAGE, error.getExceptionMessage());
+      eventData.put(LoggerConstants.LOGGING_STRING, error.getLoggingString());
       Logger.getLogger(MAIN_LOGGER).severe(eventData.toString());
 
       // This affected the user. Let's tell them about it.
