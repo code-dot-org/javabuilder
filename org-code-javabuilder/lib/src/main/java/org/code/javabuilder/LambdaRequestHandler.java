@@ -24,6 +24,8 @@ import java.util.logging.Logger;
 import org.code.protocol.*;
 import org.json.JSONObject;
 
+import java.util.UUID;
+
 /**
  * This is the entry point for the lambda function. This should be thought of as similar to a main
  * function, but with a specific input contract.
@@ -34,6 +36,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
   private static final int CHECK_THREAD_INTERVAL_MS = 500;
   private static final int TIMEOUT_WARNING_MS = 20000;
   private static final int TIMEOUT_CLEANUP_BUFFER_MS = 5000;
+  private static String LAMBDA_ID = "";
   /**
    * This is the implementation of the long-running-lambda where user code will be compiled and
    * executed.
@@ -64,10 +67,14 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
         JSONUtils.booleanFromJSONObjectMember(options, "useNeighborhood");
     final List<String> compileList = JSONUtils.listFromJSONObjectMember(options, "compileList");
 
+    if (LambdaRequestHandler.LAMBDA_ID.equals("")) {
+      LambdaRequestHandler.LAMBDA_ID = UUID.randomUUID().toString();
+    }
+
     Logger logger = Logger.getLogger(MAIN_LOGGER);
     logger.addHandler(
         new LambdaLogHandler(
-            context.getLogger(), javabuilderSessionId, connectionId, levelId, channelId));
+            context.getLogger(), javabuilderSessionId, connectionId, levelId, LambdaRequestHandler.LAMBDA_ID, channelId));
     // turn off the default console logger
     logger.setUseParentHandlers(false);
 
@@ -165,6 +172,13 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
       // no-op if we have an interrupted exception, as it happened due to a user ending their
       // program.
     } finally {
+      try {
+        Path toClear = Paths.get(System.getProperty("java.io.tmpdir"));
+        LoggerUtils.sendDiskSpaceLogs();
+        Util.recursivelyClearDirectory(toClear);
+        LoggerUtils.sendClearedDirectoryLog(toClear);
+        LoggerUtils.sendDiskSpaceLogs();
+      } catch (IOException e) {}
       cleanUpResources(connectionId, api);
     }
     return "done";
