@@ -3,6 +3,7 @@ package org.code.javabuilder;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
+import org.code.protocol.LoggerConstants;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -29,22 +30,22 @@ public class LambdaLogHandler extends Handler {
   @Override
   public void publish(LogRecord record) {
     JSONObject sessionMetadata = new JSONObject();
-    sessionMetadata.put("sessionId", this.sessionId);
-    sessionMetadata.put("connectionId", this.connectionId);
-    sessionMetadata.put("levelId", this.levelId);
-    sessionMetadata.put("channelId", this.channelId);
+    sessionMetadata.put(LoggerConstants.SESSION_ID, this.sessionId);
+    sessionMetadata.put(LoggerConstants.CONNECTION_ID, this.connectionId);
+    sessionMetadata.put(LoggerConstants.LEVEL_ID, this.levelId);
+    sessionMetadata.put(LoggerConstants.CHANNEL_ID, this.channelId);
 
     JSONObject logData = new JSONObject();
-    logData.put("sessionMetadata", sessionMetadata);
+    logData.put(LoggerConstants.SESSION_METADATA, sessionMetadata);
     String message = record.getMessage();
     // try to send message as json if possible.
     try {
       JSONObject jsonMessage = new JSONObject(message);
-      logData.put("message", jsonMessage);
+      logData.put(LoggerConstants.MESSAGE, jsonMessage);
     } catch (JSONException e) {
-      logData.put("message", message);
+      logData.put(LoggerConstants.MESSAGE, message);
     }
-    logData.put("level", record.getLevel());
+    logData.put(LoggerConstants.LEVEL, record.getLevel());
 
     this.logger.log(logData.toString());
   }
