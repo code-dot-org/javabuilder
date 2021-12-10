@@ -50,7 +50,6 @@ public class AWSOutputAdapter implements OutputAdapter {
       this.api.getConnection(connectionRequest);
     } catch (GoneException e) {
       this.hasActiveConnection = false;
-      LoggerUtils.sendWarningForException(e);
     }
     return this.hasActiveConnection;
   }
@@ -71,7 +70,6 @@ public class AWSOutputAdapter implements OutputAdapter {
       this.api.postToConnection(post);
     } catch (GoneException e) {
       this.hasActiveConnection = false;
-      LoggerUtils.sendWarningForException(e);
     }
   }
 }

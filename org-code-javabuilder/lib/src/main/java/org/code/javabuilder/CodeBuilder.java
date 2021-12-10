@@ -93,7 +93,11 @@ public class CodeBuilder implements AutoCloseable {
     if (this.tempFolder != null) {
       try {
         // Recursively delete the temp folder
-        Util.recursivelyClearDirectory(this.tempFolder.toPath());
+        Path toClear = this.tempFolder.toPath();
+        LoggerUtils.sendDiskSpaceLogs();
+        Util.recursivelyClearDirectory(toClear);
+        LoggerUtils.sendClearedDirectoryLog(toClear);
+        LoggerUtils.sendDiskSpaceLogs();
       } catch (IOException e) {
         throw new InternalFacingException(e.toString(), e);
       }
