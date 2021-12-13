@@ -15,10 +15,9 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
 import org.code.protocol.*;
@@ -35,6 +34,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
   private static final int TIMEOUT_WARNING_MS = 20000;
   private static final int TIMEOUT_CLEANUP_BUFFER_MS = 5000;
   private static final CachedResources cachedResources = new CachedResources();
+  private static final String LAMBDA_ID = UUID.randomUUID().toString();
 
   /**
    * This is the implementation of the long-running-lambda where user code will be compiled and
@@ -69,7 +69,12 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     Logger logger = Logger.getLogger(MAIN_LOGGER);
     logger.addHandler(
         new LambdaLogHandler(
-            context.getLogger(), javabuilderSessionId, connectionId, levelId, channelId));
+            context.getLogger(),
+            javabuilderSessionId,
+            connectionId,
+            levelId,
+            LambdaRequestHandler.LAMBDA_ID,
+            channelId));
     // turn off the default console logger
     logger.setUseParentHandlers(false);
 
@@ -88,7 +93,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     final AWSInputAdapter inputAdapter = new AWSInputAdapter(sqsClient, queueUrl, queueName);
 
     final AmazonS3 s3Client = AmazonS3ClientBuilder.standard().build();
-    final AWSFileManager fileWriter =
+    final AWSFileManager fileManager =
         new AWSFileManager(s3Client, outputBucketName, javabuilderSessionId, getOutputUrl, context);
     GlobalProtocol.create(
         outputAdapter,
@@ -96,7 +101,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
         dashboardHostname,
         channelId,
         levelId,
-        fileWriter,
+        fileManager,
         cachedResources);
 
     // Create file loader
@@ -113,12 +118,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     props.put("sun.awt.fontconfig", "/opt/fontconfig.properties");
 
     try {
-      // Delete any leftover contents of the tmp folder from previous lambda invocations
-      Path toClear = Paths.get(System.getProperty("java.io.tmpdir"));
-      LoggerUtils.sendDiskSpaceLogs();
-      Util.recursivelyClearDirectory(toClear);
-      LoggerUtils.sendClearedDirectoryLog(toClear);
-      LoggerUtils.sendDiskSpaceLogs();
+      fileManager.cleanUpTempDirectory(null);
     } catch (IOException e) {
       // Wrap this in our error type so we can log it and tell the user.
       InternalServerError error = new InternalServerError(INTERNAL_EXCEPTION, e);

@@ -11,6 +11,7 @@ import org.code.protocol.*;
 public class CodeBuilder implements AutoCloseable {
   private final OutputAdapter outputAdapter;
   private final InputHandler inputHandler;
+  private final JavabuilderFileManager fileManager;
   private final File tempFolder;
   private final PrintStream sysout;
   private final InputStream sysin;
@@ -22,6 +23,7 @@ public class CodeBuilder implements AutoCloseable {
     this.sysin = System.in;
     this.outputAdapter = protocol.getOutputAdapter();
     this.inputHandler = protocol.getInputHandler();
+    this.fileManager = protocol.getFileManager();
     this.userProjectFiles = userProjectFiles;
     try {
       this.tempFolder = Files.createTempDirectory("tmpdir").toFile();
@@ -92,12 +94,8 @@ public class CodeBuilder implements AutoCloseable {
     System.setIn(this.sysin);
     if (this.tempFolder != null) {
       try {
-        // Recursively delete the temp folder
-        Path toClear = this.tempFolder.toPath();
-        LoggerUtils.sendDiskSpaceLogs();
-        Util.recursivelyClearDirectory(toClear);
-        LoggerUtils.sendClearedDirectoryLog(toClear);
-        LoggerUtils.sendDiskSpaceLogs();
+        // Clean up the temp folder and temp directory
+        this.fileManager.cleanUpTempDirectory(this.tempFolder);
       } catch (IOException e) {
         throw new InternalFacingException(e.toString(), e);
       }
