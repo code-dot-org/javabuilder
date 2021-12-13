@@ -3,6 +3,10 @@ package org.code.theater;
 import java.util.HashMap;
 import org.code.protocol.*;
 
+/**
+ * Publishes progress updates to the {@link OutputAdapter} while Theater projects are being
+ * generated
+ */
 class TheaterProgressPublisher {
   private static final double UPDATE_TIME_S = 5.0;
 
