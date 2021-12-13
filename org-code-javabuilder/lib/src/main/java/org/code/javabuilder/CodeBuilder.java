@@ -6,6 +6,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import org.code.protocol.*;
+import org.code.protocol.LoggerUtils.ClearStatus;
+import org.code.protocol.LoggerUtils.SessionTime;
 
 /** The orchestrator for code compilation and execution. */
 public class CodeBuilder implements AutoCloseable {
@@ -95,7 +97,9 @@ public class CodeBuilder implements AutoCloseable {
     if (this.tempFolder != null) {
       try {
         // Clean up the temp folder and temp directory
+        LoggerUtils.sendDiskSpaceUpdate(SessionTime.START_SESSION, ClearStatus.BEFORE_CLEAR);
         this.fileManager.cleanUpTempDirectory(this.tempFolder);
+        LoggerUtils.sendDiskSpaceUpdate(SessionTime.START_SESSION, ClearStatus.AFTER_CLEAR);
       } catch (IOException e) {
         throw new InternalFacingException(e.toString(), e);
       }
