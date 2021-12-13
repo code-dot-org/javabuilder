@@ -17,6 +17,7 @@ import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
 import org.code.protocol.*;
@@ -32,6 +33,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
   private static final int CHECK_THREAD_INTERVAL_MS = 500;
   private static final int TIMEOUT_WARNING_MS = 20000;
   private static final int TIMEOUT_CLEANUP_BUFFER_MS = 5000;
+  private static final String LAMBDA_ID = UUID.randomUUID().toString();
   /**
    * This is the implementation of the long-running-lambda where user code will be compiled and
    * executed.
@@ -65,7 +67,12 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     Logger logger = Logger.getLogger(MAIN_LOGGER);
     logger.addHandler(
         new LambdaLogHandler(
-            context.getLogger(), javabuilderSessionId, connectionId, levelId, channelId));
+            context.getLogger(),
+            javabuilderSessionId,
+            connectionId,
+            levelId,
+            LambdaRequestHandler.LAMBDA_ID,
+            channelId));
     // turn off the default console logger
     logger.setUseParentHandlers(false);
 
