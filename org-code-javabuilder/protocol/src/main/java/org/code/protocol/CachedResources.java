@@ -1,14 +1,12 @@
 package org.code.protocol;
 
-import static org.code.protocol.LoggerNames.MAIN_LOGGER;
-
 import java.awt.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
 
+// Resources we want to use across multiple invocations of Javabuilder.
 public class CachedResources {
   private Map<String, Font> fontMap;
 
@@ -40,7 +38,6 @@ public class CachedResources {
               filename, java.awt.Font.createFont(java.awt.Font.TRUETYPE_FONT, fileStream));
           fileStream.close();
         }
-        Logger.getLogger(MAIN_LOGGER).info("created font map");
       } catch (FontFormatException | IOException e) {
         // throw an exception if we can't load a font, as we will hit a null pointer exception
         // later if the user tries to use that font.
