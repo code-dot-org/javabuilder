@@ -26,6 +26,7 @@ public class Stage {
   private final AudioWriter audioWriter;
   private final InstrumentSampleLoader instrumentSampleLoader;
   private final FontHelper fontHelper;
+  private final TheaterProgressPublisher progressPublisher;
   private java.awt.Color strokeColor;
   private java.awt.Color fillColor;
   private boolean hasPlayed;
@@ -43,7 +44,8 @@ public class Stage {
         new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB),
         new GifWriter.Factory(),
         new AudioWriter.Factory(),
-        new InstrumentSampleLoader());
+        new InstrumentSampleLoader(),
+        new TheaterProgressPublisher());
   }
 
   /**
@@ -56,7 +58,8 @@ public class Stage {
       BufferedImage image,
       GifWriter.Factory gifWriterFactory,
       AudioWriter.Factory audioWriterFactory,
-      InstrumentSampleLoader instrumentSampleLoader) {
+      InstrumentSampleLoader instrumentSampleLoader,
+      TheaterProgressPublisher progressPublisher) {
     this.image = image;
     this.graphics = this.image.createGraphics();
     this.outputAdapter = GlobalProtocol.getInstance().getOutputAdapter();
@@ -66,6 +69,7 @@ public class Stage {
     this.audioOutputStream = new ByteArrayOutputStream();
     this.audioWriter = audioWriterFactory.createAudioWriter(this.audioOutputStream);
     this.instrumentSampleLoader = instrumentSampleLoader;
+    this.progressPublisher = progressPublisher;
     this.fontHelper = new FontHelper();
     this.hasPlayed = false;
 
@@ -138,6 +142,7 @@ public class Stage {
   public void pause(double seconds) {
     this.gifWriter.writeToGif(this.image, (int) (Math.max(seconds, 0.1) * 1000));
     this.audioWriter.addDelay(Math.max(seconds, 0.1));
+    this.progressPublisher.onPause(seconds);
   }
 
   /**
@@ -409,7 +414,8 @@ public class Stage {
     if (this.hasPlayed) {
       throw new TheaterRuntimeException(ExceptionKeys.DUPLICATE_PLAY_COMMAND);
     } else {
-      this.outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.GENERATING_RESULTS));
+      this.progressPublisher.onPlay(this.audioWriter.getTotalAudioLength());
+      // this.outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.GENERATING_RESULTS));
       this.gifWriter.writeToGif(this.image, 0);
       this.gifWriter.close();
       this.audioWriter.writeToAudioStreamAndClose();
