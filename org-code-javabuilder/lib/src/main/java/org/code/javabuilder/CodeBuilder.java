@@ -97,9 +97,9 @@ public class CodeBuilder implements AutoCloseable {
     if (this.tempFolder != null) {
       try {
         // Clean up the temp folder and temp directory
-        LoggerUtils.sendDiskSpaceUpdate(SessionTime.START_SESSION, ClearStatus.BEFORE_CLEAR);
+        LoggerUtils.sendDiskSpaceUpdate(SessionTime.END_SESSION, ClearStatus.BEFORE_CLEAR);
         this.fileManager.cleanUpTempDirectory(this.tempFolder);
-        LoggerUtils.sendDiskSpaceUpdate(SessionTime.START_SESSION, ClearStatus.AFTER_CLEAR);
+        LoggerUtils.sendDiskSpaceUpdate(SessionTime.END_SESSION, ClearStatus.AFTER_CLEAR);
       } catch (IOException e) {
         throw new InternalFacingException(e.toString(), e);
       }
