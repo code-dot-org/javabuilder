@@ -107,10 +107,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     try {
       // Delete any leftover contents of the tmp folder from previous lambda invocations
       Path toClear = Paths.get(System.getProperty("java.io.tmpdir"));
-      LoggerUtils.sendDiskSpaceLogs();
       Util.recursivelyClearDirectory(toClear);
-      LoggerUtils.sendClearedDirectoryLog(toClear);
-      LoggerUtils.sendDiskSpaceLogs();
     } catch (IOException e) {
       // Wrap this in our error type so we can log it and tell the user.
       InternalServerError error = new InternalServerError(INTERNAL_EXCEPTION, e);

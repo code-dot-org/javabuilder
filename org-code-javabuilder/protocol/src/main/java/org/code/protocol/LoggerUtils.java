@@ -9,6 +9,13 @@ import java.util.logging.Logger;
 import org.json.JSONObject;
 
 public class LoggerUtils {
+  public static void sendWarningForException(Exception e) {
+    JSONObject eventData = new JSONObject();
+    eventData.put(LoggerConstants.EXCEPTION_MESSAGE, e.getMessage());
+    eventData.put(LoggerConstants.TYPE, e.getClass().getSimpleName());
+    Logger.getLogger(MAIN_LOGGER).warning(eventData.toString());
+  }
+
   public static void sendDiskSpaceLogs() {
     File f = Paths.get(System.getProperty("java.io.tmpdir")).toFile();
     JSONObject eventData = new JSONObject();
