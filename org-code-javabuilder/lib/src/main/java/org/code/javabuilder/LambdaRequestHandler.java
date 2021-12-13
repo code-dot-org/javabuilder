@@ -19,12 +19,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
 import org.code.protocol.*;
 import org.json.JSONObject;
-
-import java.util.UUID;
 
 /**
  * This is the entry point for the lambda function. This should be thought of as similar to a main
@@ -36,7 +35,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
   private static final int CHECK_THREAD_INTERVAL_MS = 500;
   private static final int TIMEOUT_WARNING_MS = 20000;
   private static final int TIMEOUT_CLEANUP_BUFFER_MS = 5000;
-  private static String LAMBDA_ID = "";
+  private static final String LAMBDA_ID = UUID.randomUUID().toString();
   /**
    * This is the implementation of the long-running-lambda where user code will be compiled and
    * executed.
@@ -67,16 +66,15 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
         JSONUtils.booleanFromJSONObjectMember(options, "useNeighborhood");
     final List<String> compileList = JSONUtils.listFromJSONObjectMember(options, "compileList");
 
-    // Generate an identifier that persists across uses of the same lambda container
-    // if one has not yet been created. Used for logging purposes.
-    if (LambdaRequestHandler.LAMBDA_ID.equals("")) {
-      LambdaRequestHandler.LAMBDA_ID = UUID.randomUUID().toString();
-    }
-
     Logger logger = Logger.getLogger(MAIN_LOGGER);
     logger.addHandler(
         new LambdaLogHandler(
-            context.getLogger(), javabuilderSessionId, connectionId, levelId, LambdaRequestHandler.LAMBDA_ID, channelId));
+            context.getLogger(),
+            javabuilderSessionId,
+            connectionId,
+            levelId,
+            LambdaRequestHandler.LAMBDA_ID,
+            channelId));
     // turn off the default console logger
     logger.setUseParentHandlers(false);
 
