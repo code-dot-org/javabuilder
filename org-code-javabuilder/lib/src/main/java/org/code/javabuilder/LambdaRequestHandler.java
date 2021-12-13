@@ -15,8 +15,6 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Handler;
@@ -86,10 +84,10 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     final AWSInputAdapter inputAdapter = new AWSInputAdapter(sqsClient, queueUrl, queueName);
 
     final AmazonS3 s3Client = AmazonS3ClientBuilder.standard().build();
-    final AWSFileManager fileWriter =
+    final AWSFileManager fileManager =
         new AWSFileManager(s3Client, outputBucketName, javabuilderSessionId, getOutputUrl, context);
     GlobalProtocol.create(
-        outputAdapter, inputAdapter, dashboardHostname, channelId, levelId, fileWriter);
+        outputAdapter, inputAdapter, dashboardHostname, channelId, levelId, fileManager);
 
     // Create file loader
     final UserProjectFileLoader userProjectFileLoader =
@@ -105,12 +103,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     props.put("sun.awt.fontconfig", "/opt/fontconfig.properties");
 
     try {
-      // Delete any leftover contents of the tmp folder from previous lambda invocations
-      Path toClear = Paths.get(System.getProperty("java.io.tmpdir"));
-      LoggerUtils.sendDiskSpaceLogs();
-      Util.recursivelyClearDirectory(toClear);
-      LoggerUtils.sendClearedDirectoryLog(toClear);
-      LoggerUtils.sendDiskSpaceLogs();
+      fileManager.cleanUpTempDirectory(null);
     } catch (IOException e) {
       // Wrap this in our error type so we can log it and tell the user.
       InternalServerError error = new InternalServerError(INTERNAL_EXCEPTION, e);
