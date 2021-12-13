@@ -8,14 +8,6 @@ import org.junit.jupiter.api.Test;
 
 public class CachedResourcesTest {
   @Test
-  public void createsFontMap() {
-    CachedResources cachedResources = new CachedResources();
-    Map<String, Font> fonts = cachedResources.getFontMap();
-    // there should be 12 fonts in the map
-    assertEquals(12, fonts.keySet().size());
-  }
-
-  @Test
   public void onlyCreatesFontMapOnce() {
     CachedResources cachedResources = new CachedResources();
     Map<String, Font> fonts = cachedResources.getFontMap();
