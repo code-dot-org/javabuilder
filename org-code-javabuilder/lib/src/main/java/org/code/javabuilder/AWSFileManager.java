@@ -12,7 +12,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Date;
 import org.code.protocol.*;
@@ -109,11 +108,7 @@ public class AWSFileManager implements JavabuilderFileManager {
   public void cleanUpTempDirectory(File tempFolder) throws IOException {
     // Delete any leftover contents of the tmp folder from previous lambda invocations
     // We can ignore the tempFolder since we are clearing the entire directory
-    Path toClear = Paths.get(System.getProperty("java.io.tmpdir"));
-    LoggerUtils.sendDiskSpaceLogs();
-    Util.recursivelyClearDirectory(toClear);
-    LoggerUtils.sendClearedDirectoryLog(toClear);
-    LoggerUtils.sendDiskSpaceLogs();
+    Util.recursivelyClearDirectory(Paths.get(System.getProperty("java.io.tmpdir")));
   }
 
   private String generateKey(String filename) {

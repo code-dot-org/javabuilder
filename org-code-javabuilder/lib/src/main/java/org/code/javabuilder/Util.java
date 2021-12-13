@@ -10,6 +10,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Comparator;
 import org.code.protocol.InternalErrorKey;
+import org.code.protocol.LoggerUtils;
 
 /** A set of static utility functions that are used in multiple locations */
 public class Util {
@@ -48,6 +49,9 @@ public class Util {
   }
 
   public static void recursivelyClearDirectory(Path directory) throws IOException {
+    LoggerUtils.sendDiskSpaceLogs();
     Files.walk(directory).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
+    LoggerUtils.sendClearedDirectoryLog(directory);
+    LoggerUtils.sendDiskSpaceLogs();
   }
 }

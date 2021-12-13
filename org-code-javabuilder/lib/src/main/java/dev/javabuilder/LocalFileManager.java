@@ -8,14 +8,12 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.code.javabuilder.InternalServerError;
 import org.code.javabuilder.Util;
 import org.code.protocol.InternalErrorKey;
 import org.code.protocol.JavabuilderException;
 import org.code.protocol.JavabuilderFileManager;
-import org.code.protocol.LoggerUtils;
 
 public class LocalFileManager implements JavabuilderFileManager {
 
@@ -64,10 +62,6 @@ public class LocalFileManager implements JavabuilderFileManager {
     // On localhost, we only need to clear the specific temp folder because
     // clearing the entire directory would clear the personal /tmp/ directory
     // in the user's local filesystem.
-    Path toClear = tempFolder.toPath();
-    LoggerUtils.sendDiskSpaceLogs();
-    Util.recursivelyClearDirectory(toClear);
-    LoggerUtils.sendClearedDirectoryLog(toClear);
-    LoggerUtils.sendDiskSpaceLogs();
+    Util.recursivelyClearDirectory(tempFolder.toPath());
   }
 }
