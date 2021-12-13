@@ -65,7 +65,7 @@ class GifWriter {
     try {
       this.writer.endWriteSequence();
       this.imageOutputStream.flush();
-      // this.imageOutputStream.close();
+      this.imageOutputStream.close();
     } catch (IOException e) {
       throw new InternalServerRuntimeError(
           InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e.getCause());
