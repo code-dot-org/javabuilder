@@ -36,7 +36,13 @@ public class StageTest {
   @BeforeEach
   public void setUp() {
     GlobalProtocol.create(
-        outputAdapter, mock(InputAdapter.class), "", "", "", mock(JavabuilderFileManager.class));
+        outputAdapter,
+        mock(InputAdapter.class),
+        "",
+        "",
+        "",
+        mock(JavabuilderFileManager.class),
+        new CachedResources());
     System.setOut(new PrintStream(outputStreamCaptor));
     bufferedImage = mock(BufferedImage.class);
     graphics = mock(Graphics2D.class);
