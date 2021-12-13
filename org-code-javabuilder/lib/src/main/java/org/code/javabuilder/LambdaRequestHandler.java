@@ -67,6 +67,8 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
         JSONUtils.booleanFromJSONObjectMember(options, "useNeighborhood");
     final List<String> compileList = JSONUtils.listFromJSONObjectMember(options, "compileList");
 
+    // Generate an identifier that persists across uses of the same lambda container
+    // if one has not yet been created. Used for logging purposes.
     if (LambdaRequestHandler.LAMBDA_ID.equals("")) {
       LambdaRequestHandler.LAMBDA_ID = UUID.randomUUID().toString();
     }
@@ -172,13 +174,6 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
       // no-op if we have an interrupted exception, as it happened due to a user ending their
       // program.
     } finally {
-      try {
-        Path toClear = Paths.get(System.getProperty("java.io.tmpdir"));
-        LoggerUtils.sendDiskSpaceLogs();
-        Util.recursivelyClearDirectory(toClear);
-        LoggerUtils.sendClearedDirectoryLog(toClear);
-        LoggerUtils.sendDiskSpaceLogs();
-      } catch (IOException e) {}
       cleanUpResources(connectionId, api);
     }
     return "done";
