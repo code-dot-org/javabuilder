@@ -10,6 +10,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import org.code.javabuilder.InternalServerError;
+import org.code.javabuilder.Util;
 import org.code.protocol.InternalErrorKey;
 import org.code.protocol.JavabuilderException;
 import org.code.protocol.JavabuilderFileManager;
@@ -51,5 +52,16 @@ public class LocalFileManager implements JavabuilderFileManager {
     } catch (MalformedURLException e) {
       throw new FileNotFoundException(filename);
     }
+  }
+
+  @Override
+  public void cleanUpTempDirectory(File tempFolder) throws IOException {
+    if (tempFolder == null) {
+      return;
+    }
+    // On localhost, we only need to clear the specific temp folder because
+    // clearing the entire directory would clear the personal /tmp/ directory
+    // in the user's local filesystem.
+    Util.recursivelyClearDirectory(tempFolder.toPath());
   }
 }
