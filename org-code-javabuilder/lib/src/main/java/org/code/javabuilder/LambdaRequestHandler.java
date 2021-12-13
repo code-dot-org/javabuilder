@@ -21,6 +21,8 @@ import java.util.UUID;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
 import org.code.protocol.*;
+import org.code.protocol.LoggerUtils.ClearStatus;
+import org.code.protocol.LoggerUtils.SessionTime;
 import org.json.JSONObject;
 
 /**
@@ -110,7 +112,12 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     props.put("sun.awt.fontconfig", "/opt/fontconfig.properties");
 
     try {
+      // Log disk space before clearing the directory
+      LoggerUtils.sendDiskSpaceReport();
+
+      LoggerUtils.sendDiskSpaceUpdate(SessionTime.START_SESSION, ClearStatus.BEFORE_CLEAR);
       fileManager.cleanUpTempDirectory(null);
+      LoggerUtils.sendDiskSpaceUpdate(SessionTime.START_SESSION, ClearStatus.AFTER_CLEAR);
     } catch (IOException e) {
       // Wrap this in our error type so we can log it and tell the user.
       InternalServerError error = new InternalServerError(INTERNAL_EXCEPTION, e);

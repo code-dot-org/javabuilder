@@ -49,9 +49,7 @@ public class Util {
   }
 
   public static void recursivelyClearDirectory(Path directory) throws IOException {
-    LoggerUtils.sendDiskSpaceLogs();
     Files.walk(directory).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
     LoggerUtils.sendClearedDirectoryLog(directory);
-    LoggerUtils.sendDiskSpaceLogs();
   }
 }
