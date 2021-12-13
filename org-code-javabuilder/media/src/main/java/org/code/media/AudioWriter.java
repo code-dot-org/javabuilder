@@ -63,6 +63,10 @@ public class AudioWriter {
     this.currentSampleIndex += (int) (delaySeconds * (double) AudioUtils.getDefaultSampleRate());
   }
 
+  public double getTotalAudioLength() {
+    return ((double) this.audioSamples.length) / (double) AudioUtils.getDefaultSampleRate();
+  }
+
   /**
    * Writes the raw audio data in audioSamples to audioOutputStream in a valid audio file format and
    * closes output streams.
