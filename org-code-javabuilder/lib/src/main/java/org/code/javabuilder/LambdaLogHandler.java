@@ -12,6 +12,7 @@ public class LambdaLogHandler extends Handler {
   private final String sessionId;
   private final String connectionId;
   private final String levelId;
+  private final String containerId;
   private final String channelId;
 
   public LambdaLogHandler(
@@ -19,11 +20,13 @@ public class LambdaLogHandler extends Handler {
       String sessionId,
       String connectionId,
       String levelId,
+      String containerId,
       String channelId) {
     this.logger = logger;
     this.sessionId = sessionId;
     this.connectionId = connectionId;
     this.levelId = levelId;
+    this.containerId = containerId;
     this.channelId = channelId;
   }
 
@@ -33,6 +36,7 @@ public class LambdaLogHandler extends Handler {
     sessionMetadata.put(LoggerConstants.SESSION_ID, this.sessionId);
     sessionMetadata.put(LoggerConstants.CONNECTION_ID, this.connectionId);
     sessionMetadata.put(LoggerConstants.LEVEL_ID, this.levelId);
+    sessionMetadata.put(LoggerConstants.CONTAINER_ID, this.containerId);
     sessionMetadata.put(LoggerConstants.CHANNEL_ID, this.channelId);
 
     JSONObject logData = new JSONObject();
