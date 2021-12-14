@@ -28,8 +28,7 @@ public class ImageItemTest {
         "",
         "",
         "",
-        mock(JavabuilderFileManager.class),
-        null);
+        mock(JavabuilderFileManager.class));
     messageHandlerMockedStatic = mockStatic(PlaygroundMessageHandler.class);
     messageHandlerMockedStatic
         .when(PlaygroundMessageHandler::getInstance)

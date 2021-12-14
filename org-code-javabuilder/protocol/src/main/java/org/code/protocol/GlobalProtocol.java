@@ -19,7 +19,6 @@ public class GlobalProtocol {
   private final String dashboardHostname;
   private final String channelId;
   private final AssetFileHelper assetFileHelper;
-  private final CachedResources cachedResources;
   private Set<MessageHandler> messageHandlers;
 
   private GlobalProtocol(
@@ -28,8 +27,7 @@ public class GlobalProtocol {
       String dashboardHostname,
       String channelId,
       JavabuilderFileManager fileManager,
-      AssetFileHelper assetFileHelper,
-      CachedResources cachedResources) {
+      AssetFileHelper assetFileHelper) {
     this.outputAdapter = outputAdapter;
     this.inputHandler = inputHandler;
     this.dashboardHostname = dashboardHostname;
@@ -37,7 +35,6 @@ public class GlobalProtocol {
     this.fileManager = fileManager;
     this.assetFileHelper = assetFileHelper;
     this.messageHandlers = new HashSet<>();
-    this.cachedResources = cachedResources;
   }
 
   public static void create(
@@ -46,8 +43,7 @@ public class GlobalProtocol {
       String dashboardHostname,
       String channelId,
       String levelId,
-      JavabuilderFileManager fileManager,
-      CachedResources cachedResources) {
+      JavabuilderFileManager fileManager) {
     GlobalProtocol.protocolInstance =
         new GlobalProtocol(
             outputAdapter,
@@ -55,8 +51,7 @@ public class GlobalProtocol {
             dashboardHostname,
             channelId,
             fileManager,
-            new AssetFileHelper(dashboardHostname, channelId, levelId),
-            cachedResources);
+            new AssetFileHelper(dashboardHostname, channelId, levelId));
   }
 
   public static GlobalProtocol getInstance() {
@@ -77,10 +72,6 @@ public class GlobalProtocol {
 
   public JavabuilderFileManager getFileManager() {
     return this.fileManager;
-  }
-
-  public CachedResources getCachedResources() {
-    return this.cachedResources;
   }
 
   public String generateAssetUrl(String filename) {

@@ -32,7 +32,10 @@ public class WebSocketServer {
   private Handler logHandler;
   private Logger logger;
   private Thread codeExecutor;
-  private static final CachedResources cachedResources = new CachedResources();
+
+  public WebSocketServer() {
+    CachedResources.create();
+  }
 
   /**
    * This acts as the main function for the WebSocket server. Therefore, we do many of the same
@@ -72,13 +75,7 @@ public class WebSocketServer {
     outputAdapter = new WebSocketOutputAdapter(session);
     inputAdapter = new WebSocketInputAdapter();
     GlobalProtocol.create(
-        outputAdapter,
-        inputAdapter,
-        dashboardHostname,
-        channelId,
-        levelId,
-        new LocalFileManager(),
-        cachedResources);
+        outputAdapter, inputAdapter, dashboardHostname, channelId, levelId, new LocalFileManager());
     final UserProjectFileLoader fileLoader =
         new UserProjectFileLoader(
             GlobalProtocol.getInstance().generateSourcesUrl(),
