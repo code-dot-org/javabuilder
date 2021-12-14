@@ -54,6 +54,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     final String queueName = lambdaInput.get("queueName");
     final String levelId = lambdaInput.get("levelId");
     final String channelId = lambdaInput.get("channelId");
+    final String miniAppType = lambdaInput.get("miniAppType");
     final ExecutionType executionType = ExecutionType.valueOf(lambdaInput.get("executionType"));
     final String dashboardHostname = "https://" + lambdaInput.get("iss");
     final JSONObject options = new JSONObject(lambdaInput.get("options"));
@@ -72,7 +73,8 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
             connectionId,
             levelId,
             LambdaRequestHandler.LAMBDA_ID,
-            channelId));
+            channelId,
+            miniAppType));
     // turn off the default console logger
     logger.setUseParentHandlers(false);
 
