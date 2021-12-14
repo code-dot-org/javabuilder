@@ -21,6 +21,8 @@ import java.util.UUID;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
 import org.code.protocol.*;
+import org.code.protocol.LoggerUtils.ClearStatus;
+import org.code.protocol.LoggerUtils.SessionTime;
 import org.json.JSONObject;
 
 /**
@@ -34,6 +36,14 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
   private static final int TIMEOUT_WARNING_MS = 20000;
   private static final int TIMEOUT_CLEANUP_BUFFER_MS = 5000;
   private static final String LAMBDA_ID = UUID.randomUUID().toString();
+
+  public LambdaRequestHandler() {
+    // create CachedResources once for the entire container.
+    // This will only be called once in the initial creation of the lambda instance.
+    // Documentation: https://docs.aws.amazon.com/lambda/latest/dg/java-handler.html
+    CachedResources.create();
+  }
+
   /**
    * This is the implementation of the long-running-lambda where user code will be compiled and
    * executed.
@@ -110,7 +120,12 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     props.put("sun.awt.fontconfig", "/opt/fontconfig.properties");
 
     try {
+      // Log disk space before clearing the directory
+      LoggerUtils.sendDiskSpaceReport();
+
+      LoggerUtils.sendDiskSpaceUpdate(SessionTime.START_SESSION, ClearStatus.BEFORE_CLEAR);
       fileManager.cleanUpTempDirectory(null);
+      LoggerUtils.sendDiskSpaceUpdate(SessionTime.START_SESSION, ClearStatus.AFTER_CLEAR);
     } catch (IOException e) {
       // Wrap this in our error type so we can log it and tell the user.
       InternalServerError error = new InternalServerError(INTERNAL_EXCEPTION, e);
