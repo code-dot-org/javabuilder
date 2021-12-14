@@ -33,8 +33,12 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
   private static final int CHECK_THREAD_INTERVAL_MS = 500;
   private static final int TIMEOUT_WARNING_MS = 20000;
   private static final int TIMEOUT_CLEANUP_BUFFER_MS = 5000;
-  private static final CachedResources cachedResources = new CachedResources();
   private static final String LAMBDA_ID = UUID.randomUUID().toString();
+
+  public LambdaRequestHandler() {
+    // create CachedResources once for the entire container
+    CachedResources.create();
+  }
 
   /**
    * This is the implementation of the long-running-lambda where user code will be compiled and
@@ -96,13 +100,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     final AWSFileManager fileManager =
         new AWSFileManager(s3Client, outputBucketName, javabuilderSessionId, getOutputUrl, context);
     GlobalProtocol.create(
-        outputAdapter,
-        inputAdapter,
-        dashboardHostname,
-        channelId,
-        levelId,
-        fileManager,
-        cachedResources);
+        outputAdapter, inputAdapter, dashboardHostname, channelId, levelId, fileManager);
 
     // Create file loader
     final UserProjectFileLoader userProjectFileLoader =

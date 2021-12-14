@@ -16,15 +16,14 @@ public class LocalMain {
     final LocalInputAdapter inputAdapter = new LocalInputAdapter();
     final LocalOutputAdapter outputAdapter = new LocalOutputAdapter(System.out);
     final LocalProjectFileLoader fileLoader = new LocalProjectFileLoader();
-    final CachedResources cachedResources = new CachedResources();
 
     Logger logger = Logger.getLogger(MAIN_LOGGER);
     logger.addHandler(new LocalLogHandler(System.out, "levelId", "channelId"));
     // turn off the default console logger
     logger.setUseParentHandlers(false);
 
-    GlobalProtocol.create(
-        outputAdapter, inputAdapter, "", "", "", new LocalFileManager(), cachedResources);
+    GlobalProtocol.create(outputAdapter, inputAdapter, "", "", "", new LocalFileManager());
+    CachedResources.create();
 
     // Create and invoke the code execution environment
     CodeBuilderRunnable codeBuilderRunnable =

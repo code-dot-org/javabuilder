@@ -2,13 +2,13 @@ package org.code.media;
 
 import java.awt.*;
 import java.util.Map;
-import org.code.protocol.GlobalProtocol;
+import org.code.protocol.CachedResources;
 
 public class FontHelper {
   private final Map<String, java.awt.Font> fontMap;
 
   public FontHelper() {
-    this.fontMap = GlobalProtocol.getInstance().getCachedResources().getFontMap();
+    this.fontMap = CachedResources.getInstance().getFontMap();
   }
 
   public java.awt.Font getFont(Font font, FontStyle fontStyle) {
