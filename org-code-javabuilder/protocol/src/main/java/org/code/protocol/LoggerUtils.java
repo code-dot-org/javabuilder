@@ -33,6 +33,11 @@ public class LoggerUtils {
     }
   }
 
+  /**
+   * Log a warning-level message for the given exception
+   *
+   * @param e
+   */
   public static void sendWarningForException(Exception e) {
     JSONObject eventData = new JSONObject();
     eventData.put(LoggerConstants.EXCEPTION_MESSAGE, e.getMessage());
