@@ -36,6 +36,14 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
   private static final int TIMEOUT_WARNING_MS = 20000;
   private static final int TIMEOUT_CLEANUP_BUFFER_MS = 5000;
   private static final String LAMBDA_ID = UUID.randomUUID().toString();
+
+  public LambdaRequestHandler() {
+    // create CachedResources once for the entire container.
+    // This will only be called once in the initial creation of the lambda instance.
+    // Documentation: https://docs.aws.amazon.com/lambda/latest/dg/java-handler.html
+    CachedResources.create();
+  }
+
   /**
    * This is the implementation of the long-running-lambda where user code will be compiled and
    * executed.

@@ -33,6 +33,10 @@ public class WebSocketServer {
   private Logger logger;
   private Thread codeExecutor;
 
+  public WebSocketServer() {
+    CachedResources.create();
+  }
+
   /**
    * This acts as the main function for the WebSocket server. Therefore, we do many of the same
    * things here as we do for LocalMain or for the LambdaRequestHandler, such as setting up the
