@@ -11,14 +11,20 @@ import javax.imageio.stream.ImageOutputStream;
 import org.code.protocol.InternalErrorKey;
 import org.code.protocol.InternalServerRuntimeError;
 
+import org.checkerframework.checker.mustcall.qual.MustCall;
+import org.checkerframework.checker.mustcall.qual.Owning;
+import org.checkerframework.checker.mustcall.qual.MustCallAlias;
+import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
+
 /**
  * Writer to generate a gif from a set of images. The gif will be stored in the given
  * ByteArrayOutputStream.
  */
+@MustCall("close")
 class GifWriter {
   private ImageWriter writer;
   private ImageWriteParam params;
-  private ImageOutputStream imageOutputStream;
+  private final @Owning ImageOutputStream imageOutputStream;
 
   public static class Factory {
     public GifWriter createGifWriter(ByteArrayOutputStream out) {
@@ -61,12 +67,16 @@ class GifWriter {
    * Close the gif stream and flush any remaining bytes. Any updates after close will throw an
    * exception because the writer has been closed.
    */
+  @EnsuresCalledMethods(value="this.imageOutputStream", methods={"close"})
   public void close() {
     try {
       this.writer.endWriteSequence();
       this.imageOutputStream.flush();
       this.imageOutputStream.close();
     } catch (IOException e) {
+ 	    try {
+	      this.imageOutputStream.close();
+	    } catch (IOException ioe) { }
       throw new InternalServerRuntimeError(
           InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e.getCause());
     }

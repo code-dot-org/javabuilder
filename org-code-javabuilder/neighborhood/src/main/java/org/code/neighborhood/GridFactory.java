@@ -21,7 +21,7 @@ public class GridFactory {
 
   protected Grid createGridFromJSON(String filename) throws IOException {
     File file = new File(GRID_FILE_NAME);
-    FileInputStream fis;
+    FileInputStream fis = null;
     try {
       fis = new FileInputStream(file);
       byte[] data = new byte[(int) file.length()];
@@ -29,6 +29,9 @@ public class GridFactory {
       fis.close();
       return createGridFromString(new String(data, "UTF-8"));
     } catch (IOException e) {
+      if (fis != null) {
+        fis.close();
+      }
       throw new NeighborhoodRuntimeException(ExceptionKeys.INVALID_GRID);
     }
   }

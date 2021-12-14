@@ -15,11 +15,17 @@ import org.code.media.Font;
 import org.code.media.Image;
 import org.code.protocol.*;
 
+import org.checkerframework.checker.mustcall.qual.MustCall;
+import org.checkerframework.checker.mustcall.qual.Owning;
+import org.checkerframework.checker.mustcall.qual.MustCallAlias;
+import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
+
+@MustCall("play")
 public class Stage {
   private final BufferedImage image;
   private final OutputAdapter outputAdapter;
   private final JavabuilderFileManager fileManager;
-  private final GifWriter gifWriter;
+  private final @Owning GifWriter gifWriter;
   private final ByteArrayOutputStream imageOutputStream;
   private final Graphics2D graphics;
   private final ByteArrayOutputStream audioOutputStream;
@@ -405,6 +411,7 @@ public class Stage {
   }
 
   /** Plays the instructions. */
+  @EnsuresCalledMethods(value="this.gifWriter", methods={"close"})
   public void play() {
     if (this.hasPlayed) {
       throw new TheaterRuntimeException(ExceptionKeys.DUPLICATE_PLAY_COMMAND);
