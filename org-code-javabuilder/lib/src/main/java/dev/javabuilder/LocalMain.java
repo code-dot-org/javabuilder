@@ -23,6 +23,7 @@ public class LocalMain {
     logger.setUseParentHandlers(false);
 
     GlobalProtocol.create(outputAdapter, inputAdapter, "", "", "", new LocalFileManager());
+    CachedResources.create();
 
     // Create and invoke the code execution environment
     CodeBuilderRunnable codeBuilderRunnable =
