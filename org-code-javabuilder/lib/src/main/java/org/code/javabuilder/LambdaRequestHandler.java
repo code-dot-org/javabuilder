@@ -36,7 +36,9 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
   private static final String LAMBDA_ID = UUID.randomUUID().toString();
 
   public LambdaRequestHandler() {
-    // create CachedResources once for the entire container
+    // create CachedResources once for the entire container.
+    // This will only be called once in the initial creation of the lambda instance.
+    // Documentation: https://docs.aws.amazon.com/lambda/latest/dg/java-handler.html
     CachedResources.create();
   }
 
