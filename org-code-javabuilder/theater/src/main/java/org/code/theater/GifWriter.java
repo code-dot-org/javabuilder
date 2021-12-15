@@ -19,6 +19,7 @@ class GifWriter {
   private ImageWriter writer;
   private ImageWriteParam params;
   private ImageOutputStream imageOutputStream;
+  private boolean isClosed;
 
   public static class Factory {
     public GifWriter createGifWriter(ByteArrayOutputStream out) {
@@ -34,6 +35,7 @@ class GifWriter {
       this.writer.setOutput(this.imageOutputStream);
       IIOMetadata streamData = this.getMetadataForGif();
       this.writer.prepareWriteSequence(streamData);
+      this.isClosed = false;
     } catch (IOException e) {
       throw new InternalServerRuntimeError(
           InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e.getCause());
@@ -66,10 +68,15 @@ class GifWriter {
       this.writer.endWriteSequence();
       this.imageOutputStream.flush();
       this.imageOutputStream.close();
+      this.isClosed = true;
     } catch (IOException e) {
       throw new InternalServerRuntimeError(
           InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e.getCause());
     }
+  }
+
+  public boolean isClosed() {
+    return this.isClosed;
   }
 
   /**

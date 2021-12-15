@@ -105,8 +105,15 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     final AmazonS3 s3Client = AmazonS3ClientBuilder.standard().build();
     final AWSFileManager fileManager =
         new AWSFileManager(s3Client, outputBucketName, javabuilderSessionId, getOutputUrl, context);
+    final LifecycleNotifier lifecycleNotifier = new LifecycleNotifier();
     GlobalProtocol.create(
-        outputAdapter, inputAdapter, dashboardHostname, channelId, levelId, fileManager);
+        outputAdapter,
+        inputAdapter,
+        dashboardHostname,
+        channelId,
+        levelId,
+        fileManager,
+        lifecycleNotifier);
 
     // Create file loader
     final UserProjectFileLoader userProjectFileLoader =
@@ -133,10 +140,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
       InternalServerError error = new InternalServerError(INTERNAL_EXCEPTION, e);
 
       // Log the error
-      JSONObject eventData = new JSONObject();
-      eventData.put(LoggerConstants.EXCEPTION_MESSAGE, error.getExceptionMessage());
-      eventData.put(LoggerConstants.LOGGING_STRING, error.getLoggingString());
-      Logger.getLogger(MAIN_LOGGER).severe(eventData.toString());
+      LoggerUtils.logError(error);
 
       // This affected the user. Let's tell them about it.
       outputAdapter.sendMessage(error.getExceptionMessage());
@@ -147,22 +151,28 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
 
     try {
       // Load files to memory and create and invoke the code execution environment
-      CodeBuilderRunnable codeBuilderRunnable =
-          new CodeBuilderRunnable(userProjectFileLoader, outputAdapter, executionType, compileList);
-      Thread codeBuilderThread = new Thread(codeBuilderRunnable);
-      // start code build and execute in a thread
-      codeBuilderThread.start();
+      CodeExecutionManager codeExecutionManager =
+          new CodeExecutionManager(
+              userProjectFileLoader,
+              GlobalProtocol.getInstance().getInputHandler(),
+              outputAdapter,
+              executionType,
+              compileList,
+              fileManager,
+              lifecycleNotifier);
+      // start code build
+      codeExecutionManager.start();
 
       boolean timeoutWarningSent = false;
-      while (codeBuilderThread.isAlive()) {
+      while (codeExecutionManager.isAlive()) {
         // sleep for CHECK_THREAD_INTERVAL_MS, then check if we've lost the connection to the
         // input or output adapter. This means we have lost connection to the end user (either
         // because they terminated their program or some other issue), and we should stop
         // executing their code.
         Thread.sleep(CHECK_THREAD_INTERVAL_MS);
-        if (codeBuilderThread.isAlive()
+        if (codeExecutionManager.isAlive()
             && (!inputAdapter.hasActiveConnection() || !outputAdapter.hasActiveConnection())) {
-          codeBuilderThread.interrupt();
+          codeExecutionManager.interrupt();
           break;
         }
 
@@ -174,7 +184,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
         }
         if (context.getRemainingTimeInMillis() < TIMEOUT_CLEANUP_BUFFER_MS) {
           outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.TIMEOUT));
-          codeBuilderThread.interrupt();
+          codeExecutionManager.interrupt();
           break;
         }
       }

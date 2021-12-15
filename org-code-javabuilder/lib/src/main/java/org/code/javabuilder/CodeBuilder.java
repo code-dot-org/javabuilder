@@ -1,13 +1,14 @@
 package org.code.javabuilder;
 
+import static org.code.protocol.LoggerNames.MAIN_LOGGER;
+
 import java.io.*;
 import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.logging.Logger;
 import org.code.protocol.*;
-import org.code.protocol.LoggerUtils.ClearStatus;
-import org.code.protocol.LoggerUtils.SessionTime;
 
 /** The orchestrator for code compilation and execution. */
 public class CodeBuilder implements AutoCloseable {
@@ -15,23 +16,24 @@ public class CodeBuilder implements AutoCloseable {
   private final InputHandler inputHandler;
   private final JavabuilderFileManager fileManager;
   private final File tempFolder;
-  private final PrintStream sysout;
-  private final InputStream sysin;
+  //  private final PrintStream sysout;
+  //  private final InputStream sysin;
   private final UserProjectFiles userProjectFiles;
 
-  public CodeBuilder(GlobalProtocol protocol, UserProjectFiles userProjectFiles)
+  public CodeBuilder(GlobalProtocol protocol, UserProjectFiles userProjectFiles, File tempFolder)
       throws InternalServerError {
-    this.sysout = System.out;
-    this.sysin = System.in;
+    //    this.sysout = System.out;
+    //    this.sysin = System.in;
     this.outputAdapter = protocol.getOutputAdapter();
     this.inputHandler = protocol.getInputHandler();
     this.fileManager = protocol.getFileManager();
     this.userProjectFiles = userProjectFiles;
-    try {
-      this.tempFolder = Files.createTempDirectory("tmpdir").toFile();
-    } catch (IOException e) {
-      throw new InternalServerError(InternalErrorKey.INTERNAL_EXCEPTION, e);
-    }
+    this.tempFolder = tempFolder;
+    //    try {
+    //      this.tempFolder = Files.createTempDirectory("tmpdir").toFile();
+    //    } catch (IOException e) {
+    //      throw new InternalServerError(InternalErrorKey.INTERNAL_EXCEPTION, e);
+    //    }
   }
 
   /**
@@ -92,18 +94,18 @@ public class CodeBuilder implements AutoCloseable {
    */
   @Override
   public void close() throws InternalFacingException {
-    System.setOut(this.sysout);
-    System.setIn(this.sysin);
-    if (this.tempFolder != null) {
-      try {
-        // Clean up the temp folder and temp directory
-        LoggerUtils.sendDiskSpaceUpdate(SessionTime.END_SESSION, ClearStatus.BEFORE_CLEAR);
-        this.fileManager.cleanUpTempDirectory(this.tempFolder);
-        LoggerUtils.sendDiskSpaceUpdate(SessionTime.END_SESSION, ClearStatus.AFTER_CLEAR);
-      } catch (IOException e) {
-        throw new InternalFacingException(e.toString(), e);
-      }
-    }
+    Logger.getLogger(MAIN_LOGGER).info("Close called");
+    //    System.setOut(this.sysout);
+    //    System.setIn(this.sysin);
+    //    if (this.tempFolder != null) {
+    //      try {
+    //        // Clean up the temp folder and temp directory
+    ////        LoggerUtils.sendDiskSpaceUpdate(SessionTime.END_SESSION, ClearStatus.BEFORE_CLEAR);
+    ////        this.fileManager.cleanUpTempDirectory(this.tempFolder);
+    ////        LoggerUtils.sendDiskSpaceUpdate(SessionTime.END_SESSION, ClearStatus.AFTER_CLEAR);
+    //      } catch (IOException e) {
+    //        throw new InternalFacingException(e.toString(), e);
+    //      }
   }
 
   /**
@@ -111,8 +113,8 @@ public class CodeBuilder implements AutoCloseable {
    * executing code
    */
   private JavaRunner createJavaRunner() throws InternalServerError {
-    System.setOut(new OutputPrintStream(this.outputAdapter));
-    System.setIn(new InputRedirectionStream(this.inputHandler));
+    //    System.setOut(new OutputPrintStream(this.outputAdapter));
+    //    System.setIn(new InputRedirectionStream(this.inputHandler));
     try {
       return new JavaRunner(
           this.tempFolder.toURI().toURL(),
