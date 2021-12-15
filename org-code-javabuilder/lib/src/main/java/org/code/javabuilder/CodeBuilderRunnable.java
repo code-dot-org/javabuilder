@@ -21,8 +21,6 @@ public class CodeBuilderRunnable implements Runnable {
   private final List<String> compileList;
   private final CompletionListener completionListener;
 
-  private volatile boolean isRunning;
-
   public CodeBuilderRunnable(
       ProjectFileLoader fileLoader,
       OutputAdapter outputAdapter,
@@ -36,23 +34,16 @@ public class CodeBuilderRunnable implements Runnable {
     this.executionType = executionType;
     this.compileList = compileList;
     this.completionListener = completionListener;
-    this.isRunning = true;
   }
 
   @Override
   public void run() {
     try {
-      this.isRunning = true;
       this.executeCodeBuilder();
     } finally {
       // Ensure the completion listener is always notified
       this.completionListener.onComplete();
-      this.isRunning = false;
     }
-  }
-
-  public boolean isRunning() {
-    return this.isRunning;
   }
 
   private void executeCodeBuilder() {
@@ -79,7 +70,7 @@ public class CodeBuilderRunnable implements Runnable {
       if (e.getCause().getClass().equals(InterruptedException.class)) {
         // Interrupted Exception is thrown if the code was manually shut down.
         // Ignore this exception
-        Logger.getLogger(MAIN_LOGGER).info("Interrupted");
+        Logger.getLogger(MAIN_LOGGER).info("Catching interruption in execution thread.");
         return;
       }
       // The error was caused by us (essentially an HTTP 5xx error). Log it so we can fix it.
