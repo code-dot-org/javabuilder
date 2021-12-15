@@ -14,6 +14,7 @@ public class LambdaLogHandler extends Handler {
   private final String levelId;
   private final String containerId;
   private final String channelId;
+  private final String miniAppType;
 
   public LambdaLogHandler(
       LambdaLogger logger,
@@ -21,13 +22,15 @@ public class LambdaLogHandler extends Handler {
       String connectionId,
       String levelId,
       String containerId,
-      String channelId) {
+      String channelId,
+      String miniAppType) {
     this.logger = logger;
     this.sessionId = sessionId;
     this.connectionId = connectionId;
     this.levelId = levelId;
     this.containerId = containerId;
     this.channelId = channelId;
+    this.miniAppType = miniAppType;
   }
 
   @Override
@@ -38,6 +41,7 @@ public class LambdaLogHandler extends Handler {
     sessionMetadata.put(LoggerConstants.LEVEL_ID, this.levelId);
     sessionMetadata.put(LoggerConstants.CONTAINER_ID, this.containerId);
     sessionMetadata.put(LoggerConstants.CHANNEL_ID, this.channelId);
+    sessionMetadata.put(LoggerConstants.MINI_APP_TYPE, this.miniAppType);
 
     JSONObject logData = new JSONObject();
     logData.put(LoggerConstants.SESSION_METADATA, sessionMetadata);

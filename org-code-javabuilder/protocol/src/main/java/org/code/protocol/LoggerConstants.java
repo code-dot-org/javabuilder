@@ -12,6 +12,7 @@ public class LoggerConstants {
   public static final String CONTAINER_ID = "containerId";
   public static final String CONNECTION_ID = "connectionId";
   public static final String CHANNEL_ID = "channelId";
+  public static final String MINI_APP_TYPE = "miniAppType";
   public static final String SESSION_METADATA = "sessionMetadata";
   public static final String DIRECTORY = "directory";
   public static final String USABLE_SPACE = "usableSpace";
