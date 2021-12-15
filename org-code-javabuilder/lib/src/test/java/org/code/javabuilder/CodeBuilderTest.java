@@ -19,16 +19,18 @@ public class CodeBuilderTest {
   private UserProjectFiles userProjectFiles;
   private GlobalProtocol globalProtocol;
   private JavabuilderFileManager fileManager;
+  private File tempFolder;
   private CodeBuilder codeBuilder;
 
   @BeforeEach
   public void setUp() throws Exception {
     globalProtocol = mock(GlobalProtocol.class);
     fileManager = mock(JavabuilderFileManager.class);
+    tempFolder = mock(File.class);
     when(globalProtocol.getFileManager()).thenReturn(fileManager);
     userProjectFiles = mock(UserProjectFiles.class);
 
-    codeBuilder = new CodeBuilder(globalProtocol, userProjectFiles);
+    codeBuilder = new CodeBuilder(globalProtocol, userProjectFiles, tempFolder);
   }
 
   @Test

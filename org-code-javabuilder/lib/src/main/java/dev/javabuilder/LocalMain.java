@@ -22,14 +22,24 @@ public class LocalMain {
     // turn off the default console logger
     logger.setUseParentHandlers(false);
 
-    GlobalProtocol.create(outputAdapter, inputAdapter, "", "", "", new LocalFileManager());
+    GlobalProtocol.create(
+        outputAdapter, inputAdapter, "", "", "", new LocalFileManager(), new LifecycleNotifier());
     CachedResources.create();
 
     // Create and invoke the code execution environment
-    CodeBuilderRunnable codeBuilderRunnable =
-        new CodeBuilderRunnable(fileLoader, outputAdapter, ExecutionType.RUN, null);
-    Thread codeBuilderExecutor = new Thread(codeBuilderRunnable);
-    codeBuilderExecutor.start();
-    codeBuilderExecutor.join();
+    CodeExecutionManager codeExecutionManager =
+        new CodeExecutionManager(
+            fileLoader,
+            GlobalProtocol.getInstance().getInputHandler(),
+            outputAdapter,
+            ExecutionType.RUN,
+            null,
+            GlobalProtocol.getInstance().getFileManager(),
+            new LifecycleNotifier());
+    codeExecutionManager.start();
+    while (codeExecutionManager.isAlive()) {
+      // Wait for execution to complete
+      Thread.sleep(1000);
+    }
   }
 }

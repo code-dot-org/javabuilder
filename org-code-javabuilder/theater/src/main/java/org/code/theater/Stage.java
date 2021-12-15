@@ -2,6 +2,7 @@ package org.code.theater;
 
 import static org.code.protocol.AllowedFileNames.THEATER_AUDIO_NAME;
 import static org.code.protocol.AllowedFileNames.THEATER_IMAGE_NAME;
+import static org.code.protocol.LoggerNames.MAIN_LOGGER;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -9,6 +10,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.util.HashMap;
+import java.util.logging.Logger;
 import org.code.media.*;
 import org.code.media.Color;
 import org.code.media.Font;
@@ -33,6 +35,25 @@ public class Stage {
   private static final int WIDTH = 400;
   private static final int HEIGHT = 400;
   private static final java.awt.Color DEFAULT_COLOR = java.awt.Color.BLACK;
+
+  // TODO: Semi-hack to ensure that resources are cleaned up if execution
+  // is interrupted. It may be cleaner for Stage to own a delegate object that
+  // manages all image and audio writing/reading as well as closing.
+  private static class CleanUpHandler implements LifecycleListener {
+    private final GifWriter gifWriter;
+
+    public CleanUpHandler(GifWriter gifWriter) {
+      this.gifWriter = gifWriter;
+    }
+
+    @Override
+    public void onExecutionEnded() {
+      if (!this.gifWriter.isClosed()) {
+        Logger.getLogger(MAIN_LOGGER).info("Closing GifWriter early.");
+        this.gifWriter.close();
+      }
+    }
+  }
 
   /**
    * Initialize Stage with a default image. Stage should be initialized outside of org.code.theater
@@ -73,6 +94,7 @@ public class Stage {
     this.clear(Color.WHITE);
 
     System.setProperty("java.awt.headless", "true");
+    GlobalProtocol.getInstance().registerLifecycleListener(new CleanUpHandler(this.gifWriter));
   }
 
   /** Returns the width of the theater canvas. */

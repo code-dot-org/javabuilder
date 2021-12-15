@@ -2,10 +2,10 @@ package org.code.javabuilder;
 
 import static org.code.protocol.LoggerNames.MAIN_LOGGER;
 
+import java.io.File;
 import java.util.List;
 import java.util.logging.Logger;
 import org.code.protocol.*;
-import org.json.JSONObject;
 
 /**
  * This creates a high-level wrapper that handles errors and exceptions in a way that can be
@@ -16,30 +16,50 @@ import org.json.JSONObject;
 public class CodeBuilderRunnable implements Runnable {
   private final ProjectFileLoader fileLoader;
   private final OutputAdapter outputAdapter;
+  private final File tempFolder;
   private final ExecutionType executionType;
   private final List<String> compileList;
+  private final CompletionListener completionListener;
+
+  private volatile boolean isRunning;
 
   public CodeBuilderRunnable(
       ProjectFileLoader fileLoader,
       OutputAdapter outputAdapter,
+      File tempFolder,
       ExecutionType executionType,
-      List<String> compileList) {
+      List<String> compileList,
+      CompletionListener completionListener) {
     this.fileLoader = fileLoader;
     this.outputAdapter = outputAdapter;
+    this.tempFolder = tempFolder;
     this.executionType = executionType;
     this.compileList = compileList;
+    this.completionListener = completionListener;
+    this.isRunning = true;
   }
 
   @Override
   public void run() {
-    this.executeCodeBuilder();
+    try {
+      this.isRunning = true;
+      this.executeCodeBuilder();
+    } finally {
+      // Ensure the completion listener is always notified
+      this.completionListener.onComplete();
+      this.isRunning = false;
+    }
+  }
+
+  public boolean isRunning() {
+    return this.isRunning;
   }
 
   private void executeCodeBuilder() {
     try {
       UserProjectFiles userProjectFiles = fileLoader.loadFiles();
       try (CodeBuilder codeBuilder =
-          new CodeBuilder(GlobalProtocol.getInstance(), userProjectFiles)) {
+          new CodeBuilder(GlobalProtocol.getInstance(), userProjectFiles, this.tempFolder)) {
 
         switch (this.executionType) {
           case COMPILE_ONLY:
@@ -59,14 +79,11 @@ public class CodeBuilderRunnable implements Runnable {
       if (e.getCause().getClass().equals(InterruptedException.class)) {
         // Interrupted Exception is thrown if the code was manually shut down.
         // Ignore this exception
+        Logger.getLogger(MAIN_LOGGER).info("Interrupted");
         return;
       }
-      JSONObject eventData = new JSONObject();
-      eventData.put(LoggerConstants.EXCEPTION_MESSAGE, e.getExceptionMessage());
-      eventData.put(LoggerConstants.LOGGING_STRING, e.getLoggingString());
-      eventData.put(LoggerConstants.CAUSE, e.getCause());
       // The error was caused by us (essentially an HTTP 5xx error). Log it so we can fix it.
-      Logger.getLogger(MAIN_LOGGER).severe(eventData.toString());
+      LoggerUtils.logError(e.getExceptionMessage(), e.getLoggingString(), e.getCause());
 
       // The error affected the user. Tell them about it.
       outputAdapter.sendMessage(e.getExceptionMessage());
@@ -86,10 +103,7 @@ public class CodeBuilderRunnable implements Runnable {
 
       // Errors we didn't catch. These may have been caused by the JVM, our own setup, or many other
       // unknowns. Log them so we can fix them.
-      JSONObject eventData = new JSONObject();
-      eventData.put(LoggerConstants.EXCEPTION_MESSAGE, error.getExceptionMessage());
-      eventData.put(LoggerConstants.LOGGING_STRING, error.getLoggingString());
-      Logger.getLogger(MAIN_LOGGER).severe(eventData.toString());
+      LoggerUtils.logError(error);
 
       // Additionally, these may have affected the user. For now, let's tell them about it.
       outputAdapter.sendMessage(error.getExceptionMessage());
