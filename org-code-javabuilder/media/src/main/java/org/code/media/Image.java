@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.net.URL;
 import javax.imageio.ImageIO;
 import org.code.protocol.GlobalProtocol;
+import org.code.protocol.InternalErrorKey;
+import org.code.protocol.InternalServerRuntimeError;
 
 public class Image {
   private Pixel[][] pixels;
@@ -87,6 +89,11 @@ public class Image {
    * @return Pixel at the given coordinate
    */
   public Pixel getPixel(int x, int y) {
+    if (Thread.currentThread().isInterrupted()) {
+      System.out.println("Image interrupting current thread.");
+      throw new InternalServerRuntimeError(
+          InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, new InterruptedException());
+    }
     if (this.pixels == null) {
       this.createPixelArray();
       this.bufferedImage = null;

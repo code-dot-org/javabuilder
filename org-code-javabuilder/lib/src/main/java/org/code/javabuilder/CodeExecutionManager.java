@@ -46,27 +46,9 @@ public class CodeExecutionManager implements CompletionListener {
         ExecutionType executionType,
         List<String> compileList,
         CompletionListener listener) {
-      final CodeBuilderRunnable runnable =
-          new CodeBuilderRunnable(
-              fileLoader, outputAdapter, tempFolder, executionType, compileList, listener);
-
       return new Thread(
-          () -> {
-            final Thread codeThread = new Thread(runnable);
-            codeThread.start();
-            while (!Thread.currentThread().isInterrupted() && runnable.isRunning()) {
-              try {
-                Thread.sleep(1000);
-              } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                Logger.getLogger(MAIN_LOGGER).info("Internal thread interrupted");
-              }
-            }
-          });
-      //
-      //      return new Thread(
-      //          new CodeBuilderRunnable(
-      //              fileLoader, outputAdapter, tempFolder, executionType, compileList, listener));
+          new CodeBuilderRunnable(
+              fileLoader, outputAdapter, tempFolder, executionType, compileList, listener));
     }
   }
 
