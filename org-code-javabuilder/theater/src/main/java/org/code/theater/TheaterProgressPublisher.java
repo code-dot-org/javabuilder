@@ -9,6 +9,7 @@ import org.code.protocol.*;
  */
 class TheaterProgressPublisher {
   private static final double UPDATE_TIME_S = 5.0;
+  private static final double MAX_TIME_S = 120.0;
 
   private final OutputAdapter outputAdapter;
   private double pauseTimeSeconds;
@@ -26,6 +27,13 @@ class TheaterProgressPublisher {
 
   public void onPause(double seconds) {
     this.pauseTimeSeconds += seconds;
+    if (this.pauseTimeSeconds > MAX_TIME_S) {
+      String message =
+          "Your video is longer than "
+              + MAX_TIME_S
+              + " seconds. Decrease the length of your video and try again.";
+      throw new RuntimeException(message);
+    }
 
     if (this.pauseTimeSeconds - this.lastUpdateTimeSeconds >= UPDATE_TIME_S) {
       this.publishProgress();
