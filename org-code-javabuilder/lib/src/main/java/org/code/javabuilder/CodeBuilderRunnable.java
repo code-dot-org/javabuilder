@@ -59,12 +59,6 @@ public class CodeBuilderRunnable implements Runnable {
         }
       }
     } catch (InternalServerError | InternalServerRuntimeError e) {
-      if (e.getCause().getClass().equals(InterruptedException.class)) {
-        // Interrupted Exception is thrown if the code was manually shut down.
-        // Ignore this exception
-        Logger.getLogger(MAIN_LOGGER).info("Catching interruption in execution thread.");
-        return;
-      }
       if (e.getMessage().equals(InternalErrorKey.CONNECTION_TERMINATED.toString())) {
         // The connection was terminated while trying to send or receive a message. We no longer
         // have a connection to the user, so we need to log a warning internally and exit.
