@@ -79,10 +79,7 @@ public class CodeBuilder implements AutoCloseable {
     // Nothing to close; no-op
   }
 
-  /**
-   * Replaces System.in and System.out with our custom implementation and creates a runner for
-   * executing code
-   */
+  /** Creates a runner for executing code */
   private JavaRunner createJavaRunner() throws InternalServerError {
     try {
       return new JavaRunner(
