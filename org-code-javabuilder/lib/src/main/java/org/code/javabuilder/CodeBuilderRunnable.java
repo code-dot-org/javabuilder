@@ -96,9 +96,8 @@ public class CodeBuilderRunnable implements Runnable {
 
       // Additionally, these may have affected the user. For now, let's tell them about it.
       outputAdapter.sendMessage(error.getExceptionMessage());
-    } finally {
-      GlobalProtocol.getInstance().cleanUpResources();
-      this.outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.EXITED));
     }
+    // Send exit message if we haven't already returned
+    this.outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.EXITED));
   }
 }

@@ -76,6 +76,15 @@ public class LoggerUtils {
     Logger.getLogger(MAIN_LOGGER).severe(eventData.toString());
   }
 
+  public static void logException(Throwable e) {
+    JSONObject eventData = new JSONObject();
+    eventData.put(LoggerConstants.EXCEPTION_MESSAGE, e.getMessage());
+    if (e.getCause() != null) {
+      eventData.put(LoggerConstants.CAUSE, e.getCause());
+    }
+    Logger.getLogger(MAIN_LOGGER).severe(eventData.toString());
+  }
+
   private static void sendDiskSpaceLogs(String type) {
     File f = Paths.get(System.getProperty("java.io.tmpdir")).toFile();
     JSONObject eventData = new JSONObject();

@@ -86,17 +86,20 @@ public class CodeExecutionManager {
   public void execute() {
     try {
       this.onPreExecute();
-
-      // Run code builder
-      final CodeBuilderRunnable runnable =
-          new CodeBuilderRunnable(
-              this.fileLoader,
-              this.outputAdapter,
-              this.tempFolder,
-              this.executionType,
-              this.compileList);
-      runnable.run();
-
+      try {
+        // Run code builder
+        final CodeBuilderRunnable runnable =
+            new CodeBuilderRunnable(
+                this.fileLoader,
+                this.outputAdapter,
+                this.tempFolder,
+                this.executionType,
+                this.compileList);
+        runnable.run();
+      } catch (Throwable e) {
+        // Catch any throwable here to ensure that onPostExecute() is always called
+        LoggerUtils.logException(e);
+      }
       this.onPostExecute();
     } catch (InternalServerError e) {
       LoggerUtils.logError(e);
@@ -164,10 +167,11 @@ public class CodeExecutionManager {
   }
 
   /**
-   * Post-execution steps: 1) clear temporary folder, 2) close custom in/out streams, 3) Replace
-   * System.in/out with original in/out, 4) Notify listeners
+   * Post-execution steps: 1) clean up global resources, 2) clear temporary folder, 3) close custom
+   * in/out streams, 4) Replace System.in/out with original in/out, 5) Notify listeners
    */
   private void onPostExecute() throws InternalServerError {
+    GlobalProtocol.getInstance().cleanUpResources();
     try {
       // Clear temp folder
       LoggerUtils.sendDiskSpaceUpdate(SessionTime.END_SESSION, ClearStatus.BEFORE_CLEAR);

@@ -161,11 +161,17 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
             fileManager,
             lifecycleNotifier);
 
-    // start code build and block until completed
-    codeExecutionManager.execute();
-
-    // Cleanup after execution has terminated
-    cleanUpResources(connectionId, api);
+    try {
+      // start code build and block until completed
+      codeExecutionManager.execute();
+    } catch (Throwable e) {
+      // All errors should be caught, but if for any reason we encounter an error here, make sure we
+      // catch it, log, and always clean up resources
+      LoggerUtils.logException(e);
+    } finally {
+      // Always clean up resources
+      cleanUpResources(connectionId, api);
+    }
 
     //    try {
     //      // Load files to memory and create and invoke the code execution environment
