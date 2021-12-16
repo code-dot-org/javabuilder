@@ -420,15 +420,16 @@ public class Stage {
       this.progressPublisher.onPlay(this.audioWriter.getTotalAudioLength());
       this.gifWriter.writeToGif(this.image, 0);
       this.audioWriter.writeToAudioStream();
+      // We must call close before write so that the streams are flushed.
+      this.close();
       this.writeImageAndAudioToFile();
       this.hasPlayed = true;
-      this.close();
     }
   }
 
   /**
-   * Clean up resources created by this instance. If close has already been called this method does
-   * nothing.
+   * Clean up resources created by this instance. If close or play has already been called this
+   * method does nothing.
    */
   public void close() {
     if (!this.hasClosed) {
