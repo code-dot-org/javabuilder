@@ -161,6 +161,31 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
             fileManager,
             lifecycleNotifier);
 
+    final Thread timeoutNotifierThread =
+        new Thread(
+            () -> {
+              boolean timeoutWarningSent = false;
+
+              while (!Thread.currentThread().isInterrupted()) {
+                try {
+                  Thread.sleep(CHECK_THREAD_INTERVAL_MS);
+                  if ((context.getRemainingTimeInMillis() < TIMEOUT_WARNING_MS)
+                      && !timeoutWarningSent) {
+                    outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.TIMEOUT_WARNING));
+                    timeoutWarningSent = true;
+                  }
+
+                  if (context.getRemainingTimeInMillis() < TIMEOUT_CLEANUP_BUFFER_MS) {
+                    outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.TIMEOUT));
+                    break;
+                  }
+                } catch (InterruptedException e) {
+                  Thread.currentThread().interrupt();
+                }
+              }
+            });
+    timeoutNotifierThread.start();
+
     try {
       // start code build and block until completed
       codeExecutionManager.execute();
@@ -169,57 +194,11 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
       // catch it, log, and always clean up resources
       LoggerUtils.logException(e);
     } finally {
-      // Always clean up resources
+      // Stop timeout listener and clean up
+      timeoutNotifierThread.interrupt();
       cleanUpResources(connectionId, api);
     }
 
-    //    try {
-    //      // Load files to memory and create and invoke the code execution environment
-    //      CodeExecutionManager codeExecutionManager =
-    //          new CodeExecutionManager(
-    //              userProjectFileLoader,
-    //              GlobalProtocol.getInstance().getInputHandler(),
-    //              outputAdapter,
-    //              executionType,
-    //              compileList,
-    //              fileManager,
-    //              lifecycleNotifier);
-    //      // start code build
-    //      codeExecutionManager.start();
-    //
-    //      boolean timeoutWarningSent = false;
-    //      while (codeExecutionManager.isAlive()) {
-    //        // sleep for CHECK_THREAD_INTERVAL_MS, then check if we've lost the connection to the
-    //        // input or output adapter. This means we have lost connection to the end user (either
-    //        // because they terminated their program or some other issue), and we should stop
-    //        // executing their code.
-    //        Thread.sleep(CHECK_THREAD_INTERVAL_MS);
-    //        if (codeExecutionManager.isAlive()
-    //            && (!inputAdapter.hasActiveConnection() || !outputAdapter.hasActiveConnection()))
-    // {
-    //          codeExecutionManager.interrupt();
-    //          break;
-    //        }
-    //
-    //        // Check if the lambda is nearing timeout -- send warning message beforehand,
-    //        // then preempt timeout before it occurs and send another message.
-    //        if ((context.getRemainingTimeInMillis() < TIMEOUT_WARNING_MS) && !timeoutWarningSent)
-    // {
-    //          outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.TIMEOUT_WARNING));
-    //          timeoutWarningSent = true;
-    //        }
-    //        if (context.getRemainingTimeInMillis() < TIMEOUT_CLEANUP_BUFFER_MS) {
-    //          outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.TIMEOUT));
-    //          codeExecutionManager.interrupt();
-    //          break;
-    //        }
-    //      }
-    //    } catch (InterruptedException interruptedException) {
-    //      // no-op if we have an interrupted exception, as it happened due to a user ending their
-    //      // program.
-    //    } finally {
-    //      cleanUpResources(connectionId, api);
-    //    }
     return "done";
   }
 

@@ -105,48 +105,16 @@ public class WebSocketServer {
 
     // Clean up session
     try {
-      Logger.getLogger(MAIN_LOGGER).info("Cleaning up session");
       session.close();
       logger.removeHandler(this.logHandler);
     } catch (IOException e) {
       e.printStackTrace();
     }
-
-    //    this.waitToCleanup =
-    //        new Thread(
-    //            () -> {
-    //              try {
-    //                while (this.executionManager.isAlive()) {
-    //                  Thread.sleep(1000);
-    //                }
-    //                Logger.getLogger(MAIN_LOGGER).info("Code execution finished.");
-    //              } catch (InterruptedException e) {
-    //                Logger.getLogger(MAIN_LOGGER).info("Wait to cleanup thread interrupted");
-    //                // ignore this exception, it likely means the end user stopped
-    //                // their program.
-    //              }
-    //              try {
-    //                Logger.getLogger(MAIN_LOGGER).info("Closing session");
-    //                session.close();
-    //                logger.removeHandler(this.logHandler);
-    //              } catch (IOException e) {
-    //                e.printStackTrace();
-    //              }
-    //            });
-    //    this.waitToCleanup.start();
   }
 
   @OnClose
   public void myOnClose() {
-    Logger.getLogger(MAIN_LOGGER).info("Calling WebSocket close");
-    //    if (this.executionManager != null) {
-    //      Logger.getLogger(MAIN_LOGGER).info("Interrupting execution manager");
-    //      // this.executionManager.interrupt();
-    //      Logger.getLogger(MAIN_LOGGER).info("WebSocket has been closed, interrupted running
-    // program");
-    //    } else {
-    //      Logger.getLogger(MAIN_LOGGER).info("WebSocket Closed");
-    //    }
+    Logger.getLogger(MAIN_LOGGER).info("WebSocket closed.");
   }
 
   /**
