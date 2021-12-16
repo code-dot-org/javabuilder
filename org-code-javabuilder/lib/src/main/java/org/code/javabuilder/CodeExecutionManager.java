@@ -14,9 +14,9 @@ import org.code.protocol.LoggerUtils.ClearStatus;
 import org.code.protocol.LoggerUtils.SessionTime;
 
 /**
- * Manages the asynchronous execution of code in a project. When started, it performs the necessary
- * pre-execution setup and starts code execution in a separate thread. When complete, or when asked
- * to interrupt execution, it ensures the necessary post-execution cleanup steps are performed.
+ * Manages the execution of code in a project. When started, it performs the necessary pre-execution
+ * setup and starts code execution. When complete, or when asked to exit early, it ensures the
+ * necessary post-execution cleanup steps are performed.
  */
 public class CodeExecutionManager {
   private final ProjectFileLoader fileLoader;
@@ -52,6 +52,7 @@ public class CodeExecutionManager {
     this.executionInProgress = false;
   }
 
+  /** Executes code synchronously, ensuring that pre- and post-execution steps are performed. */
   public void execute() {
     try {
       this.onPreExecute();
@@ -79,7 +80,7 @@ public class CodeExecutionManager {
   /**
    * Request the code execution to cleanup early (e.g. in the case of an impending timeout). Code
    * execution may still run, but this allows for post execution steps to still occur before the
-   * environment is shut down
+   * environment is shut down.
    */
   public void requestEarlyExit() {
     if (!this.executionInProgress) {
@@ -115,14 +116,16 @@ public class CodeExecutionManager {
   }
 
   /**
-   * Post-execution steps: 1) clean up global resources, 2) clear temporary folder, 3) close custom
-   * in/out streams, 4) Replace System.in/out with original in/out, 5) Notify listeners
+   * Post-execution steps: 1) Notify listeners, 2) clean up global resources, 3) clear temporary
+   * folder, 4) close custom in/out streams, 5) Replace System.in/out with original in/out
    */
   private void onPostExecute() throws InternalServerError {
     if (!this.executionInProgress) {
       Logger.getLogger(MAIN_LOGGER).warning("onPostExecute() called before execution started");
       return;
     }
+    // Notify listeners
+    this.lifecycleNotifier.onExecutionEnded();
     GlobalProtocol.getInstance().cleanUpResources();
     try {
       // Clear temp folder
@@ -138,8 +141,5 @@ public class CodeExecutionManager {
     // Replace System in/out with original System in/out
     System.setIn(this.systemInputStream);
     System.setOut(this.systemOutputStream);
-
-    // Notify listeners
-    this.lifecycleNotifier.onExecutionEnded();
   }
 }

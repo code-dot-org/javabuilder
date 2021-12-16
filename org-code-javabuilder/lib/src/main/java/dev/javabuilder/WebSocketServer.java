@@ -31,7 +31,6 @@ public class WebSocketServer {
   private WebSocketOutputAdapter outputAdapter;
   private Handler logHandler;
   private Logger logger;
-  private CodeExecutionManager executionManager;
 
   public WebSocketServer() {
     CachedResources.create();
@@ -90,7 +89,7 @@ public class WebSocketServer {
             levelId,
             dashboardHostname,
             useNeighborhood);
-    this.executionManager =
+    final CodeExecutionManager executionManager =
         new CodeExecutionManager(
             fileLoader,
             GlobalProtocol.getInstance().getInputHandler(),
@@ -100,7 +99,7 @@ public class WebSocketServer {
             GlobalProtocol.getInstance().getFileManager(),
             lifecycleNotifier);
 
-    this.executionManager.execute();
+    executionManager.execute();
 
     // Clean up session
     try {
