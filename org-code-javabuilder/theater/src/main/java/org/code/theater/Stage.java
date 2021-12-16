@@ -17,7 +17,7 @@ import org.code.media.Font;
 import org.code.media.Image;
 import org.code.protocol.*;
 
-public class Stage {
+public class Stage implements LifecycleListener {
   private final BufferedImage image;
   private final OutputAdapter outputAdapter;
   private final JavabuilderFileManager fileManager;
@@ -37,25 +37,6 @@ public class Stage {
   private static final int WIDTH = 400;
   private static final int HEIGHT = 400;
   private static final java.awt.Color DEFAULT_COLOR = java.awt.Color.BLACK;
-
-  // TODO: Semi-hack to ensure that resources are cleaned up if execution
-  // is interrupted. It may be cleaner for Stage to own a delegate object that
-  // manages all image and audio writing/reading as well as closing.
-  private static class CleanUpHandler implements LifecycleListener {
-    private final GifWriter gifWriter;
-
-    public CleanUpHandler(GifWriter gifWriter) {
-      this.gifWriter = gifWriter;
-    }
-
-    @Override
-    public void onExecutionEnded() {
-      if (!this.gifWriter.isClosed()) {
-        Logger.getLogger(MAIN_LOGGER).info("Closing GifWriter early.");
-        this.gifWriter.close();
-      }
-    }
-  }
 
   /**
    * Initialize Stage with a default image. Stage should be initialized outside of org.code.theater
@@ -100,7 +81,7 @@ public class Stage {
     this.clear(Color.WHITE);
 
     System.setProperty("java.awt.headless", "true");
-    GlobalProtocol.getInstance().registerLifecycleListener(new CleanUpHandler(this.gifWriter));
+    GlobalProtocol.getInstance().registerLifecycleListener(this);
   }
 
   /** Returns the width of the theater canvas. */
@@ -443,7 +424,7 @@ public class Stage {
       this.gifWriter.writeToGif(this.image, 0);
       this.audioWriter.writeToAudioStream();
       // We must call close before write so that the streams are flushed.
-      this.close();
+      this.onExecutionEnded();
       this.writeImageAndAudioToFile();
       this.hasPlayed = true;
     }
@@ -453,8 +434,10 @@ public class Stage {
    * Clean up resources created by this instance. If close or play has already been called this
    * method does nothing.
    */
-  public void close() {
+  @Override
+  public void onExecutionEnded() {
     if (!this.hasClosed) {
+      Logger.getLogger(MAIN_LOGGER).info("Closing stage");
       this.gifWriter.close();
       this.audioWriter.close();
       this.hasClosed = true;
