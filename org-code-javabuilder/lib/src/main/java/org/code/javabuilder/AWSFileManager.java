@@ -1,7 +1,5 @@
 package org.code.javabuilder;
 
-import static org.code.protocol.LoggerNames.MAIN_LOGGER;
-
 import com.amazonaws.AbortedException;
 import com.amazonaws.HttpMethod;
 import com.amazonaws.SdkClientException;
@@ -16,9 +14,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Paths;
 import java.util.Date;
-import java.util.logging.Logger;
 import org.code.protocol.*;
-import org.json.JSONObject;
 
 public class AWSFileManager implements JavabuilderFileManager {
   private final String outputBucketName;
@@ -72,16 +68,6 @@ public class AWSFileManager implements JavabuilderFileManager {
     }
 
     this.writes++;
-    try {
-      inputStream.close();
-    } catch (IOException e) {
-      // We could not close the stream. This won't affect the user but may affect us, so we log it
-      // as a severe error.
-      JSONObject eventData = new JSONObject();
-      eventData.put(LoggerConstants.EXCEPTION_MESSAGE, e.getMessage());
-      eventData.put(LoggerConstants.TYPE, "streamCloseError");
-      Logger.getLogger(MAIN_LOGGER).severe(eventData.toString());
-    }
     return this.getOutputURL + "/" + filePath;
   }
 
