@@ -177,6 +177,10 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
 
                   if (context.getRemainingTimeInMillis() < TIMEOUT_CLEANUP_BUFFER_MS) {
                     outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.TIMEOUT));
+                    // Tell the execution manager to clean up early
+                    codeExecutionManager.requestEarlyExit();
+                    // Clean up Lambda resources
+                    cleanUpResources(connectionId, api);
                     break;
                   }
                 } catch (InterruptedException e) {
