@@ -1,14 +1,15 @@
 package org.code.javabuilder;
 
-import static org.code.protocol.LoggerNames.MAIN_LOGGER;
-
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.logging.Logger;
-import org.code.protocol.*;
+import org.code.protocol.GlobalProtocol;
+import org.code.protocol.InternalErrorKey;
+import org.code.protocol.JavabuilderException;
+import org.code.protocol.OutputAdapter;
 
 /** The orchestrator for code compilation and execution. */
 public class CodeBuilder implements AutoCloseable {
@@ -73,15 +74,9 @@ public class CodeBuilder implements AutoCloseable {
     this.createJavaRunner().runTests();
   }
 
-  /**
-   * Resets System.in and System.out. Removes the temporary folder we generated to compile the
-   * user's code.
-   *
-   * @throws InternalFacingException if the folder cannot be deleted.
-   */
   @Override
-  public void close() throws InternalFacingException {
-    Logger.getLogger(MAIN_LOGGER).info("CodeBuilder close called");
+  public void close() {
+    // Nothing to close; no-op
   }
 
   /**

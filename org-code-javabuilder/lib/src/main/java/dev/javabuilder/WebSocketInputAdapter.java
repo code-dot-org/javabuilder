@@ -21,15 +21,9 @@ public class WebSocketInputAdapter implements InputAdapter {
         Thread.sleep(1000);
       } catch (InterruptedException e) {
         throw new InternalServerRuntimeError(InternalErrorKey.CONNECTION_TERMINATED, e);
-        // no-op, this likely means the user stopped the program
       }
     }
     return messages.remove();
-  }
-
-  @Override
-  public boolean hasActiveConnection() {
-    return true;
   }
 
   public void appendMessage(String message) {

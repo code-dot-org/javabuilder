@@ -30,13 +30,7 @@ public class WebSocketOutputAdapter implements OutputAdapter {
       e.printStackTrace();
     } catch (IllegalStateException e) {
       throw new InternalServerRuntimeError(InternalErrorKey.CONNECTION_TERMINATED, e);
-      // this happens if the endpoint has been closed. Fail silently.
     }
-  }
-
-  @Override
-  public boolean hasActiveConnection() {
-    return true;
   }
 
   public void sendDebuggingMessage(ClientMessage message) {
@@ -46,7 +40,6 @@ public class WebSocketOutputAdapter implements OutputAdapter {
       e.printStackTrace();
     } catch (IllegalStateException e) {
       throw new InternalServerRuntimeError(InternalErrorKey.CONNECTION_TERMINATED, e);
-      // this happens if the endpoint has been closed. Fail silently.
     }
   }
 }

@@ -30,42 +30,6 @@ public class CodeExecutionManager {
   private InputStream systemInputStream;
   private PrintStream systemOutputStream;
 
-  /**
-   * Convenience factory for creating the code builder thread. Useful for mocking during testing.
-   */
-  //  private static class CodeBuilderThreadFactory {
-  //    public Thread createCodeBuilderThread(
-  //        ProjectFileLoader fileLoader,
-  //        OutputAdapter outputAdapter,
-  //        File tempFolder,
-  //        ExecutionType executionType,
-  //        List<String> compileList,
-  //        CompletionListener listener) {
-  //      return new Thread(
-  //          new CodeBuilderRunnable(
-  //              fileLoader, outputAdapter, tempFolder, executionType, compileList, listener));
-  //    }
-  //  }
-
-  //  public CodeExecutionManager(
-  //      ProjectFileLoader fileLoader,
-  //      InputHandler inputHandler,
-  //      OutputAdapter outputAdapter,
-  //      ExecutionType executionType,
-  //      List<String> compileList,
-  //      JavabuilderFileManager fileManager,
-  //      LifecycleNotifier lifecycleNotifier) {
-  //    this(
-  //        fileLoader,
-  //        inputHandler,
-  //        outputAdapter,
-  //        executionType,
-  //        compileList,
-  //        fileManager,
-  //        lifecycleNotifier,
-  //        new CodeBuilderThreadFactory());
-  //  }
-
   public CodeExecutionManager(
       ProjectFileLoader fileLoader,
       InputHandler inputHandler,
@@ -105,46 +69,6 @@ public class CodeExecutionManager {
       LoggerUtils.logError(e);
     }
   }
-
-  //  /** Performs pre-execution setup and starts code execution in a separate thread. */
-  ////  public void start() {
-  ////    try {
-  ////      this.onPreExecute();
-  ////      this.executionThread =
-  ////          this.threadFactory.createCodeBuilderThread(
-  ////              this.fileLoader,
-  ////              this.outputAdapter,
-  ////              this.tempFolder,
-  ////              this.executionType,
-  ////              this.compileList,
-  ////              this);
-  ////      this.executionThread.start();
-  ////    } catch (InternalServerError e) {
-  ////      LoggerUtils.logError(e);
-  ////    }
-  ////  }
-  //
-  //  /** Interrupts the running code execution process. */
-  ////  public void interrupt() {
-  ////    try {
-  ////      if (this.executionThread == null) {
-  ////        // Will be caught and logged below
-  ////        throw new InternalServerError(
-  ////            InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION,
-  ////            new IllegalStateException("Code execution interrupted before starting."));
-  ////      }
-  ////      this.executionThread.interrupt();
-  ////      Logger.getLogger(MAIN_LOGGER).info("Calling post execute from interrupt.");
-  ////      this.onPostExecute();
-  ////    } catch (InternalServerError e) {
-  ////      LoggerUtils.logError(e);
-  ////    }
-  ////  }
-  //
-  //  /** @return whether the code execution thread is alive */
-  ////  public boolean isAlive() {
-  ////    return this.executionThread != null && this.executionThread.isAlive();
-  ////  }
 
   /**
    * Pre-execution steps: 1) create temporary folder, 2) Replace System.in/out with custom in/out
