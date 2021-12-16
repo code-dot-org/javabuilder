@@ -71,7 +71,7 @@ public class AudioWriter {
    * Writes the raw audio data in audioSamples to audioOutputStream in a valid audio file format and
    * closes output streams.
    */
-  public void writeToAudioStreamAndClose() {
+  public void writeToAudioStream() {
     if (this.audioSamples.length == 0) {
       // Add a silent audio sample so we can build a valid wav file.
       // TODO: Send a "No audio" signal instead
@@ -81,7 +81,9 @@ public class AudioWriter {
     AudioUtils.writeBytesToOutputStream(
         AudioUtils.convertDoubleArrayToByteArray(this.audioSamples), this.audioOutputStream);
     this.currentSampleIndex = 0;
+  }
 
+  public void close() {
     try {
       this.audioOutputStream.close();
     } catch (IOException e) {
