@@ -19,31 +19,23 @@ public class CodeBuilderRunnable implements Runnable {
   private final File tempFolder;
   private final ExecutionType executionType;
   private final List<String> compileList;
-  private final CompletionListener completionListener;
 
   public CodeBuilderRunnable(
       ProjectFileLoader fileLoader,
       OutputAdapter outputAdapter,
       File tempFolder,
       ExecutionType executionType,
-      List<String> compileList,
-      CompletionListener completionListener) {
+      List<String> compileList) {
     this.fileLoader = fileLoader;
     this.outputAdapter = outputAdapter;
     this.tempFolder = tempFolder;
     this.executionType = executionType;
     this.compileList = compileList;
-    this.completionListener = completionListener;
   }
 
   @Override
   public void run() {
-    try {
-      this.executeCodeBuilder();
-    } finally {
-      // Ensure the completion listener is always notified
-      this.completionListener.onComplete();
-    }
+    this.executeCodeBuilder();
   }
 
   private void executeCodeBuilder() {
@@ -71,6 +63,12 @@ public class CodeBuilderRunnable implements Runnable {
         // Interrupted Exception is thrown if the code was manually shut down.
         // Ignore this exception
         Logger.getLogger(MAIN_LOGGER).info("Catching interruption in execution thread.");
+        return;
+      }
+      if (e.getMessage().equals(InternalErrorKey.CONNECTION_TERMINATED.toString())) {
+        // The connection was terminated while trying to send or receive a message. We no longer
+        // have a connection to the user, so we need to log a warning internally and exit.
+        Logger.getLogger(MAIN_LOGGER).warning(e.getLoggingString());
         return;
       }
       // The error was caused by us (essentially an HTTP 5xx error). Log it so we can fix it.

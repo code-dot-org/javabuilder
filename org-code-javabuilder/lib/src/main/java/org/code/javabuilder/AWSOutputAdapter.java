@@ -63,13 +63,10 @@ public class AWSOutputAdapter implements OutputAdapter {
   }
 
   private void sendMessageHelper(PostToConnectionRequest post) {
-    if (!this.hasActiveConnection) {
-      return;
-    }
     try {
       this.api.postToConnection(post);
     } catch (GoneException e) {
-      this.hasActiveConnection = false;
+      throw new InternalServerRuntimeError(InternalErrorKey.CONNECTION_TERMINATED, e);
     }
   }
 }

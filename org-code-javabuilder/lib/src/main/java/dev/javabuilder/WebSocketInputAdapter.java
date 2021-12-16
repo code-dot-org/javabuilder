@@ -3,6 +3,8 @@ package dev.javabuilder;
 import java.util.LinkedList;
 import java.util.Queue;
 import org.code.protocol.InputAdapter;
+import org.code.protocol.InternalErrorKey;
+import org.code.protocol.InternalServerRuntimeError;
 
 /** Intended for local testing with dashboard only. Accepts input from a WebSocket session. */
 public class WebSocketInputAdapter implements InputAdapter {
@@ -18,6 +20,7 @@ public class WebSocketInputAdapter implements InputAdapter {
       try {
         Thread.sleep(1000);
       } catch (InterruptedException e) {
+        throw new InternalServerRuntimeError(InternalErrorKey.CONNECTION_TERMINATED, e);
         // no-op, this likely means the user stopped the program
       }
     }

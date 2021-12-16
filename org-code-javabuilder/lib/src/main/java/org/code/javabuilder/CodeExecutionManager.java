@@ -1,14 +1,11 @@
 package org.code.javabuilder;
 
-import static org.code.protocol.LoggerNames.MAIN_LOGGER;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.nio.file.Files;
 import java.util.List;
-import java.util.logging.Logger;
 import org.code.protocol.*;
 import org.code.protocol.LoggerUtils.ClearStatus;
 import org.code.protocol.LoggerUtils.SessionTime;
@@ -18,7 +15,7 @@ import org.code.protocol.LoggerUtils.SessionTime;
  * pre-execution setup and starts code execution in a separate thread. When complete, or when asked
  * to interrupt execution, it ensures the necessary post-execution cleanup steps are performed.
  */
-public class CodeExecutionManager implements CompletionListener {
+public class CodeExecutionManager {
   private final ProjectFileLoader fileLoader;
   private final InputHandler inputHandler;
   private final OutputAdapter outputAdapter;
@@ -26,9 +23,7 @@ public class CodeExecutionManager implements CompletionListener {
   private final List<String> compileList;
   private final JavabuilderFileManager fileManager;
   private final LifecycleNotifier lifecycleNotifier;
-  private final CodeBuilderThreadFactory threadFactory;
 
-  private Thread executionThread;
   private File tempFolder;
   private InputRedirectionStream overrideInputStream;
   private OutputPrintStream overrideOutputStream;
@@ -38,19 +33,38 @@ public class CodeExecutionManager implements CompletionListener {
   /**
    * Convenience factory for creating the code builder thread. Useful for mocking during testing.
    */
-  private static class CodeBuilderThreadFactory {
-    public Thread createCodeBuilderThread(
-        ProjectFileLoader fileLoader,
-        OutputAdapter outputAdapter,
-        File tempFolder,
-        ExecutionType executionType,
-        List<String> compileList,
-        CompletionListener listener) {
-      return new Thread(
-          new CodeBuilderRunnable(
-              fileLoader, outputAdapter, tempFolder, executionType, compileList, listener));
-    }
-  }
+  //  private static class CodeBuilderThreadFactory {
+  //    public Thread createCodeBuilderThread(
+  //        ProjectFileLoader fileLoader,
+  //        OutputAdapter outputAdapter,
+  //        File tempFolder,
+  //        ExecutionType executionType,
+  //        List<String> compileList,
+  //        CompletionListener listener) {
+  //      return new Thread(
+  //          new CodeBuilderRunnable(
+  //              fileLoader, outputAdapter, tempFolder, executionType, compileList, listener));
+  //    }
+  //  }
+
+  //  public CodeExecutionManager(
+  //      ProjectFileLoader fileLoader,
+  //      InputHandler inputHandler,
+  //      OutputAdapter outputAdapter,
+  //      ExecutionType executionType,
+  //      List<String> compileList,
+  //      JavabuilderFileManager fileManager,
+  //      LifecycleNotifier lifecycleNotifier) {
+  //    this(
+  //        fileLoader,
+  //        inputHandler,
+  //        outputAdapter,
+  //        executionType,
+  //        compileList,
+  //        fileManager,
+  //        lifecycleNotifier,
+  //        new CodeBuilderThreadFactory());
+  //  }
 
   public CodeExecutionManager(
       ProjectFileLoader fileLoader,
@@ -60,26 +74,6 @@ public class CodeExecutionManager implements CompletionListener {
       List<String> compileList,
       JavabuilderFileManager fileManager,
       LifecycleNotifier lifecycleNotifier) {
-    this(
-        fileLoader,
-        inputHandler,
-        outputAdapter,
-        executionType,
-        compileList,
-        fileManager,
-        lifecycleNotifier,
-        new CodeBuilderThreadFactory());
-  }
-
-  CodeExecutionManager(
-      ProjectFileLoader fileLoader,
-      InputHandler inputHandler,
-      OutputAdapter outputAdapter,
-      ExecutionType executionType,
-      List<String> compileList,
-      JavabuilderFileManager fileManager,
-      LifecycleNotifier lifecycleNotifier,
-      CodeBuilderThreadFactory threadFactory) {
     this.fileLoader = fileLoader;
     this.inputHandler = inputHandler;
     this.outputAdapter = outputAdapter;
@@ -87,58 +81,67 @@ public class CodeExecutionManager implements CompletionListener {
     this.compileList = compileList;
     this.fileManager = fileManager;
     this.lifecycleNotifier = lifecycleNotifier;
-    this.threadFactory = threadFactory;
   }
 
-  /** Performs pre-execution setup and starts code execution in a separate thread. */
-  public void start() {
+  public void execute() {
     try {
       this.onPreExecute();
-      this.executionThread =
-          this.threadFactory.createCodeBuilderThread(
+
+      // Run code builder
+      final CodeBuilderRunnable runnable =
+          new CodeBuilderRunnable(
               this.fileLoader,
               this.outputAdapter,
               this.tempFolder,
               this.executionType,
-              this.compileList,
-              this);
-      this.executionThread.start();
-    } catch (InternalServerError e) {
-      LoggerUtils.logError(e);
-    }
-  }
+              this.compileList);
+      runnable.run();
 
-  /** Interrupts the running code execution process. */
-  public void interrupt() {
-    try {
-      if (this.executionThread == null) {
-        // Will be caught and logged below
-        throw new InternalServerError(
-            InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION,
-            new IllegalStateException("Code execution interrupted before starting."));
-      }
-      this.executionThread.interrupt();
-      Logger.getLogger(MAIN_LOGGER).info("Calling post execute from interrupt.");
       this.onPostExecute();
     } catch (InternalServerError e) {
       LoggerUtils.logError(e);
     }
   }
 
-  /** @return whether the code execution thread is alive */
-  public boolean isAlive() {
-    return this.executionThread != null && this.executionThread.isAlive();
-  }
-
-  @Override
-  public void onComplete() {
-    try {
-      Logger.getLogger(MAIN_LOGGER).info("Calling post execute from completion.");
-      this.onPostExecute();
-    } catch (InternalServerError e) {
-      LoggerUtils.logError(e);
-    }
-  }
+  //  /** Performs pre-execution setup and starts code execution in a separate thread. */
+  ////  public void start() {
+  ////    try {
+  ////      this.onPreExecute();
+  ////      this.executionThread =
+  ////          this.threadFactory.createCodeBuilderThread(
+  ////              this.fileLoader,
+  ////              this.outputAdapter,
+  ////              this.tempFolder,
+  ////              this.executionType,
+  ////              this.compileList,
+  ////              this);
+  ////      this.executionThread.start();
+  ////    } catch (InternalServerError e) {
+  ////      LoggerUtils.logError(e);
+  ////    }
+  ////  }
+  //
+  //  /** Interrupts the running code execution process. */
+  ////  public void interrupt() {
+  ////    try {
+  ////      if (this.executionThread == null) {
+  ////        // Will be caught and logged below
+  ////        throw new InternalServerError(
+  ////            InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION,
+  ////            new IllegalStateException("Code execution interrupted before starting."));
+  ////      }
+  ////      this.executionThread.interrupt();
+  ////      Logger.getLogger(MAIN_LOGGER).info("Calling post execute from interrupt.");
+  ////      this.onPostExecute();
+  ////    } catch (InternalServerError e) {
+  ////      LoggerUtils.logError(e);
+  ////    }
+  ////  }
+  //
+  //  /** @return whether the code execution thread is alive */
+  ////  public boolean isAlive() {
+  ////    return this.executionThread != null && this.executionThread.isAlive();
+  ////  }
 
   /**
    * Pre-execution steps: 1) create temporary folder, 2) Replace System.in/out with custom in/out
