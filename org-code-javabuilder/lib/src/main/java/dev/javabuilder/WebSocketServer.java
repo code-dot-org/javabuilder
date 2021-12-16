@@ -32,7 +32,6 @@ public class WebSocketServer {
   private Handler logHandler;
   private Logger logger;
   private CodeExecutionManager executionManager;
-  private Thread waitToCleanup;
 
   public WebSocketServer() {
     CachedResources.create();
