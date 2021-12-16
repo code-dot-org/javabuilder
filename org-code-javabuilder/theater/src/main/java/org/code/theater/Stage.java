@@ -28,9 +28,11 @@ public class Stage {
   private final AudioWriter audioWriter;
   private final InstrumentSampleLoader instrumentSampleLoader;
   private final FontHelper fontHelper;
+  private final TheaterProgressPublisher progressPublisher;
   private java.awt.Color strokeColor;
   private java.awt.Color fillColor;
   private boolean hasPlayed;
+  private boolean hasClosed;
 
   private static final int WIDTH = 400;
   private static final int HEIGHT = 400;
@@ -64,7 +66,8 @@ public class Stage {
         new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB),
         new GifWriter.Factory(),
         new AudioWriter.Factory(),
-        new InstrumentSampleLoader());
+        new InstrumentSampleLoader(),
+        new TheaterProgressPublisher());
   }
 
   /**
@@ -77,7 +80,8 @@ public class Stage {
       BufferedImage image,
       GifWriter.Factory gifWriterFactory,
       AudioWriter.Factory audioWriterFactory,
-      InstrumentSampleLoader instrumentSampleLoader) {
+      InstrumentSampleLoader instrumentSampleLoader,
+      TheaterProgressPublisher progressPublisher) {
     this.image = image;
     this.graphics = this.image.createGraphics();
     this.outputAdapter = GlobalProtocol.getInstance().getOutputAdapter();
@@ -87,8 +91,10 @@ public class Stage {
     this.audioOutputStream = new ByteArrayOutputStream();
     this.audioWriter = audioWriterFactory.createAudioWriter(this.audioOutputStream);
     this.instrumentSampleLoader = instrumentSampleLoader;
+    this.progressPublisher = progressPublisher;
     this.fontHelper = new FontHelper();
     this.hasPlayed = false;
+    this.hasClosed = false;
 
     // set up the image for drawing (set a white background and black stroke/fill)
     this.clear(Color.WHITE);
@@ -160,6 +166,7 @@ public class Stage {
   public void pause(double seconds) {
     this.gifWriter.writeToGif(this.image, (int) (Math.max(seconds, 0.1) * 1000));
     this.audioWriter.addDelay(Math.max(seconds, 0.1));
+    this.progressPublisher.onPause(seconds);
   }
 
   /**
@@ -432,11 +439,25 @@ public class Stage {
       throw new TheaterRuntimeException(ExceptionKeys.DUPLICATE_PLAY_COMMAND);
     } else {
       this.outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.GENERATING_RESULTS));
+      this.progressPublisher.onPlay(this.audioWriter.getTotalAudioLength());
       this.gifWriter.writeToGif(this.image, 0);
-      this.gifWriter.close();
-      this.audioWriter.writeToAudioStreamAndClose();
+      this.audioWriter.writeToAudioStream();
+      // We must call close before write so that the streams are flushed.
+      this.close();
       this.writeImageAndAudioToFile();
       this.hasPlayed = true;
+    }
+  }
+
+  /**
+   * Clean up resources created by this instance. If close or play has already been called this
+   * method does nothing.
+   */
+  public void close() {
+    if (!this.hasClosed) {
+      this.gifWriter.close();
+      this.audioWriter.close();
+      this.hasClosed = true;
     }
   }
 
