@@ -37,10 +37,5 @@ public class LocalMain {
             GlobalProtocol.getInstance().getFileManager(),
             new LifecycleNotifier());
     codeExecutionManager.execute();
-    //    codeExecutionManager.start();
-    //    while (codeExecutionManager.isAlive()) {
-    //      // Wait for execution to complete
-    //      Thread.sleep(1000);
-    //    }
   }
 }
