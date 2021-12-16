@@ -28,6 +28,7 @@ class TheaterProgressPublisher {
   public void onPause(double seconds) {
     this.pauseTimeSeconds += seconds;
     if (this.pauseTimeSeconds > MAX_TIME_S) {
+      Theater.stage.close();
       String message =
           "Your video is longer than "
               + MAX_TIME_S

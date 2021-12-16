@@ -30,6 +30,7 @@ public class Stage {
   private java.awt.Color strokeColor;
   private java.awt.Color fillColor;
   private boolean hasPlayed;
+  private boolean hasClosed;
 
   private static final int WIDTH = 400;
   private static final int HEIGHT = 400;
@@ -72,6 +73,7 @@ public class Stage {
     this.progressPublisher = progressPublisher;
     this.fontHelper = new FontHelper();
     this.hasPlayed = false;
+    this.hasClosed = false;
 
     // set up the image for drawing (set a white background and black stroke/fill)
     this.clear(Color.WHITE);
@@ -417,10 +419,22 @@ public class Stage {
       this.outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.GENERATING_RESULTS));
       this.progressPublisher.onPlay(this.audioWriter.getTotalAudioLength());
       this.gifWriter.writeToGif(this.image, 0);
-      this.gifWriter.close();
-      this.audioWriter.writeToAudioStreamAndClose();
+      this.audioWriter.writeToAudioStream();
       this.writeImageAndAudioToFile();
       this.hasPlayed = true;
+      this.close();
+    }
+  }
+
+  /**
+   * Clean up resources created by this instance. If close has already been called this method does
+   * nothing.
+   */
+  public void close() {
+    if (!this.hasClosed) {
+      this.gifWriter.close();
+      this.audioWriter.close();
+      this.hasClosed = true;
     }
   }
 
