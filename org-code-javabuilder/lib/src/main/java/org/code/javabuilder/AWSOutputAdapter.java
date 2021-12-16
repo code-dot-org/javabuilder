@@ -1,15 +1,14 @@
 package org.code.javabuilder;
 
+import static org.code.protocol.LoggerNames.MAIN_LOGGER;
+
 import com.amazonaws.services.apigatewaymanagementapi.AmazonApiGatewayManagementApi;
 import com.amazonaws.services.apigatewaymanagementapi.model.GetConnectionRequest;
 import com.amazonaws.services.apigatewaymanagementapi.model.GoneException;
 import com.amazonaws.services.apigatewaymanagementapi.model.PostToConnectionRequest;
 import java.nio.ByteBuffer;
 import java.util.logging.Logger;
-
 import org.code.protocol.*;
-
-import static org.code.protocol.LoggerNames.MAIN_LOGGER;
 
 /** Sends messages to Amazon API Gateway from the user's program. */
 public class AWSOutputAdapter implements OutputAdapter {
