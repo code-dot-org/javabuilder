@@ -1,9 +1,6 @@
 package dev.javabuilder;
 
-import static org.code.protocol.LoggerNames.MAIN_LOGGER;
-
 import java.io.IOException;
-import java.util.logging.Logger;
 import javax.websocket.RemoteEndpoint;
 import javax.websocket.Session;
 import org.code.protocol.ClientMessage;
@@ -23,7 +20,6 @@ public class WebSocketOutputAdapter implements OutputAdapter {
 
   @Override
   public void sendMessage(ClientMessage message) {
-    Logger.getLogger(MAIN_LOGGER).info("Sending output message: " + message.getFormattedMessage());
     try {
       endpoint.sendText(message.getFormattedMessage());
     } catch (IOException e) {

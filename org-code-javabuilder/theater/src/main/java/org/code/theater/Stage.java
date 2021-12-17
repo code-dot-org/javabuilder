@@ -2,7 +2,6 @@ package org.code.theater;
 
 import static org.code.protocol.AllowedFileNames.THEATER_AUDIO_NAME;
 import static org.code.protocol.AllowedFileNames.THEATER_IMAGE_NAME;
-import static org.code.protocol.LoggerNames.MAIN_LOGGER;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -10,7 +9,6 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.util.HashMap;
-import java.util.logging.Logger;
 import org.code.media.*;
 import org.code.media.Color;
 import org.code.media.Font;
@@ -437,7 +435,6 @@ public class Stage implements LifecycleListener {
   @Override
   public void onExecutionEnded() {
     if (!this.hasClosed) {
-      Logger.getLogger(MAIN_LOGGER).info("Closing stage");
       this.gifWriter.close();
       this.audioWriter.close();
       this.hasClosed = true;
