@@ -51,8 +51,6 @@ class GifWriter {
   public void writeToGif(BufferedImage img, int delay) {
     try {
       if (this.imageOutputStream.length() > MAX_STREAM_LENGTH_BYTES) {
-        // TODO: Remove this once we have a clean up notifier for stage.
-        Theater.stage.close();
         // TODO: Make this translatable: https://codedotorg.atlassian.net/browse/CSA-1108
         String message =
             "Your video is too large. Please decrease the number of frames in your video and try again.";
