@@ -14,7 +14,9 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -183,6 +185,12 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
       // program.
     } finally {
       cleanUpResources(connectionId, api);
+      File f = Paths.get(System.getProperty("java.io.tmpdir")).toFile();
+      if ((double) f.getUsableSpace() / f.getTotalSpace() < 0.5) {
+        // The current project holds a lock on too many resources. Force the JVM to quit in
+        // order to release the resources for the next use of the container.
+        System.exit(1);
+      }
     }
     return "done";
   }
