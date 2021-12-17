@@ -1,12 +1,9 @@
 package org.code.javabuilder;
 
-import static org.code.protocol.LoggerNames.MAIN_LOGGER;
-
 import com.amazonaws.services.apigatewaymanagementapi.AmazonApiGatewayManagementApi;
 import com.amazonaws.services.apigatewaymanagementapi.model.GoneException;
 import com.amazonaws.services.apigatewaymanagementapi.model.PostToConnectionRequest;
 import java.nio.ByteBuffer;
-import java.util.logging.Logger;
 import org.code.protocol.*;
 
 /** Sends messages to Amazon API Gateway from the user's program. */
@@ -26,7 +23,6 @@ public class AWSOutputAdapter implements OutputAdapter {
    */
   @Override
   public void sendMessage(ClientMessage message) {
-    Logger.getLogger(MAIN_LOGGER).info("OutputAdapter message: " + message.getFormattedMessage());
     PostToConnectionRequest post = new PostToConnectionRequest();
     post.setConnectionId(connectionId);
     post.setData(ByteBuffer.wrap((message.getFormattedMessage()).getBytes()));
