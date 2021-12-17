@@ -22,20 +22,14 @@ public class LocalMain {
     // turn off the default console logger
     logger.setUseParentHandlers(false);
 
-    GlobalProtocol.create(
-        outputAdapter, inputAdapter, "", "", "", new LocalFileManager(), new LifecycleNotifier());
+    GlobalProtocol.create(outputAdapter, inputAdapter, "", "", "", new LocalFileManager());
     CachedResources.create();
 
     // Create and invoke the code execution environment
-    CodeExecutionManager codeExecutionManager =
-        new CodeExecutionManager(
-            fileLoader,
-            GlobalProtocol.getInstance().getInputHandler(),
-            outputAdapter,
-            ExecutionType.RUN,
-            null,
-            GlobalProtocol.getInstance().getFileManager(),
-            new LifecycleNotifier());
-    codeExecutionManager.execute();
+    CodeBuilderRunnable codeBuilderRunnable =
+        new CodeBuilderRunnable(fileLoader, outputAdapter, ExecutionType.RUN, null);
+    Thread codeBuilderExecutor = new Thread(codeBuilderRunnable);
+    codeBuilderExecutor.start();
+    codeBuilderExecutor.join();
   }
 }

@@ -1,6 +1,7 @@
 package org.code.javabuilder;
 
 import com.amazonaws.services.sqs.AmazonSQS;
+import com.amazonaws.services.sqs.model.GetQueueUrlRequest;
 import com.amazonaws.services.sqs.model.Message;
 import com.amazonaws.services.sqs.model.QueueDoesNotExistException;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
@@ -8,8 +9,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import org.code.protocol.InputAdapter;
-import org.code.protocol.InternalErrorKey;
-import org.code.protocol.InternalServerRuntimeError;
 
 /** Accesses Amazon SQS to get user input for the currently running program. */
 public class AWSInputAdapter implements InputAdapter {
@@ -17,11 +16,13 @@ public class AWSInputAdapter implements InputAdapter {
   private final String queueUrl;
   private final String queueName;
   private final Queue<String> messages;
+  private boolean hasActiveConnection;
 
   public AWSInputAdapter(AmazonSQS sqsClient, String queueUrl, String queueName) {
     this.sqsClient = sqsClient;
     this.queueUrl = queueUrl;
     this.messages = new LinkedList<>();
+    this.hasActiveConnection = true;
     this.queueName = queueName;
   }
 
@@ -33,6 +34,9 @@ public class AWSInputAdapter implements InputAdapter {
    * @return the first message in the fifo queue.
    */
   public String getNextMessage() {
+    if (!this.hasActiveConnection) {
+      return null;
+    }
     ReceiveMessageRequest request = new ReceiveMessageRequest();
     request.setQueueUrl(queueUrl);
     // Sets the request timeout to its maximum value of 20 seconds
@@ -48,10 +52,28 @@ public class AWSInputAdapter implements InputAdapter {
         }
       } catch (QueueDoesNotExistException e) {
         // if we tried to send a message and got queue does not exist, we have lost our connection
-        throw new InternalServerRuntimeError(InternalErrorKey.CONNECTION_TERMINATED, e);
+        this.hasActiveConnection = false;
+        return null;
       }
     }
 
     return messages.remove();
+  }
+
+  /** Check if we still have an active connection to AWS. */
+  @Override
+  public boolean hasActiveConnection() {
+    if (!this.hasActiveConnection) {
+      return false;
+    }
+    try {
+      // The simplest way to determine if we have an active connection is to make a queue
+      // url request.
+      GetQueueUrlRequest queueUrlRequest = new GetQueueUrlRequest(this.queueName);
+      sqsClient.getQueueUrl(queueUrlRequest);
+    } catch (QueueDoesNotExistException e) {
+      this.hasActiveConnection = false;
+    }
+    return this.hasActiveConnection;
   }
 }

@@ -110,16 +110,8 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     final AmazonS3 s3Client = AmazonS3ClientBuilder.standard().build();
     final AWSFileManager fileManager =
         new AWSFileManager(s3Client, outputBucketName, javabuilderSessionId, getOutputUrl, context);
-    final LifecycleNotifier lifecycleNotifier = new LifecycleNotifier();
-    // TODO: Move common setup steps into CodeExecutionManager#onPreExecute
     GlobalProtocol.create(
-        outputAdapter,
-        inputAdapter,
-        dashboardHostname,
-        channelId,
-        levelId,
-        fileManager,
-        lifecycleNotifier);
+        outputAdapter, inputAdapter, dashboardHostname, channelId, levelId, fileManager);
 
     // Create file loader
     final UserProjectFileLoader userProjectFileLoader =
@@ -146,7 +138,10 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
       InternalServerError error = new InternalServerError(INTERNAL_EXCEPTION, e);
 
       // Log the error
-      LoggerUtils.logError(error);
+      JSONObject eventData = new JSONObject();
+      eventData.put(LoggerConstants.EXCEPTION_MESSAGE, error.getExceptionMessage());
+      eventData.put(LoggerConstants.LOGGING_STRING, error.getLoggingString());
+      Logger.getLogger(MAIN_LOGGER).severe(eventData.toString());
 
       // This affected the user. Let's tell them about it.
       outputAdapter.sendMessage(error.getExceptionMessage());
@@ -155,30 +150,43 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
       return "error clearing tmpdir";
     }
 
-    final CodeExecutionManager codeExecutionManager =
-        new CodeExecutionManager(
-            userProjectFileLoader,
-            GlobalProtocol.getInstance().getInputHandler(),
-            outputAdapter,
-            executionType,
-            compileList,
-            fileManager,
-            lifecycleNotifier);
-
-    final Thread timeoutNotifierThread =
-        createTimeoutThread(context, outputAdapter, codeExecutionManager, connectionId, api);
-    timeoutNotifierThread.start();
-
     try {
-      // start code build and block until completed
-      codeExecutionManager.execute();
-    } catch (Throwable e) {
-      // All errors should be caught, but if for any reason we encounter an error here, make sure we
-      // catch it, log, and always clean up resources
-      LoggerUtils.logException(e);
+      // Load files to memory and create and invoke the code execution environment
+      CodeBuilderRunnable codeBuilderRunnable =
+          new CodeBuilderRunnable(userProjectFileLoader, outputAdapter, executionType, compileList);
+      Thread codeBuilderThread = new Thread(codeBuilderRunnable);
+      // start code build and execute in a thread
+      codeBuilderThread.start();
+
+      boolean timeoutWarningSent = false;
+      while (codeBuilderThread.isAlive()) {
+        // sleep for CHECK_THREAD_INTERVAL_MS, then check if we've lost the connection to the
+        // input or output adapter. This means we have lost connection to the end user (either
+        // because they terminated their program or some other issue), and we should stop
+        // executing their code.
+        Thread.sleep(CHECK_THREAD_INTERVAL_MS);
+        if (codeBuilderThread.isAlive()
+            && (!inputAdapter.hasActiveConnection() || !outputAdapter.hasActiveConnection())) {
+          codeBuilderThread.interrupt();
+          break;
+        }
+
+        // Check if the lambda is nearing timeout -- send warning message beforehand,
+        // then preempt timeout before it occurs and send another message.
+        if ((context.getRemainingTimeInMillis() < TIMEOUT_WARNING_MS) && !timeoutWarningSent) {
+          outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.TIMEOUT_WARNING));
+          timeoutWarningSent = true;
+        }
+        if (context.getRemainingTimeInMillis() < TIMEOUT_CLEANUP_BUFFER_MS) {
+          outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.TIMEOUT));
+          codeBuilderThread.interrupt();
+          break;
+        }
+      }
+    } catch (InterruptedException interruptedException) {
+      // no-op if we have an interrupted exception, as it happened due to a user ending their
+      // program.
     } finally {
-      // Stop timeout listener and clean up
-      timeoutNotifierThread.interrupt();
       cleanUpResources(connectionId, api);
       File f = Paths.get(System.getProperty("java.io.tmpdir")).toFile();
       if ((double) f.getUsableSpace() / f.getTotalSpace() < 0.5) {
@@ -187,42 +195,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
         System.exit(LOW_DISK_SPACE_ERROR_CODE);
       }
     }
-
     return "done";
-  }
-
-  private Thread createTimeoutThread(
-      Context context,
-      OutputAdapter outputAdapter,
-      CodeExecutionManager codeExecutionManager,
-      String connectionId,
-      AmazonApiGatewayManagementApi api) {
-    return new Thread(
-        () -> {
-          boolean timeoutWarningSent = false;
-
-          while (!Thread.currentThread().isInterrupted()) {
-            try {
-              Thread.sleep(CHECK_THREAD_INTERVAL_MS);
-              if ((context.getRemainingTimeInMillis() < TIMEOUT_WARNING_MS)
-                  && !timeoutWarningSent) {
-                outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.TIMEOUT_WARNING));
-                timeoutWarningSent = true;
-              }
-
-              if (context.getRemainingTimeInMillis() < TIMEOUT_CLEANUP_BUFFER_MS) {
-                outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.TIMEOUT));
-                // Tell the execution manager to clean up early
-                codeExecutionManager.requestEarlyExit();
-                // Clean up AWS resources
-                cleanUpResources(connectionId, api);
-                break;
-              }
-            } catch (InterruptedException e) {
-              Thread.currentThread().interrupt();
-            }
-          }
-        });
   }
 
   private void cleanUpResources(String connectionId, AmazonApiGatewayManagementApi api) {
