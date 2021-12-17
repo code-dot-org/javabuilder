@@ -26,6 +26,7 @@ public class CodeExecutionManager {
   private final List<String> compileList;
   private final JavabuilderFileManager fileManager;
   private final LifecycleNotifier lifecycleNotifier;
+  private final CodeBuilderRunnableFactory codeBuilderRunnableFactory;
 
   private File tempFolder;
   private InputRedirectionStream overrideInputStream;
@@ -33,6 +34,18 @@ public class CodeExecutionManager {
   private InputStream systemInputStream;
   private PrintStream systemOutputStream;
   private boolean executionInProgress;
+
+  static class CodeBuilderRunnableFactory {
+    public CodeBuilderRunnable createCodeBuilderRunnable(
+        ProjectFileLoader fileLoader,
+        OutputAdapter outputAdapter,
+        File tempFolder,
+        ExecutionType executionType,
+        List<String> compileList) {
+      return new CodeBuilderRunnable(
+          fileLoader, outputAdapter, tempFolder, executionType, compileList);
+    }
+  }
 
   public CodeExecutionManager(
       ProjectFileLoader fileLoader,
@@ -42,6 +55,26 @@ public class CodeExecutionManager {
       List<String> compileList,
       JavabuilderFileManager fileManager,
       LifecycleNotifier lifecycleNotifier) {
+    this(
+        fileLoader,
+        inputHandler,
+        outputAdapter,
+        executionType,
+        compileList,
+        fileManager,
+        lifecycleNotifier,
+        new CodeBuilderRunnableFactory());
+  }
+
+  public CodeExecutionManager(
+      ProjectFileLoader fileLoader,
+      InputHandler inputHandler,
+      OutputAdapter outputAdapter,
+      ExecutionType executionType,
+      List<String> compileList,
+      JavabuilderFileManager fileManager,
+      LifecycleNotifier lifecycleNotifier,
+      CodeBuilderRunnableFactory codeBuilderRunnableFactory) {
     this.fileLoader = fileLoader;
     this.inputHandler = inputHandler;
     this.outputAdapter = outputAdapter;
@@ -49,6 +82,7 @@ public class CodeExecutionManager {
     this.compileList = compileList;
     this.fileManager = fileManager;
     this.lifecycleNotifier = lifecycleNotifier;
+    this.codeBuilderRunnableFactory = codeBuilderRunnableFactory;
     this.executionInProgress = false;
   }
 
@@ -60,7 +94,7 @@ public class CodeExecutionManager {
         // Run code builder
         this.executionInProgress = true;
         final CodeBuilderRunnable runnable =
-            new CodeBuilderRunnable(
+            this.codeBuilderRunnableFactory.createCodeBuilderRunnable(
                 this.fileLoader,
                 this.outputAdapter,
                 this.tempFolder,
@@ -84,12 +118,12 @@ public class CodeExecutionManager {
    */
   public void requestEarlyExit() {
     if (!this.executionInProgress) {
-      Logger.getLogger(MAIN_LOGGER).warning("Early exit requested before execution started");
+      Logger.getLogger(MAIN_LOGGER)
+          .warning("Early exit requested while execution not in progress.");
       return;
     }
     try {
       this.onPostExecute();
-      this.executionInProgress = false;
     } catch (InternalServerError e) {
       LoggerUtils.logError(e);
     }
@@ -121,7 +155,8 @@ public class CodeExecutionManager {
    */
   private void onPostExecute() throws InternalServerError {
     if (!this.executionInProgress) {
-      Logger.getLogger(MAIN_LOGGER).warning("onPostExecute() called before execution started");
+      Logger.getLogger(MAIN_LOGGER)
+          .warning("onPostExecute() called while execution not in progress.");
       return;
     }
     // Notify listeners
@@ -137,9 +172,11 @@ public class CodeExecutionManager {
       this.overrideOutputStream.close();
     } catch (IOException e) {
       throw new InternalServerError(InternalErrorKey.INTERNAL_EXCEPTION, e);
+    } finally {
+      // Replace System in/out with original System in/out
+      System.setIn(this.systemInputStream);
+      System.setOut(this.systemOutputStream);
+      this.executionInProgress = false;
     }
-    // Replace System in/out with original System in/out
-    System.setIn(this.systemInputStream);
-    System.setOut(this.systemOutputStream);
   }
 }

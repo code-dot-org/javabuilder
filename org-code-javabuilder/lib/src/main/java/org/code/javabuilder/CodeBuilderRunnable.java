@@ -61,7 +61,8 @@ public class CodeBuilderRunnable implements Runnable {
     } catch (InternalServerError | InternalServerRuntimeError e) {
       if (e.getMessage().equals(InternalErrorKey.CONNECTION_TERMINATED.toString())) {
         // The connection was terminated while trying to send or receive a message. We no longer
-        // have a connection to the user, so we need to log a warning internally and exit.
+        // have a connection to the user, so we need to log a warning internally and return early,
+        // since we can no longer send the EXITED message.
         Logger.getLogger(MAIN_LOGGER).warning(e.getLoggingString());
         return;
       }
@@ -91,7 +92,6 @@ public class CodeBuilderRunnable implements Runnable {
       // Additionally, these may have affected the user. For now, let's tell them about it.
       outputAdapter.sendMessage(error.getExceptionMessage());
     }
-    // Send exit message if we haven't already returned
     this.outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.EXITED));
   }
 }

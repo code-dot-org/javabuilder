@@ -106,8 +106,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     final AWSFileManager fileManager =
         new AWSFileManager(s3Client, outputBucketName, javabuilderSessionId, getOutputUrl, context);
     final LifecycleNotifier lifecycleNotifier = new LifecycleNotifier();
-    // TODO: Should GlobalProtocol.create() happen in CodeExecutionManager#onPreExecute so it can
-    // also be destroyed in #postExecute?
+    // TODO: Move common setup steps into CodeExecutionManager#onPreExecute
     GlobalProtocol.create(
         outputAdapter,
         inputAdapter,
@@ -162,32 +161,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
             lifecycleNotifier);
 
     final Thread timeoutNotifierThread =
-        new Thread(
-            () -> {
-              boolean timeoutWarningSent = false;
-
-              while (!Thread.currentThread().isInterrupted()) {
-                try {
-                  Thread.sleep(CHECK_THREAD_INTERVAL_MS);
-                  if ((context.getRemainingTimeInMillis() < TIMEOUT_WARNING_MS)
-                      && !timeoutWarningSent) {
-                    outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.TIMEOUT_WARNING));
-                    timeoutWarningSent = true;
-                  }
-
-                  if (context.getRemainingTimeInMillis() < TIMEOUT_CLEANUP_BUFFER_MS) {
-                    outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.TIMEOUT));
-                    // Tell the execution manager to clean up early
-                    codeExecutionManager.requestEarlyExit();
-                    // Clean up Lambda resources
-                    cleanUpResources(connectionId, api);
-                    break;
-                  }
-                } catch (InterruptedException e) {
-                  Thread.currentThread().interrupt();
-                }
-              }
-            });
+        createTimeoutThread(context, outputAdapter, codeExecutionManager, connectionId, api);
     timeoutNotifierThread.start();
 
     try {
@@ -204,6 +178,40 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     }
 
     return "done";
+  }
+
+  private Thread createTimeoutThread(
+      Context context,
+      OutputAdapter outputAdapter,
+      CodeExecutionManager codeExecutionManager,
+      String connectionId,
+      AmazonApiGatewayManagementApi api) {
+    return new Thread(
+        () -> {
+          boolean timeoutWarningSent = false;
+
+          while (!Thread.currentThread().isInterrupted()) {
+            try {
+              Thread.sleep(CHECK_THREAD_INTERVAL_MS);
+              if ((context.getRemainingTimeInMillis() < TIMEOUT_WARNING_MS)
+                  && !timeoutWarningSent) {
+                outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.TIMEOUT_WARNING));
+                timeoutWarningSent = true;
+              }
+
+              if (context.getRemainingTimeInMillis() < TIMEOUT_CLEANUP_BUFFER_MS) {
+                outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.TIMEOUT));
+                // Tell the execution manager to clean up early
+                codeExecutionManager.requestEarlyExit();
+                // Clean up AWS resources
+                cleanUpResources(connectionId, api);
+                break;
+              }
+            } catch (InterruptedException e) {
+              Thread.currentThread().interrupt();
+            }
+          }
+        });
   }
 
   private void cleanUpResources(String connectionId, AmazonApiGatewayManagementApi api) {
