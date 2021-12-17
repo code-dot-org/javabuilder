@@ -14,7 +14,9 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -36,6 +38,9 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
   private static final int TIMEOUT_WARNING_MS = 20000;
   private static final int TIMEOUT_CLEANUP_BUFFER_MS = 5000;
   private static final String LAMBDA_ID = UUID.randomUUID().toString();
+  // This is an error code we made up to signal that available disk space is less than 50%.
+  // It may be used in tracking on Cloud Watch.
+  private static final int LOW_DISK_SPACE_ERROR_CODE = 50;
 
   public LambdaRequestHandler() {
     // create CachedResources once for the entire container.
@@ -183,6 +188,12 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
       // program.
     } finally {
       cleanUpResources(connectionId, api);
+      File f = Paths.get(System.getProperty("java.io.tmpdir")).toFile();
+      if ((double) f.getUsableSpace() / f.getTotalSpace() < 0.5) {
+        // The current project holds a lock on too many resources. Force the JVM to quit in
+        // order to release the resources for the next use of the container.
+        System.exit(LOW_DISK_SPACE_ERROR_CODE);
+      }
     }
     return "done";
   }
