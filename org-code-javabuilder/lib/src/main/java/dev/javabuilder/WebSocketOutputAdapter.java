@@ -4,6 +4,8 @@ import java.io.IOException;
 import javax.websocket.RemoteEndpoint;
 import javax.websocket.Session;
 import org.code.protocol.ClientMessage;
+import org.code.protocol.InternalErrorKey;
+import org.code.protocol.InternalServerRuntimeError;
 import org.code.protocol.OutputAdapter;
 
 /**
@@ -23,13 +25,8 @@ public class WebSocketOutputAdapter implements OutputAdapter {
     } catch (IOException e) {
       e.printStackTrace();
     } catch (IllegalStateException e) {
-      // this happens if the endpoint has been closed. Fail silently.
+      throw new InternalServerRuntimeError(InternalErrorKey.CONNECTION_TERMINATED, e);
     }
-  }
-
-  @Override
-  public boolean hasActiveConnection() {
-    return true;
   }
 
   public void sendDebuggingMessage(ClientMessage message) {
@@ -38,7 +35,7 @@ public class WebSocketOutputAdapter implements OutputAdapter {
     } catch (IOException e) {
       e.printStackTrace();
     } catch (IllegalStateException e) {
-      // this happens if the endpoint has been closed. Fail silently.
+      throw new InternalServerRuntimeError(InternalErrorKey.CONNECTION_TERMINATED, e);
     }
   }
 }

@@ -30,7 +30,8 @@ public class TextItemTest {
         "",
         "",
         "",
-        mock(JavabuilderFileManager.class));
+        mock(JavabuilderFileManager.class),
+        mock(LifecycleNotifier.class));
     CachedResources.create();
     messageHandlerMockedStatic = mockStatic(PlaygroundMessageHandler.class);
     messageHandlerMockedStatic
