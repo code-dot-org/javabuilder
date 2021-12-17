@@ -189,7 +189,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
       if ((double) f.getUsableSpace() / f.getTotalSpace() < 0.5) {
         // The current project holds a lock on too many resources. Force the JVM to quit in
         // order to release the resources for the next use of the container.
-        System.exit(1);
+        System.exit(50);
       }
     }
     return "done";
