@@ -2,10 +2,10 @@ package org.code.javabuilder;
 
 import static org.code.protocol.LoggerNames.MAIN_LOGGER;
 
-import java.io.File;
 import java.util.List;
 import java.util.logging.Logger;
 import org.code.protocol.*;
+import org.json.JSONObject;
 
 /**
  * This creates a high-level wrapper that handles errors and exceptions in a way that can be
@@ -16,19 +16,16 @@ import org.code.protocol.*;
 public class CodeBuilderRunnable implements Runnable {
   private final ProjectFileLoader fileLoader;
   private final OutputAdapter outputAdapter;
-  private final File tempFolder;
   private final ExecutionType executionType;
   private final List<String> compileList;
 
   public CodeBuilderRunnable(
       ProjectFileLoader fileLoader,
       OutputAdapter outputAdapter,
-      File tempFolder,
       ExecutionType executionType,
       List<String> compileList) {
     this.fileLoader = fileLoader;
     this.outputAdapter = outputAdapter;
-    this.tempFolder = tempFolder;
     this.executionType = executionType;
     this.compileList = compileList;
   }
@@ -42,7 +39,7 @@ public class CodeBuilderRunnable implements Runnable {
     try {
       UserProjectFiles userProjectFiles = fileLoader.loadFiles();
       try (CodeBuilder codeBuilder =
-          new CodeBuilder(GlobalProtocol.getInstance(), userProjectFiles, this.tempFolder)) {
+          new CodeBuilder(GlobalProtocol.getInstance(), userProjectFiles)) {
 
         switch (this.executionType) {
           case COMPILE_ONLY:
@@ -59,15 +56,17 @@ public class CodeBuilderRunnable implements Runnable {
         }
       }
     } catch (InternalServerError | InternalServerRuntimeError e) {
-      if (e.getMessage().equals(InternalErrorKey.CONNECTION_TERMINATED.toString())) {
-        // The connection was terminated while trying to send or receive a message. We no longer
-        // have a connection to the user, so we need to log a warning internally and return early,
-        // since we can no longer send the EXITED message.
-        Logger.getLogger(MAIN_LOGGER).warning(e.getLoggingString());
+      if (e.getCause().getClass().equals(InterruptedException.class)) {
+        // Interrupted Exception is thrown if the code was manually shut down.
+        // Ignore this exception
         return;
       }
+      JSONObject eventData = new JSONObject();
+      eventData.put(LoggerConstants.EXCEPTION_MESSAGE, e.getExceptionMessage());
+      eventData.put(LoggerConstants.LOGGING_STRING, e.getLoggingString());
+      eventData.put(LoggerConstants.CAUSE, e.getCause());
       // The error was caused by us (essentially an HTTP 5xx error). Log it so we can fix it.
-      LoggerUtils.logError(e.getExceptionMessage(), e.getLoggingString(), e.getCause());
+      Logger.getLogger(MAIN_LOGGER).severe(eventData.toString());
 
       // The error affected the user. Tell them about it.
       outputAdapter.sendMessage(e.getExceptionMessage());
@@ -87,11 +86,16 @@ public class CodeBuilderRunnable implements Runnable {
 
       // Errors we didn't catch. These may have been caused by the JVM, our own setup, or many other
       // unknowns. Log them so we can fix them.
-      LoggerUtils.logError(error);
+      JSONObject eventData = new JSONObject();
+      eventData.put(LoggerConstants.EXCEPTION_MESSAGE, error.getExceptionMessage());
+      eventData.put(LoggerConstants.LOGGING_STRING, error.getLoggingString());
+      Logger.getLogger(MAIN_LOGGER).severe(eventData.toString());
 
       // Additionally, these may have affected the user. For now, let's tell them about it.
       outputAdapter.sendMessage(error.getExceptionMessage());
+    } finally {
+      GlobalProtocol.getInstance().cleanUpResources();
+      this.outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.EXITED));
     }
-    this.outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.EXITED));
   }
 }

@@ -26,8 +26,7 @@ public class ItemTest {
         "",
         "",
         "",
-        mock(JavabuilderFileManager.class),
-        mock(LifecycleNotifier.class));
+        mock(JavabuilderFileManager.class));
 
     messageHandlerMockedStatic = mockStatic(PlaygroundMessageHandler.class);
     messageHandlerMockedStatic
