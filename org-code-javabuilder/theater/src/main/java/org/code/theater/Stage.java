@@ -421,7 +421,7 @@ public class Stage implements LifecycleListener {
       this.progressPublisher.onPlay(this.audioWriter.getTotalAudioLength());
       this.gifWriter.writeToGif(this.image, 0);
       this.audioWriter.writeToAudioStream();
-      // We must call close before write so that the streams are flushed.
+      // We must call onExecutionEnded() before write so that the streams are flushed.
       this.onExecutionEnded();
       this.writeImageAndAudioToFile();
       this.hasPlayed = true;
@@ -429,8 +429,8 @@ public class Stage implements LifecycleListener {
   }
 
   /**
-   * Clean up resources created by this instance. If close or play has already been called this
-   * method does nothing.
+   * Clean up resources created by this instance. If onExecutionEnded or play has already been
+   * called this method does nothing.
    */
   @Override
   public void onExecutionEnded() {
