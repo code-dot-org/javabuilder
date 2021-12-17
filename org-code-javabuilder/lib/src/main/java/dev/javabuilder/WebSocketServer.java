@@ -31,6 +31,7 @@ public class WebSocketServer {
   private WebSocketOutputAdapter outputAdapter;
   private Handler logHandler;
   private Logger logger;
+  private Thread codeExecutor;
 
   public WebSocketServer() {
     CachedResources.create();
@@ -74,45 +75,45 @@ public class WebSocketServer {
 
     outputAdapter = new WebSocketOutputAdapter(session);
     inputAdapter = new WebSocketInputAdapter();
-    final LifecycleNotifier lifecycleNotifier = new LifecycleNotifier();
     GlobalProtocol.create(
-        outputAdapter,
-        inputAdapter,
-        dashboardHostname,
-        channelId,
-        levelId,
-        new LocalFileManager(),
-        lifecycleNotifier);
+        outputAdapter, inputAdapter, dashboardHostname, channelId, levelId, new LocalFileManager());
     final UserProjectFileLoader fileLoader =
         new UserProjectFileLoader(
             GlobalProtocol.getInstance().generateSourcesUrl(),
             levelId,
             dashboardHostname,
             useNeighborhood);
-    final CodeExecutionManager executionManager =
-        new CodeExecutionManager(
-            fileLoader,
-            GlobalProtocol.getInstance().getInputHandler(),
-            outputAdapter,
-            executionType,
-            compileList,
-            GlobalProtocol.getInstance().getFileManager(),
-            lifecycleNotifier);
-
-    executionManager.execute();
-
-    // Clean up session
-    try {
-      session.close();
-      logger.removeHandler(this.logHandler);
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+    CodeBuilderRunnable codeBuilderRunnable =
+        new CodeBuilderRunnable(fileLoader, outputAdapter, executionType, compileList);
+    this.codeExecutor = new Thread(codeBuilderRunnable);
+    this.codeExecutor.start();
+    Thread waitToCleanup =
+        new Thread(
+            () -> {
+              try {
+                this.codeExecutor.join();
+              } catch (InterruptedException e) {
+                // ignore this exception, it likely means the end user stopped
+                // their program.
+              }
+              try {
+                session.close();
+                logger.removeHandler(this.logHandler);
+              } catch (IOException e) {
+                e.printStackTrace();
+              }
+            });
+    waitToCleanup.start();
   }
 
   @OnClose
   public void myOnClose() {
-    Logger.getLogger(MAIN_LOGGER).info("WebSocket closed.");
+    if (this.codeExecutor != null && this.codeExecutor.isAlive()) {
+      this.codeExecutor.interrupt();
+      Logger.getLogger(MAIN_LOGGER).info("WebSocket has been closed, interrupted running program");
+    } else {
+      Logger.getLogger(MAIN_LOGGER).info("WebSocket Closed");
+    }
   }
 
   /**

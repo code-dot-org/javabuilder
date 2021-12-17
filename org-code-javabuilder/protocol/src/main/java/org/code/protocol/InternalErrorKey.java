@@ -9,7 +9,5 @@ public enum InternalErrorKey {
   // We caused an error.
   INTERNAL_EXCEPTION,
   // We caused an error that we aren't currently tracking.
-  UNKNOWN_ERROR,
-  // The connection to the user terminated while execution was in progress.
-  CONNECTION_TERMINATED
+  UNKNOWN_ERROR
 }

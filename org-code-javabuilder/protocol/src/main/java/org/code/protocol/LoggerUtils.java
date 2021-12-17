@@ -61,30 +61,6 @@ public class LoggerUtils {
     Logger.getLogger(MAIN_LOGGER).info(eventData.toString());
   }
 
-  public static void logError(JavabuilderException error) {
-    LoggerUtils.logError(error.getExceptionMessage(), error.getLoggingString(), error.getCause());
-  }
-
-  public static void logError(
-      JavabuilderThrowableMessage exceptionMessage, String loggingString, Throwable cause) {
-    JSONObject eventData = new JSONObject();
-    eventData.put(LoggerConstants.EXCEPTION_MESSAGE, exceptionMessage);
-    eventData.put(LoggerConstants.LOGGING_STRING, loggingString);
-    if (cause != null) {
-      eventData.put(LoggerConstants.CAUSE, cause);
-    }
-    Logger.getLogger(MAIN_LOGGER).severe(eventData.toString());
-  }
-
-  public static void logException(Throwable e) {
-    JSONObject eventData = new JSONObject();
-    eventData.put(LoggerConstants.EXCEPTION_MESSAGE, e.getMessage());
-    if (e.getCause() != null) {
-      eventData.put(LoggerConstants.CAUSE, e.getCause());
-    }
-    Logger.getLogger(MAIN_LOGGER).severe(eventData.toString());
-  }
-
   private static void sendDiskSpaceLogs(String type) {
     File f = Paths.get(System.getProperty("java.io.tmpdir")).toFile();
     JSONObject eventData = new JSONObject();
