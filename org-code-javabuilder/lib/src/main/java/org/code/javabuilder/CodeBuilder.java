@@ -59,15 +59,16 @@ public class CodeBuilder implements AutoCloseable {
     }
     final List<JavaProjectFile> javaProjectFiles =
         this.userProjectFiles.getMatchingJavaFiles(compileList);
-    if (javaProjectFiles.isEmpty()) {
-      throw new UserInitiatedException(UserInitiatedExceptionKey.NO_FILES_TO_COMPILE);
-    }
 
     this.compileCode(javaProjectFiles);
   }
 
   private void compileCode(List<JavaProjectFile> javaProjectFiles)
       throws InternalServerError, UserInitiatedException {
+    if (javaProjectFiles.isEmpty()) {
+      throw new UserInitiatedException(UserInitiatedExceptionKey.NO_FILES_TO_COMPILE);
+    }
+
     this.saveProjectAssets();
     UserCodeCompiler codeCompiler =
         new UserCodeCompiler(javaProjectFiles, this.tempFolder, this.outputAdapter);
