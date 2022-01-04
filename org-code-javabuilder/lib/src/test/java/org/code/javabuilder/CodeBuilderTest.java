@@ -64,4 +64,12 @@ public class CodeBuilderTest {
         assertThrows(UserInitiatedException.class, () -> codeBuilder.buildUserCode(compileList));
     assertEquals(UserInitiatedExceptionKey.NO_FILES_TO_COMPILE.toString(), exception.getMessage());
   }
+
+  @Test
+  public void testBuildAllUserCodeThrowsExceptionIfNoFilesToCompile() {
+    when(userProjectFiles.getJavaFiles()).thenReturn(new ArrayList<>());
+    final Exception exception =
+        assertThrows(UserInitiatedException.class, () -> codeBuilder.buildAllUserCode());
+    assertEquals(UserInitiatedExceptionKey.NO_FILES_TO_COMPILE.toString(), exception.getMessage());
+  }
 }
