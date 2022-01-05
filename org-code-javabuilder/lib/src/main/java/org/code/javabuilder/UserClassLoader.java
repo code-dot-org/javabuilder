@@ -46,9 +46,8 @@ public class UserClassLoader extends URLClassLoader {
       }
     }
 
-    // Log that we are going to throw an exception. Log as a warning as it is most likely user
-    // error,
-    // but we want to track it.
+    // Log that we are going to throw an exception. Log as a warning
+    // as it is most likely user error, but we want to track it.
     JSONObject eventData = new JSONObject();
     eventData.put("type", "invalidClass");
     eventData.put("className", name);
