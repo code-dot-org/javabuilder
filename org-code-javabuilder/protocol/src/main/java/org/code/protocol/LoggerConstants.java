@@ -18,4 +18,5 @@ public class LoggerConstants {
   public static final String USABLE_SPACE = "usableSpace";
   public static final String FREE_SPACE = "freeSpace";
   public static final String TOTAL_SPACE = "totalSpace";
+  public static final String CLASS_NAME = "className";
 }
