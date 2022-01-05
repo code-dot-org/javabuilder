@@ -64,6 +64,7 @@ public class UserClassLoader extends URLClassLoader {
           "java.lang.ArithmeticException",
           "java.lang.ArrayIndexOutOfBoundsException",
           "java.lang.Boolean",
+          "java.lang.Byte",
           "java.lang.Character",
           "java.lang.CharSequence",
           "java.lang.Class",
@@ -71,17 +72,24 @@ public class UserClassLoader extends URLClassLoader {
           "java.lang.Double",
           "java.lang.Enum",
           "java.lang.Exception",
-          "java.lang.IndexOUtOfBoundsException",
+          "java.lang.Float",
+          "java.lang.IndexOutOfBoundsException",
           "java.lang.Integer",
+          "java.lang.invoke.LambdaMetafactory", // needed if you want to create a lambda function
           "java.lang.invoke.StringConcatFactory", // needed for any String concatenation
           "java.lang.IllegalArgumentException",
+          "java.lang.Long",
           "java.lang.Math",
           "java.lang.NullPointerException",
+          "java.lang.Number",
           "java.lang.Object",
           "java.lang.RuntimeException",
           "java.lang.SecurityException",
+          "java.lang.Short",
           "java.lang.StackTraceElement",
           "java.lang.String",
+          "java.lang.StringBuffer",
+          "java.lang.StringBuilder",
           "java.lang.System",
           "java.lang.Throwable");
 
