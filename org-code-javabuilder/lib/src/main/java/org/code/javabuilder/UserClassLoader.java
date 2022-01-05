@@ -2,6 +2,8 @@ package org.code.javabuilder;
 
 import static org.code.protocol.LoggerNames.MAIN_LOGGER;
 
+import java.lang.invoke.LambdaMetafactory;
+import java.lang.invoke.StringConcatFactory;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.HashSet;
@@ -27,7 +29,6 @@ public class UserClassLoader extends URLClassLoader {
 
   @Override
   public Class<?> loadClass(String name) throws ClassNotFoundException {
-    // System.out.println("loading class " + name);
     // Call super for user provided classes, as we need to verify users are not
     // trying to use an unapproved class or package.
     if (this.userProvidedClasses.contains(name)) {
@@ -61,37 +62,37 @@ public class UserClassLoader extends URLClassLoader {
   // Allowed individual classes.
   private static final Set<String> allowedClasses =
       Set.of(
-          "java.lang.ArithmeticException",
-          "java.lang.ArrayIndexOutOfBoundsException",
-          "java.lang.Boolean",
-          "java.lang.Byte",
-          "java.lang.Character",
-          "java.lang.CharSequence",
-          "java.lang.Class",
-          "java.lang.Comparable",
-          "java.lang.Double",
-          "java.lang.Enum",
-          "java.lang.Exception",
-          "java.lang.Float",
-          "java.lang.IndexOutOfBoundsException",
-          "java.lang.Integer",
-          "java.lang.invoke.LambdaMetafactory", // needed if you want to create a lambda function
-          "java.lang.invoke.StringConcatFactory", // needed for any String concatenation
-          "java.lang.IllegalArgumentException",
-          "java.lang.Long",
-          "java.lang.Math",
-          "java.lang.NullPointerException",
-          "java.lang.Number",
-          "java.lang.Object",
-          "java.lang.RuntimeException",
-          "java.lang.SecurityException",
-          "java.lang.Short",
-          "java.lang.StackTraceElement",
-          "java.lang.String",
-          "java.lang.StringBuffer",
-          "java.lang.StringBuilder",
-          "java.lang.System",
-          "java.lang.Throwable");
+          ArithmeticException.class.getName(),
+          ArrayIndexOutOfBoundsException.class.getName(),
+          Boolean.class.getName(),
+          Byte.class.getName(),
+          Character.class.getName(),
+          CharSequence.class.getName(),
+          Class.class.getName(),
+          Comparable.class.getName(),
+          Double.class.getName(),
+          Enum.class.getName(),
+          Exception.class.getName(),
+          Float.class.getName(),
+          IndexOutOfBoundsException.class.getName(),
+          Integer.class.getName(),
+          LambdaMetafactory.class.getName(), // needed if you want to create a lambda function
+          StringConcatFactory.class.getName(), // needed for any String concatenation
+          IllegalArgumentException.class.getName(),
+          Long.class.getName(),
+          Math.class.getName(),
+          NullPointerException.class.getName(),
+          Number.class.getName(),
+          Object.class.getName(),
+          RuntimeException.class.getName(),
+          SecurityException.class.getName(),
+          Short.class.getName(),
+          StackTraceElement.class.getName(),
+          String.class.getName(),
+          StringBuffer.class.getName(),
+          StringBuilder.class.getName(),
+          System.class.getName(),
+          Throwable.class.getName());
 
   // Allowed packages (any individual class is allowed from these classes)
   private static final String[] allowedPackages =
