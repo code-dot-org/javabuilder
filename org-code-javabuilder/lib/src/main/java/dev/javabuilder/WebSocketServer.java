@@ -74,8 +74,15 @@ public class WebSocketServer {
 
     outputAdapter = new WebSocketOutputAdapter(session);
     inputAdapter = new WebSocketInputAdapter();
+    final LifecycleNotifier lifecycleNotifier = new LifecycleNotifier();
     GlobalProtocol.create(
-        outputAdapter, inputAdapter, dashboardHostname, channelId, levelId, new LocalFileManager());
+        outputAdapter,
+        inputAdapter,
+        dashboardHostname,
+        channelId,
+        levelId,
+        new LocalFileManager(),
+        lifecycleNotifier);
     final UserProjectFileLoader fileLoader =
         new UserProjectFileLoader(
             GlobalProtocol.getInstance().generateSourcesUrl(),
@@ -89,7 +96,8 @@ public class WebSocketServer {
             outputAdapter,
             executionType,
             compileList,
-            GlobalProtocol.getInstance().getFileManager());
+            GlobalProtocol.getInstance().getFileManager(),
+            lifecycleNotifier);
 
     executionManager.execute();
 
