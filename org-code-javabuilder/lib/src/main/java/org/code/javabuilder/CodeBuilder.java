@@ -1,37 +1,27 @@
 package org.code.javabuilder;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import org.code.protocol.*;
-import org.code.protocol.LoggerUtils.ClearStatus;
-import org.code.protocol.LoggerUtils.SessionTime;
+import org.code.protocol.GlobalProtocol;
+import org.code.protocol.InternalErrorKey;
+import org.code.protocol.JavabuilderException;
+import org.code.protocol.OutputAdapter;
 
 /** The orchestrator for code compilation and execution. */
 public class CodeBuilder implements AutoCloseable {
   private final OutputAdapter outputAdapter;
-  private final InputHandler inputHandler;
-  private final JavabuilderFileManager fileManager;
   private final File tempFolder;
-  private final PrintStream sysout;
-  private final InputStream sysin;
   private final UserProjectFiles userProjectFiles;
 
-  public CodeBuilder(GlobalProtocol protocol, UserProjectFiles userProjectFiles)
+  public CodeBuilder(GlobalProtocol protocol, UserProjectFiles userProjectFiles, File tempFolder)
       throws InternalServerError {
-    this.sysout = System.out;
-    this.sysin = System.in;
     this.outputAdapter = protocol.getOutputAdapter();
-    this.inputHandler = protocol.getInputHandler();
-    this.fileManager = protocol.getFileManager();
     this.userProjectFiles = userProjectFiles;
-    try {
-      this.tempFolder = Files.createTempDirectory("tmpdir").toFile();
-    } catch (IOException e) {
-      throw new InternalServerError(InternalErrorKey.INTERNAL_EXCEPTION, e);
-    }
+    this.tempFolder = tempFolder;
   }
 
   /**
@@ -85,35 +75,13 @@ public class CodeBuilder implements AutoCloseable {
     this.createJavaRunner().runTests();
   }
 
-  /**
-   * Resets System.in and System.out. Removes the temporary folder we generated to compile the
-   * user's code.
-   *
-   * @throws InternalFacingException if the folder cannot be deleted.
-   */
   @Override
-  public void close() throws InternalFacingException {
-    System.setOut(this.sysout);
-    System.setIn(this.sysin);
-    if (this.tempFolder != null) {
-      try {
-        // Clean up the temp folder and temp directory
-        LoggerUtils.sendDiskSpaceUpdate(SessionTime.END_SESSION, ClearStatus.BEFORE_CLEAR);
-        this.fileManager.cleanUpTempDirectory(this.tempFolder);
-        LoggerUtils.sendDiskSpaceUpdate(SessionTime.END_SESSION, ClearStatus.AFTER_CLEAR);
-      } catch (IOException e) {
-        throw new InternalFacingException(e.toString(), e);
-      }
-    }
+  public void close() {
+    // Nothing to close; no-op
   }
 
-  /**
-   * Replaces System.in and System.out with our custom implementation and creates a runner for
-   * executing code
-   */
+  /** Creates a runner for executing code */
   private JavaRunner createJavaRunner() throws InternalServerError {
-    System.setOut(new OutputPrintStream(this.outputAdapter));
-    System.setIn(new InputRedirectionStream(this.inputHandler));
     try {
       return new JavaRunner(
           this.tempFolder.toURI().toURL(),
