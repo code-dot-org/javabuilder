@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
+import org.code.protocol.LoggerConstants;
 import org.json.JSONObject;
 
 /**
@@ -47,16 +48,13 @@ public class UserClassLoader extends URLClassLoader {
       }
     }
 
-    // Log that we are going to throw an exception
+    // Log that we are going to throw an exception. Log as a warning
+    // as it is most likely user error, but we want to track it.
     JSONObject eventData = new JSONObject();
-    eventData.put("type", "invalidClass");
-    eventData.put("className", name);
+    eventData.put(LoggerConstants.TYPE, "invalidClass");
+    eventData.put(LoggerConstants.CLASS_NAME, name);
     Logger.getLogger(MAIN_LOGGER).warning(eventData.toString());
-    // For now, don't throw an exception, and instead go on to the approved class loader.
-    // We want to ensure we aren't blocking anything needed by users, so we are running this in
-    // silent mode.
-    // throw new ClassNotFoundException(name);
-    return this.approvedClassLoader.loadClass(name);
+    throw new ClassNotFoundException(name);
   }
 
   // Allowed individual classes.
