@@ -62,7 +62,18 @@ end
 
 def on_disconnect(event, context)
   sqs = Aws::SQS::Client.new(region: get_region(context))
-  sqs.delete_queue(queue_url: get_sqs_url(event, context))
+
+  # Handle if queue does not exist,
+  # such as in case of connectivity test.
+  # The NonExistentQueue error is not documented in the AWS SDK,
+  # but was observed in errors accumulated from our connectivity tests.
+  begin
+    sqs.delete_queue(queue_url: get_sqs_url(event, context))
+  rescue Aws::SQS::Errors::NonExistentQueue => e
+    puts event
+    puts context
+    puts e
+  end
 
   { statusCode: 200, body: "success"}
 end
