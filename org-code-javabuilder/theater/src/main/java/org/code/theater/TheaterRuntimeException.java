@@ -10,4 +10,8 @@ public class TheaterRuntimeException extends JavabuilderRuntimeException {
   protected TheaterRuntimeException(ExceptionKeys key, Throwable cause) {
     super(key, cause);
   }
+
+  protected TheaterRuntimeException(ExceptionKeys key, String fallbackMessage) {
+    super(key, fallbackMessage);
+  }
 }
