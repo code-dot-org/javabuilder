@@ -416,7 +416,6 @@ public class Stage {
     if (this.hasPlayed) {
       throw new TheaterRuntimeException(ExceptionKeys.DUPLICATE_PLAY_COMMAND);
     } else {
-      this.outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.GENERATING_RESULTS));
       this.progressPublisher.onPlay(this.audioWriter.getTotalAudioLength());
       this.gifWriter.writeToGif(this.image, 0);
       this.audioWriter.writeToAudioStream();

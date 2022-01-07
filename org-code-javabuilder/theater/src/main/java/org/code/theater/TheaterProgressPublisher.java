@@ -30,11 +30,7 @@ class TheaterProgressPublisher {
     if (this.pauseTimeSeconds > MAX_TIME_S) {
       // TODO: Remove this once we have a clean up notifier for stage.
       Theater.stage.close();
-      String message =
-          "Your video is longer than "
-              + MAX_TIME_S
-              + " seconds. Decrease the length of your video and try again.";
-      throw new RuntimeException(message);
+      throw new TheaterRuntimeException(ExceptionKeys.VIDEO_TOO_LONG);
     }
 
     if (this.pauseTimeSeconds - this.lastUpdateTimeSeconds >= UPDATE_TIME_S) {
