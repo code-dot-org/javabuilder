@@ -70,9 +70,18 @@ def on_disconnect(event, context)
   begin
     sqs.delete_queue(queue_url: get_sqs_url(event, context))
   rescue Aws::SQS::Errors::NonExistentQueue => e
-    puts event
-    puts context
-    puts e
+    # Do some sort of check here for whether is connectivity test.
+    # Maybe refactor connectivity test checking logic into its own helper.
+    # Basically, useful information is in event
+    #     request_context = event["requestContext"]
+    #
+    #     # Return early if this is the user connectivity test
+    #     authorizer = request_context['authorizer']
+    #     if authorizer && authorizer['connectivityTest']
+    #     if event["requestContext"]
+    puts event # {"headers"=>{"Host"=>"javabuilder-ben.d...
+    puts context # #<LambdaContext:0x0000000003523bd8>
+    puts e # The specified queue does not exist for this wsdl version.
   end
 
   { statusCode: 200, body: "success"}
