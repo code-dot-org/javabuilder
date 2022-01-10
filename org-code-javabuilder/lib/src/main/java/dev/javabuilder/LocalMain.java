@@ -22,8 +22,7 @@ public class LocalMain {
     // turn off the default console logger
     logger.setUseParentHandlers(false);
 
-    GlobalProtocol.create(
-        outputAdapter, inputAdapter, "", "", "", new LocalFileManager(), new LifecycleNotifier());
+    GlobalProtocol.create(outputAdapter, inputAdapter, "", "", "", new LocalFileManager());
     CachedResources.create();
 
     // Create and invoke the code execution environment
@@ -34,8 +33,7 @@ public class LocalMain {
             outputAdapter,
             ExecutionType.RUN,
             null,
-            GlobalProtocol.getInstance().getFileManager(),
-            new LifecycleNotifier());
+            GlobalProtocol.getInstance().getFileManager());
     codeExecutionManager.execute();
   }
 }

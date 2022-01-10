@@ -19,8 +19,7 @@ public class GlobalProtocol {
   private final String dashboardHostname;
   private final String channelId;
   private final AssetFileHelper assetFileHelper;
-  private final Set<MessageHandler> messageHandlers;
-  private final LifecycleNotifier lifecycleNotifier;
+  private Set<MessageHandler> messageHandlers;
 
   private GlobalProtocol(
       OutputAdapter outputAdapter,
@@ -28,8 +27,7 @@ public class GlobalProtocol {
       String dashboardHostname,
       String channelId,
       JavabuilderFileManager fileManager,
-      AssetFileHelper assetFileHelper,
-      LifecycleNotifier lifecycleNotifier) {
+      AssetFileHelper assetFileHelper) {
     this.outputAdapter = outputAdapter;
     this.inputHandler = inputHandler;
     this.dashboardHostname = dashboardHostname;
@@ -37,7 +35,6 @@ public class GlobalProtocol {
     this.fileManager = fileManager;
     this.assetFileHelper = assetFileHelper;
     this.messageHandlers = new HashSet<>();
-    this.lifecycleNotifier = lifecycleNotifier;
   }
 
   public static void create(
@@ -46,8 +43,7 @@ public class GlobalProtocol {
       String dashboardHostname,
       String channelId,
       String levelId,
-      JavabuilderFileManager fileManager,
-      LifecycleNotifier lifecycleNotifier) {
+      JavabuilderFileManager fileManager) {
     GlobalProtocol.protocolInstance =
         new GlobalProtocol(
             outputAdapter,
@@ -55,8 +51,7 @@ public class GlobalProtocol {
             dashboardHostname,
             channelId,
             fileManager,
-            new AssetFileHelper(dashboardHostname, channelId, levelId),
-            lifecycleNotifier);
+            new AssetFileHelper(dashboardHostname, channelId, levelId));
   }
 
   public static GlobalProtocol getInstance() {
@@ -93,10 +88,6 @@ public class GlobalProtocol {
 
   public void registerMessageHandler(MessageHandler handler) {
     this.messageHandlers.add(handler);
-  }
-
-  public void registerLifecycleListener(LifecycleListener listener) {
-    this.lifecycleNotifier.registerListener(listener);
   }
 
   // Clean up resources that require explicit clean up before exiting
