@@ -19,6 +19,8 @@ class GifWriter {
   private ImageWriter writer;
   private ImageWriteParam params;
   private ImageOutputStream imageOutputStream;
+  // 30 mb
+  private static final int MAX_STREAM_LENGTH_BYTES = 31457280;
 
   public static class Factory {
     public GifWriter createGifWriter(ByteArrayOutputStream out) {
@@ -48,6 +50,14 @@ class GifWriter {
    */
   public void writeToGif(BufferedImage img, int delay) {
     try {
+      if (this.imageOutputStream.length() > MAX_STREAM_LENGTH_BYTES) {
+        // TODO: Remove this once we have a clean up notifier for stage.
+        Theater.stage.close();
+        // TODO: Make this translatable: https://codedotorg.atlassian.net/browse/CSA-1108
+        String message =
+            "Your video is too large. Please decrease the number of frames in your video and try again.";
+        throw new RuntimeException(message);
+      }
       this.writer.writeToSequence(
           new IIOImage(img, null, getMetadataForFrame(delay, img.getType())), this.params);
 
@@ -65,6 +75,7 @@ class GifWriter {
     try {
       this.writer.endWriteSequence();
       this.imageOutputStream.flush();
+      this.imageOutputStream.close();
     } catch (IOException e) {
       throw new InternalServerRuntimeError(
           InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e.getCause());

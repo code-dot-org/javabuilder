@@ -18,11 +18,12 @@ public class LocalMain {
     final LocalProjectFileLoader fileLoader = new LocalProjectFileLoader();
 
     Logger logger = Logger.getLogger(MAIN_LOGGER);
-    logger.addHandler(new LocalLogHandler(System.out, "levelId", "channelId"));
+    logger.addHandler(new LocalLogHandler(System.out, "levelId", "channelId", "miniAppType"));
     // turn off the default console logger
     logger.setUseParentHandlers(false);
 
     GlobalProtocol.create(outputAdapter, inputAdapter, "", "", "", new LocalFileManager());
+    CachedResources.create();
 
     // Create and invoke the code execution environment
     CodeBuilderRunnable codeBuilderRunnable =

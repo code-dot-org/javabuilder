@@ -8,8 +8,8 @@ public class JavaProjectFile implements ProjectFile {
 
   public JavaProjectFile(String fileName) throws UserInitiatedException {
     this.fileName = fileName;
-    if (fileName.endsWith(".java")) {
-      this.className = fileName.substring(0, fileName.indexOf(".java"));
+    if (FileNameUtils.isJavaFile(fileName)) {
+      this.className = fileName.substring(0, fileName.indexOf(FileNameUtils.JAVA_EXTENSION));
     } else {
       throw new UserInitiatedException(UserInitiatedExceptionKey.JAVA_EXTENSION_MISSING);
     }

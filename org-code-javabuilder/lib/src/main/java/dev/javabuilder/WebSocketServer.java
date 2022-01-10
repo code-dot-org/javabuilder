@@ -33,6 +33,10 @@ public class WebSocketServer {
   private Logger logger;
   private Thread codeExecutor;
 
+  public WebSocketServer() {
+    CachedResources.create();
+  }
+
   /**
    * This acts as the main function for the WebSocket server. Therefore, we do many of the same
    * things here as we do for LocalMain or for the LambdaRequestHandler, such as setting up the
@@ -52,6 +56,7 @@ public class WebSocketServer {
     final String connectionId = "LocalhostWebSocketConnection";
     final String levelId = queryInput.getString("level_id");
     final String channelId = queryInput.getString("channel_id");
+    final String miniAppType = queryInput.getString("mini_app_type");
     final ExecutionType executionType =
         ExecutionType.valueOf(queryInput.getString("execution_type"));
     final String dashboardHostname = "http://" + queryInput.get("iss") + ":3000";
@@ -61,7 +66,7 @@ public class WebSocketServer {
     final List<String> compileList = JSONUtils.listFromJSONObjectMember(options, "compileList");
 
     this.logger = Logger.getLogger(MAIN_LOGGER);
-    this.logHandler = new LocalLogHandler(System.out, levelId, channelId);
+    this.logHandler = new LocalLogHandler(System.out, levelId, channelId, miniAppType);
     this.logger.addHandler(this.logHandler);
     // turn off the default console logger
     this.logger.setUseParentHandlers(false);

@@ -49,14 +49,7 @@ public class MainRunner implements CodeRunner {
       // NoClassDefFoundError is thrown by the class loader if the user attempts to use a disallowed
       // class.
       if (e.getCause() instanceof NoClassDefFoundError) {
-        String message = "";
-        if (e.getCause().getMessage() != null) {
-          // the message will be the name of the invalid class, with '.' replaced by '/'.
-          message = e.getCause().getMessage().replace('/', '.');
-        }
-        ClassNotFoundException classNotFoundException = new ClassNotFoundException(message);
-        throw new UserInitiatedException(
-            UserInitiatedExceptionKey.INVALID_CLASS, classNotFoundException);
+        this.throwInvalidClassException((NoClassDefFoundError) e.getCause());
       }
       throw new UserInitiatedException(UserInitiatedExceptionKey.RUNTIME_ERROR, e);
     }
@@ -71,7 +64,6 @@ public class MainRunner implements CodeRunner {
    *     the class definition is empty
    */
   private Method findMainMethod(URLClassLoader urlClassLoader) throws UserInitiatedException {
-
     Method mainMethod = null;
     for (JavaProjectFile file : this.javaFiles) {
       try {
@@ -91,6 +83,8 @@ public class MainRunner implements CodeRunner {
       } catch (ClassNotFoundException e) {
         // May be thrown if file is empty or contains only comments
         throw new UserInitiatedException(UserInitiatedExceptionKey.CLASS_NOT_FOUND, e);
+      } catch (NoClassDefFoundError e) {
+        this.throwInvalidClassException(e);
       }
     }
 
@@ -98,5 +92,16 @@ public class MainRunner implements CodeRunner {
       throw new UserInitiatedException(UserInitiatedExceptionKey.NO_MAIN_METHOD);
     }
     return mainMethod;
+  }
+
+  private void throwInvalidClassException(NoClassDefFoundError e) throws UserInitiatedException {
+    String message = "";
+    if (e.getMessage() != null) {
+      // the message will be the name of the invalid class, with '.' replaced by '/'.
+      message = e.getMessage().replace('/', '.');
+    }
+    ClassNotFoundException classNotFoundException = new ClassNotFoundException(message);
+    throw new UserInitiatedException(
+        UserInitiatedExceptionKey.INVALID_CLASS, classNotFoundException);
   }
 }

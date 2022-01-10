@@ -6,11 +6,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import org.code.protocol.*;
+import org.code.protocol.LoggerUtils.ClearStatus;
+import org.code.protocol.LoggerUtils.SessionTime;
 
 /** The orchestrator for code compilation and execution. */
 public class CodeBuilder implements AutoCloseable {
   private final OutputAdapter outputAdapter;
   private final InputHandler inputHandler;
+  private final JavabuilderFileManager fileManager;
   private final File tempFolder;
   private final PrintStream sysout;
   private final InputStream sysin;
@@ -22,6 +25,7 @@ public class CodeBuilder implements AutoCloseable {
     this.sysin = System.in;
     this.outputAdapter = protocol.getOutputAdapter();
     this.inputHandler = protocol.getInputHandler();
+    this.fileManager = protocol.getFileManager();
     this.userProjectFiles = userProjectFiles;
     try {
       this.tempFolder = Files.createTempDirectory("tmpdir").toFile();
@@ -55,15 +59,16 @@ public class CodeBuilder implements AutoCloseable {
     }
     final List<JavaProjectFile> javaProjectFiles =
         this.userProjectFiles.getMatchingJavaFiles(compileList);
-    if (javaProjectFiles.isEmpty()) {
-      throw new UserInitiatedException(UserInitiatedExceptionKey.NO_FILES_TO_COMPILE);
-    }
 
     this.compileCode(javaProjectFiles);
   }
 
   private void compileCode(List<JavaProjectFile> javaProjectFiles)
       throws InternalServerError, UserInitiatedException {
+    if (javaProjectFiles.isEmpty()) {
+      throw new UserInitiatedException(UserInitiatedExceptionKey.NO_FILES_TO_COMPILE);
+    }
+
     this.saveProjectAssets();
     UserCodeCompiler codeCompiler =
         new UserCodeCompiler(javaProjectFiles, this.tempFolder, this.outputAdapter);
@@ -92,8 +97,10 @@ public class CodeBuilder implements AutoCloseable {
     System.setIn(this.sysin);
     if (this.tempFolder != null) {
       try {
-        // Recursively delete the temp folder
-        Util.recursivelyClearDirectory(this.tempFolder.toPath());
+        // Clean up the temp folder and temp directory
+        LoggerUtils.sendDiskSpaceUpdate(SessionTime.END_SESSION, ClearStatus.BEFORE_CLEAR);
+        this.fileManager.cleanUpTempDirectory(this.tempFolder);
+        LoggerUtils.sendDiskSpaceUpdate(SessionTime.END_SESSION, ClearStatus.AFTER_CLEAR);
       } catch (IOException e) {
         throw new InternalFacingException(e.toString(), e);
       }
