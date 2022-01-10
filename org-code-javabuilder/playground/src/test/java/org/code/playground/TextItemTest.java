@@ -24,14 +24,7 @@ public class TextItemTest {
   public void setUp() {
     playgroundMessageHandler = mock(PlaygroundMessageHandler.class);
     messageCaptor = ArgumentCaptor.forClass(PlaygroundMessage.class);
-    GlobalProtocol.create(
-        mock(OutputAdapter.class),
-        mock(InputAdapter.class),
-        "",
-        "",
-        "",
-        mock(JavabuilderFileManager.class),
-        mock(LifecycleNotifier.class));
+    GlobalProtocolTestFactory.builder().create();
     CachedResources.create();
     messageHandlerMockedStatic = mockStatic(PlaygroundMessageHandler.class);
     messageHandlerMockedStatic
