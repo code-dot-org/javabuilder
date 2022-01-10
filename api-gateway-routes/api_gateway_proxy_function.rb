@@ -20,13 +20,14 @@ def on_connect(event, context)
 
   request_context = event["requestContext"]
   # Add in some logging to make debugging easier
-  puts request_context
+  puts "CONNECT REQUEST CONTEXT: #{request_context}"
 
-  # Return early if this is the user connectivity test
   authorizer = request_context['authorizer']
-  if authorizer && authorizer['connectivityTest']
+  # Return early if this is the user connectivity test
+  if is_connectivity_test(authorizer)
     return { statusCode: 200, body: "connection successful" }
   end
+
   # -- Create SQS for this session --
   sqs_client = Aws::SQS::Client.new(region: region)
   queue_name = get_session_id(event) + '.fifo'
@@ -70,18 +71,15 @@ def on_disconnect(event, context)
   begin
     sqs.delete_queue(queue_url: get_sqs_url(event, context))
   rescue Aws::SQS::Errors::NonExistentQueue => e
-    # Do some sort of check here for whether is connectivity test.
-    # Maybe refactor connectivity test checking logic into its own helper.
-    # Basically, useful information is in event
-    #     request_context = event["requestContext"]
-    #
-    #     # Return early if this is the user connectivity test
-    #     authorizer = request_context['authorizer']
-    #     if authorizer && authorizer['connectivityTest']
-    #     if event["requestContext"]
-    puts event # {"headers"=>{"Host"=>"javabuilder-ben.d...
-    puts context # #<LambdaContext:0x0000000003523bd8>
-    puts e # The specified queue does not exist for this wsdl version.
+    request_context = event['requestContext']
+    authorizer = request_context['authorizer']
+
+    # This exception is expected during connectivity tests,
+    # so do not log in those cases.
+    unless is_connectivity_test(authorizer)
+      puts "DISCONNECT ERROR REQUEST CONTEXT: #{request_context.to_s}"
+      puts "DISCONNECT ERROR: #{e.message}"
+    end
   end
 
   { statusCode: 200, body: "success"}
@@ -138,4 +136,8 @@ def get_sqs_url(event, context)
   account_id = context.invoked_function_arn.split(':')[4]
   connection_id = get_session_id(event)
   "https://sqs.#{region}.amazonaws.com/#{account_id}/#{connection_id}.fifo"
+end
+
+def is_connectivity_test(authorizer)
+  !!(authorizer && authorizer['connectivityTest'])
 end
