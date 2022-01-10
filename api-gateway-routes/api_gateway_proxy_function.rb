@@ -46,6 +46,7 @@ def on_connect(event, context)
     :options => authorizer["options"],
     :iss => authorizer["iss"],
     :channelId => authorizer["channel_id"],
+    :miniAppType => authorizer["mini_app_type"],
     :javabuilderSessionId => authorizer['sid'],
     :queueName => queue_name,
     :executionType => authorizer['execution_type']

@@ -7,9 +7,12 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Paths;
 import java.util.Date;
 import org.code.protocol.*;
 
@@ -99,6 +102,13 @@ public class AWSFileManager implements JavabuilderFileManager {
     } catch (MalformedURLException e) {
       throw new FileNotFoundException(filename);
     }
+  }
+
+  @Override
+  public void cleanUpTempDirectory(File tempFolder) throws IOException {
+    // Delete any leftover contents of the tmp folder from previous lambda invocations
+    // We can ignore the tempFolder since we are clearing the entire directory
+    Util.recursivelyClearDirectory(Paths.get(System.getProperty("java.io.tmpdir")));
   }
 
   private String generateKey(String filename) {

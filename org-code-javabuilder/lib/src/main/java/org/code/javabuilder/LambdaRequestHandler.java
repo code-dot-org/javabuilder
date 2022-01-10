@@ -14,13 +14,17 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
 import org.code.protocol.*;
+import org.code.protocol.LoggerUtils.ClearStatus;
+import org.code.protocol.LoggerUtils.SessionTime;
 import org.json.JSONObject;
 
 /**
@@ -33,6 +37,18 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
   private static final int CHECK_THREAD_INTERVAL_MS = 500;
   private static final int TIMEOUT_WARNING_MS = 20000;
   private static final int TIMEOUT_CLEANUP_BUFFER_MS = 5000;
+  private static final String LAMBDA_ID = UUID.randomUUID().toString();
+  // This is an error code we made up to signal that available disk space is less than 50%.
+  // It may be used in tracking on Cloud Watch.
+  private static final int LOW_DISK_SPACE_ERROR_CODE = 50;
+
+  public LambdaRequestHandler() {
+    // create CachedResources once for the entire container.
+    // This will only be called once in the initial creation of the lambda instance.
+    // Documentation: https://docs.aws.amazon.com/lambda/latest/dg/java-handler.html
+    CachedResources.create();
+  }
+
   /**
    * This is the implementation of the long-running-lambda where user code will be compiled and
    * executed.
@@ -53,6 +69,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     final String queueName = lambdaInput.get("queueName");
     final String levelId = lambdaInput.get("levelId");
     final String channelId = lambdaInput.get("channelId");
+    final String miniAppType = lambdaInput.get("miniAppType");
     final ExecutionType executionType = ExecutionType.valueOf(lambdaInput.get("executionType"));
     final String dashboardHostname = "https://" + lambdaInput.get("iss");
     final JSONObject options = new JSONObject(lambdaInput.get("options"));
@@ -66,7 +83,13 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     Logger logger = Logger.getLogger(MAIN_LOGGER);
     logger.addHandler(
         new LambdaLogHandler(
-            context.getLogger(), javabuilderSessionId, connectionId, levelId, channelId));
+            context.getLogger(),
+            javabuilderSessionId,
+            connectionId,
+            levelId,
+            LambdaRequestHandler.LAMBDA_ID,
+            channelId,
+            miniAppType));
     // turn off the default console logger
     logger.setUseParentHandlers(false);
 
@@ -85,10 +108,10 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     final AWSInputAdapter inputAdapter = new AWSInputAdapter(sqsClient, queueUrl, queueName);
 
     final AmazonS3 s3Client = AmazonS3ClientBuilder.standard().build();
-    final AWSFileManager fileWriter =
+    final AWSFileManager fileManager =
         new AWSFileManager(s3Client, outputBucketName, javabuilderSessionId, getOutputUrl, context);
     GlobalProtocol.create(
-        outputAdapter, inputAdapter, dashboardHostname, channelId, levelId, fileWriter);
+        outputAdapter, inputAdapter, dashboardHostname, channelId, levelId, fileManager);
 
     // Create file loader
     final UserProjectFileLoader userProjectFileLoader =
@@ -104,16 +127,20 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     props.put("sun.awt.fontconfig", "/opt/fontconfig.properties");
 
     try {
-      // Delete any leftover contents of the tmp folder from previous lambda invocations
-      Util.recursivelyClearDirectory(Paths.get(System.getProperty("java.io.tmpdir")));
+      // Log disk space before clearing the directory
+      LoggerUtils.sendDiskSpaceReport();
+
+      LoggerUtils.sendDiskSpaceUpdate(SessionTime.START_SESSION, ClearStatus.BEFORE_CLEAR);
+      fileManager.cleanUpTempDirectory(null);
+      LoggerUtils.sendDiskSpaceUpdate(SessionTime.START_SESSION, ClearStatus.AFTER_CLEAR);
     } catch (IOException e) {
       // Wrap this in our error type so we can log it and tell the user.
       InternalServerError error = new InternalServerError(INTERNAL_EXCEPTION, e);
 
       // Log the error
       JSONObject eventData = new JSONObject();
-      eventData.put("exceptionMessage", error.getExceptionMessage());
-      eventData.put("loggingString", error.getLoggingString());
+      eventData.put(LoggerConstants.EXCEPTION_MESSAGE, error.getExceptionMessage());
+      eventData.put(LoggerConstants.LOGGING_STRING, error.getLoggingString());
       Logger.getLogger(MAIN_LOGGER).severe(eventData.toString());
 
       // This affected the user. Let's tell them about it.
@@ -161,6 +188,12 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
       // program.
     } finally {
       cleanUpResources(connectionId, api);
+      File f = Paths.get(System.getProperty("java.io.tmpdir")).toFile();
+      if ((double) f.getUsableSpace() / f.getTotalSpace() < 0.5) {
+        // The current project holds a lock on too many resources. Force the JVM to quit in
+        // order to release the resources for the next use of the container.
+        System.exit(LOW_DISK_SPACE_ERROR_CODE);
+      }
     }
     return "done";
   }
