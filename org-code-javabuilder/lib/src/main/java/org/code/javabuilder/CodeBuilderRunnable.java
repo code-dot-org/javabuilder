@@ -41,22 +41,20 @@ public class CodeBuilderRunnable implements Runnable {
   private void executeCodeBuilder() {
     try {
       UserProjectFiles userProjectFiles = fileLoader.loadFiles();
-      try (CodeBuilder codeBuilder =
-          new CodeBuilder(GlobalProtocol.getInstance(), userProjectFiles, this.tempFolder)) {
-
-        switch (this.executionType) {
-          case COMPILE_ONLY:
-            codeBuilder.buildUserCode(this.compileList);
-            break;
-          case RUN:
-            codeBuilder.buildAllUserCode();
-            codeBuilder.runUserCode();
-            break;
-          case TEST:
-            codeBuilder.buildAllUserCode();
-            codeBuilder.runUserTests();
-            break;
-        }
+      CodeBuilder codeBuilder =
+          new CodeBuilder(GlobalProtocol.getInstance(), userProjectFiles, this.tempFolder);
+      switch (this.executionType) {
+        case COMPILE_ONLY:
+          codeBuilder.buildUserCode(this.compileList);
+          break;
+        case RUN:
+          codeBuilder.buildAllUserCode();
+          codeBuilder.runUserCode();
+          break;
+        case TEST:
+          codeBuilder.buildAllUserCode();
+          codeBuilder.runUserTests();
+          break;
       }
     } catch (InternalServerError | InternalServerRuntimeError e) {
       if (e.getMessage().equals(InternalErrorKey.CONNECTION_TERMINATED.toString())) {

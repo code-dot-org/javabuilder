@@ -63,7 +63,7 @@ public class CodeExecutionManager {
         new CodeBuilderRunnableFactory());
   }
 
-  public CodeExecutionManager(
+  CodeExecutionManager(
       ProjectFileLoader fileLoader,
       InputHandler inputHandler,
       OutputAdapter outputAdapter,
