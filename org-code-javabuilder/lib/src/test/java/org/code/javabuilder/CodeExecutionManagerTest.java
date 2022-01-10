@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import org.code.javabuilder.CodeExecutionManager.CodeBuilderRunnableFactory;
 import org.code.protocol.*;
@@ -18,7 +19,6 @@ class CodeExecutionManagerTest {
   private ExecutionType executionType;
   private List<String> compileList;
   private JavabuilderFileManager fileManager;
-  private LifecycleNotifier lifecycleNotifier;
   private CodeBuilderRunnableFactory codeBuilderRunnableFactory;
   private CodeBuilderRunnable codeBuilderRunnable;
   private CodeExecutionManager unitUnderTest;
@@ -31,7 +31,6 @@ class CodeExecutionManagerTest {
     executionType = ExecutionType.RUN;
     compileList = mock(List.class);
     fileManager = mock(JavabuilderFileManager.class);
-    lifecycleNotifier = mock(LifecycleNotifier.class);
     codeBuilderRunnableFactory = mock(CodeBuilderRunnableFactory.class);
     codeBuilderRunnable = mock(CodeBuilderRunnable.class);
 
@@ -39,8 +38,7 @@ class CodeExecutionManagerTest {
             eq(fileLoader), eq(outputAdapter), any(File.class), eq(executionType), eq(compileList)))
         .thenReturn(codeBuilderRunnable);
 
-    GlobalProtocol.create(
-        outputAdapter, mock(InputAdapter.class), "", "", "", fileManager, lifecycleNotifier);
+    GlobalProtocol.create(outputAdapter, mock(InputAdapter.class), "", "", "", fileManager);
 
     unitUnderTest =
         new CodeExecutionManager(
@@ -50,24 +48,23 @@ class CodeExecutionManagerTest {
             executionType,
             compileList,
             fileManager,
-            lifecycleNotifier,
             codeBuilderRunnableFactory);
   }
 
   @Test
-  public void testExitEarlyDoesNothingIfExecutionFinished() {
+  public void testExitEarlyDoesNothingIfExecutionFinished() throws IOException {
     unitUnderTest.execute();
     verify(codeBuilderRunnable).run();
     // Verify post-execute
-    verify(lifecycleNotifier, times(1)).onExecutionEnded();
+    verify(fileManager, times(1)).cleanUpTempDirectory(any(File.class));
 
     unitUnderTest.requestEarlyExit();
     // Should not call post-execute again
-    verify(lifecycleNotifier, times(1)).onExecutionEnded();
+    verify(fileManager, times(1)).cleanUpTempDirectory(any(File.class));
   }
 
   @Test
-  public void testPostExecuteCalledOnlyOnceIfEarlyExitRequested() {
+  public void testPostExecuteCalledOnlyOnceIfEarlyExitRequested() throws IOException {
     // Hack to simulate the timeout scenario where requestEarlyExit is called before run() is
     // finished
     doAnswer(
@@ -81,6 +78,6 @@ class CodeExecutionManagerTest {
     unitUnderTest.execute();
 
     // Verify post-execute happened only once
-    verify(lifecycleNotifier, times(1)).onExecutionEnded();
+    verify(fileManager, times(1)).cleanUpTempDirectory(any(File.class));
   }
 }

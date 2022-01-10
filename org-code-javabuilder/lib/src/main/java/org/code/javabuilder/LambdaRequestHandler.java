@@ -110,16 +110,9 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     final AmazonS3 s3Client = AmazonS3ClientBuilder.standard().build();
     final AWSFileManager fileManager =
         new AWSFileManager(s3Client, outputBucketName, javabuilderSessionId, getOutputUrl, context);
-    final LifecycleNotifier lifecycleNotifier = new LifecycleNotifier();
     // TODO: Move common setup steps into CodeExecutionManager#onPreExecute
     GlobalProtocol.create(
-        outputAdapter,
-        inputAdapter,
-        dashboardHostname,
-        channelId,
-        levelId,
-        fileManager,
-        lifecycleNotifier);
+        outputAdapter, inputAdapter, dashboardHostname, channelId, levelId, fileManager);
 
     // Create file loader
     final UserProjectFileLoader userProjectFileLoader =
@@ -162,8 +155,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
             outputAdapter,
             executionType,
             compileList,
-            fileManager,
-            lifecycleNotifier);
+            fileManager);
 
     final Thread timeoutNotifierThread =
         createTimeoutThread(context, outputAdapter, codeExecutionManager, connectionId, api);
