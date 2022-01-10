@@ -12,7 +12,7 @@ import org.code.protocol.JavabuilderException;
 import org.code.protocol.OutputAdapter;
 
 /** The orchestrator for code compilation and execution. */
-public class CodeBuilder implements AutoCloseable {
+public class CodeBuilder {
   private final OutputAdapter outputAdapter;
   private final File tempFolder;
   private final UserProjectFiles userProjectFiles;
@@ -73,11 +73,6 @@ public class CodeBuilder implements AutoCloseable {
   /** Runs all tests in the student's code */
   public void runUserTests() throws InternalFacingException, JavabuilderException {
     this.createJavaRunner().runTests();
-  }
-
-  @Override
-  public void close() {
-    // Nothing to close; no-op
   }
 
   /** Creates a runner for executing code */
