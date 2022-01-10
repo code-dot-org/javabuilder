@@ -192,8 +192,8 @@ Resources:
           # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-specification-generated-resources-function.html#sam-specification-generated-resources-function-autopublishalias
           BUILD_AND_RUN_THEATER_PROJECT_LAMBDA_ARN: !Ref BuildAndRunJavaTheaterProjectFunctionAliaslive
           BUILD_AND_RUN_NEIGHBORHOOD_PROJECT_LAMBDA_ARN: !Ref BuildAndRunJavaNeighborhoodProjectFunctionAliaslive
-          BUILD_AND_RUN_PLAYGROUND_PROJECT_LAMBDA_ARN: !Ref BuildAndRunJavaPlaygroundProjectFunctionAliaslive
           BUILD_AND_RUN_CONSOLE_PROJECT_LAMBDA_ARN: !Ref BuildAndRunJavaConsoleProjectFunctionAliaslive
+          BUILD_AND_RUN_PLAYGROUND_PROJECT_LAMBDA_ARN: !Ref BuildAndRunJavaPlaygroundProjectFunctionAliaslive
   StartSessionAndRelayMessagesPermission:
     Type: AWS::Lambda::Permission
     DependsOn:
@@ -287,7 +287,9 @@ Resources:
         ProvisionedConcurrentExecutions: !Ref ProvisionedConcurrentExecutions
       Description: Compile and execute a JavaLab Theater project.
       MemorySize: 1769
-      Timeout: 300 # 90 -> TODO: Set this to 90 once the code-dot-org repo has updated
+      Timeout: 90
+      EventInvokeConfig:
+        MaximumRetryAttempts: 0
       Role:
         Fn::ImportValue: JavabuilderLambdaExecutionRole
       Environment:
@@ -305,11 +307,14 @@ Resources:
       Runtime: java11
       CodeUri: org-code-javabuilder/lib/build/distributions/lib.zip
       AutoPublishAlias: live
+      ReservedConcurrentExecutions: !Ref ReservedConcurrentExecutions
       ProvisionedConcurrencyConfig:
         ProvisionedConcurrentExecutions: !Ref ProvisionedConcurrentExecutions
       Description: Compile and execute a JavaLab Neighborhood project.
       MemorySize: 512
       Timeout: 60
+      EventInvokeConfig:
+        MaximumRetryAttempts: 0
       Role:
         Fn::ImportValue: JavabuilderLambdaExecutionRole
       Environment:
@@ -327,11 +332,14 @@ Resources:
       Runtime: java11
       CodeUri: org-code-javabuilder/lib/build/distributions/lib.zip
       AutoPublishAlias: live
+      ReservedConcurrentExecutions: !Ref ReservedConcurrentExecutions
       ProvisionedConcurrencyConfig:
         ProvisionedConcurrentExecutions: !Ref ProvisionedConcurrentExecutions
       Description: Compile and execute a JavaLab Console project.
       MemorySize: 512
       Timeout: 60
+      EventInvokeConfig:
+        MaximumRetryAttempts: 0
       Role:
         Fn::ImportValue: JavabuilderLambdaExecutionRole
       Environment:
@@ -349,6 +357,7 @@ Resources:
       Runtime: java11
       CodeUri: org-code-javabuilder/lib/build/distributions/lib.zip
       AutoPublishAlias: live
+      ReservedConcurrentExecutions: !Ref ReservedConcurrentExecutions
       ProvisionedConcurrencyConfig:
         ProvisionedConcurrentExecutions: !Ref ProvisionedConcurrentExecutions
       Description: Compile and execute a JavaLab Playground project.
