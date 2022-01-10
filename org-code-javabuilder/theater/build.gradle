@@ -32,6 +32,7 @@ dependencies {
     implementation project(':protocol')
     implementation project(':media')
     compile 'commons-io:commons-io:2.9.0'
+    testImplementation testFixtures(project(':protocol'))
 }
 
 test {
