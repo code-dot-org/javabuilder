@@ -19,10 +19,11 @@ def on_connect(event, context)
   region = get_region(context)
 
   request_context = event["requestContext"]
+  authorizer = request_context['authorizer']
+
   # Add in some logging to make debugging easier
   puts "CONNECT REQUEST CONTEXT: #{request_context}"
 
-  authorizer = request_context['authorizer']
   # Return early if this is the user connectivity test
   if is_connectivity_test(authorizer)
     return { statusCode: 200, body: "connection successful" }
@@ -77,7 +78,7 @@ def on_disconnect(event, context)
     # This exception is expected during connectivity tests,
     # so do not log in those cases.
     unless is_connectivity_test(authorizer)
-      puts "DISCONNECT ERROR REQUEST CONTEXT: #{request_context.to_s}"
+      puts "DISCONNECT ERROR REQUEST CONTEXT: #{request_context}"
       puts "DISCONNECT ERROR: #{e.message}"
     end
   end
