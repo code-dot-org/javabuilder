@@ -1,11 +1,14 @@
 package org.code.javabuilder;
 
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
 import java.util.List;
 import org.code.javabuilder.CodeExecutionManager.CodeBuilderRunnableFactory;
 import org.code.protocol.*;
@@ -79,5 +82,16 @@ class CodeExecutionManagerTest {
 
     // Verify post-execute happened only once
     verify(fileManager, times(1)).cleanUpTempDirectory(any(File.class));
+  }
+
+  @Test
+  public void testReplacesSystemIOAfterExecution() {
+    final PrintStream sysOut = System.out;
+    final InputStream sysIn = System.in;
+
+    unitUnderTest.execute();
+
+    assertSame(sysOut, System.out);
+    assertSame(sysIn, System.in);
   }
 }
