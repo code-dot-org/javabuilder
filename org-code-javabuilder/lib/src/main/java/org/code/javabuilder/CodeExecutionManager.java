@@ -25,6 +25,7 @@ public class CodeExecutionManager {
   private final ExecutionType executionType;
   private final List<String> compileList;
   private final JavabuilderFileManager fileManager;
+  private final LifecycleNotifier lifecycleNotifier;
   private final CodeBuilderRunnableFactory codeBuilderRunnableFactory;
 
   private File tempFolder;
@@ -52,7 +53,8 @@ public class CodeExecutionManager {
       OutputAdapter outputAdapter,
       ExecutionType executionType,
       List<String> compileList,
-      JavabuilderFileManager fileManager) {
+      JavabuilderFileManager fileManager,
+      LifecycleNotifier lifecycleNotifier) {
     this(
         fileLoader,
         inputHandler,
@@ -60,6 +62,7 @@ public class CodeExecutionManager {
         executionType,
         compileList,
         fileManager,
+        lifecycleNotifier,
         new CodeBuilderRunnableFactory());
   }
 
@@ -70,6 +73,7 @@ public class CodeExecutionManager {
       ExecutionType executionType,
       List<String> compileList,
       JavabuilderFileManager fileManager,
+      LifecycleNotifier lifecycleNotifier,
       CodeBuilderRunnableFactory codeBuilderRunnableFactory) {
     this.fileLoader = fileLoader;
     this.inputHandler = inputHandler;
@@ -77,6 +81,7 @@ public class CodeExecutionManager {
     this.executionType = executionType;
     this.compileList = compileList;
     this.fileManager = fileManager;
+    this.lifecycleNotifier = lifecycleNotifier;
     this.codeBuilderRunnableFactory = codeBuilderRunnableFactory;
     this.executionInProgress = false;
   }
@@ -145,8 +150,8 @@ public class CodeExecutionManager {
   }
 
   /**
-   * Post-execution steps: 1) [TODO] Notify listeners, 2) clean up global resources, 3) clear
-   * temporary folder, 4) close custom in/out streams, 5) Replace System.in/out with original in/out
+   * Post-execution steps: 1) Notify listeners, 2) clean up global resources, 3) clear temporary
+   * folder, 4) close custom in/out streams, 5) Replace System.in/out with original in/out
    */
   private void onPostExecute() throws InternalServerError {
     if (!this.executionInProgress) {
@@ -154,7 +159,8 @@ public class CodeExecutionManager {
           .warning("onPostExecute() called while execution not in progress.");
       return;
     }
-    // TODO: Notify listeners
+    // Notify listeners
+    this.lifecycleNotifier.onExecutionEnded();
     GlobalProtocol.getInstance().cleanUpResources();
     try {
       // Clear temp folder

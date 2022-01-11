@@ -15,7 +15,7 @@ import org.code.media.Font;
 import org.code.media.Image;
 import org.code.protocol.*;
 
-public class Stage {
+public class Stage implements LifecycleListener {
   private final BufferedImage image;
   private final OutputAdapter outputAdapter;
   private final JavabuilderFileManager fileManager;
@@ -79,6 +79,7 @@ public class Stage {
     this.clear(Color.WHITE);
 
     System.setProperty("java.awt.headless", "true");
+    GlobalProtocol.getInstance().registerLifecycleListener(this);
   }
 
   /** Returns the width of the theater canvas. */
@@ -420,18 +421,23 @@ public class Stage {
       this.progressPublisher.onPlay(this.audioWriter.getTotalAudioLength());
       this.gifWriter.writeToGif(this.image, 0);
       this.audioWriter.writeToAudioStream();
-      // We must call close before write so that the streams are flushed.
+      // We must call close() before write so that the streams are flushed.
       this.close();
       this.writeImageAndAudioToFile();
       this.hasPlayed = true;
     }
   }
 
+  @Override
+  public void onExecutionEnded() {
+    this.close();
+  }
+
   /**
-   * Clean up resources created by this instance. If close or play has already been called this
-   * method does nothing.
+   * Clean up resources created by this instance. If onExecutionEnded or play has already been
+   * called this method does nothing.
    */
-  public void close() {
+  private void close() {
     if (!this.hasClosed) {
       this.gifWriter.close();
       this.audioWriter.close();
