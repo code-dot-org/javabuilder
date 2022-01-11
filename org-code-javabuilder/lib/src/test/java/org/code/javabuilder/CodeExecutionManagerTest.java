@@ -1,10 +1,13 @@
 package org.code.javabuilder;
 
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 import java.io.File;
+import java.io.InputStream;
+import java.io.PrintStream;
 import java.util.List;
 import org.code.javabuilder.CodeExecutionManager.CodeBuilderRunnableFactory;
 import org.code.protocol.*;
@@ -39,8 +42,11 @@ class CodeExecutionManagerTest {
             eq(fileLoader), eq(outputAdapter), any(File.class), eq(executionType), eq(compileList)))
         .thenReturn(codeBuilderRunnable);
 
-    GlobalProtocol.create(
-        outputAdapter, mock(InputAdapter.class), "", "", "", fileManager, lifecycleNotifier);
+    GlobalProtocolTestFactory.builder()
+        .withOutputAdapter(outputAdapter)
+        .withFileManager(fileManager)
+        .withLifecycleNotifier(lifecycleNotifier)
+        .create();
 
     unitUnderTest =
         new CodeExecutionManager(
@@ -82,5 +88,16 @@ class CodeExecutionManagerTest {
 
     // Verify post-execute happened only once
     verify(lifecycleNotifier, times(1)).onExecutionEnded();
+  }
+
+  @Test
+  public void testReplacesSystemIOAfterExecution() {
+    final PrintStream sysOut = System.out;
+    final InputStream sysIn = System.in;
+
+    unitUnderTest.execute();
+
+    assertSame(sysOut, System.out);
+    assertSame(sysIn, System.in);
   }
 }
