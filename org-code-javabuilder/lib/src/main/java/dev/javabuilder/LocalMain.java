@@ -26,10 +26,14 @@ public class LocalMain {
     CachedResources.create();
 
     // Create and invoke the code execution environment
-    CodeBuilderRunnable codeBuilderRunnable =
-        new CodeBuilderRunnable(fileLoader, outputAdapter, ExecutionType.RUN, null);
-    Thread codeBuilderExecutor = new Thread(codeBuilderRunnable);
-    codeBuilderExecutor.start();
-    codeBuilderExecutor.join();
+    CodeExecutionManager codeExecutionManager =
+        new CodeExecutionManager(
+            fileLoader,
+            GlobalProtocol.getInstance().getInputHandler(),
+            outputAdapter,
+            ExecutionType.RUN,
+            null,
+            GlobalProtocol.getInstance().getFileManager());
+    codeExecutionManager.execute();
   }
 }
