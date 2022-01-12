@@ -15,7 +15,7 @@ import org.code.media.Font;
 import org.code.media.Image;
 import org.code.protocol.*;
 
-public class Stage implements LifecycleListener {
+public class Stage {
   private final BufferedImage image;
   private final OutputAdapter outputAdapter;
   private final JavabuilderFileManager fileManager;
@@ -35,6 +35,19 @@ public class Stage implements LifecycleListener {
   private static final int WIDTH = 400;
   private static final int HEIGHT = 400;
   private static final java.awt.Color DEFAULT_COLOR = java.awt.Color.BLACK;
+
+  private static class CloseListener implements LifecycleListener {
+    private final Stage stage;
+
+    public CloseListener(Stage stage) {
+      this.stage = stage;
+    }
+
+    @Override
+    public void onExecutionEnded() {
+      this.stage.close();
+    }
+  }
 
   /**
    * Initialize Stage with a default image. Stage should be initialized outside of org.code.theater
@@ -79,7 +92,7 @@ public class Stage implements LifecycleListener {
     this.clear(Color.WHITE);
 
     System.setProperty("java.awt.headless", "true");
-    GlobalProtocol.getInstance().registerLifecycleListener(this);
+    GlobalProtocol.getInstance().registerLifecycleListener(new CloseListener(this));
   }
 
   /** Returns the width of the theater canvas. */
@@ -426,11 +439,6 @@ public class Stage implements LifecycleListener {
       this.writeImageAndAudioToFile();
       this.hasPlayed = true;
     }
-  }
-
-  @Override
-  public void onExecutionEnded() {
-    this.close();
   }
 
   /**
