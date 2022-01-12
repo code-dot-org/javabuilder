@@ -489,7 +489,7 @@ Resources:
       ActionsEnabled: true
       OKActions: []
       AlarmActions:
-          - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:CDO-Urgent"
+          - !If [IsDevCondition, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-dev-test", !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:CDO-Urgent"]
       InsufficientDataActions: []
       Dimensions: []
       EvaluationPeriods: 10
@@ -557,7 +557,7 @@ Resources:
       ActionsEnabled: true
       OKActions: []
       AlarmActions:
-          - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:Javabuilder-high-error-rate"
+          - !If [IsDevCondition, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-dev-test", !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:Javabuilder-high-error-rate"]
       InsufficientDataActions: []
       Dimensions: []
       EvaluationPeriods: 4
@@ -601,7 +601,7 @@ Resources:
       ActionsEnabled: true
       OKActions: []
       AlarmActions:
-          - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-build-and-run-lambda-error-rate"
+          - !If [IsDevCondition, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-dev-test", !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-build-and-run-lambda-error-rate"]
       InsufficientDataActions: []
       Dimensions: []
       EvaluationPeriods: 4
@@ -647,7 +647,7 @@ Resources:
       ActionsEnabled: true
       OKActions: []
       AlarmActions:
-          - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:Javabuilder-high-error-rate"
+          - !If [IsDevCondition, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-dev-test", !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:Javabuilder-high-error-rate"]
       InsufficientDataActions: []
       Dimensions: []
       EvaluationPeriods: 4
@@ -691,7 +691,7 @@ Resources:
       ActionsEnabled: true
       OKActions: []
       AlarmActions:
-          - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-build-and-run-lambda-error-rate"
+          - !If [IsDevCondition, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-dev-test", !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-build-and-run-lambda-error-rate"]
       InsufficientDataActions: []
       Dimensions: []
       EvaluationPeriods: 4
@@ -737,7 +737,7 @@ Resources:
       ActionsEnabled: true
       OKActions: []
       AlarmActions:
-          - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:Javabuilder-high-error-rate"
+          - !If [IsDevCondition, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-dev-test", !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:Javabuilder-high-error-rate"]
       InsufficientDataActions: []
       Dimensions: []
       EvaluationPeriods: 4
@@ -781,7 +781,7 @@ Resources:
       ActionsEnabled: true
       OKActions: []
       AlarmActions:
-          - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-build-and-run-lambda-error-rate"
+          - !If [IsDevCondition, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-dev-test", !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-build-and-run-lambda-error-rate"]
       InsufficientDataActions: []
       Dimensions: []
       EvaluationPeriods: 4
@@ -827,7 +827,7 @@ Resources:
       ActionsEnabled: true
       OKActions: []
       AlarmActions:
-          - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:Javabuilder-high-error-rate"
+          - !If [IsDevCondition, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-dev-test", !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:Javabuilder-high-error-rate"]
       InsufficientDataActions: []
       Dimensions: []
       EvaluationPeriods: 4
@@ -871,7 +871,7 @@ Resources:
       ActionsEnabled: true
       OKActions: []
       AlarmActions:
-          - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-build-and-run-lambda-error-rate"
+          - !If [IsDevCondition, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-dev-test", !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-build-and-run-lambda-error-rate"]
       InsufficientDataActions: []
       Dimensions: []
       EvaluationPeriods: 4
