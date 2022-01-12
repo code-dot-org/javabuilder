@@ -67,7 +67,7 @@ def on_connect(event, context)
   end
 
   response = lambda_client.invoke({
-    function_name: function_name
+    function_name: function_name,
     invocation_type: 'Event',
     payload: JSON.generate(payload)
   })

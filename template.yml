@@ -42,6 +42,7 @@ Resources:
       AliasTarget:
         DNSName: !GetAtt DomainName.RegionalDomainName
         HostedZoneId: !GetAtt DomainName.RegionalHostedZoneId
+
   DomainName:
     Type: AWS::ApiGatewayV2::DomainName
     Properties:
@@ -50,6 +51,7 @@ Resources:
         - EndpointType: REGIONAL
           CertificateArn: !Ref Certificate
           CertificateName: !Sub "${SubDomainName}.${BaseDomainName}"
+
   Certificate:
     Type: AWS::CertificateManager::Certificate
     Properties:
@@ -58,6 +60,7 @@ Resources:
       DomainValidationOptions:
         - DomainName: !Sub "${SubDomainName}.${BaseDomainName}"
           HostedZoneId: !Ref BaseDomainNameHostedZonedID
+
   DomainNameAPIMapping:
     Type: AWS::ApiGatewayV2::ApiMapping
     DependsOn:
@@ -66,12 +69,14 @@ Resources:
       ApiId: !Ref WebSocketAPI
       DomainName: !Sub "${SubDomainName}.${BaseDomainName}"
       Stage: !Ref WebSocketStage
+
   WebSocketAPI:
     Type: AWS::ApiGatewayV2::Api
     Properties:
       Name: !Sub "${SubDomainName}.${BaseDomainName}"
       ProtocolType: WEBSOCKET
       RouteSelectionExpression: "$request.body.action"
+
   ConnectRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
@@ -85,6 +90,7 @@ Resources:
         - '/'
         - - 'integrations'
           - !Ref ConnectInteg
+
   WebSocketAuthorizer:
     Type: AWS::ApiGatewayV2::Authorizer
     Properties:
@@ -94,6 +100,7 @@ Resources:
       IdentitySource:
         - route.request.querystring.Authorization
       Name: WebSocketAuthorizer
+
   ConnectInteg:
     Type: AWS::ApiGatewayV2::Integration
     Properties:
@@ -103,6 +110,7 @@ Resources:
       IntegrationUri:
         Fn::Sub:
           arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${StartSessionAndRelayMessagesFunction.Arn}/invocations
+
   DefaultRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
@@ -115,6 +123,7 @@ Resources:
           - /
           - - integrations
             - Ref: DefaultIntegration
+
   DefaultIntegration:
     Type: AWS::ApiGatewayV2::Integration
     Properties:
@@ -122,6 +131,7 @@ Resources:
       Description: Lambda Proxy Integration
       IntegrationType: AWS_PROXY
       IntegrationUri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${StartSessionAndRelayMessagesFunction.Arn}/invocations"
+
   DisconnectRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
@@ -133,6 +143,7 @@ Resources:
         - '/'
         - - 'integrations'
           - !Ref DisconnectInteg
+
   DisconnectInteg:
     Type: AWS::ApiGatewayV2::Integration
     Properties:
@@ -142,6 +153,7 @@ Resources:
       IntegrationUri:
         Fn::Sub:
           arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${StartSessionAndRelayMessagesFunction.Arn}/invocations
+
   WebSocketDeployment:
     Type: AWS::ApiGatewayV2::Deployment
     DependsOn:
@@ -150,6 +162,7 @@ Resources:
       - DisconnectRoute
     Properties:
       ApiId: !Ref WebSocketAPI
+
   WebSocketStage:
     Type: AWS::ApiGatewayV2::Stage
     Properties:
@@ -178,6 +191,7 @@ Resources:
             "protocol": "$context.protocol",
             "userAgent": "$context.identity.userAgent"
           }'
+
   StartSessionAndRelayMessagesFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -194,6 +208,7 @@ Resources:
           BUILD_AND_RUN_NEIGHBORHOOD_PROJECT_LAMBDA_ARN: !Ref BuildAndRunJavaNeighborhoodProjectFunctionAliaslive
           BUILD_AND_RUN_CONSOLE_PROJECT_LAMBDA_ARN: !Ref BuildAndRunJavaConsoleProjectFunctionAliaslive
           BUILD_AND_RUN_PLAYGROUND_PROJECT_LAMBDA_ARN: !Ref BuildAndRunJavaPlaygroundProjectFunctionAliaslive
+
   StartSessionAndRelayMessagesPermission:
     Type: AWS::Lambda::Permission
     DependsOn:
@@ -202,6 +217,7 @@ Resources:
       Action: lambda:InvokeFunction
       FunctionName: !Ref StartSessionAndRelayMessagesFunction
       Principal: apigateway.amazonaws.com
+
   WebsocketAuthorizerLambda:
     Type: AWS::Serverless::Function
     Properties:
@@ -247,6 +263,7 @@ Resources:
             ZUbJMN3hMFIFP4smAtjkKqguLJPFdcMij7WFDjL5kPQpxuc4RSq97iXRODIBjW1B\n zdN9ZpGRA4MDOu3BtLC69PwoFrSULAzlUmC5fJIwpaXoRGZEYRMQThlJ9VsRGwTG\n
             JTJJ4dWJ2cw61prbeU/HVCWD8OaNumz9tQIDAQAB\n
             -----END RSA PUBLIC KEY-----'
+
   WebSocketAuthorizerPermission:
     Type: AWS::Lambda::Permission
     DependsOn:
@@ -256,6 +273,7 @@ Resources:
       FunctionName: !Ref WebsocketAuthorizerLambda
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${WebSocketAPI}/authorizers/${WebSocketAuthorizer}"
+
   ChangeJavaRuntimeDirectoryLayer:
     Type: AWS::Serverless::LayerVersion
     Properties:
@@ -264,6 +282,7 @@ Resources:
       ContentUri: org-code-javabuilder/change_runtime_directory
       Description: Change Java runtime to launch from the writeable /tmp directory to enable student projects to write files more easily.
       LayerName: change-java-runtime-directory
+
   FontConfigurationLayer:
     Type: AWS::Serverless::LayerVersion
     Properties:
@@ -272,6 +291,7 @@ Resources:
       ContentUri: org-code-javabuilder/font_config.zip
       Description: Add a font configuration file to enable use of fonts.
       LayerName: font-configuration
+
   BuildAndRunJavaTheaterProjectFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -372,6 +392,7 @@ Resources:
           AWS_LAMBDA_EXEC_WRAPPER: /opt/change_runtime_directory
           OUTPUT_BUCKET_NAME: !Ref OutputBucket
           GET_OUTPUT_URL: !Sub "https://${OutputDomain}"
+
   OutputBucket:
     Type: AWS::S3::Bucket
     Properties:
@@ -390,6 +411,7 @@ Resources:
           - Id: ExpirationRule
             Status: Enabled
             ExpirationInDays: 1
+
   OutputBucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:
@@ -400,6 +422,7 @@ Resources:
           Effect: Allow
           Resource: !Sub "arn:aws:s3:::${OutputBucket}/*"
           Principal: '*'
+
   OutputAPICertificate:
     Type: AWS::CertificateManager::Certificate
     Properties:
@@ -408,6 +431,7 @@ Resources:
       DomainValidationOptions:
         - DomainName: !Sub "${SubDomainName}-output.${BaseDomainName}"
           HostedZoneId: !Ref BaseDomainNameHostedZonedID
+
   OutputDomain:
     Type: AWS::Route53::RecordSet
     Properties:
@@ -417,6 +441,7 @@ Resources:
       AliasTarget:
         DNSName: !GetAtt OutputCDN.DomainName
         HostedZoneId: Z2FDTNDATAQYW2 # static ID for cloudfront aliases
+
   OutputCDN:
     Type: AWS::CloudFront::Distribution
     Properties:
@@ -446,6 +471,441 @@ Resources:
           DefaultTTL: 0
           ForwardedValues: {QueryString: true}
           ViewerProtocolPolicy: redirect-to-https
+
+  HighConcurrentExecutionsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: javabuilder_high_concurrent_executions
+      AlarmDescription: !Sub |
+          This will page the DOTD if javabuilder usage exceeds 50 concurrent
+          executions for 10 minutes. Occasional spikes are expected, but
+          long-running high usage is an indication of an attack. Go to the
+          following URLs and set reserved concurrency to 10 immediately
+          https://console.aws.amazon.com/lambda/home?region=${AWS::Region}#/functions/${BuildAndRunJavaTheaterProjectFunction}/edit/concurrency?tab=configure
+          https://console.aws.amazon.com/lambda/home?region=${AWS::Region}#/functions/${BuildAndRunJavaNeighborhoodProjectFunction}/edit/concurrency?tab=configure
+          https://console.aws.amazon.com/lambda/home?region=${AWS::Region}#/functions/${BuildAndRunJavaConsoleProjectFunction}/edit/concurrency?tab=configure
+          https://console.aws.amazon.com/lambda/home?region=${AWS::Region}#/functions/${BuildAndRunJavaPlaygroundProjectFunction}/edit/concurrency?tab=configure
+          Then post in #ap-csa-dev.
+      ActionsEnabled: true
+      OKActions: []
+      AlarmActions:
+          - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:CDO-Urgent"
+      InsufficientDataActions: []
+      Dimensions: []
+      EvaluationPeriods: 10
+      DatapointsToAlarm: 10
+      Threshold: 50
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      Metrics:
+        - Id: e1
+          Label: Concurrent Executions Across All Lambdas
+          ReturnData: true
+          Expression: SUM(METRICS())
+        - Id: m2
+          ReturnData: false
+          MetricStat:
+              Metric:
+                  Namespace: AWS/Lambda
+                  MetricName: ConcurrentExecutions
+                  Dimensions:
+                      - Name: FunctionName
+                        Value: !Ref BuildAndRunJavaTheaterProjectFunction
+              Period: 60
+              Stat: Maximum
+        - Id: m3
+          ReturnData: false
+          MetricStat:
+              Metric:
+                  Namespace: AWS/Lambda
+                  MetricName: ConcurrentExecutions
+                  Dimensions:
+                      - Name: FunctionName
+                        Value: !Ref BuildAndRunJavaNeighborhoodProjectFunction
+              Period: 60
+              Stat: Maximum
+        - Id: m4
+          ReturnData: false
+          MetricStat:
+              Metric:
+                  Namespace: AWS/Lambda
+                  MetricName: ConcurrentExecutions
+                  Dimensions:
+                      - Name: FunctionName
+                        Value: !Ref BuildAndRunJavaConsoleProjectFunction
+              Period: 60
+              Stat: Maximum
+        - Id: m5
+          ReturnData: false
+          MetricStat:
+              Metric:
+                  Namespace: AWS/Lambda
+                  MetricName: ConcurrentExecutions
+                  Dimensions:
+                      - Name: FunctionName
+                        Value: !Ref BuildAndRunJavaPlaygroundProjectFunction
+              Period: 60
+              Stat: Maximum
+
+  TheaterHighSevereErrorRateAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: javabuilder_theater_high_severe_error_rate
+      AlarmDescription: Send page if Javabuilder severe error rate exceeds 10% for 20
+          minutes. Occasional spikes are expected, but a sustained high error rate
+          is an indication of an outage.
+      ActionsEnabled: true
+      OKActions: []
+      AlarmActions:
+          - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:Javabuilder-high-error-rate"
+      InsufficientDataActions: []
+      Dimensions: []
+      EvaluationPeriods: 4
+      DatapointsToAlarm: 4
+      Threshold: 10
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      Metrics:
+          - Id: e1
+            Label: Error Rate (%)
+            ReturnData: true
+            Expression: (m1 / m2) * 100
+          - Id: m1
+            ReturnData: false
+            MetricStat:
+                Metric:
+                    Namespace: Javabuilder
+                    MetricName: Javabuilder Theater "SEVERE" errors
+                    Dimensions: []
+                Period: 300
+                Stat: Sum
+          - Id: m2
+            ReturnData: false
+            MetricStat:
+                Metric:
+                    Namespace: AWS/Lambda
+                    MetricName: Invocations
+                    Dimensions:
+                        - Name: FunctionName
+                          Value: !Ref BuildAndRunJavaTheaterProjectFunction
+                Period: 300
+                Stat: Sum
+
+  TheaterHighErrorRateAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: javabuilder_build_and_run_theater_lambda_error_rate
+      AlarmDescription: Error rate in Javabuilder's Theater build and run lambda (the core of
+          Javabuilder, which executes student Theater code) exceeded 10% for four
+          consecutive 5 minute periods.
+      ActionsEnabled: true
+      OKActions: []
+      AlarmActions:
+          - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-build-and-run-lambda-error-rate"
+      InsufficientDataActions: []
+      Dimensions: []
+      EvaluationPeriods: 4
+      DatapointsToAlarm: 4
+      Threshold: 25
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      Metrics:
+          - Id: e1
+            Label: Errors / Invocations
+            ReturnData: true
+            Expression: (m1 / m2) * 100
+          - Id: m1
+            ReturnData: false
+            MetricStat:
+                Metric:
+                    Namespace: AWS/Lambda
+                    MetricName: Errors
+                    Dimensions:
+                        - Name: FunctionName
+                          Value: !Ref BuildAndRunJavaTheaterProjectFunction
+                Period: 300
+                Stat: Sum
+          - Id: m2
+            ReturnData: false
+            MetricStat:
+                Metric:
+                    Namespace: AWS/Lambda
+                    MetricName: Invocations
+                    Dimensions:
+                        - Name: FunctionName
+                          Value: !Ref BuildAndRunJavaTheaterProjectFunction
+                Period: 300
+                Stat: Sum
+
+  NeighborhoodHighSevereErrorRateAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: javabuilder_neighborhood_high_severe_error_rate
+      AlarmDescription: Send page if Javabuilder severe error rate exceeds 10% for 20
+          minutes. Occasional spikes are expected, but a sustained high error rate
+          is an indication of an outage.
+      ActionsEnabled: true
+      OKActions: []
+      AlarmActions:
+          - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:Javabuilder-high-error-rate"
+      InsufficientDataActions: []
+      Dimensions: []
+      EvaluationPeriods: 4
+      DatapointsToAlarm: 4
+      Threshold: 10
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      Metrics:
+          - Id: e1
+            Label: Error Rate (%)
+            ReturnData: true
+            Expression: (m1 / m2) * 100
+          - Id: m1
+            ReturnData: false
+            MetricStat:
+                Metric:
+                    Namespace: Javabuilder
+                    MetricName: Javabuilder Neighborhood "SEVERE" errors
+                    Dimensions: []
+                Period: 300
+                Stat: Sum
+          - Id: m2
+            ReturnData: false
+            MetricStat:
+                Metric:
+                    Namespace: AWS/Lambda
+                    MetricName: Invocations
+                    Dimensions:
+                        - Name: FunctionName
+                          Value: !Ref BuildAndRunJavaNeighborhoodProjectFunction
+                Period: 300
+                Stat: Sum
+
+  NeighborhoodHighErrorRateAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: javabuilder_build_and_run_neighborhood_lambda_error_rate
+      AlarmDescription: Error rate in Javabuilder's Neighborhood build and run lambda (the core of
+          Javabuilder, which executes student Neighborhood code) exceeded 10% for four
+          consecutive 5 minute periods.
+      ActionsEnabled: true
+      OKActions: []
+      AlarmActions:
+          - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-build-and-run-lambda-error-rate"
+      InsufficientDataActions: []
+      Dimensions: []
+      EvaluationPeriods: 4
+      DatapointsToAlarm: 4
+      Threshold: 25
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      Metrics:
+          - Id: e1
+            Label: Errors / Invocations
+            ReturnData: true
+            Expression: (m1 / m2) * 100
+          - Id: m1
+            ReturnData: false
+            MetricStat:
+                Metric:
+                    Namespace: AWS/Lambda
+                    MetricName: Errors
+                    Dimensions:
+                        - Name: FunctionName
+                          Value: !Ref BuildAndRunJavaNeighborhoodProjectFunction
+                Period: 300
+                Stat: Sum
+          - Id: m2
+            ReturnData: false
+            MetricStat:
+                Metric:
+                    Namespace: AWS/Lambda
+                    MetricName: Invocations
+                    Dimensions:
+                        - Name: FunctionName
+                          Value: !Ref BuildAndRunJavaNeighborhoodProjectFunction
+                Period: 300
+                Stat: Sum
+
+  ConsoleHighSevereErrorRateAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: javabuilder_console_high_severe_error_rate
+      AlarmDescription: Send page if Javabuilder severe error rate exceeds 10% for 20
+          minutes. Occasional spikes are expected, but a sustained high error rate
+          is an indication of an outage.
+      ActionsEnabled: true
+      OKActions: []
+      AlarmActions:
+          - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:Javabuilder-high-error-rate"
+      InsufficientDataActions: []
+      Dimensions: []
+      EvaluationPeriods: 4
+      DatapointsToAlarm: 4
+      Threshold: 10
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      Metrics:
+          - Id: e1
+            Label: Error Rate (%)
+            ReturnData: true
+            Expression: (m1 / m2) * 100
+          - Id: m1
+            ReturnData: false
+            MetricStat:
+                Metric:
+                    Namespace: Javabuilder
+                    MetricName: Javabuilder Console "SEVERE" errors
+                    Dimensions: []
+                Period: 300
+                Stat: Sum
+          - Id: m2
+            ReturnData: false
+            MetricStat:
+                Metric:
+                    Namespace: AWS/Lambda
+                    MetricName: Invocations
+                    Dimensions:
+                        - Name: FunctionName
+                          Value: !Ref BuildAndRunJavaConsoleProjectFunction
+                Period: 300
+                Stat: Sum
+
+  ConsoleHighErrorRateAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: javabuilder_build_and_run_console_lambda_error_rate
+      AlarmDescription: Error rate in Javabuilder's Console build and run lambda (the core of
+          Javabuilder, which executes student Console code) exceeded 10% for four
+          consecutive 5 minute periods.
+      ActionsEnabled: true
+      OKActions: []
+      AlarmActions:
+          - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-build-and-run-lambda-error-rate"
+      InsufficientDataActions: []
+      Dimensions: []
+      EvaluationPeriods: 4
+      DatapointsToAlarm: 4
+      Threshold: 25
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      Metrics:
+          - Id: e1
+            Label: Errors / Invocations
+            ReturnData: true
+            Expression: (m1 / m2) * 100
+          - Id: m1
+            ReturnData: false
+            MetricStat:
+                Metric:
+                    Namespace: AWS/Lambda
+                    MetricName: Errors
+                    Dimensions:
+                        - Name: FunctionName
+                          Value: !Ref BuildAndRunJavaConsoleProjectFunction
+                Period: 300
+                Stat: Sum
+          - Id: m2
+            ReturnData: false
+            MetricStat:
+                Metric:
+                    Namespace: AWS/Lambda
+                    MetricName: Invocations
+                    Dimensions:
+                        - Name: FunctionName
+                          Value: !Ref BuildAndRunJavaConsoleProjectFunction
+                Period: 300
+                Stat: Sum
+
+  PlaygroundHighSevereErrorRateAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: javabuilder_playground_high_severe_error_rate
+      AlarmDescription: Send page if Javabuilder severe error rate exceeds 10% for 20
+          minutes. Occasional spikes are expected, but a sustained high error rate
+          is an indication of an outage.
+      ActionsEnabled: true
+      OKActions: []
+      AlarmActions:
+          - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:Javabuilder-high-error-rate"
+      InsufficientDataActions: []
+      Dimensions: []
+      EvaluationPeriods: 4
+      DatapointsToAlarm: 4
+      Threshold: 10
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      Metrics:
+          - Id: e1
+            Label: Error Rate (%)
+            ReturnData: true
+            Expression: (m1 / m2) * 100
+          - Id: m1
+            ReturnData: false
+            MetricStat:
+                Metric:
+                    Namespace: Javabuilder
+                    MetricName: Javabuilder Playground "SEVERE" errors
+                    Dimensions: []
+                Period: 300
+                Stat: Sum
+          - Id: m2
+            ReturnData: false
+            MetricStat:
+                Metric:
+                    Namespace: AWS/Lambda
+                    MetricName: Invocations
+                    Dimensions:
+                        - Name: FunctionName
+                          Value: !Ref BuildAndRunJavaPlaygroundProjectFunction
+                Period: 300
+                Stat: Sum
+
+  PlaygroundHighErrorRateAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: javabuilder_build_and_run_playground_lambda_error_rate
+      AlarmDescription: Error rate in Javabuilder's Playground build and run lambda (the core of
+          Javabuilder, which executes student Playground code) exceeded 10% for four
+          consecutive 5 minute periods.
+      ActionsEnabled: true
+      OKActions: []
+      AlarmActions:
+          - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-build-and-run-lambda-error-rate"
+      InsufficientDataActions: []
+      Dimensions: []
+      EvaluationPeriods: 4
+      DatapointsToAlarm: 4
+      Threshold: 25
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      Metrics:
+          - Id: e1
+            Label: Errors / Invocations
+            ReturnData: true
+            Expression: (m1 / m2) * 100
+          - Id: m1
+            ReturnData: false
+            MetricStat:
+                Metric:
+                    Namespace: AWS/Lambda
+                    MetricName: Errors
+                    Dimensions:
+                        - Name: FunctionName
+                          Value: !Ref BuildAndRunJavaPlaygroundProjectFunction
+                Period: 300
+                Stat: Sum
+          - Id: m2
+            ReturnData: false
+            MetricStat:
+                Metric:
+                    Namespace: AWS/Lambda
+                    MetricName: Invocations
+                    Dimensions:
+                        - Name: FunctionName
+                          Value: !Ref BuildAndRunJavaPlaygroundProjectFunction
+                Period: 300
+                Stat: Sum
 Outputs:
   JavabuilderURL:
     Value:
