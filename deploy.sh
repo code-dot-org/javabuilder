@@ -24,7 +24,8 @@ STACK=${SUB_DOMAIN}
 
 PROVISIONED_CONCURRENT_EXECUTIONS=${PROVISIONED_CONCURRENT_EXECUTIONS-'1'}
 RESERVED_CONCURRENT_EXECUTIONS=${RESERVED_CONCURRENT_EXECUTIONS-'3'}
-cat template.yml.erb | ruby -rerb -e "puts ERB.new(ARGF.read, nil, '-').result" > template.yml
+
+erb -T - template.yml.erb > template.yml
 TEMPLATE=template.yml
 OUTPUT_TEMPLATE=$(mktemp)
 
