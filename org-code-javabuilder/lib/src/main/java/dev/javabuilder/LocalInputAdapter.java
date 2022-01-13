@@ -19,9 +19,4 @@ public class LocalInputAdapter implements InputAdapter {
   public String getNextMessage() {
     return messages.remove();
   }
-
-  @Override
-  public boolean hasActiveConnection() {
-    return true;
-  }
 }

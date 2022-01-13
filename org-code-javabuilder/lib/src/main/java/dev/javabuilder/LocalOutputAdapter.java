@@ -16,9 +16,4 @@ public class LocalOutputAdapter implements OutputAdapter {
   public void sendMessage(ClientMessage message) {
     outputStream.print(message.getFormattedMessage());
   }
-
-  @Override
-  public boolean hasActiveConnection() {
-    return true;
-  }
 }

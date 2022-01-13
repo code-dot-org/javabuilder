@@ -19,14 +19,16 @@ def on_connect(event, context)
   region = get_region(context)
 
   request_context = event["requestContext"]
+  authorizer = request_context['authorizer']
+
   # Add in some logging to make debugging easier
-  puts request_context
+  puts "CONNECT REQUEST CONTEXT: #{request_context}"
 
   # Return early if this is the user connectivity test
-  authorizer = request_context['authorizer']
-  if authorizer && authorizer['connectivityTest']
+  if is_connectivity_test(authorizer)
     return { statusCode: 200, body: "connection successful" }
   end
+
   # -- Create SQS for this session --
   sqs_client = Aws::SQS::Client.new(region: region)
   queue_name = get_session_id(event) + '.fifo'
@@ -62,7 +64,24 @@ end
 
 def on_disconnect(event, context)
   sqs = Aws::SQS::Client.new(region: get_region(context))
-  sqs.delete_queue(queue_url: get_sqs_url(event, context))
+
+  # Handle if queue does not exist,
+  # such as in case of connectivity test.
+  # The NonExistentQueue error is not documented in the AWS SDK,
+  # but was observed in errors accumulated from our connectivity tests.
+  begin
+    sqs.delete_queue(queue_url: get_sqs_url(event, context))
+  rescue Aws::SQS::Errors::NonExistentQueue => e
+    request_context = event['requestContext']
+    authorizer = request_context['authorizer']
+
+    # This exception is expected during connectivity tests,
+    # so do not log in those cases.
+    unless is_connectivity_test(authorizer)
+      puts "DISCONNECT ERROR REQUEST CONTEXT: #{request_context}"
+      puts "DISCONNECT ERROR: #{e.message}"
+    end
+  end
 
   { statusCode: 200, body: "success"}
 end
@@ -118,4 +137,8 @@ def get_sqs_url(event, context)
   account_id = context.invoked_function_arn.split(':')[4]
   connection_id = get_session_id(event)
   "https://sqs.#{region}.amazonaws.com/#{account_id}/#{connection_id}.fifo"
+end
+
+def is_connectivity_test(authorizer)
+  !!(authorizer && authorizer['connectivityTest'])
 end
