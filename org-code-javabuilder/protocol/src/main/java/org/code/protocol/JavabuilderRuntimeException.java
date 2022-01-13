@@ -8,6 +8,7 @@ import java.util.HashMap;
 public abstract class JavabuilderRuntimeException extends RuntimeException
     implements JavabuilderThrowableProtocol {
   private final Enum key;
+  private String fallbackMessage;
 
   protected JavabuilderRuntimeException(Enum key) {
     super(key.toString());
@@ -19,6 +20,12 @@ public abstract class JavabuilderRuntimeException extends RuntimeException
     this.key = key;
   }
 
+  protected JavabuilderRuntimeException(Enum key, String fallbackMessage) {
+    super(key.toString());
+    this.key = key;
+    this.fallbackMessage = fallbackMessage;
+  }
+
   public JavabuilderThrowableMessage getExceptionMessage() {
     HashMap<String, String> detail = new HashMap<>();
     detail.put(ClientMessageDetailKeys.CONNECTION_ID, Properties.getConnectionId());
@@ -27,6 +34,10 @@ public abstract class JavabuilderRuntimeException extends RuntimeException
       if (this.getCause().getMessage() != null) {
         detail.put(ClientMessageDetailKeys.CAUSE_MESSAGE, this.getCause().getMessage());
       }
+    }
+
+    if (this.fallbackMessage != null) {
+      detail.put(ClientMessageDetailKeys.FALLBACK_MESSAGE, this.fallbackMessage);
     }
 
     return new JavabuilderThrowableMessage(this.key, detail);

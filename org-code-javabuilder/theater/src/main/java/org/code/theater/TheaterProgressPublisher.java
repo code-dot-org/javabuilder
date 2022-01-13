@@ -28,11 +28,7 @@ class TheaterProgressPublisher {
   public void onPause(double seconds) {
     this.pauseTimeSeconds += seconds;
     if (this.pauseTimeSeconds > MAX_TIME_S) {
-      String message =
-          "Your video is longer than "
-              + MAX_TIME_S
-              + " seconds. Decrease the length of your video and try again.";
-      throw new RuntimeException(message);
+      throw new TheaterRuntimeException(ExceptionKeys.VIDEO_TOO_LONG);
     }
 
     if (this.pauseTimeSeconds - this.lastUpdateTimeSeconds >= UPDATE_TIME_S) {

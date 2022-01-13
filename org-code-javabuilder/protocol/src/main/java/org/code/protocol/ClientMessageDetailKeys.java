@@ -29,4 +29,6 @@ public class ClientMessageDetailKeys {
   public static final String CONNECTION_ID = "connectionId";
   public static final String CAUSE = "cause";
   public static final String CAUSE_MESSAGE = "causeMessage";
+  // Message used until translation is set up on the front end
+  public static final String FALLBACK_MESSAGE = "fallbackMessage";
 }
