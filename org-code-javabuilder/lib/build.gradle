@@ -46,6 +46,10 @@ dependencies {
     testImplementation testFixtures(project(':protocol'))
 }
 
+compileJava {
+    options.compilerArgs.addAll(['--patch-module', "java.base=${project(':patches').getBuildDir()}/classes/java/main"])
+}
+
 test {
     useJUnitPlatform()
 }

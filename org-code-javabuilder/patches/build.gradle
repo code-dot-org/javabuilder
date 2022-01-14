@@ -1,0 +1,33 @@
+plugins {
+    id 'java'
+    id 'com.github.sherter.google-java-format' version '0.8'
+}
+
+version 'unspecified'
+
+repositories {
+    mavenCentral()
+}
+compileJava.source "${project.getRootDir()}/patches/src/java.base/"
+compileJava {
+    options.compilerArgs.addAll([
+            '--patch-module', "java.base=${project.getRootDir()}/patches/src"
+    ])
+}
+
+task runPatchClassTester(type: Exec) {
+    dependsOn build
+    commandLine "java",
+            "--patch-module", "java.base=${project.getBuildDir()}/classes/java/main",
+            "-classpath", "${project.getBuildDir()}/classes",
+            "org.code.patches.PatchClassTester"
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+}
+
+test {
+    useJUnitPlatform()
+}

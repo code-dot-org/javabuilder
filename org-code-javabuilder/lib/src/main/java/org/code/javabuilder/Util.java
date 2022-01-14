@@ -2,6 +2,7 @@ package org.code.javabuilder;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -25,10 +26,22 @@ public class Util {
 
   /** @return a list of URLs with the location of all user-facing api jars */
   public static URL[] getAllJarURLs(URL executableLocation) {
-    final URL[] jarUrls = new URL[JAR_NAMES.length + 1];
-    jarUrls[0] = executableLocation;
-    for (int i = 0; i < JAR_NAMES.length; i++) {
+    final URL[] jarUrls = new URL[JAR_NAMES.length + 2];
+    jarUrls[1] = executableLocation;
+    for (int i = 1; i < JAR_NAMES.length + 1; i++) {
       jarUrls[i + 1] = Util.getJarURL(JAR_NAMES[i]);
+      System.out.println(Util.getJarURL(JAR_NAMES[i]));
+    }
+
+    try {
+      File f =
+          new File(
+              "/Users/sanchit-code-dot-org/Code.org/workspace/javabuilder/org-code-javabuilder/patches/build/classes/java/main/");
+      URL url = f.toURI().toURL();
+      System.out.println(url);
+      jarUrls[0] = url;
+    } catch (MalformedURLException e) {
+      //
     }
 
     return jarUrls;

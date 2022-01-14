@@ -28,7 +28,13 @@ public class MainRunner implements CodeRunner {
       // load and run the main method of the class
       Method mainMethod = this.findMainMethod(urlClassLoader);
       this.outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.RUNNING));
-      mainMethod.invoke(null, new Object[] {null});
+      Object[] args = new Object[1];
+      System.setProperty(
+          "--patch-module",
+          "java.base=/Users/sanchit-code-dot-org/Code.org/workspace/javabuilder/org-code-javabuilder/patches/build/classes/java/main");
+      // args[0] = new String[]{"--patch-module",
+      // "java.base=/Users/sanchit-code-dot-org/Code.org/workspace/javabuilder/org-code-javabuilder/patches/build/classes/java/main"};
+      mainMethod.invoke(null, args);
     } catch (IllegalAccessException e) {
       // TODO: this error message may not be not very friendly
       throw new UserInitiatedException(UserInitiatedExceptionKey.ILLEGAL_METHOD_ACCESS, e);

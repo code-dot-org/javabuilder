@@ -84,6 +84,9 @@ public class UserCodeCompiler {
     List<String> optionList = new ArrayList<String>();
     optionList.add("-classpath");
     optionList.add(Util.getAllJarPaths());
+    optionList.add("--patch-module");
+    optionList.add(
+        "java.base=/Users/sanchit-code-dot-org/Code.org/workspace/javabuilder/org-code-javabuilder/patches/build/classes/java/main");
 
     // create compilation task
     return compiler.getTask(null, fileManager, diagnostics, optionList, null, files);
