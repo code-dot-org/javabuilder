@@ -414,7 +414,7 @@ Resources:
   HighConcurrentExecutionsAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      AlarmName: !Sub "${SubDomainName}_javabuilder_high_concurrent_executions"
+      AlarmName: !Sub "${SubDomainName}_high_concurrent_executions"
       AlarmDescription: !Sub |
           This will page the DOTD if javabuilder usage exceeds 50 concurrent
           executions for 10 minutes. Occasional spikes are expected, but
@@ -458,7 +458,7 @@ Resources:
   <%=name%>HighSevereErrorRateAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      AlarmName: !Sub "${SubDomainName}_javabuilder_<%=name.downcase%>_high_severe_error_rate"
+      AlarmName: !Sub "${SubDomainName}_<%=name.downcase%>_high_severe_error_rate"
       AlarmDescription: Send page if Javabuilder severe error rate exceeds 10% for 20
           minutes. Occasional spikes are expected, but a sustained high error rate
           is an indication of an outage.
@@ -502,7 +502,7 @@ Resources:
   <%=name%>HighErrorRateAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      AlarmName: !Sub "${SubDomainName}_javabuilder_build_and_run_<%=name.downcase%>_lambda_error_rate"
+      AlarmName: !Sub "${SubDomainName}_build_and_run_<%=name.downcase%>_lambda_error_rate"
       AlarmDescription: Error rate in Javabuilder's <%=name%> build and run lambda (the core of
           Javabuilder, which executes student <%=name%> code) exceeded 10% for four
           consecutive 5 minute periods.
