@@ -301,8 +301,8 @@ Resources:
 
 <%{
   Theater: {MemorySize: 1769, Timeout: 90},
-  Neighborhood: {MemorySize: 512, Timeout: 60},
-  Console: {MemorySize: 512, Timeout: 60},
+  Neighborhood: {MemorySize: 512, Timeout: 90},
+  Console: {MemorySize: 512, Timeout: 90},
   Playground: {MemorySize: 512, Timeout: 300}
 }.each do |name, config| -%>
   BuildAndRunJava<%=name%>ProjectFunction:
