@@ -35,6 +35,7 @@ dependencies {
     // https://mvnrepository.com/artifact/org.junit.platform/junit-platform-launcher
     implementation 'org.junit.platform:junit-platform-launcher:1.8.1'
     implementation project(':protocol')
+    implementation project(':validation')
     implementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
     // https://mvnrepository.com/artifact/org.mockito/mockito-inline
     testImplementation group: 'org.mockito', name: 'mockito-inline', version: '3.9.0'
@@ -87,7 +88,8 @@ afterEvaluate {
             [':neighborhood', 'buildNeighborhood'],
             [':theater', 'buildTheater'],
             [':playground', 'buildPlayground'],
-            [':studentlib', 'buildStudentlib']
+            [':studentlib', 'buildStudentlib'],
+            [':validation', 'buildValidation']
     ]
 
     // Clean and build before a production deploy
