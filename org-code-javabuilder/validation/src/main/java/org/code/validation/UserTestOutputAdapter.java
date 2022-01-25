@@ -4,11 +4,11 @@ import org.code.protocol.ClientMessage;
 import org.code.protocol.ClientMessageType;
 import org.code.protocol.OutputAdapter;
 
-public class TestOutputAdapter implements OutputAdapter {
+public class UserTestOutputAdapter implements OutputAdapter {
   private boolean isValidation;
   private OutputAdapter delegateOutputAdapter;
 
-  public TestOutputAdapter(OutputAdapter delegateOutputAdapter) {
+  public UserTestOutputAdapter(OutputAdapter delegateOutputAdapter) {
     this.isValidation = false;
     this.delegateOutputAdapter = delegateOutputAdapter;
   }

@@ -25,7 +25,7 @@ import java.util.logging.Logger;
 import org.code.protocol.*;
 import org.code.protocol.LoggerUtils.ClearStatus;
 import org.code.protocol.LoggerUtils.SessionTime;
-import org.code.validation.TestOutputAdapter;
+import org.code.validation.UserTestOutputAdapter;
 import org.json.JSONObject;
 
 /**
@@ -114,7 +114,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     final LifecycleNotifier lifecycleNotifier = new LifecycleNotifier();
     OutputAdapter outputAdapter = awsOutputAdapter;
     if (executionType == ExecutionType.TEST) {
-      outputAdapter = new TestOutputAdapter(awsOutputAdapter);
+      outputAdapter = new UserTestOutputAdapter(awsOutputAdapter);
     }
     // TODO: Move common setup steps into CodeExecutionManager#onPreExecute
     GlobalProtocol.create(
