@@ -3,7 +3,12 @@ package dev.javabuilder;
 import static org.code.protocol.LoggerNames.MAIN_LOGGER;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.ByteBuffer;
+import java.time.Duration;
 import java.util.Base64;
 import java.util.List;
 import java.util.logging.Handler;
@@ -46,6 +51,25 @@ public class WebSocketServer {
    */
   @OnOpen
   public void onOpen(Session session) {
+    // Can be triggered by going to:
+    // ws://localhost:8080/javabuilder
+    System.out.println("connected to onOpen");
+    HttpClient client = HttpClient.newBuilder().build();
+    HttpRequest request =
+            HttpRequest.newBuilder().uri(URI.create("http://localhost:8080/javabuilderfiles/sampleDoc.txt")).timeout(Duration.ofSeconds(10)).build();
+    HttpResponse<String> response = null;
+    try {
+      response = client.send(request, HttpResponse.BodyHandlers.ofString());
+    } catch (IOException | InterruptedException e) {
+      System.out.println("hit exception");
+    }
+    String body = response.body();
+    if (response.statusCode() > 299) {
+
+      System.out.println("hit error code");
+    } else {
+      System.out.println("was successful");
+    }
     // Decode the authorization token
     String token = session.getRequestParameterMap().get("Authorization").get(0);
     Base64.Decoder decoder = Base64.getDecoder();

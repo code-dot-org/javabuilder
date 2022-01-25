@@ -26,6 +26,7 @@ public class CORSFilter extends HttpFilter {
   @Override
   public void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
       throws IOException, ServletException {
+    System.out.println("In the cors filter");
     final String requestOrigin = request.getHeader("Origin");
     if (requestOrigin == null || !ALLOWED_ORIGINS.contains(requestOrigin)) {
       // May be an internal request or an unknown origin. Pass along the request without adding any
