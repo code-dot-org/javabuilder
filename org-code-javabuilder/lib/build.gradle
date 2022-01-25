@@ -88,7 +88,8 @@ afterEvaluate {
             [':neighborhood', 'buildNeighborhood'],
             [':theater', 'buildTheater'],
             [':playground', 'buildPlayground'],
-            [':studentlib', 'buildStudentlib']
+            [':studentlib', 'buildStudentlib'],
+            [':validation', 'buildValidation']
     ]
 
     // Clean and build before a production deploy
