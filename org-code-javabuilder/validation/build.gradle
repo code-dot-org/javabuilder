@@ -1,0 +1,34 @@
+plugins {
+    id 'java'
+    id 'com.github.sherter.google-java-format' version '0.8'
+}
+
+repositories {
+    // Use JCenter for resolving dependencies.
+    jcenter()
+}
+
+dependencies {
+    implementation project(':protocol')
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+// Builds the Validation fat-jar (i.e. jar with all dependencies) and copies it to the resources
+// folder in the javabuilder sub-project (currently named 'lib'). This will allow student code to
+// access the Validation package.
+task buildValidation(type: Jar) {
+    archiveClassifier = 'full'
+    from sourceSets.main.output
+    dependsOn configurations.runtimeClasspath
+    from {
+        configurations.runtimeClasspath.findAll { it.name.endsWith('jar') }.collect { zipTree(it) }
+    }
+    destinationDirectory = project(':lib').project.layout.projectDirectory.dir('src/main/resources/jars')
+}
+
+build.dependsOn buildValidation
