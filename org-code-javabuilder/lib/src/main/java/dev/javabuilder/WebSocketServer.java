@@ -16,7 +16,7 @@ import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
 import org.code.javabuilder.*;
 import org.code.protocol.*;
-import org.code.validation.TestOutputAdapter;
+import org.code.validation.UserTestOutputAdapter;
 import org.json.JSONObject;
 
 /**
@@ -79,7 +79,7 @@ public class WebSocketServer {
     outputAdapter = websocketOutputAdapter;
 
     if (executionType == ExecutionType.TEST) {
-      outputAdapter = new TestOutputAdapter(websocketOutputAdapter);
+      outputAdapter = new UserTestOutputAdapter(websocketOutputAdapter);
     }
     final LifecycleNotifier lifecycleNotifier = new LifecycleNotifier();
     GlobalProtocol.create(

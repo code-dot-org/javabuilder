@@ -6,13 +6,13 @@ import org.code.protocol.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class TestOutputAdapterTest {
+public class UserTestOutputAdapterTest {
   private final OutputAdapter delegateOutputAdapter = mock(OutputAdapter.class);
-  private TestOutputAdapter testOutputAdapter;
+  private UserTestOutputAdapter testOutputAdapter;
 
   @BeforeEach
   public void setUp() {
-    testOutputAdapter = new TestOutputAdapter(delegateOutputAdapter);
+    testOutputAdapter = new UserTestOutputAdapter(delegateOutputAdapter);
   }
 
   @Test
