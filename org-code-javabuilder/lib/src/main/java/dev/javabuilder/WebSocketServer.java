@@ -56,7 +56,10 @@ public class WebSocketServer {
     System.out.println("connected to onOpen");
     HttpClient client = HttpClient.newBuilder().build();
     HttpRequest request =
-            HttpRequest.newBuilder().uri(URI.create("http://localhost:8080/javabuilderfiles/sampleDoc.txt")).timeout(Duration.ofSeconds(10)).build();
+        HttpRequest.newBuilder()
+            .uri(URI.create("http://localhost:8080/javabuilderfiles/sampleDoc.txt"))
+            .timeout(Duration.ofSeconds(10))
+            .build();
     HttpResponse<String> response = null;
     try {
       response = client.send(request, HttpResponse.BodyHandlers.ofString());

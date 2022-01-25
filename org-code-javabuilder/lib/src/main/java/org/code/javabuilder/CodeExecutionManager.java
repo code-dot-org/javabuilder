@@ -145,8 +145,8 @@ public class CodeExecutionManager {
     this.systemOutputStream = System.out;
     this.overrideInputStream = new InputRedirectionStream(this.inputHandler);
     this.overrideOutputStream = new OutputPrintStream(this.outputAdapter);
-//    System.setOut(this.overrideOutputStream);
-//    System.setIn(this.overrideInputStream);
+    //    System.setOut(this.overrideOutputStream);
+    //    System.setIn(this.overrideInputStream);
   }
 
   /**
