@@ -3,6 +3,8 @@ package org.code.validation;
 import org.code.neighborhood.NeighborhoodSignalKey;
 
 public class EventTypeMapper {
+  // Map NeighborhoodSignalKey to EventType. This allows us to change NeighborhoodSignalKeys without
+  // needing to update the validation api.
   public EventType convertNeighborhoodKeyToEventType(NeighborhoodSignalKey signalKey) {
     switch (signalKey) {
       case INITIALIZE_PAINTER:
