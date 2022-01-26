@@ -34,10 +34,8 @@ public class HttpFileServer extends HttpServlet {
     // filesystem files to the user without authentication/authorization. This should _ONLY_ be used
     // for local development.
 
-    // Can be accessed at http://localhost:8080/javabuilderfiles/theaterImage.gif
     final String fileName = this.getFileName(request);
     OutputStream out = response.getOutputStream();
-    System.out.println(System.getProperty("java.io.tmpdir"));
     Files.copy(Paths.get(System.getProperty("java.io.tmpdir"), DIRECTORY, fileName), out);
     out.flush();
   }

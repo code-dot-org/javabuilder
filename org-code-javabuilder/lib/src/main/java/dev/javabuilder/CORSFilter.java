@@ -26,13 +26,9 @@ public class CORSFilter extends HttpFilter {
   @Override
   public void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
       throws IOException, ServletException {
-    System.out.println("In the cors filter");
     final String requestOrigin = request.getHeader("Origin");
-    System.out.println(String.format("requestOrigin: %s", requestOrigin));
 
     // For all internal get requests, pass along the request.
-    System.out.println(request.getMethod());
-    System.out.println(requestOrigin == null);
     if (requestOrigin == null && request.getMethod().equals("GET")) {
       chain.doFilter(request, response);
       return;
@@ -50,13 +46,12 @@ public class CORSFilter extends HttpFilter {
       return;
     }
 
-    // handle null?
     // if from unknown origin, can still get theater image and audio
     if (requestOrigin != null && !ALLOWED_ORIGINS.contains(requestOrigin)) {
       chain.doFilter(request, response);
+      return;
     }
 
-    // else, continue and pass along
     if (fileName.indexOf(PROMPTER_FILE_NAME_PREFIX) == 0) {
       // Add CORS headers only if the request is for a known file
       response.addHeader("Access-Control-Allow-Origin", requestOrigin);
