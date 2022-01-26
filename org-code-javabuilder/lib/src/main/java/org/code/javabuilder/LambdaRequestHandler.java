@@ -25,6 +25,7 @@ import java.util.logging.Logger;
 import org.code.protocol.*;
 import org.code.protocol.LoggerUtils.ClearStatus;
 import org.code.protocol.LoggerUtils.SessionTime;
+import org.code.validation.UserTestOutputAdapter;
 import org.json.JSONObject;
 
 /**
@@ -101,7 +102,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
             .withEndpointConfiguration(
                 new AwsClientBuilder.EndpointConfiguration(apiEndpoint, "us-east-1"))
             .build();
-    final AWSOutputAdapter outputAdapter = new AWSOutputAdapter(connectionId, api);
+    final AWSOutputAdapter awsOutputAdapter = new AWSOutputAdapter(connectionId, api);
 
     // Create user input handlers
     final AmazonSQS sqsClient = AmazonSQSClientBuilder.defaultClient();
@@ -111,6 +112,10 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     final AWSFileManager fileManager =
         new AWSFileManager(s3Client, outputBucketName, javabuilderSessionId, getOutputUrl, context);
     final LifecycleNotifier lifecycleNotifier = new LifecycleNotifier();
+    OutputAdapter outputAdapter = awsOutputAdapter;
+    if (executionType == ExecutionType.TEST) {
+      outputAdapter = new UserTestOutputAdapter(awsOutputAdapter);
+    }
     // TODO: Move common setup steps into CodeExecutionManager#onPreExecute
     GlobalProtocol.create(
         outputAdapter,
