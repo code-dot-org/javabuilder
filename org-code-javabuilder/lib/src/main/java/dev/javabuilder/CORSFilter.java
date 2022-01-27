@@ -1,7 +1,7 @@
 package dev.javabuilder;
 
 import static dev.javabuilder.LocalWebserverConstants.DIRECTORY;
-import static org.code.protocol.AllowedFileNames.PROMPTER_FILE_NAME_PREFIX;
+import static org.code.protocol.AllowedFileNames.*;
 
 import java.io.IOException;
 import java.util.List;
@@ -27,15 +27,31 @@ public class CORSFilter extends HttpFilter {
   public void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
       throws IOException, ServletException {
     final String requestOrigin = request.getHeader("Origin");
-    if (requestOrigin == null || !ALLOWED_ORIGINS.contains(requestOrigin)) {
-      // May be an internal request or an unknown origin. Pass along the request without adding any
-      // headers.
+
+    // For all internal get requests, pass along the request.
+    if (requestOrigin == null && request.getMethod().equals("GET")) {
       chain.doFilter(request, response);
       return;
     }
 
+    // if not one of three allowed files, reject
     final String[] urlParts = request.getRequestURI().split("/");
     final String fileName = urlParts[urlParts.length - 1];
+    if (!this.getAllowedExternal(fileName)) {
+      response.sendError(
+          403,
+          String.format(
+              "Only %s, %s, and %s files can be accessed.",
+              THEATER_IMAGE_NAME, THEATER_AUDIO_NAME, PROMPTER_FILE_NAME_PREFIX));
+      return;
+    }
+
+    // if from unknown origin, can still get theater image and audio
+    if (requestOrigin != null && !ALLOWED_ORIGINS.contains(requestOrigin)) {
+      chain.doFilter(request, response);
+      return;
+    }
+
     if (fileName.indexOf(PROMPTER_FILE_NAME_PREFIX) == 0) {
       // Add CORS headers only if the request is for a known file
       response.addHeader("Access-Control-Allow-Origin", requestOrigin);
@@ -49,5 +65,11 @@ public class CORSFilter extends HttpFilter {
     }
 
     chain.doFilter(request, response);
+  }
+
+  private boolean getAllowedExternal(String fileName) {
+    return fileName.equals(THEATER_IMAGE_NAME)
+        || fileName.equals(THEATER_AUDIO_NAME)
+        || fileName.indexOf(PROMPTER_FILE_NAME_PREFIX) == 0;
   }
 }
