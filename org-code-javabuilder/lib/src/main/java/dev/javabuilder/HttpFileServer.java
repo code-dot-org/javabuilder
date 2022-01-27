@@ -1,7 +1,7 @@
 package dev.javabuilder;
 
 import static dev.javabuilder.LocalWebserverConstants.DIRECTORY;
-import static org.code.protocol.AllowedFileNames.*;
+import static org.code.protocol.AllowedFileNames.PROMPTER_FILE_NAME_PREFIX;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -33,15 +33,8 @@ public class HttpFileServer extends HttpServlet {
     // NOTE: This is _NOT_ a safe method of handling requests from a client. We are serving
     // filesystem files to the user without authentication/authorization. This should _ONLY_ be used
     // for local development.
+
     final String fileName = this.getFileName(request);
-    if (!this.getAllowed(fileName)) {
-      response.sendError(
-          403,
-          String.format(
-              "Only %s, %s, and %s files can be accessed.",
-              THEATER_IMAGE_NAME, THEATER_AUDIO_NAME, PROMPTER_FILE_NAME_PREFIX));
-      return;
-    }
     OutputStream out = response.getOutputStream();
     Files.copy(Paths.get(System.getProperty("java.io.tmpdir"), DIRECTORY, fileName), out);
     out.flush();
@@ -61,12 +54,6 @@ public class HttpFileServer extends HttpServlet {
         request.getInputStream(),
         Paths.get(System.getProperty("java.io.tmpdir"), DIRECTORY, fileName),
         StandardCopyOption.REPLACE_EXISTING);
-  }
-
-  private boolean getAllowed(String fileName) {
-    return fileName.equals(THEATER_IMAGE_NAME)
-        || fileName.equals(THEATER_AUDIO_NAME)
-        || fileName.indexOf(PROMPTER_FILE_NAME_PREFIX) == 0;
   }
 
   private boolean putAllowed(String fileName) {
