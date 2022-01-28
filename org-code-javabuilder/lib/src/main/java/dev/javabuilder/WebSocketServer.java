@@ -96,25 +96,31 @@ public class WebSocketServer {
             levelId,
             dashboardHostname,
             useNeighborhood);
-    final CodeExecutionManager executionManager =
-        new CodeExecutionManager(
-            fileLoader,
-            GlobalProtocol.getInstance().getInputHandler(),
-            outputAdapter,
-            executionType,
-            compileList,
-            GlobalProtocol.getInstance().getFileManager(),
-            lifecycleNotifier);
 
-    executionManager.execute();
+    // the code must be run in a thread so we can receive input messages
+    Thread codeExecutor =
+        new Thread(
+            () -> {
+              final CodeExecutionManager executionManager =
+                  new CodeExecutionManager(
+                      fileLoader,
+                      GlobalProtocol.getInstance().getInputHandler(),
+                      outputAdapter,
+                      executionType,
+                      compileList,
+                      GlobalProtocol.getInstance().getFileManager(),
+                      lifecycleNotifier);
+              executionManager.execute();
+              // Clean up session
+              try {
+                session.close();
+                logger.removeHandler(this.logHandler);
+              } catch (IOException e) {
+                e.printStackTrace();
+              }
+            });
 
-    // Clean up session
-    try {
-      session.close();
-      logger.removeHandler(this.logHandler);
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+    codeExecutor.start();
   }
 
   @OnClose
