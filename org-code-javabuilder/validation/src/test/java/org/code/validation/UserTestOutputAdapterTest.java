@@ -17,9 +17,9 @@ public class UserTestOutputAdapterTest {
 
   @Test
   public void sendsTestResultMessages() {
-    TestResultMessage testResultMessage = new TestResultMessage("successful test!");
-    testOutputAdapter.sendMessage(testResultMessage);
-    verify(delegateOutputAdapter).sendMessage(testResultMessage);
+    UserTestResultMessage userTestResultMessage = new UserTestResultMessage("successful test!");
+    testOutputAdapter.sendMessage(userTestResultMessage);
+    verify(delegateOutputAdapter).sendMessage(userTestResultMessage);
   }
 
   @Test
