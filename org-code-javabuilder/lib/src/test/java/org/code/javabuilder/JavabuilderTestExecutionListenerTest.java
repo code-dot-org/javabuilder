@@ -76,7 +76,7 @@ public class JavabuilderTestExecutionListenerTest {
     verify(outputAdapter, times(2)).sendMessage(messageCaptor.capture());
 
     final ClientMessage message = messageCaptor.getAllValues().get(1);
-    assertEquals(ClientMessageType.SYSTEM_OUT, message.getType());
+    assertEquals(ClientMessageType.TEST_RESULT, message.getType());
     assertTrue(message.getValue().contains(displayName));
     assertTrue(message.getValue().contains(className));
     assertTrue(message.getValue().contains(TestExecutionResult.Status.SUCCESSFUL.toString()));
@@ -113,7 +113,7 @@ public class JavabuilderTestExecutionListenerTest {
     verify(outputAdapter, times(3)).sendMessage(messageCaptor.capture());
 
     final ClientMessage message = messageCaptor.getAllValues().get(2);
-    assertEquals(ClientMessageType.SYSTEM_OUT, message.getType());
+    assertEquals(ClientMessageType.TEST_RESULT, message.getType());
 
     // Error message should contain throwable message, file name, and line number
     assertTrue(message.getValue().contains(errorMessage));
@@ -142,7 +142,7 @@ public class JavabuilderTestExecutionListenerTest {
     verify(outputAdapter, times(3)).sendMessage(messageCaptor.capture());
 
     final ClientMessage message = messageCaptor.getAllValues().get(2);
-    assertEquals(ClientMessageType.SYSTEM_OUT, message.getType());
+    assertEquals(ClientMessageType.TEST_RESULT, message.getType());
 
     // Since the test threw an exception, only the exception name should be included
     assertTrue(message.getValue().contains(error.getClass().getSimpleName()));
