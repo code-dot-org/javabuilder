@@ -18,7 +18,7 @@ public class UserTestOutputAdapter implements OutputAdapter {
   public void sendMessage(ClientMessage message) {
     ClientMessageType messageType = message.getType();
     switch (messageType) {
-        // TODO: when we have a TEST_RESULT type send that on to the delegate as well
+      case TEST_RESULT:
       case STATUS:
         delegateOutputAdapter.sendMessage(message);
         break;
