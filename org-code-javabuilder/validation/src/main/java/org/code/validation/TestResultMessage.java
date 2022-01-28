@@ -1,4 +1,4 @@
-package org.code.javabuilder;
+package org.code.validation;
 
 import org.code.protocol.ClientMessage;
 import org.code.protocol.ClientMessageType;
