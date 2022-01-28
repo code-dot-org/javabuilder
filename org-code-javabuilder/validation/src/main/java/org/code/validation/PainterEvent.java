@@ -3,8 +3,8 @@ package org.code.validation;
 import java.util.Map;
 
 public class PainterEvent {
-  private EventType eventType;
-  private Map<String, String> details;
+  private final EventType eventType;
+  private final Map<String, String> details;
 
   public PainterEvent(EventType eventType, Map<String, String> details) {
     this.eventType = eventType;
