@@ -2,17 +2,18 @@ package org.code.validation;
 
 import java.util.Map;
 
+/** User-facing class representing a single action for a single Painter. */
 public class PainterEvent {
-  private final EventType eventType;
+  private final NeighborhoodActionType neighborhoodActionType;
   private final Map<String, String> details;
 
-  public PainterEvent(EventType eventType, Map<String, String> details) {
-    this.eventType = eventType;
+  public PainterEvent(NeighborhoodActionType neighborhoodActionType, Map<String, String> details) {
+    this.neighborhoodActionType = neighborhoodActionType;
     this.details = details;
   }
 
-  public EventType getEventType() {
-    return this.eventType;
+  public NeighborhoodActionType getEventType() {
+    return this.neighborhoodActionType;
   }
 
   public Map<String, String> getDetails() {

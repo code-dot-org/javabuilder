@@ -1,8 +1,9 @@
-package org.code.validation;
+package org.code.validation.support;
 
 import static org.mockito.Mockito.*;
 
 import org.code.protocol.*;
+import org.code.validation.ClientMessageHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

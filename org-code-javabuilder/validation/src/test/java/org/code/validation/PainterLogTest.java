@@ -14,40 +14,40 @@ public class PainterLogTest {
   @BeforeEach
   public void setUp() {
     this.sampleEvents = new ArrayList<>();
-    sampleEvents.add(new PainterEvent(EventType.INITIALIZE_PAINTER, null));
-    sampleEvents.add(new PainterEvent(EventType.TURN_LEFT, null));
-    sampleEvents.add(new PainterEvent(EventType.MOVE, null));
-    sampleEvents.add(new PainterEvent(EventType.TURN_LEFT, null));
-    sampleEvents.add(new PainterEvent(EventType.MOVE, null));
-    sampleEvents.add(new PainterEvent(EventType.PAINT, null));
-    sampleEvents.add(new PainterEvent(EventType.PAINT, null));
-    sampleEvents.add(new PainterEvent(EventType.PAINT, null));
-    sampleEvents.add(new PainterEvent(EventType.TAKE_PAINT, null));
+    sampleEvents.add(new PainterEvent(NeighborhoodActionType.INITIALIZE_PAINTER, null));
+    sampleEvents.add(new PainterEvent(NeighborhoodActionType.TURN_LEFT, null));
+    sampleEvents.add(new PainterEvent(NeighborhoodActionType.MOVE, null));
+    sampleEvents.add(new PainterEvent(NeighborhoodActionType.TURN_LEFT, null));
+    sampleEvents.add(new PainterEvent(NeighborhoodActionType.MOVE, null));
+    sampleEvents.add(new PainterEvent(NeighborhoodActionType.PAINT, null));
+    sampleEvents.add(new PainterEvent(NeighborhoodActionType.PAINT, null));
+    sampleEvents.add(new PainterEvent(NeighborhoodActionType.PAINT, null));
+    sampleEvents.add(new PainterEvent(NeighborhoodActionType.TAKE_PAINT, null));
     unitUnderTest =
         new PainterLog("sampleId", new Position(0, 0), new Position(5, 5), 0, 5, sampleEvents);
   }
 
   @Test
   public void didActionOnceReturnsCorrectly() {
-    assertTrue(unitUnderTest.didActionOnce(EventType.TAKE_PAINT));
-    assertFalse(unitUnderTest.didActionOnce(EventType.TURN_LEFT));
-    assertFalse(unitUnderTest.didActionOnce(EventType.HIDE_BUCKETS));
+    assertTrue(unitUnderTest.didActionOnce(NeighborhoodActionType.TAKE_PAINT));
+    assertFalse(unitUnderTest.didActionOnce(NeighborhoodActionType.TURN_LEFT));
+    assertFalse(unitUnderTest.didActionOnce(NeighborhoodActionType.HIDE_BUCKETS));
   }
 
   @Test
   public void didActionExactlyReturnsCorrectly() {
-    assertTrue(unitUnderTest.didActionExactly(EventType.TAKE_PAINT, 1));
-    assertTrue(unitUnderTest.didActionExactly(EventType.TURN_LEFT, 2));
-    assertFalse(unitUnderTest.didActionExactly(EventType.HIDE_BUCKETS, 3));
-    assertFalse(unitUnderTest.didActionExactly(EventType.PAINT, 2));
+    assertTrue(unitUnderTest.didActionExactly(NeighborhoodActionType.TAKE_PAINT, 1));
+    assertTrue(unitUnderTest.didActionExactly(NeighborhoodActionType.TURN_LEFT, 2));
+    assertFalse(unitUnderTest.didActionExactly(NeighborhoodActionType.HIDE_BUCKETS, 3));
+    assertFalse(unitUnderTest.didActionExactly(NeighborhoodActionType.PAINT, 2));
   }
 
   @Test
   public void didActionAtLeastReturnsCorrectly() {
-    assertTrue(unitUnderTest.didActionAtLeast(EventType.TAKE_PAINT, 1));
-    assertTrue(unitUnderTest.didActionAtLeast(EventType.TURN_LEFT, 2));
-    assertFalse(unitUnderTest.didActionAtLeast(EventType.HIDE_BUCKETS, 3));
-    assertTrue(unitUnderTest.didActionAtLeast(EventType.PAINT, 2));
-    assertFalse(unitUnderTest.didActionAtLeast(EventType.PAINT, 4));
+    assertTrue(unitUnderTest.didActionAtLeast(NeighborhoodActionType.TAKE_PAINT, 1));
+    assertTrue(unitUnderTest.didActionAtLeast(NeighborhoodActionType.TURN_LEFT, 2));
+    assertFalse(unitUnderTest.didActionAtLeast(NeighborhoodActionType.HIDE_BUCKETS, 3));
+    assertTrue(unitUnderTest.didActionAtLeast(NeighborhoodActionType.PAINT, 2));
+    assertFalse(unitUnderTest.didActionAtLeast(NeighborhoodActionType.PAINT, 4));
   }
 }

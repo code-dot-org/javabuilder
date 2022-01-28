@@ -1,6 +1,7 @@
 package org.code.validation;
 
-public enum EventType {
+/** User-facing enum for various action types within neighborhood. */
+public enum NeighborhoodActionType {
   INITIALIZE_PAINTER,
   MOVE,
   PAINT,
