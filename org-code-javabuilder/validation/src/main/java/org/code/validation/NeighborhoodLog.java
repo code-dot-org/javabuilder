@@ -1,8 +1,8 @@
 package org.code.validation;
 
 public class NeighborhoodLog {
-  private PainterLog[] painterLogs;
-  private String[][] finalOutput;
+  private final PainterLog[] painterLogs;
+  private final String[][] finalOutput;
 
   public NeighborhoodLog(PainterLog[] painterLogs, String[][] finalOutput) {
     this.painterLogs = painterLogs;
@@ -52,21 +52,21 @@ public class NeighborhoodLog {
    * @return true if expectedOutput matches finalOutput, false otherwise.
    */
   public boolean finalOutputMatches(String[][] expectedOutput) {
-    if (expectedOutput.length != this.finalOutput.length
-        || expectedOutput[0].length != this.finalOutput[0].length) {
+    if (expectedOutput.length != this.finalOutput.length) {
       return false;
     }
     for (int i = 0; i < this.finalOutput.length; i++) {
-      for (int j = 0; j < this.finalOutput[0].length; j++) {
+      if (this.finalOutput[i].length != expectedOutput[i].length) {
+        return false;
+      }
+      for (int j = 0; j < this.finalOutput[i].length; j++) {
         String expectedValue = expectedOutput[i][j];
         String actualValue = this.finalOutput[i][j];
         // values will have object equality if both are null
         if (expectedValue == actualValue) {
           continue;
         }
-        if ((actualValue == null && expectedValue != null)
-            || (actualValue != null && expectedValue == null)
-            || !actualValue.equals(expectedValue)) {
+        if ((actualValue == null && expectedValue != null) || !actualValue.equals(expectedValue)) {
           return false;
         }
       }
@@ -79,12 +79,14 @@ public class NeighborhoodLog {
    *     otherwise.
    */
   public boolean finalOutputContainsPaint(boolean[][] expectedOutput) {
-    if (expectedOutput.length != this.finalOutput.length
-        || expectedOutput[0].length != this.finalOutput[0].length) {
+    if (expectedOutput.length != this.finalOutput.length) {
       return false;
     }
     for (int i = 0; i < this.finalOutput.length; i++) {
-      for (int j = 0; j < this.finalOutput[0].length; j++) {
+      if (this.finalOutput[i].length != expectedOutput[i].length) {
+        return false;
+      }
+      for (int j = 0; j < this.finalOutput[i].length; j++) {
         boolean cellHasPaint = this.finalOutput[i][j] != null;
         if (expectedOutput[i][j] != cellHasPaint) {
           return false;

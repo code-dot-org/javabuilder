@@ -11,7 +11,7 @@ public class NeighborhoodLogTest {
   private NeighborhoodLog unitUnderTest;
 
   @BeforeEach
-  public void setup() {
+  public void setUp() {
     List<PainterEvent> eventList1 = new ArrayList<>();
     eventList1.add(new PainterEvent(EventType.INITIALIZE_PAINTER, null));
     eventList1.add(new PainterEvent(EventType.TURN_LEFT, null));

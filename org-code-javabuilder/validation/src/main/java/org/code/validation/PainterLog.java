@@ -5,13 +5,13 @@ import java.util.List;
 import java.util.Map;
 
 public class PainterLog {
-  private String painterId;
-  private List<PainterEvent> events;
-  private Map<EventType, Integer> eventCounts;
-  private Position startingPosition;
-  private Position endingPosition;
-  private int startingPaintCount;
-  private int endingPaintCount;
+  private final String painterId;
+  private final List<PainterEvent> events;
+  private final Map<EventType, Integer> eventCounts;
+  private final Position startingPosition;
+  private final Position endingPosition;
+  private final int startingPaintCount;
+  private final int endingPaintCount;
 
   public PainterLog(
       String painterId,
@@ -63,7 +63,7 @@ public class PainterLog {
 
   /**
    * @param eventType
-   * @return the number of time the painter did the given eventType.
+   * @return the number of times the painter did the given eventType.
    */
   public int actionCount(EventType eventType) {
     if (this.eventCounts.containsKey(eventType)) {

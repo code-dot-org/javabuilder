@@ -12,7 +12,7 @@ public class PainterLogTest {
   private PainterLog unitUnderTest;
 
   @BeforeEach
-  public void setup() {
+  public void setUp() {
     this.sampleEvents = new ArrayList<>();
     sampleEvents.add(new PainterEvent(EventType.INITIALIZE_PAINTER, null));
     sampleEvents.add(new PainterEvent(EventType.TURN_LEFT, null));
