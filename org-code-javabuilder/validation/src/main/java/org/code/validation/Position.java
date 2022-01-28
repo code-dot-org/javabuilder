@@ -1,5 +1,6 @@
 package org.code.validation;
 
+/** User-facing class representing an (x, y) position. */
 public class Position {
   private final int x;
   private final int y;

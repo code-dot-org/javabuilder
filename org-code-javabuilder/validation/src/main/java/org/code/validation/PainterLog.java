@@ -4,10 +4,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * User-facing class representing all the actions a single painter took during a run of the
+ * neighborhood. Includes helpers for anlayzing which actions the painter did.
+ */
 public class PainterLog {
   private final String painterId;
   private final List<PainterEvent> events;
-  private final Map<EventType, Integer> eventCounts;
+  private final Map<NeighborhoodActionType, Integer> eventCounts;
   private final Position startingPosition;
   private final Position endingPosition;
   private final int startingPaintCount;
@@ -30,44 +34,44 @@ public class PainterLog {
   }
 
   /**
-   * @param eventType
+   * @param neighborhoodActionType
    * @return true if the painter did the given action exactly once, false otherwise
    */
-  public boolean didActionOnce(EventType eventType) {
-    return this.didActionExactly(eventType, 1);
+  public boolean didActionOnce(NeighborhoodActionType neighborhoodActionType) {
+    return this.didActionExactly(neighborhoodActionType, 1);
   }
 
   /**
-   * @param eventType
+   * @param neighborhoodActionType
    * @param times
    * @return true if the painter did the given action exactly "times" times, false otherwise
    */
-  public boolean didActionExactly(EventType eventType, int times) {
-    if (this.eventCounts.containsKey(eventType)) {
-      return eventCounts.get(eventType) == times;
+  public boolean didActionExactly(NeighborhoodActionType neighborhoodActionType, int times) {
+    if (this.eventCounts.containsKey(neighborhoodActionType)) {
+      return eventCounts.get(neighborhoodActionType) == times;
     }
     return false;
   }
 
   /**
-   * @param eventType
+   * @param neighborhoodActionType
    * @param times
    * @return true if the painter did the given action at least "times" times, false otherwise
    */
-  public boolean didActionAtLeast(EventType eventType, int times) {
-    if (this.eventCounts.containsKey(eventType)) {
-      return eventCounts.get(eventType) >= times;
+  public boolean didActionAtLeast(NeighborhoodActionType neighborhoodActionType, int times) {
+    if (this.eventCounts.containsKey(neighborhoodActionType)) {
+      return eventCounts.get(neighborhoodActionType) >= times;
     }
     return false;
   }
 
   /**
-   * @param eventType
-   * @return the number of times the painter did the given eventType.
+   * @param neighborhoodActionType
+   * @return the number of times the painter did the given neighborhoodActionType.
    */
-  public int actionCount(EventType eventType) {
-    if (this.eventCounts.containsKey(eventType)) {
-      return eventCounts.get(eventType);
+  public int actionCount(NeighborhoodActionType neighborhoodActionType) {
+    if (this.eventCounts.containsKey(neighborhoodActionType)) {
+      return eventCounts.get(neighborhoodActionType);
     }
     return 0;
   }
@@ -96,14 +100,14 @@ public class PainterLog {
     return this.events;
   }
 
-  private Map<EventType, Integer> getEventCounts(List<PainterEvent> events) {
-    Map<EventType, Integer> eventCountMap = new HashMap<>();
+  private Map<NeighborhoodActionType, Integer> getEventCounts(List<PainterEvent> events) {
+    Map<NeighborhoodActionType, Integer> eventCountMap = new HashMap<>();
     for (PainterEvent event : events) {
-      EventType eventType = event.getEventType();
-      if (!eventCountMap.containsKey(eventType)) {
-        eventCountMap.put(eventType, 0);
+      NeighborhoodActionType neighborhoodActionType = event.getEventType();
+      if (!eventCountMap.containsKey(neighborhoodActionType)) {
+        eventCountMap.put(neighborhoodActionType, 0);
       }
-      eventCountMap.put(eventType, eventCountMap.get(eventType) + 1);
+      eventCountMap.put(neighborhoodActionType, eventCountMap.get(neighborhoodActionType) + 1);
     }
     return eventCountMap;
   }

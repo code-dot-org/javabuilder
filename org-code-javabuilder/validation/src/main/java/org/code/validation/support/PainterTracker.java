@@ -1,8 +1,12 @@
-package org.code.validation;
+package org.code.validation.support;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.code.validation.PainterEvent;
+import org.code.validation.PainterLog;
+import org.code.validation.Position;
 
+/** Support class which tracks a single painter's actions during a run of the neighborhood. */
 public class PainterTracker {
   private String painterId;
   private Position startingPosition;

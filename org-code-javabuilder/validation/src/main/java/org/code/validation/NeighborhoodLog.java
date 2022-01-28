@@ -1,5 +1,9 @@
 package org.code.validation;
 
+/**
+ * User-facing class that represents the results of a neighborhood project run. Includes helper
+ * functions for analyzing the actions painter(s) took in the neighborhood.
+ */
 public class NeighborhoodLog {
   private final PainterLog[] painterLogs;
   private final String[][] finalOutput;
@@ -18,14 +22,14 @@ public class NeighborhoodLog {
   }
 
   /**
-   * @param eventType
+   * @param neighborhoodActionType
    * @param times
-   * @return true if the given eventType occurred exactly "times" times for at least one painter,
-   *     false otherwise.
+   * @return true if the given neighborhoodActionType occurred exactly "times" times for at least
+   *     one painter, false otherwise.
    */
-  public boolean onePainterDidAction(EventType eventType, int times) {
+  public boolean onePainterDidAction(NeighborhoodActionType neighborhoodActionType, int times) {
     for (PainterLog painterLog : this.painterLogs) {
-      if (painterLog.didActionExactly(eventType, times)) {
+      if (painterLog.didActionExactly(neighborhoodActionType, times)) {
         return true;
       }
     }
@@ -33,15 +37,15 @@ public class NeighborhoodLog {
   }
 
   /**
-   * @param eventType
+   * @param neighborhoodActionType
    * @param times
-   * @return true if the given eventType occurred exactly "times" times across all painters, false
-   *     otherwise.
+   * @return true if the given neighborhoodActionType occurred exactly "times" times across all
+   *     painters, false otherwise.
    */
-  public boolean actionHappened(EventType eventType, int times) {
+  public boolean actionHappened(NeighborhoodActionType neighborhoodActionType, int times) {
     int actionCount = 0;
     for (PainterLog painterLog : this.painterLogs) {
-      actionCount += painterLog.actionCount(eventType);
+      actionCount += painterLog.actionCount(neighborhoodActionType);
     }
     return actionCount == times;
   }

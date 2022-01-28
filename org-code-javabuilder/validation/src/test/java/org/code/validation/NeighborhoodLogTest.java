@@ -13,19 +13,19 @@ public class NeighborhoodLogTest {
   @BeforeEach
   public void setUp() {
     List<PainterEvent> eventList1 = new ArrayList<>();
-    eventList1.add(new PainterEvent(EventType.INITIALIZE_PAINTER, null));
-    eventList1.add(new PainterEvent(EventType.TURN_LEFT, null));
-    eventList1.add(new PainterEvent(EventType.MOVE, null));
-    eventList1.add(new PainterEvent(EventType.MOVE, null));
+    eventList1.add(new PainterEvent(NeighborhoodActionType.INITIALIZE_PAINTER, null));
+    eventList1.add(new PainterEvent(NeighborhoodActionType.TURN_LEFT, null));
+    eventList1.add(new PainterEvent(NeighborhoodActionType.MOVE, null));
+    eventList1.add(new PainterEvent(NeighborhoodActionType.MOVE, null));
 
     List<PainterEvent> eventList2 = new ArrayList<>();
-    eventList2.add(new PainterEvent(EventType.INITIALIZE_PAINTER, null));
-    eventList2.add(new PainterEvent(EventType.TAKE_PAINT, null));
-    eventList2.add(new PainterEvent(EventType.TURN_LEFT, null));
-    eventList2.add(new PainterEvent(EventType.TURN_LEFT, null));
-    eventList2.add(new PainterEvent(EventType.PAINT, null));
-    eventList2.add(new PainterEvent(EventType.MOVE, null));
-    eventList2.add(new PainterEvent(EventType.PAINT, null));
+    eventList2.add(new PainterEvent(NeighborhoodActionType.INITIALIZE_PAINTER, null));
+    eventList2.add(new PainterEvent(NeighborhoodActionType.TAKE_PAINT, null));
+    eventList2.add(new PainterEvent(NeighborhoodActionType.TURN_LEFT, null));
+    eventList2.add(new PainterEvent(NeighborhoodActionType.TURN_LEFT, null));
+    eventList2.add(new PainterEvent(NeighborhoodActionType.PAINT, null));
+    eventList2.add(new PainterEvent(NeighborhoodActionType.MOVE, null));
+    eventList2.add(new PainterEvent(NeighborhoodActionType.PAINT, null));
 
     PainterLog[] painterLogs =
         new PainterLog[] {this.createPainterLog(eventList1), this.createPainterLog(eventList2)};
@@ -34,16 +34,16 @@ public class NeighborhoodLogTest {
 
   @Test
   public void onePainterDidActionReturnsCorrectly() {
-    assertTrue(unitUnderTest.onePainterDidAction(EventType.TURN_LEFT, 2));
-    assertFalse(unitUnderTest.onePainterDidAction(EventType.HIDE_PAINTER, 1));
-    assertFalse(unitUnderTest.onePainterDidAction(EventType.MOVE, 3));
+    assertTrue(unitUnderTest.onePainterDidAction(NeighborhoodActionType.TURN_LEFT, 2));
+    assertFalse(unitUnderTest.onePainterDidAction(NeighborhoodActionType.HIDE_PAINTER, 1));
+    assertFalse(unitUnderTest.onePainterDidAction(NeighborhoodActionType.MOVE, 3));
   }
 
   @Test
   public void actionHappenedReturnsCorrectly() {
-    assertTrue(unitUnderTest.actionHappened(EventType.TURN_LEFT, 3));
-    assertFalse(unitUnderTest.actionHappened(EventType.HIDE_PAINTER, 1));
-    assertFalse(unitUnderTest.actionHappened(EventType.MOVE, 2));
+    assertTrue(unitUnderTest.actionHappened(NeighborhoodActionType.TURN_LEFT, 3));
+    assertFalse(unitUnderTest.actionHappened(NeighborhoodActionType.HIDE_PAINTER, 1));
+    assertFalse(unitUnderTest.actionHappened(NeighborhoodActionType.MOVE, 2));
   }
 
   @Test
