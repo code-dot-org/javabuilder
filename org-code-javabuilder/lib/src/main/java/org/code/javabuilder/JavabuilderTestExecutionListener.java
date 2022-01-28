@@ -4,6 +4,7 @@ import java.util.Optional;
 import org.code.protocol.OutputAdapter;
 import org.code.protocol.StatusMessage;
 import org.code.protocol.StatusMessageKey;
+import org.code.validation.UserTestResultMessage;
 import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.engine.TestSource;
 import org.junit.platform.engine.support.descriptor.MethodSource;
@@ -86,12 +87,12 @@ public class JavabuilderTestExecutionListener extends SummaryGeneratingListener 
     final String icon = status == TestExecutionResult.Status.SUCCESSFUL ? CHECK_MARK : HEAVY_X;
     final String resultMessage =
         String.format("%s %s > %s %s\n", icon, className, testIdentifier.getDisplayName(), status);
-    this.outputAdapter.sendMessage(new SystemOutMessage(resultMessage));
+    this.outputAdapter.sendMessage(new UserTestResultMessage(resultMessage));
 
     final Optional<Throwable> throwable = testExecutionResult.getThrowable();
     if (status != TestExecutionResult.Status.SUCCESSFUL && throwable.isPresent()) {
       this.outputAdapter.sendMessage(
-          new SystemOutMessage(this.getErrorMessage(throwable.get(), className)));
+          new UserTestResultMessage(this.getErrorMessage(throwable.get(), className)));
     }
   }
 
