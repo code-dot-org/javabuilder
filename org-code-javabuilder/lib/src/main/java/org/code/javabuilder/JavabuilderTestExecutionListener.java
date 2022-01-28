@@ -86,12 +86,12 @@ public class JavabuilderTestExecutionListener extends SummaryGeneratingListener 
     final String icon = status == TestExecutionResult.Status.SUCCESSFUL ? CHECK_MARK : HEAVY_X;
     final String resultMessage =
         String.format("%s %s > %s %s\n", icon, className, testIdentifier.getDisplayName(), status);
-    this.outputAdapter.sendMessage(new SystemOutMessage(resultMessage));
+    this.outputAdapter.sendMessage(new TestResultMessage(resultMessage));
 
     final Optional<Throwable> throwable = testExecutionResult.getThrowable();
     if (status != TestExecutionResult.Status.SUCCESSFUL && throwable.isPresent()) {
       this.outputAdapter.sendMessage(
-          new SystemOutMessage(this.getErrorMessage(throwable.get(), className)));
+          new TestResultMessage(this.getErrorMessage(throwable.get(), className)));
     }
   }
 
