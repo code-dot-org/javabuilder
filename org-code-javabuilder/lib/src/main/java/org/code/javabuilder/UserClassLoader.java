@@ -20,12 +20,18 @@ import org.json.JSONObject;
 public class UserClassLoader extends URLClassLoader {
   private final Set<String> userProvidedClasses;
   private final URLClassLoader approvedClassLoader;
+  private final boolean hasElevatedPermissions;
 
-  public UserClassLoader(URL[] urls, ClassLoader parent, List<String> userProvidedClasses) {
+  public UserClassLoader(
+      URL[] urls,
+      ClassLoader parent,
+      List<String> userProvidedClasses,
+      boolean hasElevatedPermissions) {
     super(urls, parent);
     this.userProvidedClasses = new HashSet<>();
     this.userProvidedClasses.addAll(userProvidedClasses);
     this.approvedClassLoader = new URLClassLoader(urls, JavaRunner.class.getClassLoader());
+    this.hasElevatedPermissions = hasElevatedPermissions;
   }
 
   @Override
@@ -41,11 +47,13 @@ public class UserClassLoader extends URLClassLoader {
     if (this.allowedClasses.contains(name)) {
       return this.approvedClassLoader.loadClass(name);
     }
-    // allow .<specific-class> usage from valid packages
-    for (int i = 0; i < this.allowedPackages.length; i++) {
-      if (name.startsWith(this.allowedPackages[i])) {
-        return this.approvedClassLoader.loadClass(name);
-      }
+    // allow .<specific-class> usage from allowed packages. If this code has elevated permissions,
+    // also check the
+    // elevated permissions allowed package list.
+    if (this.isInAllowedPackage(this.allowedPackages, name)
+        || (this.hasElevatedPermissions
+            && this.isInAllowedPackage(this.elevatedPermissionsAllowedPackages, name))) {
+      return this.approvedClassLoader.loadClass(name);
     }
 
     // Log that we are going to throw an exception. Log as a warning
@@ -55,6 +63,21 @@ public class UserClassLoader extends URLClassLoader {
     eventData.put(LoggerConstants.CLASS_NAME, name);
     Logger.getLogger(MAIN_LOGGER).warning(eventData.toString());
     throw new ClassNotFoundException(name);
+  }
+
+  /**
+   * @param allowedPackageList
+   * @param name
+   * @return true if name is in a package a in the allowedPackageList, i.e. if name is prefixed with
+   *     any value in allowedPackageList
+   */
+  private boolean isInAllowedPackage(String[] allowedPackageList, String name) {
+    for (int i = 0; i < allowedPackageList.length; i++) {
+      if (name.startsWith(allowedPackageList[i])) {
+        return true;
+      }
+    }
+    return false;
   }
 
   // Allowed individual classes.
@@ -106,4 +129,8 @@ public class UserClassLoader extends URLClassLoader {
         "org.code.playground.",
         "org.code.theater.",
       };
+
+  // Allowed packages for code with elevated permissions, such as validation code.
+  private static final String[] elevatedPermissionsAllowedPackages =
+      new String[] {"org.code.validation"};
 }

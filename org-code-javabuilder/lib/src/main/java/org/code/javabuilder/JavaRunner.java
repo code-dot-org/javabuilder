@@ -43,14 +43,17 @@ public class JavaRunner {
    *     finished executing.
    */
   public void runMain() throws InternalFacingException, JavabuilderException {
-    this.run(this.mainRunner);
+    this.run(this.mainRunner, false);
   }
 
   public void runTests() throws JavabuilderException, InternalFacingException {
-    this.run(this.testRunner);
+    // Tests have more permissions than a regular run--as of now, all
+    // tests have access to the org.code.validation package.
+    this.run(this.testRunner, true);
   }
 
-  private void run(CodeRunner runner) throws JavabuilderException, InternalFacingException {
+  private void run(CodeRunner runner, boolean hasElevatedPermissions)
+      throws JavabuilderException, InternalFacingException {
     // Include the user-facing api jars in the code we are loading so student code can access them.
     URL[] classLoaderUrls = Util.getAllJarURLs(this.executableLocation);
 
@@ -58,7 +61,10 @@ public class JavaRunner {
     // packages/classes.
     UserClassLoader urlClassLoader =
         new UserClassLoader(
-            classLoaderUrls, JavaRunner.class.getClassLoader(), this.javaClassNames);
+            classLoaderUrls,
+            JavaRunner.class.getClassLoader(),
+            this.javaClassNames,
+            hasElevatedPermissions);
 
     runner.run(urlClassLoader);
 
