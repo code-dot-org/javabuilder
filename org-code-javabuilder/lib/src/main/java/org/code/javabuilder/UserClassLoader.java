@@ -20,18 +20,18 @@ import org.json.JSONObject;
 public class UserClassLoader extends URLClassLoader {
   private final Set<String> userProvidedClasses;
   private final URLClassLoader approvedClassLoader;
-  private final boolean hasElevatedPermissions;
+  private final RunPermissionLevel permissionLevel;
 
   public UserClassLoader(
       URL[] urls,
       ClassLoader parent,
       List<String> userProvidedClasses,
-      boolean hasElevatedPermissions) {
+      RunPermissionLevel permissionLevel) {
     super(urls, parent);
     this.userProvidedClasses = new HashSet<>();
     this.userProvidedClasses.addAll(userProvidedClasses);
     this.approvedClassLoader = new URLClassLoader(urls, JavaRunner.class.getClassLoader());
-    this.hasElevatedPermissions = hasElevatedPermissions;
+    this.permissionLevel = permissionLevel;
   }
 
   @Override
@@ -47,12 +47,12 @@ public class UserClassLoader extends URLClassLoader {
     if (this.allowedClasses.contains(name)) {
       return this.approvedClassLoader.loadClass(name);
     }
-    // allow .<specific-class> usage from allowed packages. If this code has elevated permissions,
-    // also check the
-    // elevated permissions allowed package list.
+    // allow .<specific-class> usage from allowed packages. If this code
+    // has validation permissions, also check the
+    // validator permissions allowed package list.
     if (this.isInAllowedPackage(this.allowedPackages, name)
-        || (this.hasElevatedPermissions
-            && this.isInAllowedPackage(this.elevatedPermissionsAllowedPackages, name))) {
+        || (this.permissionLevel == RunPermissionLevel.VALIDATOR
+            && this.isInAllowedPackage(this.validatorAllowedPackages, name))) {
       return this.approvedClassLoader.loadClass(name);
     }
 
@@ -131,6 +131,5 @@ public class UserClassLoader extends URLClassLoader {
       };
 
   // Allowed packages for code with elevated permissions, such as validation code.
-  private static final String[] elevatedPermissionsAllowedPackages =
-      new String[] {"org.code.validation"};
+  private static final String[] validatorAllowedPackages = new String[] {"org.code.validation"};
 }
