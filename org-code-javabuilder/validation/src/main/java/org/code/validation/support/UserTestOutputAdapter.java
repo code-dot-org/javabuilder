@@ -1,9 +1,10 @@
-package org.code.validation;
+package org.code.validation.support;
 
 import org.code.protocol.ClientMessage;
 import org.code.protocol.ClientMessageType;
 import org.code.protocol.OutputAdapter;
 
+/** Support class for parsing output messages during a test run. */
 public class UserTestOutputAdapter implements OutputAdapter {
   private boolean isValidation;
   private OutputAdapter delegateOutputAdapter;
@@ -15,7 +16,6 @@ public class UserTestOutputAdapter implements OutputAdapter {
 
   @Override
   public void sendMessage(ClientMessage message) {
-    // TODO: write method
     ClientMessageType messageType = message.getType();
     switch (messageType) {
       case TEST_RESULT:
