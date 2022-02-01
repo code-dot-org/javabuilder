@@ -5,7 +5,7 @@ import org.code.protocol.ClientMessageType;
 
 // Helper class for testing only to enable simulating multiple ClientMessage types.
 public class ClientMessageHelper extends ClientMessage {
-  protected ClientMessageHelper(ClientMessageType type, String value) {
+  public ClientMessageHelper(ClientMessageType type, String value) {
     super(type, value);
   }
 }
