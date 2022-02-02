@@ -2,14 +2,11 @@ package org.code.javabuilder;
 
 import java.util.Optional;
 import org.code.protocol.OutputAdapter;
-import org.code.protocol.StatusMessage;
-import org.code.protocol.StatusMessageKey;
 import org.code.validation.support.UserTestResultMessage;
 import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.engine.TestSource;
 import org.junit.platform.engine.support.descriptor.MethodSource;
 import org.junit.platform.launcher.TestIdentifier;
-import org.junit.platform.launcher.TestPlan;
 import org.junit.platform.launcher.listeners.SummaryGeneratingListener;
 
 /**
@@ -31,20 +28,6 @@ public class JavabuilderTestExecutionListener extends SummaryGeneratingListener 
   public JavabuilderTestExecutionListener(OutputAdapter outputAdapter) {
     super();
     this.outputAdapter = outputAdapter;
-  }
-
-  /**
-   * Called when the execution of the TestPlan has started, before any test has been executed. This
-   * listener sends a message via the OutputAdapter to indicate that code is running.
-   *
-   * <p>See:
-   * https://junit.org/junit5/docs/5.0.0/api/org/junit/platform/launcher/TestExecutionListener.html#testPlanExecutionStarted-org.junit.platform.launcher.TestPlan-
-   *
-   * @param testPlan describes the tree of tests that have been executed
-   */
-  public void testPlanExecutionStarted(TestPlan testPlan) {
-    super.testPlanExecutionStarted(testPlan);
-    this.outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.RUNNING));
   }
 
   /**
