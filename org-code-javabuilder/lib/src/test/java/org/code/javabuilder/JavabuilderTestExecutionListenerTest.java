@@ -97,7 +97,7 @@ public class JavabuilderTestExecutionListenerTest {
     unitUnderTest.testPlanExecutionStarted(testPlan);
     unitUnderTest.executionFinished(testIdentifier, testExecutionResult);
 
-    // 3 calls: 1) result, 2) error details
+    // 2 calls: 1) result, 2) error details
     verify(outputAdapter, times(2)).sendMessage(messageCaptor.capture());
 
     final ClientMessage message = messageCaptor.getAllValues().get(1);
@@ -126,7 +126,7 @@ public class JavabuilderTestExecutionListenerTest {
     unitUnderTest.testPlanExecutionStarted(testPlan);
     unitUnderTest.executionFinished(testIdentifier, testExecutionResult);
 
-    // 3 calls: 1) result, 2) error details
+    // 2 calls: 1) result, 2) error details
     verify(outputAdapter, times(2)).sendMessage(messageCaptor.capture());
 
     final ClientMessage message = messageCaptor.getAllValues().get(1);
