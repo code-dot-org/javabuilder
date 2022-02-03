@@ -26,7 +26,7 @@ public class MainRunner implements CodeRunner {
   public void run(URLClassLoader urlClassLoader) throws JavabuilderException {
     try {
       // load and run the main method of the class
-      Method mainMethod = this.findMainMethod(urlClassLoader);
+      Method mainMethod = Util.findMainMethod(urlClassLoader, this.javaFiles);
       this.outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.RUNNING));
       mainMethod.invoke(null, new Object[] {null});
     } catch (IllegalAccessException e) {
@@ -49,59 +49,9 @@ public class MainRunner implements CodeRunner {
       // NoClassDefFoundError is thrown by the class loader if the user attempts to use a disallowed
       // class.
       if (e.getCause() instanceof NoClassDefFoundError) {
-        this.throwInvalidClassException((NoClassDefFoundError) e.getCause());
+        Util.throwInvalidClassException((NoClassDefFoundError) e.getCause());
       }
       throw new UserInitiatedException(UserInitiatedExceptionKey.RUNTIME_ERROR, e);
     }
-  }
-
-  /**
-   * Finds the main method in the set of files in fileManager if it exists.
-   *
-   * @param urlClassLoader class loader pointing to location of compiled classes
-   * @return the main method if it is found
-   * @throws UserInitiatedException if there is more than one main method or no main method, or if
-   *     the class definition is empty
-   */
-  private Method findMainMethod(URLClassLoader urlClassLoader) throws UserInitiatedException {
-    Method mainMethod = null;
-    for (JavaProjectFile file : this.javaFiles) {
-      try {
-        Method[] declaredMethods =
-            urlClassLoader.loadClass(file.getClassName()).getDeclaredMethods();
-        for (Method method : declaredMethods) {
-          Class[] parameterTypes = method.getParameterTypes();
-          if (method.getName().equals("main")
-              && parameterTypes.length == 1
-              && parameterTypes[0].equals(String[].class)) {
-            if (mainMethod != null) {
-              throw new UserInitiatedException(UserInitiatedExceptionKey.TWO_MAIN_METHODS);
-            }
-            mainMethod = method;
-          }
-        }
-      } catch (ClassNotFoundException e) {
-        // May be thrown if file is empty or contains only comments
-        throw new UserInitiatedException(UserInitiatedExceptionKey.CLASS_NOT_FOUND, e);
-      } catch (NoClassDefFoundError e) {
-        this.throwInvalidClassException(e);
-      }
-    }
-
-    if (mainMethod == null) {
-      throw new UserInitiatedException(UserInitiatedExceptionKey.NO_MAIN_METHOD);
-    }
-    return mainMethod;
-  }
-
-  private void throwInvalidClassException(NoClassDefFoundError e) throws UserInitiatedException {
-    String message = "";
-    if (e.getMessage() != null) {
-      // the message will be the name of the invalid class, with '.' replaced by '/'.
-      message = e.getMessage().replace('/', '.');
-    }
-    ClassNotFoundException classNotFoundException = new ClassNotFoundException(message);
-    throw new UserInitiatedException(
-        UserInitiatedExceptionKey.INVALID_CLASS, classNotFoundException);
   }
 }
