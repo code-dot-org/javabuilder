@@ -16,7 +16,7 @@ import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
 import org.code.javabuilder.*;
 import org.code.protocol.*;
-import org.code.validation.support.UserTestOutputAdapter;
+import org.code.validation.UserTestOutputAdapter;
 import org.json.JSONObject;
 
 /**

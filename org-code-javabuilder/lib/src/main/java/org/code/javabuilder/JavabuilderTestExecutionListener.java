@@ -4,7 +4,7 @@ import java.util.Optional;
 import org.code.protocol.OutputAdapter;
 import org.code.protocol.StatusMessage;
 import org.code.protocol.StatusMessageKey;
-import org.code.validation.support.UserTestResultMessage;
+import org.code.validation.UserTestResultMessage;
 import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.engine.TestSource;
 import org.junit.platform.engine.support.descriptor.MethodSource;
