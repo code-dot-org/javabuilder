@@ -1,4 +1,4 @@
-package org.code.validation.support;
+package org.code.validation;
 
 import org.code.protocol.ClientMessage;
 import org.code.protocol.ClientMessageType;
