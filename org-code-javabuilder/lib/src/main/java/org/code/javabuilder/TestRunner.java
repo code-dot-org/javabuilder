@@ -5,8 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.code.protocol.InternalErrorKey;
 import org.code.protocol.OutputAdapter;
-import org.code.protocol.StatusMessage;
-import org.code.protocol.StatusMessageKey;
 import org.junit.platform.commons.PreconditionViolationException;
 import org.junit.platform.engine.discovery.ClassSelector;
 import org.junit.platform.engine.discovery.DiscoverySelectors;
@@ -21,19 +19,14 @@ import org.junit.platform.launcher.core.LauncherFactory;
 public class TestRunner implements CodeRunner {
   private final List<JavaProjectFile> javaFiles;
   private final JavabuilderTestExecutionListener listener;
-  private final OutputAdapter outputAdapter;
 
   public TestRunner(List<JavaProjectFile> javaFiles, OutputAdapter outputAdapter) {
-    this(javaFiles, new JavabuilderTestExecutionListener(outputAdapter), outputAdapter);
+    this(javaFiles, new JavabuilderTestExecutionListener(outputAdapter));
   }
 
-  TestRunner(
-      List<JavaProjectFile> javaFiles,
-      JavabuilderTestExecutionListener listener,
-      OutputAdapter outputAdapter) {
+  TestRunner(List<JavaProjectFile> javaFiles, JavabuilderTestExecutionListener listener) {
     this.javaFiles = javaFiles;
     this.listener = listener;
-    this.outputAdapter = outputAdapter;
   }
 
   /**
@@ -59,8 +52,6 @@ public class TestRunner implements CodeRunner {
         launcher.registerTestExecutionListeners(this.listener);
         // Discover tests and build a test plan
         final TestPlan testPlan = launcher.discover(request);
-        // TODO: when we run validation separately, send RUNNING_VALIDATION status message.
-        this.outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.RUNNING_PROJECT_TESTS));
         // Execute test plan
         launcher.execute(testPlan);
       }

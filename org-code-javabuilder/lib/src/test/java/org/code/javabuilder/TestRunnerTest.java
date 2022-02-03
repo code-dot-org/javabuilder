@@ -6,7 +6,6 @@ import static org.mockito.Mockito.*;
 import java.net.URLClassLoader;
 import java.util.List;
 import org.code.protocol.InternalErrorKey;
-import org.code.protocol.OutputAdapter;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -71,7 +70,7 @@ public class TestRunnerTest {
     requestBuilder = mockStatic(LauncherDiscoveryRequestBuilder.class);
     launcherFactory = mockStatic(LauncherFactory.class);
 
-    unitUnderTest = new TestRunner(List.of(file1, file2), listener, mock(OutputAdapter.class));
+    unitUnderTest = new TestRunner(List.of(file1, file2), listener);
   }
 
   @AfterEach
