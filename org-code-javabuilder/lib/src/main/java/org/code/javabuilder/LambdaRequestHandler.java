@@ -25,7 +25,7 @@ import java.util.logging.Logger;
 import org.code.protocol.*;
 import org.code.protocol.LoggerUtils.ClearStatus;
 import org.code.protocol.LoggerUtils.SessionTime;
-import org.code.validation.support.UserTestOutputAdapter;
+import org.code.validation.UserTestOutputAdapter;
 import org.json.JSONObject;
 
 /**

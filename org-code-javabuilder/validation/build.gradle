@@ -10,7 +10,6 @@ repositories {
 
 dependencies {
     implementation project(':protocol')
-    implementation project(':neighborhood')
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
     testImplementation group: 'org.mockito', name: 'mockito-inline', version: '3.9.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
