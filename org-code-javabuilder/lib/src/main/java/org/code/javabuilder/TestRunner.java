@@ -69,13 +69,18 @@ public class TestRunner implements CodeRunner {
         // Execute test plan
         launcher.execute(testPlan);
       }
-    } catch (PreconditionViolationException | ClassNotFoundException | UserInitiatedException e) {
+    } catch (PreconditionViolationException | ClassNotFoundException e) {
       throw new InternalServerError(InternalErrorKey.INTERNAL_EXCEPTION, e);
     }
   }
 
-  private void setUpForValidation(URLClassLoader urlClassLoader) throws UserInitiatedException {
-    Method mainMethod = Util.findMainMethod(urlClassLoader, this.javaFiles);
+  private void setUpForValidation(URLClassLoader urlClassLoader) {
+    Method mainMethod = null;
+    try {
+      mainMethod = Util.findMainMethod(urlClassLoader, this.javaFiles);
+    } catch (UserInitiatedException e) {
+      // User has no main method. This may be ok since we are only running tests, so we ignore this.
+    }
     // TODO: create NeighborhoodTracker instance and save it to validation protocol.
     ValidationProtocol.create(mainMethod);
   }
