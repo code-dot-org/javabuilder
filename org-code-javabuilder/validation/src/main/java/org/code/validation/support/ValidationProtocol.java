@@ -31,6 +31,8 @@ public class ValidationProtocol {
       this.mainMethod.invoke(null, new Object[] {null});
     } catch (IllegalAccessException | InvocationTargetException e) {
       throw new ValidationRuntimeException(ExceptionKey.ERROR_RUNNING_MAIN, e);
+    } catch (NullPointerException e) {
+      throw new ValidationRuntimeException(ExceptionKey.NO_MAIN_METHOD, e);
     }
   }
 }

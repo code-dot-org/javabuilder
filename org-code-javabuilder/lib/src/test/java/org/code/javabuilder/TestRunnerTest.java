@@ -106,8 +106,8 @@ public class TestRunnerTest {
 
     unitUnderTest.run(urlClassLoader);
 
-    verify(urlClassLoader).loadClass(file1.getClassName());
-    verify(urlClassLoader).loadClass(file2.getClassName());
+    verify(urlClassLoader, times(2)).loadClass(file1.getClassName());
+    verify(urlClassLoader, times(2)).loadClass(file2.getClassName());
     verify(requestBuilderInstance).selectors(classSelectorsCaptor.capture());
 
     final List<ClassSelector> classSelectors = classSelectorsCaptor.getValue();
