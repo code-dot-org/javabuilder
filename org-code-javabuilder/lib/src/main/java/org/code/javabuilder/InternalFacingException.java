@@ -1,7 +1,6 @@
 package org.code.javabuilder;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import org.code.protocol.JavabuilderThrowableMessageUtils;
 
 /**
  * Exception intended to eventually bubble up to a logger (i.e. CloudWatch) but have no functional
@@ -15,9 +14,6 @@ public class InternalFacingException extends Exception {
 
   /** @return A pretty version of the exception and stack trace. */
   public String getLoggingString() {
-    StringWriter stringWriter = new StringWriter();
-    PrintWriter printWriter = new PrintWriter(stringWriter);
-    printStackTrace(printWriter);
-    return stringWriter.toString();
+    return JavabuilderThrowableMessageUtils.getLoggingString(this);
   }
 }
