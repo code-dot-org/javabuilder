@@ -8,7 +8,6 @@ import java.util.Optional;
 import org.code.protocol.ClientMessage;
 import org.code.protocol.ClientMessageType;
 import org.code.protocol.OutputAdapter;
-import org.code.protocol.StatusMessageKey;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.engine.TestExecutionResult;
@@ -37,17 +36,6 @@ public class JavabuilderTestExecutionListenerTest {
   }
 
   @Test
-  public void testExecutionStartedSendsRunningMessage() {
-    unitUnderTest.testPlanExecutionStarted(testPlan);
-
-    verify(outputAdapter).sendMessage(messageCaptor.capture());
-
-    final ClientMessage message = messageCaptor.getValue();
-    assertEquals(ClientMessageType.STATUS, message.getType());
-    assertEquals(StatusMessageKey.RUNNING.toString(), message.getValue());
-  }
-
-  @Test
   public void testExecutionFinishedDoesNothingIfNotTest() {
     when(testIdentifier.isTest()).thenReturn(false);
     when(testExecutionResult.getStatus()).thenReturn(TestExecutionResult.Status.SUCCESSFUL);
@@ -73,9 +61,9 @@ public class JavabuilderTestExecutionListenerTest {
     unitUnderTest.testPlanExecutionStarted(testPlan);
     unitUnderTest.executionFinished(testIdentifier, testExecutionResult);
 
-    verify(outputAdapter, times(2)).sendMessage(messageCaptor.capture());
+    verify(outputAdapter, times(1)).sendMessage(messageCaptor.capture());
 
-    final ClientMessage message = messageCaptor.getAllValues().get(1);
+    final ClientMessage message = messageCaptor.getAllValues().get(0);
     assertEquals(ClientMessageType.TEST_RESULT, message.getType());
     assertTrue(message.getValue().contains(displayName));
     assertTrue(message.getValue().contains(className));
@@ -109,10 +97,10 @@ public class JavabuilderTestExecutionListenerTest {
     unitUnderTest.testPlanExecutionStarted(testPlan);
     unitUnderTest.executionFinished(testIdentifier, testExecutionResult);
 
-    // 3 calls: 1) execution started, 2) result, 3) error details
-    verify(outputAdapter, times(3)).sendMessage(messageCaptor.capture());
+    // 2 calls: 1) result, 2) error details
+    verify(outputAdapter, times(2)).sendMessage(messageCaptor.capture());
 
-    final ClientMessage message = messageCaptor.getAllValues().get(2);
+    final ClientMessage message = messageCaptor.getAllValues().get(1);
     assertEquals(ClientMessageType.TEST_RESULT, message.getType());
 
     // Error message should contain throwable message, file name, and line number
@@ -138,10 +126,10 @@ public class JavabuilderTestExecutionListenerTest {
     unitUnderTest.testPlanExecutionStarted(testPlan);
     unitUnderTest.executionFinished(testIdentifier, testExecutionResult);
 
-    // 3 calls: 1) execution started, 2) result, 3) error details
-    verify(outputAdapter, times(3)).sendMessage(messageCaptor.capture());
+    // 2 calls: 1) result, 2) error details
+    verify(outputAdapter, times(2)).sendMessage(messageCaptor.capture());
 
-    final ClientMessage message = messageCaptor.getAllValues().get(2);
+    final ClientMessage message = messageCaptor.getAllValues().get(1);
     assertEquals(ClientMessageType.TEST_RESULT, message.getType());
 
     // Since the test threw an exception, only the exception name should be included
