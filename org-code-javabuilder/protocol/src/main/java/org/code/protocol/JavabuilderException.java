@@ -23,12 +23,12 @@ public abstract class JavabuilderException extends Exception
   }
 
   public JavabuilderThrowableMessage getExceptionMessage() {
-    return JavabuilderThrowableMessageHelper.getExceptionMessage(
+    return JavabuilderThrowableMessageUtils.getExceptionMessage(
         this, this.key, this.fallbackMessage);
   }
 
   /** @return A pretty version of the exception and stack trace. */
   public String getLoggingString() {
-    return JavabuilderThrowableMessageHelper.getLoggingString(this);
+    return JavabuilderThrowableMessageUtils.getLoggingString(this);
   }
 }

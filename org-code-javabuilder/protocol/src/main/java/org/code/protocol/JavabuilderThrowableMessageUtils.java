@@ -5,10 +5,12 @@ import java.io.StringWriter;
 import java.util.HashMap;
 
 /* Helper for formatting exceptions that will be displayed to the user. */
-class JavabuilderThrowableMessageHelper {
-  private JavabuilderThrowableMessageHelper() {}
+public final class JavabuilderThrowableMessageUtils {
+  private JavabuilderThrowableMessageUtils() {
+    throw new UnsupportedOperationException("Instantiation of utility class is not allowed.");
+  }
 
-  static JavabuilderThrowableMessage getExceptionMessage(
+  public static JavabuilderThrowableMessage getExceptionMessage(
       Throwable throwable, Enum key, String fallbackMessage) {
     HashMap<String, String> detail = new HashMap<>();
     detail.put(ClientMessageDetailKeys.CONNECTION_ID, Properties.getConnectionId());
@@ -27,7 +29,7 @@ class JavabuilderThrowableMessageHelper {
   }
 
   /** @return A pretty version of the exception and stack trace. */
-  static String getLoggingString(Throwable throwable) {
+  public static String getLoggingString(Throwable throwable) {
     StringWriter stringWriter = new StringWriter();
     PrintWriter printWriter = new PrintWriter(stringWriter);
     throwable.printStackTrace(printWriter);
