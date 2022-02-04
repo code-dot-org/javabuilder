@@ -23,11 +23,11 @@ public abstract class JavabuilderRuntimeException extends RuntimeException
   }
 
   public JavabuilderThrowableMessage getExceptionMessage() {
-    return JavabuilderThrowableMessageHelper.getExceptionMessage(
+    return JavabuilderThrowableMessageUtils.getExceptionMessage(
         this, this.key, this.fallbackMessage);
   }
 
   public String getLoggingString() {
-    return JavabuilderThrowableMessageHelper.getLoggingString(this);
+    return JavabuilderThrowableMessageUtils.getLoggingString(this);
   }
 }
