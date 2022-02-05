@@ -48,13 +48,13 @@ public final class JavabuilderThrowableMessageUtils {
       cause = cause.getCause();
     }
     StackTraceElement[] stackTrace = cause.getStackTrace();
-    String loggingString = cause.toString() + "\n";
+    String loggingString = "Exception type: " + cause.toString() + "\n";
 
     for (StackTraceElement stackTraceElement : stackTrace) {
       if (stackTraceElement.isNativeMethod()) {
         break;
       }
-      loggingString += "\t" + stackTraceElement.toString() + "\n";
+      loggingString += "\t at " + stackTraceElement.toString() + "\n";
     }
     return loggingString;
   }
