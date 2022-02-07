@@ -1,23 +1,29 @@
 package org.code.neighborhood;
 
 import java.io.IOException;
-import org.code.protocol.GlobalProtocol;
-import org.code.protocol.InternalErrorKey;
-import org.code.protocol.InternalServerRuntimeError;
-import org.code.protocol.OutputAdapter;
+import org.code.protocol.*;
 
 public class World {
   private static World worldInstance;
   private final Grid grid;
   private final OutputAdapter outputAdapter;
 
+  private static class CloseListener implements LifecycleListener {
+    @Override
+    public void onExecutionEnded() {
+      World.setInstance(null);
+    }
+  }
+
   public World(int size) {
+    this.registerLifecycleListener();
     this.outputAdapter = GlobalProtocol.getInstance().getOutputAdapter();
     GridFactory gridFactory = new GridFactory(this.outputAdapter);
     this.grid = gridFactory.createEmptyGrid(size);
   }
 
   public World(String s) {
+    this.registerLifecycleListener();
     this.outputAdapter = GlobalProtocol.getInstance().getOutputAdapter();
     GridFactory gridFactory = new GridFactory(this.outputAdapter);
     try {
@@ -28,6 +34,7 @@ public class World {
   }
 
   private World() {
+    this.registerLifecycleListener();
     this.outputAdapter = GlobalProtocol.getInstance().getOutputAdapter();
     GridFactory gridFactory = new GridFactory(this.outputAdapter);
     try {
@@ -54,5 +61,9 @@ public class World {
 
   public static void setInstance(World world) {
     worldInstance = world;
+  }
+
+  private void registerLifecycleListener() {
+    GlobalProtocol.getInstance().registerLifecycleListener(new CloseListener());
   }
 }
