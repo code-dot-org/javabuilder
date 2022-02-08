@@ -18,8 +18,8 @@ public class ValidationRuntimeException extends JavabuilderRuntimeException {
       case NO_MAIN_METHOD:
         return "This test requires a main method. No main method was found.";
       case ERROR_RUNNING_MAIN:
-        // TODO: better error messaging when we catch one of our custom errors (such as
-        // TheaterRuntimeException).
+        // TODO: better error messaging when we catch one of our custom errors
+        //  (such as TheaterRuntimeException).
         String message = "We hit an exception running your main method.";
         if (cause != null) {
           String causeName = cause.getClass().getSimpleName();

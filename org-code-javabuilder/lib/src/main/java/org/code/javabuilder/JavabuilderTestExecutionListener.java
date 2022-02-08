@@ -75,9 +75,8 @@ public class JavabuilderTestExecutionListener extends SummaryGeneratingListener 
 
     final Optional<Throwable> throwable = testExecutionResult.getThrowable();
     if (status != TestExecutionResult.Status.SUCCESSFUL && throwable.isPresent()) {
-      Throwable error = throwable.get();
       this.outputAdapter.sendMessage(
-          new UserTestResultMessage(this.getErrorMessage(error, className)));
+          new UserTestResultMessage(this.getErrorMessage(throwable.get(), className)));
     }
   }
 

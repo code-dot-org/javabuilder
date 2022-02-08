@@ -17,6 +17,10 @@ import org.code.protocol.LoggerUtils;
 
 /** A set of static utility functions that are used in multiple locations */
 public class Util {
+  private Util() {
+    throw new UnsupportedOperationException("Instantiation of utility class is not allowed.");
+  }
+
   private static final String[] JAR_NAMES = {
     "neighborhood-full.jar",
     "theater-full.jar",
