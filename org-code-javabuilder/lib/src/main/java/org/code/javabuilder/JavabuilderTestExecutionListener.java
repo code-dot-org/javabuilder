@@ -1,6 +1,7 @@
 package org.code.javabuilder;
 
 import java.util.Optional;
+import org.code.protocol.JavabuilderRuntimeException;
 import org.code.protocol.OutputAdapter;
 import org.code.validation.support.UserTestResultMessage;
 import org.junit.platform.engine.TestExecutionResult;
@@ -74,8 +75,9 @@ public class JavabuilderTestExecutionListener extends SummaryGeneratingListener 
 
     final Optional<Throwable> throwable = testExecutionResult.getThrowable();
     if (status != TestExecutionResult.Status.SUCCESSFUL && throwable.isPresent()) {
+      Throwable error = throwable.get();
       this.outputAdapter.sendMessage(
-          new UserTestResultMessage(this.getErrorMessage(throwable.get(), className)));
+          new UserTestResultMessage(this.getErrorMessage(error, className)));
     }
   }
 
@@ -101,13 +103,20 @@ public class JavabuilderTestExecutionListener extends SummaryGeneratingListener 
    */
   private String getErrorMessage(Throwable throwable, String className) {
     final String errorLine = this.errorLine(throwable.getStackTrace(), className);
-    String errorMessage;
+    String errorMessage = null;
 
     // If there was an assertion failure, print the failure message. If an exception was thrown,
     // print the exception name.
     if (throwable instanceof AssertionError) {
       errorMessage = String.format("\t%s (%s)\n", throwable.getMessage(), errorLine);
-    } else {
+    } else if (throwable instanceof JavabuilderRuntimeException) {
+      JavabuilderRuntimeException exception = (JavabuilderRuntimeException) throwable;
+      String fallbackMessage = exception.getFallbackMessage();
+      if (fallbackMessage != null) {
+        errorMessage = String.format("\t%s", fallbackMessage);
+      }
+    }
+    if (errorMessage == null) {
       String additionalMessage = this.getAdditionalErrorMessage(throwable);
       errorMessage =
           String.format("\t%s thrown at %s\n", this.getThrowableDisplayName(throwable), errorLine);
