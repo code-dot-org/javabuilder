@@ -1,0 +1,92 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: AWS::Serverless-2016-10-31
+Description: Javabulder Continuous Integration pipeline
+
+Parameters:
+  GitHubOwner:
+    Type: String
+    Description: GitHub repository owner
+    Default: code-dot-org
+  GitHubRepo:
+    Type: String
+    Description: GitHub repository name
+    Default: javabuilder
+  GitHubBranch:
+    Type: String
+    Description: The branch that these resources test and deploy. Not necessarily `main`.
+    Default: darin-javabuilder-cicd
+    
+Resources:
+
+  # The Artifact Store holds artifacts from the pipeline so they can be passed
+  # from one stage of a pipeline to the next, or so artifacts can be reviewed.
+  ArtifactStore:
+    Type: AWS::S3::Bucket
+
+  # The CodeBuild Project is triggered by commits to the configured repo and
+  # branch. It will perform any steps defined in the buildspec.yml file.
+  PullRequestBuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Sub ${AWS::StackName}-${GitHubBranch}-pr-build
+      ServiceRole: !ImportValue JavabuilderCodeBuildRoleArn
+      BadgeEnabled: true
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/amazonlinux2-x86_64-standard:3.0
+        PrivilegedMode: true
+        EnvironmentVariables:
+          - Name: ARTIFACT_STORE
+            Value: !Ref ArtifactStore
+      Cache:
+        Type: LOCAL
+        Modes:
+          - LOCAL_CUSTOM_CACHE
+          - LOCAL_DOCKER_LAYER_CACHE
+      Source:
+        Type: GITHUB
+        Location: !Sub https://github.com/${GitHubOwner}/${GitHubRepo}.git
+        BuildSpec: cicd/3-app/buildspec.yml
+        ReportBuildStatus: true
+      SourceVersion: !Ref GitHubBranch
+      Artifacts:
+        Type: NO_ARTIFACTS
+      Triggers:
+        Webhook: true
+        FilterGroups:
+          - - Pattern: !Sub ^refs/heads/${GitHubBranch}$
+              ExcludeMatchedPattern: true
+              Type: HEAD_REF
+            - Pattern: PULL_REQUEST_CREATED,PULL_REQUEST_UPDATED,PULL_REQUEST_REOPENED
+              Type: EVENT
+
+  # Grant the Javabuilder CodeBuild Role additional permissions for resources in
+  # this template. This allows us to avoid granting permission to * resources.
+  JavabuilderRolePolicy:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: root
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - s3:PutObject
+              - s3:GetObject
+              - s3:GetObjectVersion
+              - s3:GetBucketAcl
+              - s3:GetBucketLocatio
+            Resource:
+              - !GetAtt ArtifactStore.Arn
+          - Effect: Allow
+            Action:
+              - codebuild:CreateReportGroup
+              - codebuild:CreateReport
+              - codebuild:UpdateReport
+              - codebuild:BatchPutTestCases
+              - codebuild:BatchPutCodeCoverage
+            Resource:
+              - !Sub arn:aws:codebuild:us-east-1:165336972514:report-group/${AWS::StackName}-${GitHubBranch}-pr-build
+      Roles:
+        - !ImportValue JavabuilderCodeBuildRoleName

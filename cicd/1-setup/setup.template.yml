@@ -1,0 +1,61 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: AWS::Serverless-2016-10-31
+Description: Javabulder CI/CD dependencies
+    
+Resources:
+
+  # This role will be used by CodeBuild to execute the CI build. Here we have
+  # the common policy rules required. Since we may want to create multiple
+  # codebuild projects for different branches, we can append policies when those
+  # stack resources are created (in "2-cicd")
+  JavabuilderCodeBuildRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: ['sts:AssumeRole']
+            Effect: Allow
+            Principal: {Service: [codebuild.amazonaws.com]}
+        Version: '2012-10-17'
+      Path: /service-role/
+      Policies:
+        - PolicyName: CodeBuildResourcesAccess
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "logs:CreateLogGroup"
+                  - "logs:CreateLogStream"
+                  - "logs:PutLogEvents"
+                Resource:
+                  - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/*"
+              # - Effect: Allow
+              #   Action:
+              #     - codebuild:CreateReportGroup
+              #     - codebuild:CreateReport
+              #     - codebuild:UpdateReport
+              #     - codebuild:BatchPutTestCases
+              #     - codebuild:BatchPutCodeCoverage
+              #   Resource:
+              #     # TODO - scope this to one project, maybe add policy when creating build project (2)
+              #     - arn:aws:codebuild:us-east-1:165336972514:report-group/*
+              # - Effect: Allow
+              #   Action:
+              #     - s3:PutObject
+              #     - s3:GetObject
+              #     - s3:GetObjectVersion
+              #     - s3:GetBucketAcl
+              #     - s3:GetBucketLocatio
+              #   Resource:
+              #     # TODO - scope this to project buckets by adding policy in that stack (2)
+              #     - arn:aws:s3:::codepipeline-us-east-1-*
+
+Outputs:
+  JavabuilderCodeBuildRoleArn:
+    Description: Javabuilder CodeBuild Role ARN
+    Value: !GetAtt JavabuilderCodeBuildRole.Arn
+    Export: {Name: JavabuilderCodeBuildRoleArn}
+  JavabuilderCodeBuildRoleName:
+    Description: Javabuilder CodeBuild Role Name
+    Value: !Ref JavabuilderCodeBuildRole
+    Export: {Name: JavabuilderCodeBuildRoleName}
