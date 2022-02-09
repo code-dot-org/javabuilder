@@ -15,7 +15,7 @@ public class ValidationRuntimeException extends JavabuilderRuntimeException {
 
   private String generateFallbackMessage(ExceptionKey key, Throwable cause) {
     switch (key) {
-      case NO_MAIN_METHOD:
+      case NO_MAIN_METHOD_VALIDATION:
         return "This test requires a main method. No main method was found.";
       case ERROR_RUNNING_MAIN:
         // TODO: better error messaging when we catch one of our custom errors

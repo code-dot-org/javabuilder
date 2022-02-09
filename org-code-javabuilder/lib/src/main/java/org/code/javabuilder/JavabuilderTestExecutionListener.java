@@ -104,8 +104,10 @@ public class JavabuilderTestExecutionListener extends SummaryGeneratingListener 
     final String errorLine = this.errorLine(throwable.getStackTrace(), className);
     String errorMessage = null;
 
-    // If there was an assertion failure, print the failure message. If an exception was thrown,
-    // print the exception name.
+    // If there was an assertion failure, print the failure message. If a
+    // JavabuilderRuntimeException
+    // was thrown, print the fallback message if it has one. If it does not or if another exception
+    // was thrown, print the exception name.
     if (throwable instanceof AssertionError) {
       errorMessage = String.format("\t%s (%s)\n", throwable.getMessage(), errorLine);
     } else if (throwable instanceof JavabuilderRuntimeException) {
