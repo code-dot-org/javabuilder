@@ -7,6 +7,7 @@ import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.engine.TestSource;
 import org.junit.platform.engine.support.descriptor.MethodSource;
 import org.junit.platform.launcher.TestIdentifier;
+import org.junit.platform.launcher.TestPlan;
 import org.junit.platform.launcher.listeners.SummaryGeneratingListener;
 
 /**
@@ -24,10 +25,25 @@ public class JavabuilderTestExecutionListener extends SummaryGeneratingListener 
   private static final String HEAVY_X = "✖";
 
   private final OutputAdapter outputAdapter;
+  private TestPlan testPlan;
 
   public JavabuilderTestExecutionListener(OutputAdapter outputAdapter) {
     super();
     this.outputAdapter = outputAdapter;
+  }
+
+  /**
+   * Called when the execution of the TestPlan has started, before any test has been executed.
+   *
+   * <p>See:
+   * https://junit.org/junit5/docs/5.0.0/api/org/junit/platform/launcher/listeners/SummaryGeneratingListener.html#testPlanExecutionStarted-org.junit.platform.launcher.TestPlan-
+   *
+   * @param testPlan describes the tree of tests about to be executed
+   */
+  @Override
+  public void testPlanExecutionStarted(TestPlan testPlan) {
+    super.testPlanExecutionStarted(testPlan);
+    this.testPlan = testPlan;
   }
 
   /**
@@ -52,6 +68,7 @@ public class JavabuilderTestExecutionListener extends SummaryGeneratingListener 
    * @param testExecutionResult the (unaggregated) result of the execution for the supplied
    *     TestIdentifier
    */
+  @Override
   public void executionFinished(
       TestIdentifier testIdentifier, TestExecutionResult testExecutionResult) {
     super.executionFinished(testIdentifier, testExecutionResult);
@@ -60,6 +77,14 @@ public class JavabuilderTestExecutionListener extends SummaryGeneratingListener 
       return;
     }
 
+    String classDisplayName = "";
+    final Optional<TestIdentifier> parent = this.testPlan.getParent(testIdentifier);
+    if (parent.isPresent()) {
+      // Parent will be the containing class for the test.
+      classDisplayName = parent.get().getDisplayName();
+    }
+
+    // name of class, used for generating error messages
     String className = "";
     final Optional<TestSource> testSource = testIdentifier.getSource();
     if (testSource.isPresent() && testSource.get() instanceof MethodSource) {
@@ -69,7 +94,8 @@ public class JavabuilderTestExecutionListener extends SummaryGeneratingListener 
     final TestExecutionResult.Status status = testExecutionResult.getStatus();
     final String icon = status == TestExecutionResult.Status.SUCCESSFUL ? CHECK_MARK : HEAVY_X;
     final String resultMessage =
-        String.format("%s %s > %s %s\n", icon, className, testIdentifier.getDisplayName(), status);
+        String.format(
+            "%s %s > %s %s\n", icon, classDisplayName, testIdentifier.getDisplayName(), status);
     this.outputAdapter.sendMessage(new UserTestResultMessage(resultMessage));
 
     final Optional<Throwable> throwable = testExecutionResult.getThrowable();
