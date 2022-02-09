@@ -24,6 +24,8 @@ public class JavabuilderTestExecutionListenerTest {
   private TestExecutionResult testExecutionResult;
   private ArgumentCaptor<ClientMessage> messageCaptor;
   private JavabuilderTestExecutionListener unitUnderTest;
+  private final String displayName = "displayName";
+  private final String classDisplayName = "Class Display Name";
 
   @BeforeEach
   public void setUp() {
@@ -33,6 +35,12 @@ public class JavabuilderTestExecutionListenerTest {
     testExecutionResult = mock(TestExecutionResult.class);
     messageCaptor = ArgumentCaptor.forClass(ClientMessage.class);
     unitUnderTest = new JavabuilderTestExecutionListener(outputAdapter);
+    TestIdentifier classTestIdentifier = mock(TestIdentifier.class);
+
+    when(testIdentifier.getDisplayName()).thenReturn(displayName);
+    when(testIdentifier.isTest()).thenReturn(true);
+    when(classTestIdentifier.getDisplayName()).thenReturn(classDisplayName);
+    when(testPlan.getParent(testIdentifier)).thenReturn(Optional.of(classTestIdentifier));
   }
 
   @Test
@@ -47,12 +55,9 @@ public class JavabuilderTestExecutionListenerTest {
 
   @Test
   public void testExecutionFinishedSendsStatusMessage() {
-    final String displayName = "displayName";
     final String className = "myClass";
     final MethodSource methodSource = MethodSource.from(className, "method");
 
-    when(testIdentifier.getDisplayName()).thenReturn(displayName);
-    when(testIdentifier.isTest()).thenReturn(true);
     when(testIdentifier.getSource()).thenReturn(Optional.of(methodSource));
     when(testExecutionResult.getStatus()).thenReturn(TestExecutionResult.Status.SUCCESSFUL);
 
@@ -66,7 +71,7 @@ public class JavabuilderTestExecutionListenerTest {
     final ClientMessage message = messageCaptor.getAllValues().get(0);
     assertEquals(ClientMessageType.TEST_RESULT, message.getType());
     assertTrue(message.getValue().contains(displayName));
-    assertTrue(message.getValue().contains(className));
+    assertTrue(message.getValue().contains(classDisplayName));
     assertTrue(message.getValue().contains(TestExecutionResult.Status.SUCCESSFUL.toString()));
   }
 
@@ -86,8 +91,6 @@ public class JavabuilderTestExecutionListenerTest {
     final Throwable error = new AssertionError(errorMessage);
     error.setStackTrace(stackTrace);
 
-    when(testIdentifier.getDisplayName()).thenReturn("displayName");
-    when(testIdentifier.isTest()).thenReturn(true);
     when(testIdentifier.getSource()).thenReturn(Optional.of(methodSource));
     when(testExecutionResult.getStatus()).thenReturn(TestExecutionResult.Status.FAILED);
     when(testExecutionResult.getThrowable()).thenReturn(Optional.of(error));
@@ -114,8 +117,6 @@ public class JavabuilderTestExecutionListenerTest {
     final String exceptionMessage = "exceptionMessage";
     final Throwable error = new FileNotFoundException(exceptionMessage);
 
-    when(testIdentifier.getDisplayName()).thenReturn("displayName");
-    when(testIdentifier.isTest()).thenReturn(true);
     when(testIdentifier.getSource())
         .thenReturn(Optional.of(MethodSource.from("myClass", "method")));
     when(testExecutionResult.getStatus()).thenReturn(TestExecutionResult.Status.FAILED);
