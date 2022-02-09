@@ -27,6 +27,9 @@ public class MainRunner implements CodeRunner {
     try {
       // load and run the main method of the class
       Method mainMethod = Util.findMainMethod(urlClassLoader, this.javaFiles);
+      if (mainMethod == null) {
+        throw new UserInitiatedException(UserInitiatedExceptionKey.NO_MAIN_METHOD);
+      }
       this.outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.RUNNING));
       mainMethod.invoke(null, new Object[] {null});
     } catch (IllegalAccessException e) {

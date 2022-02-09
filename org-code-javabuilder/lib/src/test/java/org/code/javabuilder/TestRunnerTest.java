@@ -5,7 +5,6 @@ import static org.mockito.Mockito.*;
 
 import java.net.URLClassLoader;
 import java.util.List;
-import org.code.protocol.InternalErrorKey;
 import org.code.protocol.OutputAdapter;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -84,7 +83,8 @@ public class TestRunnerTest {
   /** Suppresses warning for casting Class to Class<?>; not relevant for this test */
   @Test
   @SuppressWarnings("unchecked")
-  public void testRunFindsAndRunsAllTests() throws InternalServerError, ClassNotFoundException {
+  public void testRunFindsAndRunsAllTests()
+      throws InternalServerError, ClassNotFoundException, UserInitiatedException {
     when(urlClassLoader.loadClass(file1.getClassName())).thenReturn(javaClass1);
     when(urlClassLoader.loadClass(file2.getClassName())).thenReturn(javaClass2);
     discoverySelectors
@@ -124,9 +124,9 @@ public class TestRunnerTest {
     when(urlClassLoader.loadClass(file1.getClassName())).thenThrow(cause);
 
     final Exception actual =
-        assertThrows(InternalServerError.class, () -> unitUnderTest.run(urlClassLoader));
+        assertThrows(UserInitiatedException.class, () -> unitUnderTest.run(urlClassLoader));
 
-    assertEquals(InternalErrorKey.INTERNAL_EXCEPTION.toString(), actual.getMessage());
+    assertEquals(UserInitiatedExceptionKey.CLASS_NOT_FOUND.toString(), actual.getMessage());
     assertSame(cause, actual.getCause());
   }
 }

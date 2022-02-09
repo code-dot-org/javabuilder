@@ -44,7 +44,8 @@ public class TestRunner implements CodeRunner {
    * @param urlClassLoader class loader to load compiled classes
    * @throws InternalServerError if there is an error running tests
    */
-  public void run(URLClassLoader urlClassLoader) throws InternalServerError {
+  public void run(URLClassLoader urlClassLoader)
+      throws InternalServerError, UserInitiatedException {
     try {
       // TODO: only set up for validation if we know we have validation code to run. For now, both
       // project tests and validation code are run together.
@@ -74,13 +75,8 @@ public class TestRunner implements CodeRunner {
     }
   }
 
-  private void setUpForValidation(URLClassLoader urlClassLoader) {
-    Method mainMethod = null;
-    try {
-      mainMethod = Util.findMainMethod(urlClassLoader, this.javaFiles);
-    } catch (UserInitiatedException e) {
-      // User has no main method. This may be ok since we are only running tests, so we ignore this.
-    }
+  private void setUpForValidation(URLClassLoader urlClassLoader) throws UserInitiatedException {
+    Method mainMethod = Util.findMainMethod(urlClassLoader, this.javaFiles);
     // TODO: create NeighborhoodTracker instance and save it to validation protocol.
     ValidationProtocol.create(mainMethod);
   }

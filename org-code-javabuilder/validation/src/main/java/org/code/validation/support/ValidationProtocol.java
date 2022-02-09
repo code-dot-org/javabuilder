@@ -27,6 +27,9 @@ public class ValidationProtocol {
   }
 
   public void invokeMainMethod() {
+    if (this.mainMethod == null) {
+      throw new ValidationRuntimeException(ExceptionKey.NO_MAIN_METHOD_VALIDATION);
+    }
     try {
       this.mainMethod.invoke(null, new Object[] {null});
     } catch (IllegalAccessException e) {
@@ -39,9 +42,6 @@ public class ValidationProtocol {
         cause = e.getCause();
       }
       throw new ValidationRuntimeException(ExceptionKey.ERROR_RUNNING_MAIN, cause);
-
-    } catch (NullPointerException e) {
-      throw new ValidationRuntimeException(ExceptionKey.NO_MAIN_METHOD, e);
     }
   }
 }

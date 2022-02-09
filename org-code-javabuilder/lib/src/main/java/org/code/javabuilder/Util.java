@@ -16,7 +16,7 @@ import org.code.protocol.InternalErrorKey;
 import org.code.protocol.LoggerUtils;
 
 /** A set of static utility functions that are used in multiple locations */
-public class Util {
+public final class Util {
   private Util() {
     throw new UnsupportedOperationException("Instantiation of utility class is not allowed.");
   }
@@ -110,9 +110,6 @@ public class Util {
       }
     }
 
-    if (mainMethod == null) {
-      throw new UserInitiatedException(UserInitiatedExceptionKey.NO_MAIN_METHOD);
-    }
     return mainMethod;
   }
 }

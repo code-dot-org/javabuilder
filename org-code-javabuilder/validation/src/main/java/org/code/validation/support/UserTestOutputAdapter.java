@@ -20,6 +20,7 @@ public class UserTestOutputAdapter implements OutputAdapter {
     switch (messageType) {
       case TEST_RESULT:
       case STATUS:
+      case EXCEPTION:
         delegateOutputAdapter.sendMessage(message);
         break;
       case SYSTEM_OUT:
