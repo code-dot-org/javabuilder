@@ -17,7 +17,7 @@ public final class JavabuilderThrowableMessageUtils {
     detail.put(ClientMessageDetailKeys.CONNECTION_ID, Properties.getConnectionId());
 
     Throwable cause = throwable.getCause();
-    if (cause != null && cause.getClass() == InvocationTargetException.class) {
+    if (cause != null && cause instanceof InvocationTargetException) {
       cause = cause.getCause();
     }
 
