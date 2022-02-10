@@ -17,15 +17,30 @@ public final class JavabuilderThrowableMessageUtils {
     detail.put(ClientMessageDetailKeys.CONNECTION_ID, Properties.getConnectionId());
 
     Throwable cause = throwable.getCause();
+    if (cause != null && cause.getClass() == InvocationTargetException.class) {
+      cause = cause.getCause();
+    }
+
+    String preferredFallbackMessage = null;
     if (cause != null) {
-      detail.put(ClientMessageDetailKeys.CAUSE, getUserFacingLoggingString(cause));
+      // To do: remove CAUSE key once we're using STACK_TRACE and EXCEPTION_TYPE
+      // in (partially) translated exception messages in Javalab.
+      // https://codedotorg.atlassian.net/browse/JAVA-439
+      preferredFallbackMessage = getDefaultFallbackMessageString(cause);
+      detail.put(ClientMessageDetailKeys.CAUSE, preferredFallbackMessage);
+      detail.put(ClientMessageDetailKeys.STACK_TRACE, getUserFacingStackTraceString(cause));
+      detail.put(ClientMessageDetailKeys.EXCEPTION_MESSAGE, getExceptionMessageString(cause));
       if (cause.getMessage() != null) {
         detail.put(ClientMessageDetailKeys.CAUSE_MESSAGE, cause.getMessage());
       }
     }
 
+    // Caller providing a fallback message overrides the default generated in this method.
     if (fallbackMessage != null) {
-      detail.put(ClientMessageDetailKeys.FALLBACK_MESSAGE, fallbackMessage);
+      preferredFallbackMessage = fallbackMessage;
+    }
+    if (preferredFallbackMessage != null) {
+      detail.put(ClientMessageDetailKeys.FALLBACK_MESSAGE, preferredFallbackMessage);
     }
 
     return new JavabuilderThrowableMessage(key, detail);
@@ -43,19 +58,26 @@ public final class JavabuilderThrowableMessageUtils {
    * @return A pretty shortened version of the exception and stack trace for sharing with end users.
    *     Private, as this is meant for use as a helper in the context of a client-facing message.
    */
-  private static String getUserFacingLoggingString(Throwable cause) {
-    if (cause.getClass() == InvocationTargetException.class) {
-      cause = cause.getCause();
-    }
-    StackTraceElement[] stackTrace = cause.getStackTrace();
-    String loggingString = "Exception type: " + cause.toString() + "\n";
+  private static String getDefaultFallbackMessageString(Throwable cause) {
+    String loggingString = "Exception message: " + getExceptionMessageString(cause) + "\n";
+    loggingString += getUserFacingStackTraceString(cause);
+    return loggingString;
+  }
 
+  private static String getUserFacingStackTraceString(Throwable cause) {
+    String stackTraceString = "";
+
+    StackTraceElement[] stackTrace = cause.getStackTrace();
     for (StackTraceElement stackTraceElement : stackTrace) {
       if (stackTraceElement.isNativeMethod()) {
         break;
       }
-      loggingString += "\t at " + stackTraceElement.toString() + "\n";
+      stackTraceString += "\t at " + stackTraceElement + "\n";
     }
-    return loggingString;
+    return stackTraceString;
+  }
+
+  private static String getExceptionMessageString(Throwable cause) {
+    return cause.toString();
   }
 }
