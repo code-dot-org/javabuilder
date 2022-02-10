@@ -16,6 +16,9 @@ public final class JavabuilderThrowableMessageUtils {
     HashMap<String, String> detail = new HashMap<>();
     detail.put(ClientMessageDetailKeys.CONNECTION_ID, Properties.getConnectionId());
 
+    // InvocationTargetException is thrown when there is an
+    // exception thrown in code being executed via reflection (ie, student code).
+    // We want to tell the user about that exception.
     Throwable cause = throwable.getCause();
     if (cause != null && cause instanceof InvocationTargetException) {
       cause = cause.getCause();
