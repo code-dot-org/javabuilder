@@ -64,7 +64,7 @@ public final class Util {
     LoggerUtils.sendClearedDirectoryLog(directory);
   }
 
-  public static void throwInvalidClassException(NoClassDefFoundError e)
+  public static void convertAndThrowInvalidClassException(NoClassDefFoundError e)
       throws UserInitiatedException {
     String message = "";
     if (e.getMessage() != null) {
@@ -106,7 +106,7 @@ public final class Util {
         // May be thrown if file is empty or contains only comments
         throw new UserInitiatedException(UserInitiatedExceptionKey.CLASS_NOT_FOUND, e);
       } catch (NoClassDefFoundError e) {
-        Util.throwInvalidClassException(e);
+        Util.convertAndThrowInvalidClassException(e);
       }
     }
 

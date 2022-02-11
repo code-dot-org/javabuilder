@@ -52,7 +52,7 @@ public class MainRunner implements CodeRunner {
       // NoClassDefFoundError is thrown by the class loader if the user attempts to use a disallowed
       // class.
       if (e.getCause() instanceof NoClassDefFoundError) {
-        Util.throwInvalidClassException((NoClassDefFoundError) e.getCause());
+        Util.convertAndThrowInvalidClassException((NoClassDefFoundError) e.getCause());
       }
       throw new UserInitiatedException(UserInitiatedExceptionKey.RUNTIME_ERROR, e);
     }
