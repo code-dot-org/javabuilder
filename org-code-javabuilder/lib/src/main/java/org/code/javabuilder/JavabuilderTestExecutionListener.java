@@ -1,9 +1,12 @@
 package org.code.javabuilder;
 
+import java.util.HashMap;
 import java.util.Optional;
+import org.code.protocol.ClientMessageDetailKeys;
 import org.code.protocol.JavabuilderRuntimeException;
 import org.code.protocol.OutputAdapter;
 import org.code.validation.support.UserTestResultMessage;
+import org.code.validation.support.UserTestResultSignalKey;
 import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.engine.TestSource;
 import org.junit.platform.engine.support.descriptor.MethodSource;
@@ -97,12 +100,17 @@ public class JavabuilderTestExecutionListener extends SummaryGeneratingListener 
     final String resultMessage =
         String.format(
             "%s %s > %s %s\n", icon, classDisplayName, testIdentifier.getDisplayName(), status);
-    this.outputAdapter.sendMessage(new UserTestResultMessage(resultMessage));
+    HashMap<String, String> statusMessageDetails = new HashMap<>();
+    statusMessageDetails.put(ClientMessageDetailKeys.STATUS, status.toString());
+    statusMessageDetails.put(ClientMessageDetailKeys.CLASS_NAME, classDisplayName);
+    statusMessageDetails.put(ClientMessageDetailKeys.METHOD_NAME, testIdentifier.getDisplayName());
+    this.outputAdapter.sendMessage(
+        new UserTestResultMessage(UserTestResultSignalKey.TEST_STATUS, statusMessageDetails));
 
     final Optional<Throwable> throwable = testExecutionResult.getThrowable();
     if (status != TestExecutionResult.Status.SUCCESSFUL && throwable.isPresent()) {
-      this.outputAdapter.sendMessage(
-          new UserTestResultMessage(this.getErrorMessage(throwable.get(), className)));
+      //      this.outputAdapter.sendMessage(
+      //          new UserTestResultMessage(this.getErrorMessage(throwable.get(), className)));
     }
   }
 

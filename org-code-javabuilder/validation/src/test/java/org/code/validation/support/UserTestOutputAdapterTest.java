@@ -16,12 +16,12 @@ public class UserTestOutputAdapterTest {
     testOutputAdapter = new UserTestOutputAdapter(delegateOutputAdapter);
   }
 
-  @Test
-  public void sendsTestResultMessages() {
-    UserTestResultMessage userTestResultMessage = new UserTestResultMessage("successful test!");
-    testOutputAdapter.sendMessage(userTestResultMessage);
-    verify(delegateOutputAdapter).sendMessage(userTestResultMessage);
-  }
+  //  @Test
+  //  public void sendsTestResultMessages() {
+  //    UserTestResultMessage userTestResultMessage = new UserTestResultMessage("successful test!");
+  //    testOutputAdapter.sendMessage(userTestResultMessage);
+  //    verify(delegateOutputAdapter).sendMessage(userTestResultMessage);
+  //  }
 
   @Test
   public void sendsStatusMessages() {
