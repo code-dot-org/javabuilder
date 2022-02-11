@@ -5,6 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URLClassLoader;
 import java.util.List;
+import org.code.javabuilder.util.ProjectLoadUtils;
 import org.code.protocol.*;
 
 /** Finds and runs the main method in a given set of Java files */
@@ -26,7 +27,7 @@ public class MainRunner implements CodeRunner {
   public void run(URLClassLoader urlClassLoader) throws JavabuilderException {
     try {
       // load and run the main method of the class
-      Method mainMethod = Util.findMainMethod(urlClassLoader, this.javaFiles);
+      Method mainMethod = ProjectLoadUtils.findMainMethod(urlClassLoader, this.javaFiles);
       if (mainMethod == null) {
         throw new UserInitiatedException(UserInitiatedExceptionKey.NO_MAIN_METHOD);
       }
@@ -52,7 +53,7 @@ public class MainRunner implements CodeRunner {
       // NoClassDefFoundError is thrown by the class loader if the user attempts to use a disallowed
       // class.
       if (e.getCause() instanceof NoClassDefFoundError) {
-        Util.convertAndThrowInvalidClassException((NoClassDefFoundError) e.getCause());
+        ProjectLoadUtils.convertAndThrowInvalidClassException((NoClassDefFoundError) e.getCause());
       }
       throw new UserInitiatedException(UserInitiatedExceptionKey.RUNTIME_ERROR, e);
     }
