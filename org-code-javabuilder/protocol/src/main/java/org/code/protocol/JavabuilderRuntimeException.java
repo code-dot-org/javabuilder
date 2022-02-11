@@ -30,4 +30,12 @@ public abstract class JavabuilderRuntimeException extends RuntimeException
   public String getLoggingString() {
     return JavabuilderThrowableMessageUtils.getLoggingString(this);
   }
+
+  public String getFallbackMessage() {
+    return this.fallbackMessage;
+  }
+
+  protected void setFallbackMessage(String fallbackMessage) {
+    this.fallbackMessage = fallbackMessage;
+  }
 }
