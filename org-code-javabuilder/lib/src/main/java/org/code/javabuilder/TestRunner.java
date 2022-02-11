@@ -1,5 +1,6 @@
 package org.code.javabuilder;
 
+import java.lang.reflect.Method;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
@@ -7,6 +8,7 @@ import org.code.protocol.InternalErrorKey;
 import org.code.protocol.OutputAdapter;
 import org.code.protocol.StatusMessage;
 import org.code.protocol.StatusMessageKey;
+import org.code.validation.support.ValidationProtocol;
 import org.junit.platform.commons.PreconditionViolationException;
 import org.junit.platform.engine.discovery.ClassSelector;
 import org.junit.platform.engine.discovery.DiscoverySelectors;
@@ -42,8 +44,12 @@ public class TestRunner implements CodeRunner {
    * @param urlClassLoader class loader to load compiled classes
    * @throws InternalServerError if there is an error running tests
    */
-  public void run(URLClassLoader urlClassLoader) throws InternalServerError {
+  public void run(URLClassLoader urlClassLoader)
+      throws InternalServerError, UserInitiatedException {
     try {
+      // TODO: only set up for validation if we know we have validation code to run. For now, both
+      // project tests and validation code are run together.
+      this.setUpForValidation(urlClassLoader);
       // Search all project files for tests
       final List<ClassSelector> classSelectors = new ArrayList<>();
       for (JavaProjectFile file : this.javaFiles) {
@@ -67,5 +73,11 @@ public class TestRunner implements CodeRunner {
     } catch (PreconditionViolationException | ClassNotFoundException e) {
       throw new InternalServerError(InternalErrorKey.INTERNAL_EXCEPTION, e);
     }
+  }
+
+  private void setUpForValidation(URLClassLoader urlClassLoader) throws UserInitiatedException {
+    Method mainMethod = Util.findMainMethod(urlClassLoader, this.javaFiles);
+    // TODO: create NeighborhoodTracker instance and save it to validation protocol.
+    ValidationProtocol.create(mainMethod);
   }
 }
