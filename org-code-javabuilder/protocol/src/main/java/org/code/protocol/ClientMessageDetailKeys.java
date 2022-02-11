@@ -33,4 +33,8 @@ public class ClientMessageDetailKeys {
   public static final String EXCEPTION_MESSAGE = "exceptionMessage";
   // Message used until translation is set up on the front end
   public static final String FALLBACK_MESSAGE = "fallbackMessage";
+
+  // Neighborhood specific
+  public static final String DIRECTION = "direction";
+  public static final String COLOR = "color";
 }
