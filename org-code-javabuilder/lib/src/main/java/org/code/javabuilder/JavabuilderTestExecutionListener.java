@@ -2,9 +2,7 @@ package org.code.javabuilder;
 
 import java.util.HashMap;
 import java.util.Optional;
-import org.code.protocol.ClientMessageDetailKeys;
-import org.code.protocol.JavabuilderRuntimeException;
-import org.code.protocol.OutputAdapter;
+import org.code.protocol.*;
 import org.code.validation.support.UserTestResultMessage;
 import org.code.validation.support.UserTestResultSignalKey;
 import org.junit.platform.engine.TestExecutionResult;
@@ -109,8 +107,10 @@ public class JavabuilderTestExecutionListener extends SummaryGeneratingListener 
 
     final Optional<Throwable> throwable = testExecutionResult.getThrowable();
     if (status != TestExecutionResult.Status.SUCCESSFUL && throwable.isPresent()) {
-      //      this.outputAdapter.sendMessage(
-      //          new UserTestResultMessage(this.getErrorMessage(throwable.get(), className)));
+      this.outputAdapter.sendMessage(
+          new UserTestResultMessage(
+              UserTestResultSignalKey.STATUS_DETAILS,
+              this.getErrorMessageDetails(throwable.get(), className)));
     }
   }
 
@@ -134,33 +134,26 @@ public class JavabuilderTestExecutionListener extends SummaryGeneratingListener 
    * @param className name of the test class
    * @return the error message
    */
-  private String getErrorMessage(Throwable throwable, String className) {
-    final String errorLine = this.errorLine(throwable.getStackTrace(), className);
-    String errorMessage = null;
+  private HashMap<String, String> getErrorMessageDetails(Throwable throwable, String className) {
+    HashMap<String, String> errorDetails = new HashMap<>();
+    this.setErrorLineDetails(throwable.getStackTrace(), className, errorDetails);
 
-    // If there was an assertion failure, print the failure message. If a
+    // If there was an assertion failure, send on the message. If a
     // JavabuilderRuntimeException
     // was thrown, print the fallback message if it has one. If it does not or if another exception
     // was thrown, print the exception name.
     if (throwable instanceof AssertionError) {
-      errorMessage = String.format("\t%s (%s)\n", throwable.getMessage(), errorLine);
+      errorDetails.put(ClientMessageDetailKeys.ASSERTION_ERROR, throwable.getMessage());
     } else if (throwable instanceof JavabuilderRuntimeException) {
       JavabuilderRuntimeException exception = (JavabuilderRuntimeException) throwable;
-      String fallbackMessage = exception.getFallbackMessage();
-      if (fallbackMessage != null) {
-        errorMessage = String.format("\t%s", fallbackMessage);
-      }
-    }
-    if (errorMessage == null) {
-      String additionalMessage = this.getAdditionalErrorMessage(throwable);
-      errorMessage =
-          String.format("\t%s thrown at %s\n", this.getThrowableDisplayName(throwable), errorLine);
-      if (additionalMessage != null) {
-        errorMessage = String.format("%s \t%s\n", errorMessage, additionalMessage);
-      }
+      errorDetails.putAll(exception.getExceptionDetails());
+      errorDetails.put(ClientMessageDetailKeys.TYPE, exception.getMessage());
+    } else {
+      errorDetails.put(
+          ClientMessageDetailKeys.EXCEPTION_NAME, this.getThrowableDisplayName(throwable));
     }
 
-    return errorMessage;
+    return errorDetails;
   }
 
   /**
@@ -171,13 +164,15 @@ public class JavabuilderTestExecutionListener extends SummaryGeneratingListener 
    * @param className name of the test class
    * @return test file name and line number of the error
    */
-  private String errorLine(StackTraceElement[] stackTrace, String className) {
+  private void setErrorLineDetails(
+      StackTraceElement[] stackTrace, String className, HashMap<String, String> errorDetails) {
     for (StackTraceElement stackTraceElement : stackTrace) {
       if (stackTraceElement.getClassName().equals(className)) {
-        return stackTraceElement.getFileName() + ":" + stackTraceElement.getLineNumber();
+        errorDetails.put(ClientMessageDetailKeys.FILE_NAME, stackTraceElement.getFileName());
+        errorDetails.put(
+            ClientMessageDetailKeys.ERROR_LINE, String.valueOf(stackTraceElement.getLineNumber()));
       }
     }
-    return null;
   }
 
   private String getThrowableDisplayName(Throwable throwable) {
@@ -190,17 +185,18 @@ public class JavabuilderTestExecutionListener extends SummaryGeneratingListener 
     }
   }
 
-  private String getAdditionalErrorMessage(Throwable throwable) {
-    // A NoClassDefFoundError occurs when a user uses a disallowed class. We need
-    // to provide additional information in this case.
-    if (throwable instanceof NoClassDefFoundError) {
-      String className = throwable.getMessage();
-      if (className != null) {
-        // the message will be the name of the invalid class, with '.' replaced by '/'.
-        className = className.replace('/', '.');
-        return className + " is not supported";
-      }
-    }
-    return null;
-  }
+  //  private void getAdditionalErrorDetails(Throwable throwable, HashMap<String, String>
+  // errorDetails) {
+  //    // A NoClassDefFoundError occurs when a user uses a disallowed class. We need
+  //    // to provide additional information in this case.
+  //    if (throwable instanceof NoClassDefFoundError) {
+  //      String className = throwable.getMessage();
+  //      if (className != null) {
+  //        // the message will be the name of the invalid class, with '.' replaced by '/'.
+  //        className = className.replace('/', '.');
+  //        return className + " is not supported";
+  //      }
+  //    }
+  //    return null;
+  //  }
 }

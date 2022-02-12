@@ -1,5 +1,7 @@
 package org.code.protocol;
 
+import java.util.HashMap;
+
 /** Parent error for all errors that will be displayed to the user. */
 public abstract class JavabuilderRuntimeException extends RuntimeException
     implements JavabuilderThrowableProtocol {
@@ -25,6 +27,10 @@ public abstract class JavabuilderRuntimeException extends RuntimeException
   public JavabuilderThrowableMessage getExceptionMessage() {
     return JavabuilderThrowableMessageUtils.getExceptionMessage(
         this, this.key, this.fallbackMessage);
+  }
+
+  public HashMap<String, String> getExceptionDetails() {
+    return JavabuilderThrowableMessageUtils.getExceptionDetails(this, this.fallbackMessage);
   }
 
   public String getLoggingString() {

@@ -39,4 +39,10 @@ public class ClientMessageDetailKeys {
   public static final String STATUS = "status";
   public static final String CLASS_NAME = "className";
   public static final String METHOD_NAME = "methodName";
+  public static final String ASSERTION_ERROR = "assertionError";
+  public static final String FILE_NAME = "fileName";
+  public static final String ERROR_LINE = "errorLine";
+  public static final String IS_VALIDATION = "isValidation";
+  public static final String EXCEPTION_NAME = "exceptionName";
+  public static final String TYPE = "type";
 }

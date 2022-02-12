@@ -13,6 +13,11 @@ public final class JavabuilderThrowableMessageUtils {
 
   public static JavabuilderThrowableMessage getExceptionMessage(
       Throwable throwable, Enum key, String fallbackMessage) {
+    return new JavabuilderThrowableMessage(key, getExceptionDetails(throwable, fallbackMessage));
+  }
+
+  public static HashMap<String, String> getExceptionDetails(
+      Throwable throwable, String fallbackMessage) {
     HashMap<String, String> detail = new HashMap<>();
     detail.put(ClientMessageDetailKeys.CONNECTION_ID, Properties.getConnectionId());
 
@@ -45,8 +50,7 @@ public final class JavabuilderThrowableMessageUtils {
     if (preferredFallbackMessage != null) {
       detail.put(ClientMessageDetailKeys.FALLBACK_MESSAGE, preferredFallbackMessage);
     }
-
-    return new JavabuilderThrowableMessage(key, detail);
+    return detail;
   }
 
   /** @return A pretty version of the exception and stack trace. */
