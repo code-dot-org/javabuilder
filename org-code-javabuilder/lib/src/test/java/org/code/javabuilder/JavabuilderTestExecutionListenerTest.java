@@ -71,42 +71,42 @@ public class JavabuilderTestExecutionListenerTest {
   //    assertTrue(message.getValue().contains(TestExecutionResult.Status.SUCCESSFUL.toString()));
   //  }
   //
-  //  @Test
-  //  public void testExecutionFinishedSendsErrorMessageIfTestFails() {
-  //    final String className = "myClass";
-  //    final MethodSource methodSource = MethodSource.from(className, "method");
-  //    final String errorMessage = "errorMessage";
-  //    final String fileName = className + ".java";
-  //    final int lineNumber = 10;
+  //    @Test
+  //    public void testExecutionFinishedSendsErrorMessageIfTestFails() {
+  //      final String className = "myClass";
+  //      final MethodSource methodSource = MethodSource.from(className, "method");
+  //      final String errorMessage = "errorMessage";
+  //      final String fileName = className + ".java";
+  //      final int lineNumber = 10;
   //
-  //    // Create a mock stack trace with two items, the second containing the relevant line
-  //    final StackTraceElement[] stackTrace = {
-  //      new StackTraceElement("otherclass", "method", "otherfile", 1),
-  //      new StackTraceElement(className, "method", fileName, lineNumber)
-  //    };
-  //    final Throwable error = new AssertionError(errorMessage);
-  //    error.setStackTrace(stackTrace);
+  //      // Create a mock stack trace with two items, the second containing the relevant line
+  //      final StackTraceElement[] stackTrace = {
+  //        new StackTraceElement("otherclass", "method", "otherfile", 1),
+  //        new StackTraceElement(className, "method", fileName, lineNumber)
+  //      };
+  //      final Throwable error = new AssertionError(errorMessage);
+  //      error.setStackTrace(stackTrace);
   //
-  //    when(testIdentifier.getSource()).thenReturn(Optional.of(methodSource));
-  //    when(testExecutionResult.getStatus()).thenReturn(TestExecutionResult.Status.FAILED);
-  //    when(testExecutionResult.getThrowable()).thenReturn(Optional.of(error));
+  //      when(testIdentifier.getSource()).thenReturn(Optional.of(methodSource));
+  //      when(testExecutionResult.getStatus()).thenReturn(TestExecutionResult.Status.FAILED);
+  //      when(testExecutionResult.getThrowable()).thenReturn(Optional.of(error));
   //
-  //    // Need to call testPlanExecutionStarted() to prevent NullPointerException in
-  //    // SummaryGeneratingListener
-  //    unitUnderTest.testPlanExecutionStarted(testPlan);
-  //    unitUnderTest.executionFinished(testIdentifier, testExecutionResult);
+  //      // Need to call testPlanExecutionStarted() to prevent NullPointerException in
+  //      // SummaryGeneratingListener
+  //      unitUnderTest.testPlanExecutionStarted(testPlan);
+  //      unitUnderTest.executionFinished(testIdentifier, testExecutionResult);
   //
-  //    // 2 calls: 1) result, 2) error details
-  //    verify(outputAdapter, times(2)).sendMessage(messageCaptor.capture());
+  //      // 2 calls: 1) result, 2) error details
+  //      verify(outputAdapter, times(2)).sendMessage(messageCaptor.capture());
   //
-  //    final ClientMessage message = messageCaptor.getAllValues().get(1);
-  //    assertEquals(ClientMessageType.TEST_RESULT, message.getType());
+  //      final ClientMessage message = messageCaptor.getAllValues().get(1);
+  //      assertEquals(ClientMessageType.TEST_RESULT, message.getType());
   //
-  //    // Error message should contain throwable message, file name, and line number
-  //    assertTrue(message.getValue().contains(errorMessage));
-  //    assertTrue(message.getValue().contains(fileName));
-  //    assertTrue(message.getValue().contains(Integer.toString(lineNumber)));
-  //  }
+  //      // Error message should contain throwable message, file name, and line number
+  //      assertTrue(message.getValue().contains(errorMessage));
+  //      assertTrue(message.getValue().contains(fileName));
+  //      assertTrue(message.getValue().contains(Integer.toString(lineNumber)));
+  //    }
   //
   //  @Test
   //  public void testExecutionFinishedPrintsExceptionIfThrown() {
