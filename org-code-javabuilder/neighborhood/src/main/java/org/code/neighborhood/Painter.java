@@ -1,5 +1,7 @@
 package org.code.neighborhood;
 
+import static org.code.protocol.ClientMessageDetailKeys.*;
+
 import java.util.HashMap;
 import org.code.protocol.OutputAdapter;
 
@@ -58,7 +60,7 @@ public class Painter {
   public void turnLeft() {
     this.direction = this.direction.turnLeft();
     HashMap<String, String> details = this.getSignalDetails();
-    details.put("direction", this.direction.getDirectionString());
+    details.put(DIRECTION, this.direction.getDirectionString());
     this.sendOutputMessage(NeighborhoodSignalKey.TURN_LEFT, details);
   }
 
@@ -78,7 +80,7 @@ public class Painter {
       throw new NeighborhoodRuntimeException(ExceptionKeys.INVALID_MOVE);
     }
     HashMap<String, String> details = this.getSignalDetails();
-    details.put("direction", this.direction.getDirectionString());
+    details.put(DIRECTION, this.direction.getDirectionString());
     this.sendOutputMessage(NeighborhoodSignalKey.MOVE, details);
   }
 
@@ -92,7 +94,7 @@ public class Painter {
       this.grid.getSquare(this.xLocation, this.yLocation).setColor(color);
       this.remainingPaint--;
       HashMap<String, String> details = this.getSignalDetails();
-      details.put("color", color);
+      details.put(COLOR, color);
       this.sendOutputMessage(NeighborhoodSignalKey.PAINT, details);
     } else {
       System.out.println("There is no more paint in the painter's bucket");
@@ -211,7 +213,7 @@ public class Painter {
 
   private HashMap<String, String> getSignalDetails() {
     HashMap<String, String> details = new HashMap<>();
-    details.put("id", this.id);
+    details.put(ID, this.id);
     return details;
   }
 
@@ -221,9 +223,9 @@ public class Painter {
 
   private void sendInitializationMessage() {
     HashMap<String, String> initDetails = this.getSignalDetails();
-    initDetails.put("direction", this.direction.getDirectionString());
-    initDetails.put("x", Integer.toString(this.xLocation));
-    initDetails.put("y", Integer.toString(this.yLocation));
+    initDetails.put(DIRECTION, this.direction.getDirectionString());
+    initDetails.put(X, Integer.toString(this.xLocation));
+    initDetails.put(Y, Integer.toString(this.yLocation));
     this.sendOutputMessage(NeighborhoodSignalKey.INITIALIZE_PAINTER, initDetails);
   }
 }
