@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.List;
 import javax.tools.*;
 import javax.tools.JavaCompiler.CompilationTask;
+import org.code.javabuilder.util.JarUtils;
 import org.code.protocol.InternalErrorKey;
 import org.code.protocol.OutputAdapter;
 import org.code.protocol.StatusMessage;
@@ -83,7 +84,7 @@ public class UserCodeCompiler {
     // them.
     List<String> optionList = new ArrayList<String>();
     optionList.add("-classpath");
-    optionList.add(Util.getAllJarPaths());
+    optionList.add(JarUtils.getAllJarPaths());
 
     // create compilation task
     return compiler.getTask(null, fileManager, diagnostics, optionList, null, files);

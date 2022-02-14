@@ -4,6 +4,7 @@ import java.lang.reflect.Method;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
+import org.code.javabuilder.util.ProjectLoadUtils;
 import org.code.protocol.InternalErrorKey;
 import org.code.protocol.OutputAdapter;
 import org.code.protocol.StatusMessage;
@@ -76,7 +77,7 @@ public class TestRunner implements CodeRunner {
   }
 
   private void setUpForValidation(URLClassLoader urlClassLoader) throws UserInitiatedException {
-    Method mainMethod = Util.findMainMethod(urlClassLoader, this.javaFiles);
+    Method mainMethod = ProjectLoadUtils.findMainMethod(urlClassLoader, this.javaFiles);
     // TODO: create NeighborhoodTracker instance and save it to validation protocol.
     ValidationProtocol.create(mainMethod);
   }

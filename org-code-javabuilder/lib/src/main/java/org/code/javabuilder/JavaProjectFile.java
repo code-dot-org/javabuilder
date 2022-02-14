@@ -1,5 +1,7 @@
 package org.code.javabuilder;
 
+import org.code.javabuilder.util.FileUtils;
+
 /** In-memory representation of a Java class that will be compiled. */
 public class JavaProjectFile implements ProjectFile {
   private String fileName;
@@ -8,8 +10,8 @@ public class JavaProjectFile implements ProjectFile {
 
   public JavaProjectFile(String fileName) throws UserInitiatedException {
     this.fileName = fileName;
-    if (FileNameUtils.isJavaFile(fileName)) {
-      this.className = fileName.substring(0, fileName.indexOf(FileNameUtils.JAVA_EXTENSION));
+    if (FileUtils.isJavaFile(fileName)) {
+      this.className = fileName.substring(0, fileName.indexOf(FileUtils.JAVA_EXTENSION));
     } else {
       throw new UserInitiatedException(UserInitiatedExceptionKey.JAVA_EXTENSION_MISSING);
     }
