@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.code.javabuilder.util.JarUtils;
 import org.code.protocol.JavabuilderException;
 import org.code.protocol.OutputAdapter;
 
@@ -56,7 +57,7 @@ public class JavaRunner {
   private void run(CodeRunner runner, RunPermissionLevel permissionLevel)
       throws JavabuilderException, InternalFacingException {
     // Include the user-facing api jars in the code we are loading so student code can access them.
-    URL[] classLoaderUrls = Util.getAllJarURLs(this.executableLocation);
+    URL[] classLoaderUrls = JarUtils.getAllJarURLs(this.executableLocation);
 
     // Create a new UserClassLoader. This class loader handles blocking any disallowed
     // packages/classes.
