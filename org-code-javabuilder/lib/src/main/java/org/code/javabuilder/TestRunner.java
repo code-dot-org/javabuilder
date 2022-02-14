@@ -9,6 +9,7 @@ import org.code.protocol.InternalErrorKey;
 import org.code.protocol.OutputAdapter;
 import org.code.protocol.StatusMessage;
 import org.code.protocol.StatusMessageKey;
+import org.code.validation.support.NeighborhoodTracker;
 import org.code.validation.support.ValidationProtocol;
 import org.junit.platform.commons.PreconditionViolationException;
 import org.junit.platform.engine.discovery.ClassSelector;
@@ -78,7 +79,6 @@ public class TestRunner implements CodeRunner {
 
   private void setUpForValidation(URLClassLoader urlClassLoader) throws UserInitiatedException {
     Method mainMethod = ProjectLoadUtils.findMainMethod(urlClassLoader, this.javaFiles);
-    // TODO: create NeighborhoodTracker instance and save it to validation protocol.
-    ValidationProtocol.create(mainMethod);
+    ValidationProtocol.create(mainMethod, new NeighborhoodTracker());
   }
 }
