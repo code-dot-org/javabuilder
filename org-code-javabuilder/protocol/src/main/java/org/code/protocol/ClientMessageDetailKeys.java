@@ -48,4 +48,5 @@ public class ClientMessageDetailKeys {
 
   public static final String DIRECTION = "direction";
   public static final String COLOR = "color";
+  public static final String PAINT = "paint";
 }

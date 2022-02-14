@@ -30,7 +30,7 @@ public class UserTestOutputAdapter implements OutputAdapter {
         break;
       case NEIGHBORHOOD:
         if (this.isValidation) {
-          // TODO: parse neighborhood messages in a validation run
+          ValidationProtocol.getInstance().trackEvent(message);
         }
         break;
       default:
