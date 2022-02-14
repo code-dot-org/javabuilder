@@ -23,9 +23,6 @@ import org.junit.platform.launcher.listeners.SummaryGeneratingListener;
  * https://junit.org/junit5/docs/5.0.0/api/org/junit/platform/launcher/TestExecutionListener.html
  */
 public class JavabuilderTestExecutionListener extends SummaryGeneratingListener {
-  private static final String CHECK_MARK = "✔";
-  private static final String HEAVY_X = "✖";
-
   private final OutputAdapter outputAdapter;
   private TestPlan testPlan;
 
@@ -94,10 +91,6 @@ public class JavabuilderTestExecutionListener extends SummaryGeneratingListener 
     }
 
     final TestExecutionResult.Status status = testExecutionResult.getStatus();
-    final String icon = status == TestExecutionResult.Status.SUCCESSFUL ? CHECK_MARK : HEAVY_X;
-    final String resultMessage =
-        String.format(
-            "%s %s > %s %s\n", icon, classDisplayName, testIdentifier.getDisplayName(), status);
     HashMap<String, String> statusMessageDetails = new HashMap<>();
     statusMessageDetails.put(ClientMessageDetailKeys.STATUS, status.toString());
     statusMessageDetails.put(ClientMessageDetailKeys.CLASS_NAME, classDisplayName);
@@ -115,20 +108,14 @@ public class JavabuilderTestExecutionListener extends SummaryGeneratingListener 
   }
 
   /**
-   * Generates an error message for a failing test given the Throwable and class name associated
-   * with the test.
+   * Generates error message details map for a failing test given the Throwable and class name
+   * associated with the test. For all cases described below, the file name and line number where
+   * the throwable was thrown will be included in the details.
    *
    * <p>If the test threw an {@link AssertionError} (i.e. an assertion in the test failed), then the
-   * format of the error message is: "[error message] ([java class name]:[line number])"
+   * error message from the assertion will be sent on.
    *
-   * <p>If the test threw another exception, then format of the error message is: "[exception name]
-   * thrown at [java class name]:[line number]"
-   *
-   * <p>For example:
-   *
-   * <p>assertion failed (MyTest:1)
-   *
-   * <p>FileNotFoundException thrown at MyTest:10
+   * <p>
    *
    * @param throwable Throwable thrown by the test
    * @param className name of the test class
@@ -138,10 +125,9 @@ public class JavabuilderTestExecutionListener extends SummaryGeneratingListener 
     HashMap<String, String> errorDetails = new HashMap<>();
     this.setErrorLineDetails(throwable.getStackTrace(), className, errorDetails);
 
-    // If there was an assertion failure, send on the message. If a
-    // JavabuilderRuntimeException
-    // was thrown, print the fallback message if it has one. If it does not or if another exception
-    // was thrown, print the exception name.
+    // If there was an assertion failure, send on the message.
+    // If a JavabuilderRuntimeException was thrown, send the exception details in a hashmap.
+    // If another exception was thrown, send the exception name.
     if (throwable instanceof AssertionError) {
       errorDetails.put(ClientMessageDetailKeys.ASSERTION_ERROR, throwable.getMessage());
     } else if (throwable instanceof JavabuilderRuntimeException) {
@@ -184,19 +170,4 @@ public class JavabuilderTestExecutionListener extends SummaryGeneratingListener 
       return throwable.getClass().getSimpleName();
     }
   }
-
-  //  private void getAdditionalErrorDetails(Throwable throwable, HashMap<String, String>
-  // errorDetails) {
-  //    // A NoClassDefFoundError occurs when a user uses a disallowed class. We need
-  //    // to provide additional information in this case.
-  //    if (throwable instanceof NoClassDefFoundError) {
-  //      String className = throwable.getMessage();
-  //      if (className != null) {
-  //        // the message will be the name of the invalid class, with '.' replaced by '/'.
-  //        className = className.replace('/', '.');
-  //        return className + " is not supported";
-  //      }
-  //    }
-  //    return null;
-  //  }
 }
