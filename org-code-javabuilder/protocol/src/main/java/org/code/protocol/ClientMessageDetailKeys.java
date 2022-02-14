@@ -45,4 +45,7 @@ public class ClientMessageDetailKeys {
   public static final String IS_VALIDATION = "isValidation";
   public static final String EXCEPTION_NAME = "exceptionName";
   public static final String TYPE = "type";
+
+  public static final String DIRECTION = "direction";
+  public static final String COLOR = "color";
 }
