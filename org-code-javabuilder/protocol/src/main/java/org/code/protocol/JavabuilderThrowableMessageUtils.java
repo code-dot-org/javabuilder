@@ -71,7 +71,13 @@ public final class JavabuilderThrowableMessageUtils {
     return loggingString;
   }
 
-  private static String getUserFacingStackTraceString(Throwable cause) {
+  /**
+   * Get the subset of the stack trace for the given cause that relates to user-specific code.
+   *
+   * @param cause
+   * @return stack trace as a String
+   */
+  public static String getUserFacingStackTraceString(Throwable cause) {
     String stackTraceString = "";
 
     StackTraceElement[] stackTrace = cause.getStackTrace();

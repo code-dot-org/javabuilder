@@ -27,7 +27,9 @@ public class TestRunner implements CodeRunner {
   private final OutputAdapter outputAdapter;
 
   public TestRunner(List<JavaProjectFile> javaFiles, OutputAdapter outputAdapter) {
-    this(javaFiles, new JavabuilderTestExecutionListener(outputAdapter), outputAdapter);
+    // TODO: isValidation will need to be controllable at the constructor level once we are running
+    // validation code separately.
+    this(javaFiles, new JavabuilderTestExecutionListener(outputAdapter, false), outputAdapter);
   }
 
   TestRunner(
