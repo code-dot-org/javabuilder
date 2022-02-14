@@ -1,9 +1,11 @@
 package org.code.validation.support;
 
 import static org.code.protocol.ClientMessageDetailKeys.*;
+import static org.code.protocol.LoggerNames.MAIN_LOGGER;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.code.neighborhood.NeighborhoodSignalKey;
 import org.code.neighborhood.World;
@@ -53,9 +55,11 @@ public class NeighborhoodTracker {
     }
 
     if (!this.painterTrackers.containsKey(id) || !this.isInitialized) {
-      System.out.printf(
-          "Received a painter event for an uninitialized painter. Ignoring message: %s, %s\n",
-          message.getValue(), message.getDetail());
+      Logger.getLogger(MAIN_LOGGER)
+          .severe(
+              String.format(
+                  "Error: received a painter event for an uninitialized painter: %s, %s\n",
+                  message.getValue(), message.getDetail()));
       return;
     }
 
