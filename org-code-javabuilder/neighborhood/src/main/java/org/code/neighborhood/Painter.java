@@ -226,6 +226,7 @@ public class Painter {
     initDetails.put(DIRECTION, this.direction.getDirectionString());
     initDetails.put(X, Integer.toString(this.xLocation));
     initDetails.put(Y, Integer.toString(this.yLocation));
+    initDetails.put(PAINT, Integer.toString(this.remainingPaint));
     this.sendOutputMessage(NeighborhoodSignalKey.INITIALIZE_PAINTER, initDetails);
   }
 }
