@@ -33,7 +33,7 @@ public class JavabuilderTestExecutionListenerTest {
     testIdentifier = mock(TestIdentifier.class);
     testExecutionResult = mock(TestExecutionResult.class);
     messageCaptor = ArgumentCaptor.forClass(ClientMessage.class);
-    unitUnderTest = new JavabuilderTestExecutionListener(outputAdapter);
+    unitUnderTest = new JavabuilderTestExecutionListener(outputAdapter, false);
     TestIdentifier classTestIdentifier = mock(TestIdentifier.class);
 
     when(testIdentifier.getDisplayName()).thenReturn(displayName);
