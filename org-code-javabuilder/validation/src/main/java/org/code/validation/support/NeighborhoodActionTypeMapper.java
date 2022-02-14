@@ -12,7 +12,7 @@ public class NeighborhoodActionTypeMapper {
    * @param signalKey
    * @return NeighborhoodActionType which is equivalent to the given signalKey
    */
-  public NeighborhoodActionType convertNeighborhoodKeyToActionType(
+  public static NeighborhoodActionType convertNeighborhoodKeyToActionType(
       NeighborhoodSignalKey signalKey) {
     switch (signalKey) {
       case INITIALIZE_PAINTER:
