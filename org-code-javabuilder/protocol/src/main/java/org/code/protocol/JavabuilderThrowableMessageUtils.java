@@ -13,6 +13,11 @@ public final class JavabuilderThrowableMessageUtils {
 
   public static JavabuilderThrowableMessage getExceptionMessage(
       Throwable throwable, Enum key, String fallbackMessage) {
+    return new JavabuilderThrowableMessage(key, getExceptionDetails(throwable, fallbackMessage));
+  }
+
+  public static HashMap<String, String> getExceptionDetails(
+      Throwable throwable, String fallbackMessage) {
     HashMap<String, String> detail = new HashMap<>();
     detail.put(ClientMessageDetailKeys.CONNECTION_ID, Properties.getConnectionId());
 
@@ -45,8 +50,7 @@ public final class JavabuilderThrowableMessageUtils {
     if (preferredFallbackMessage != null) {
       detail.put(ClientMessageDetailKeys.FALLBACK_MESSAGE, preferredFallbackMessage);
     }
-
-    return new JavabuilderThrowableMessage(key, detail);
+    return detail;
   }
 
   /** @return A pretty version of the exception and stack trace. */
@@ -67,7 +71,13 @@ public final class JavabuilderThrowableMessageUtils {
     return loggingString;
   }
 
-  private static String getUserFacingStackTraceString(Throwable cause) {
+  /**
+   * Get the subset of the stack trace for the given cause that relates to user-specific code.
+   *
+   * @param cause
+   * @return stack trace as a String
+   */
+  public static String getUserFacingStackTraceString(Throwable cause) {
     String stackTraceString = "";
 
     StackTraceElement[] stackTrace = cause.getStackTrace();

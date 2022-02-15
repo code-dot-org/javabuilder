@@ -2,6 +2,7 @@ package org.code.validation.support;
 
 import static org.mockito.Mockito.*;
 
+import java.util.HashMap;
 import org.code.protocol.*;
 import org.code.validation.ClientMessageHelper;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,7 +19,10 @@ public class UserTestOutputAdapterTest {
 
   @Test
   public void sendsTestResultMessages() {
-    UserTestResultMessage userTestResultMessage = new UserTestResultMessage("successful test!");
+    HashMap<String, String> messageDetails = new HashMap<>();
+    messageDetails.put(ClientMessageDetailKeys.STATUS, "successful");
+    UserTestResultMessage userTestResultMessage =
+        new UserTestResultMessage(UserTestResultSignalKey.TEST_STATUS, messageDetails);
     testOutputAdapter.sendMessage(userTestResultMessage);
     verify(delegateOutputAdapter).sendMessage(userTestResultMessage);
   }
