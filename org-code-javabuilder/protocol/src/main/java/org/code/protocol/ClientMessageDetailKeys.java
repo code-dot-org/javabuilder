@@ -46,6 +46,7 @@ public class ClientMessageDetailKeys {
   public static final String EXCEPTION_NAME = "exceptionName";
   public static final String TYPE = "type";
 
+  // Neighborhood specific
   public static final String DIRECTION = "direction";
   public static final String COLOR = "color";
   public static final String PAINT = "paint";
