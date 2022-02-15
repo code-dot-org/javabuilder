@@ -5,9 +5,8 @@ import static org.mockito.Mockito.*;
 
 import java.io.FileNotFoundException;
 import java.util.Optional;
-import org.code.protocol.ClientMessage;
-import org.code.protocol.ClientMessageType;
-import org.code.protocol.OutputAdapter;
+import org.code.protocol.*;
+import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.engine.TestExecutionResult;
@@ -34,7 +33,7 @@ public class JavabuilderTestExecutionListenerTest {
     testIdentifier = mock(TestIdentifier.class);
     testExecutionResult = mock(TestExecutionResult.class);
     messageCaptor = ArgumentCaptor.forClass(ClientMessage.class);
-    unitUnderTest = new JavabuilderTestExecutionListener(outputAdapter);
+    unitUnderTest = new JavabuilderTestExecutionListener(outputAdapter, false);
     TestIdentifier classTestIdentifier = mock(TestIdentifier.class);
 
     when(testIdentifier.getDisplayName()).thenReturn(displayName);
@@ -70,9 +69,15 @@ public class JavabuilderTestExecutionListenerTest {
 
     final ClientMessage message = messageCaptor.getAllValues().get(0);
     assertEquals(ClientMessageType.TEST_RESULT, message.getType());
-    assertTrue(message.getValue().contains(displayName));
-    assertTrue(message.getValue().contains(classDisplayName));
-    assertTrue(message.getValue().contains(TestExecutionResult.Status.SUCCESSFUL.toString()));
+
+    JSONObject messageDetail = message.getDetail();
+    assertTrue(messageDetail.getString(ClientMessageDetailKeys.METHOD_NAME).equals(displayName));
+    assertTrue(
+        messageDetail.getString(ClientMessageDetailKeys.CLASS_NAME).equals(classDisplayName));
+    assertTrue(
+        messageDetail
+            .getString(ClientMessageDetailKeys.STATUS)
+            .equals(TestExecutionResult.Status.SUCCESSFUL.toString()));
   }
 
   @Test
@@ -106,10 +111,59 @@ public class JavabuilderTestExecutionListenerTest {
     final ClientMessage message = messageCaptor.getAllValues().get(1);
     assertEquals(ClientMessageType.TEST_RESULT, message.getType());
 
-    // Error message should contain throwable message, file name, and line number
-    assertTrue(message.getValue().contains(errorMessage));
-    assertTrue(message.getValue().contains(fileName));
-    assertTrue(message.getValue().contains(Integer.toString(lineNumber)));
+    // Details should contain throwable message, file name, and line number
+    JSONObject messageDetail = message.getDetail();
+    assertTrue(
+        messageDetail.getString(ClientMessageDetailKeys.ASSERTION_ERROR).equals(errorMessage));
+    assertTrue(messageDetail.getString(ClientMessageDetailKeys.FILE_NAME).equals(fileName));
+    assertTrue(
+        messageDetail
+            .getString(ClientMessageDetailKeys.ERROR_LINE)
+            .equals(Integer.toString(lineNumber)));
+  }
+
+  @Test
+  public void testExecutionFinishedSendsTypeForJavabuilderException() {
+    final String className = "myClass";
+    final MethodSource methodSource = MethodSource.from(className, "method");
+    final String fileName = className + ".java";
+    final int lineNumber = 10;
+
+    // Create a mock stack trace with two items, the second containing the relevant line
+    final StackTraceElement[] stackTrace = {
+      new StackTraceElement("otherclass", "method", "otherfile", 1),
+      new StackTraceElement(className, "method", fileName, lineNumber)
+    };
+    final Throwable error =
+        new InternalServerRuntimeError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION);
+    error.setStackTrace(stackTrace);
+
+    when(testIdentifier.getSource()).thenReturn(Optional.of(methodSource));
+    when(testExecutionResult.getStatus()).thenReturn(TestExecutionResult.Status.FAILED);
+    when(testExecutionResult.getThrowable()).thenReturn(Optional.of(error));
+
+    // Need to call testPlanExecutionStarted() to prevent NullPointerException in
+    // SummaryGeneratingListener
+    unitUnderTest.testPlanExecutionStarted(testPlan);
+    unitUnderTest.executionFinished(testIdentifier, testExecutionResult);
+
+    // 2 calls: 1) result, 2) error details
+    verify(outputAdapter, times(2)).sendMessage(messageCaptor.capture());
+
+    final ClientMessage message = messageCaptor.getAllValues().get(1);
+    assertEquals(ClientMessageType.TEST_RESULT, message.getType());
+
+    // Details should contain runtime exception type, file name, and line number
+    JSONObject messageDetail = message.getDetail();
+    assertTrue(
+        messageDetail
+            .getString(ClientMessageDetailKeys.TYPE)
+            .equals(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION.toString()));
+    assertTrue(messageDetail.getString(ClientMessageDetailKeys.FILE_NAME).equals(fileName));
+    assertTrue(
+        messageDetail
+            .getString(ClientMessageDetailKeys.ERROR_LINE)
+            .equals(Integer.toString(lineNumber)));
   }
 
   @Test
@@ -133,8 +187,11 @@ public class JavabuilderTestExecutionListenerTest {
     final ClientMessage message = messageCaptor.getAllValues().get(1);
     assertEquals(ClientMessageType.TEST_RESULT, message.getType());
 
-    // Since the test threw an exception, only the exception name should be included
-    assertTrue(message.getValue().contains(error.getClass().getSimpleName()));
-    assertFalse(message.getValue().contains(exceptionMessage));
+    // Since the test threw a non-internal exception, the exception name should be sent
+    JSONObject messageDetail = message.getDetail();
+    assertTrue(
+        messageDetail
+            .getString(ClientMessageDetailKeys.EXCEPTION_NAME)
+            .equals(error.getClass().getSimpleName()));
   }
 }
