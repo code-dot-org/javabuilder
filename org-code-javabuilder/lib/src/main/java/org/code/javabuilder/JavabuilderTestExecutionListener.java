@@ -24,8 +24,8 @@ import org.junit.platform.launcher.listeners.SummaryGeneratingListener;
  */
 public class JavabuilderTestExecutionListener extends SummaryGeneratingListener {
   private final OutputAdapter outputAdapter;
+  private final boolean isValidation;
   private TestPlan testPlan;
-  private boolean isValidation;
 
   public JavabuilderTestExecutionListener(OutputAdapter outputAdapter, boolean isValidation) {
     super();

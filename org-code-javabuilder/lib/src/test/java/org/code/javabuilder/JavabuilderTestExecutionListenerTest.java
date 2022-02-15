@@ -71,10 +71,13 @@ public class JavabuilderTestExecutionListenerTest {
     assertEquals(ClientMessageType.TEST_RESULT, message.getType());
 
     JSONObject messageDetail = message.getDetail();
-    assertTrue(messageDetail.getString("methodName").equals(displayName));
-    assertTrue(messageDetail.getString("className").equals(classDisplayName));
+    assertTrue(messageDetail.getString(ClientMessageDetailKeys.METHOD_NAME).equals(displayName));
     assertTrue(
-        messageDetail.getString("status").equals(TestExecutionResult.Status.SUCCESSFUL.toString()));
+        messageDetail.getString(ClientMessageDetailKeys.CLASS_NAME).equals(classDisplayName));
+    assertTrue(
+        messageDetail
+            .getString(ClientMessageDetailKeys.STATUS)
+            .equals(TestExecutionResult.Status.SUCCESSFUL.toString()));
   }
 
   @Test
@@ -110,16 +113,19 @@ public class JavabuilderTestExecutionListenerTest {
 
     // Details should contain throwable message, file name, and line number
     JSONObject messageDetail = message.getDetail();
-    assertTrue(messageDetail.getString("assertionError").equals(errorMessage));
-    assertTrue(messageDetail.getString("fileName").equals(fileName));
-    assertTrue(messageDetail.getString("errorLine").equals(Integer.toString(lineNumber)));
+    assertTrue(
+        messageDetail.getString(ClientMessageDetailKeys.ASSERTION_ERROR).equals(errorMessage));
+    assertTrue(messageDetail.getString(ClientMessageDetailKeys.FILE_NAME).equals(fileName));
+    assertTrue(
+        messageDetail
+            .getString(ClientMessageDetailKeys.ERROR_LINE)
+            .equals(Integer.toString(lineNumber)));
   }
 
   @Test
   public void testExecutionFinishedSendsTypeForJavabuilderException() {
     final String className = "myClass";
     final MethodSource methodSource = MethodSource.from(className, "method");
-    final String errorMessage = "errorMessage";
     final String fileName = className + ".java";
     final int lineNumber = 10;
 
@@ -151,10 +157,13 @@ public class JavabuilderTestExecutionListenerTest {
     JSONObject messageDetail = message.getDetail();
     assertTrue(
         messageDetail
-            .getString("type")
+            .getString(ClientMessageDetailKeys.TYPE)
             .equals(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION.toString()));
-    assertTrue(messageDetail.getString("fileName").equals(fileName));
-    assertTrue(messageDetail.getString("errorLine").equals(Integer.toString(lineNumber)));
+    assertTrue(messageDetail.getString(ClientMessageDetailKeys.FILE_NAME).equals(fileName));
+    assertTrue(
+        messageDetail
+            .getString(ClientMessageDetailKeys.ERROR_LINE)
+            .equals(Integer.toString(lineNumber)));
   }
 
   @Test
@@ -180,6 +189,9 @@ public class JavabuilderTestExecutionListenerTest {
 
     // Since the test threw a non-internal exception, the exception name should be sent
     JSONObject messageDetail = message.getDetail();
-    assertTrue(messageDetail.getString("exceptionName").equals(error.getClass().getSimpleName()));
+    assertTrue(
+        messageDetail
+            .getString(ClientMessageDetailKeys.EXCEPTION_NAME)
+            .equals(error.getClass().getSimpleName()));
   }
 }
