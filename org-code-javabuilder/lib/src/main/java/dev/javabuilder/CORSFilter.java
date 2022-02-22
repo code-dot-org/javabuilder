@@ -1,6 +1,7 @@
 package dev.javabuilder;
 
 import static dev.javabuilder.LocalWebserverConstants.DIRECTORY;
+import static dev.javabuilder.LocalWebserverConstants.SEED_SOURCES_ENDPOINT;
 import static org.code.protocol.AllowedFileNames.*;
 
 import java.io.IOException;
@@ -41,8 +42,11 @@ public class CORSFilter extends HttpFilter {
       response.sendError(
           403,
           String.format(
-              "Only %s, %s, and %s files can be accessed.",
-              THEATER_IMAGE_NAME, THEATER_AUDIO_NAME, PROMPTER_FILE_NAME_PREFIX));
+              "Only %s, %s, %s, and %s files/endpoints can be accessed.",
+              SEED_SOURCES_ENDPOINT,
+              THEATER_IMAGE_NAME,
+              THEATER_AUDIO_NAME,
+              PROMPTER_FILE_NAME_PREFIX));
       return;
     }
 
@@ -52,7 +56,8 @@ public class CORSFilter extends HttpFilter {
       return;
     }
 
-    if (fileName.indexOf(PROMPTER_FILE_NAME_PREFIX) == 0) {
+    if (fileName.equals(SEED_SOURCES_ENDPOINT)
+        || fileName.indexOf(PROMPTER_FILE_NAME_PREFIX) == 0) {
       // Add CORS headers only if the request is for a known file
       response.addHeader("Access-Control-Allow-Origin", requestOrigin);
       response.addHeader("Access-Control-Allow-Headers", "*");
@@ -68,7 +73,8 @@ public class CORSFilter extends HttpFilter {
   }
 
   private boolean getAllowedExternal(String fileName) {
-    return fileName.equals(THEATER_IMAGE_NAME)
+    return fileName.equals(SEED_SOURCES_ENDPOINT)
+        || fileName.equals(THEATER_IMAGE_NAME)
         || fileName.equals(THEATER_AUDIO_NAME)
         || fileName.indexOf(PROMPTER_FILE_NAME_PREFIX) == 0;
   }
