@@ -2,6 +2,7 @@ package dev.javabuilder;
 
 import static dev.javabuilder.LocalWebserverConstants.DIRECTORY;
 
+import dev.javabuilder.util.TempDirectoryUtils;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -24,10 +25,7 @@ public class LocalFileManager implements JavabuilderFileManager {
       throws JavabuilderException {
     File file = Paths.get(System.getProperty("java.io.tmpdir"), DIRECTORY, filename).toFile();
     try {
-      File parentDirectory = Paths.get(System.getProperty("java.io.tmpdir"), DIRECTORY).toFile();
-      if (!parentDirectory.exists()) {
-        parentDirectory.mkdirs();
-      }
+      TempDirectoryUtils.createTempDirectoryIfNeeded();
       Files.write(file.toPath(), inputBytes);
     } catch (IOException e) {
       throw new InternalServerError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e);
@@ -37,10 +35,7 @@ public class LocalFileManager implements JavabuilderFileManager {
 
   @Override
   public String getUploadUrl(String filename) {
-    File parentDirectory = Paths.get(System.getProperty("java.io.tmpdir"), DIRECTORY).toFile();
-    if (!parentDirectory.exists()) {
-      parentDirectory.mkdirs();
-    }
+    TempDirectoryUtils.createTempDirectoryIfNeeded();
     return String.format(SERVER_URL_FORMAT, DIRECTORY, filename);
   }
 
