@@ -8,16 +8,16 @@ import java.io.FileNotFoundException;
  */
 public interface ContentManager {
   /**
-   * Generates a URL pointing to the asset file referenced by the asset file name.
+   * Retrieves the URL pointing to the asset file referenced by the asset file name.
    *
-   * @param filename asset file name to generate a URL for
-   * @return generated URL
+   * @param filename asset file name to retrieve a URL for
+   * @return asset URL
    */
-  String generateAssetUrl(String filename);
+  String getAssetUrl(String filename);
 
   /**
    * Generates a URL that a client may use to upload a specific asset named by the provided file
-   * name.
+   * name, using a PUT request.
    *
    * @param filename file to generate an asset for
    * @return upload URL

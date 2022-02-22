@@ -36,11 +36,15 @@ public class LocalContentManager implements ContentManager, ProjectFileLoader {
   }
 
   @Override
-  public String generateAssetUrl(String filename) {
+  public String getAssetUrl(String filename) {
     try {
       this.loadProjectDataIfNeeded();
     } catch (InternalServerError e) {
-      // Log this error since this indicates an issue reading project data
+      // We should only hit this exception if we try to load an asset URL before source code has
+      // been loaded, which should only be in the the case of manual testing. Log this exception but
+      // don't throw to preserve the method contract.
+      // Note / TODO: Once we fully migrate away from Dashboard sources, we can remove the
+      // loadProjectDataIfNeeded() call here and this exception handling.
       LoggerUtils.logException(e);
       return null;
     }
@@ -51,7 +55,9 @@ public class LocalContentManager implements ContentManager, ProjectFileLoader {
   public String generateAssetUploadUrl(String filename) throws InternalServerError {
     this.loadProjectDataIfNeeded();
     final String uploadUrl = String.format(SERVER_URL_FORMAT, DIRECTORY, filename);
-    // Add new asset URL to our project data so it can be referenced later.
+    // The URL to GET this asset once it is uploaded will be the same as the upload
+    // URL since it points to the same location on the local file server. Add this
+    // URL to our project data so it can be referenced later.
     this.projectData.addNewAssetUrl(filename, uploadUrl);
     return uploadUrl;
   }
