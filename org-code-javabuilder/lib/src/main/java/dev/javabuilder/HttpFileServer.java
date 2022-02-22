@@ -1,8 +1,10 @@
 package dev.javabuilder;
 
 import static dev.javabuilder.LocalWebserverConstants.DIRECTORY;
+import static dev.javabuilder.LocalWebserverConstants.SEED_SOURCES_ENDPOINT;
 import static org.code.protocol.AllowedFileNames.PROMPTER_FILE_NAME_PREFIX;
 
+import dev.javabuilder.util.TempDirectoryUtils;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
@@ -12,6 +14,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.code.javabuilder.ProjectData;
 
 /**
  * This sets up an HTTP server for local development when the client needs to be able to access
@@ -43,13 +46,23 @@ public class HttpFileServer extends HttpServlet {
   @Override
   protected void doPut(HttpServletRequest request, HttpServletResponse response)
       throws IOException {
-    final String fileName = this.getFileName(request);
+    String fileName = this.getFileName(request);
     if (!this.putAllowed(fileName)) {
       response.sendError(
           403,
-          String.format("Only files prefixed with %s can be uploaded.", PROMPTER_FILE_NAME_PREFIX));
+          String.format(
+              "Only files sent to the %s endpoint, or prefixed with %s can be uploaded.",
+              SEED_SOURCES_ENDPOINT, PROMPTER_FILE_NAME_PREFIX));
       return;
     }
+
+    if (fileName.equals(SEED_SOURCES_ENDPOINT)) {
+      // If a client is accessing this endpoint, they are uploading project data as a JSON payload.
+      // Use the pre-defined project data file name (rather than the endpoint name).
+      fileName = ProjectData.PROJECT_DATA_FILE_NAME;
+    }
+
+    TempDirectoryUtils.createTempDirectoryIfNeeded();
     Files.copy(
         request.getInputStream(),
         Paths.get(System.getProperty("java.io.tmpdir"), DIRECTORY, fileName),
@@ -57,7 +70,8 @@ public class HttpFileServer extends HttpServlet {
   }
 
   private boolean putAllowed(String fileName) {
-    return fileName.indexOf(PROMPTER_FILE_NAME_PREFIX) == 0;
+    return fileName.indexOf(PROMPTER_FILE_NAME_PREFIX) == 0
+        || fileName.equals(SEED_SOURCES_ENDPOINT);
   }
 
   private String getFileName(HttpServletRequest request) {
