@@ -37,7 +37,7 @@ class LocalContentManagerTest {
     final String filename = "file";
     final String url = "url";
     when(projectData.getAssetUrl(filename)).thenReturn(url);
-    assertEquals(url, unitUnderTest.generateAssetUrl(filename));
+    assertEquals(url, unitUnderTest.getAssetUrl(filename));
   }
 
   @Test
