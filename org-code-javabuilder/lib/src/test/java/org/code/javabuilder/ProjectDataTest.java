@@ -8,7 +8,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
-// TODO: Test validation JSON when available
 class ProjectDataTest {
   private static final String MAIN_JSON_CONTENT = "{ main json }";
   private static final String MAZE_FILE_CONTENT = "{ maze file }";
