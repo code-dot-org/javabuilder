@@ -1,4 +1,4 @@
-package org.code.javabuilder.util;
+package dev.javabuilder.util;
 
 import static dev.javabuilder.LocalWebserverConstants.DIRECTORY;
 

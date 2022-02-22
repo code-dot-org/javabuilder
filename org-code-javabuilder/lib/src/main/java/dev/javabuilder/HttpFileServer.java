@@ -4,6 +4,7 @@ import static dev.javabuilder.LocalWebserverConstants.DIRECTORY;
 import static dev.javabuilder.LocalWebserverConstants.SEED_SOURCES_ENDPOINT;
 import static org.code.protocol.AllowedFileNames.PROMPTER_FILE_NAME_PREFIX;
 
+import dev.javabuilder.util.TempDirectoryUtils;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
@@ -14,7 +15,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.code.javabuilder.ProjectData;
-import org.code.javabuilder.util.TempDirectoryUtils;
 
 /**
  * This sets up an HTTP server for local development when the client needs to be able to access
@@ -57,6 +57,8 @@ public class HttpFileServer extends HttpServlet {
     }
 
     if (fileName.equals(SEED_SOURCES_ENDPOINT)) {
+      // If a client is accessing this endpoint, they are uploading project data as a JSON payload.
+      // Use the pre-defined project data file name (rather than the endpoint name).
       fileName = ProjectData.PROJECT_DATA_FILE_NAME;
     }
 
