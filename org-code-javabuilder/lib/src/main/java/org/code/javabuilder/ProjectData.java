@@ -2,6 +2,7 @@ package org.code.javabuilder;
 
 import java.util.Map;
 import org.code.protocol.InternalErrorKey;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -31,11 +32,11 @@ public class ProjectData {
   private final JSONObject jsonData;
   private final UserProjectFileParser projectFileParser;
 
-  public ProjectData(String json) {
+  public ProjectData(String json) throws JSONException {
     this(json, new UserProjectFileParser());
   }
 
-  ProjectData(String json, UserProjectFileParser projectFileParser) {
+  ProjectData(String json, UserProjectFileParser projectFileParser) throws JSONException {
     this.jsonData = new JSONObject(json);
     this.projectFileParser = projectFileParser;
   }

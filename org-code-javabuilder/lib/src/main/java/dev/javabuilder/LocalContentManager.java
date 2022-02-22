@@ -13,6 +13,7 @@ import org.code.protocol.ContentManager;
 import org.code.protocol.InternalErrorKey;
 import org.code.protocol.JavabuilderException;
 import org.code.protocol.LoggerUtils;
+import org.json.JSONException;
 
 public class LocalContentManager implements ContentManager, ProjectFileLoader {
   private static final String SERVER_URL_FORMAT = "http://localhost:8080/%s/%s";
@@ -84,7 +85,7 @@ public class LocalContentManager implements ContentManager, ProjectFileLoader {
               System.getProperty("java.io.tmpdir"), DIRECTORY, ProjectData.PROJECT_DATA_FILE_NAME);
       try {
         this.projectData = new ProjectData(Files.readString(sourcesPath));
-      } catch (IOException e) {
+      } catch (IOException | JSONException e) {
         // Error reading JSON file from local storage
         throw new InternalServerError(InternalErrorKey.INTERNAL_EXCEPTION, e);
       }
