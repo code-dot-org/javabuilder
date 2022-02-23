@@ -187,7 +187,6 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
 
     try {
       // start code build and block until completed
-      Logger.getLogger(MAIN_LOGGER).info("Using dashboard sources: " + useDashboardSources);
       codeExecutionManager.execute();
     } catch (Throwable e) {
       // All errors should be caught, but if for any reason we encounter an error here, make sure we
