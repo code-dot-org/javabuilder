@@ -17,6 +17,7 @@ import java.util.Date;
 import org.code.protocol.JavabuilderException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 class AWSContentManagerTest {
   private AmazonS3 s3ClientMock;
@@ -24,6 +25,7 @@ class AWSContentManagerTest {
   private Context context;
   private ProjectData projectData;
   private UserProjectFiles projectFiles;
+  private ArgumentCaptor<String> assetUrlCaptor;
 
   private static final String FAKE_BUCKET_NAME = "bucket-name";
   private static final String FAKE_SESSION_ID = "12345";
@@ -35,6 +37,7 @@ class AWSContentManagerTest {
     context = mock(Context.class);
     projectData = mock(ProjectData.class);
     projectFiles = mock(UserProjectFiles.class);
+    assetUrlCaptor = ArgumentCaptor.forClass(String.class);
     contentManager =
         new AWSContentManager(
             s3ClientMock, FAKE_BUCKET_NAME, FAKE_SESSION_ID, FAKE_OUTPUT_URL, context, projectData);
@@ -74,6 +77,9 @@ class AWSContentManagerTest {
     assertEquals(FAKE_OUTPUT_URL + urlFileName, uploadUrl);
     verify(s3ClientMock)
         .generatePresignedUrl(eq(FAKE_BUCKET_NAME), eq(key), any(Date.class), eq(HttpMethod.PUT));
+    // Verify that the URL was added to the project data's asset map
+    verify(projectData).addNewAssetUrl(eq(fileName), assetUrlCaptor.capture());
+    assertTrue(assetUrlCaptor.getValue().contains(key));
   }
 
   @Test

@@ -91,11 +91,13 @@ public class AWSContentManager implements ContentManager, ProjectFileLoader {
     final long expirationTimeMs = System.currentTimeMillis() + context.getRemainingTimeInMillis();
 
     try {
-      final URL uploadUrl =
+      final URL presignedUrl =
           s3Client.generatePresignedUrl(
               this.bucketName, key, new Date(expirationTimeMs), HttpMethod.PUT);
       this.uploads++;
-      return this.getContentUrl + uploadUrl.getFile();
+      // Add the GET url for this file to the asset map so it can be referenced later.
+      this.projectData.addNewAssetUrl(filename, this.getContentUrl + "/" + key);
+      return this.getContentUrl + presignedUrl.getFile();
     } catch (AbortedException e) {
       // this is most likely because the end user interrupted program execution. We can safely
       // ignore this.
