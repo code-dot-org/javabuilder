@@ -77,6 +77,8 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     final String javabuilderSessionId = lambdaInput.get("javabuilderSessionId");
     final String outputBucketName = System.getenv("OUTPUT_BUCKET_NAME");
     final String getOutputUrl = System.getenv("GET_OUTPUT_URL");
+    final boolean useDashboardSources =
+        Boolean.parseBoolean(lambdaInput.get("useDashboardSources"));
     final boolean useNeighborhood =
         JSONUtils.booleanFromJSONObjectMember(options, "useNeighborhood");
     final List<String> compileList = JSONUtils.listFromJSONObjectMember(options, "compileList");
@@ -116,6 +118,11 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     if (executionType == ExecutionType.TEST) {
       outputAdapter = new UserTestOutputAdapter(awsOutputAdapter);
     }
+
+    final AWSContentManager contentManager =
+        new AWSContentManager(
+            s3Client, outputBucketName, javabuilderSessionId, getOutputUrl, context);
+
     // TODO: Move common setup steps into CodeExecutionManager#onPreExecute
     GlobalProtocol.create(
         outputAdapter,
@@ -124,15 +131,19 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
         channelId,
         levelId,
         fileManager,
-        lifecycleNotifier);
+        lifecycleNotifier,
+        contentManager,
+        useDashboardSources);
 
-    // Create file loader
-    final UserProjectFileLoader userProjectFileLoader =
-        new UserProjectFileLoader(
-            GlobalProtocol.getInstance().generateSourcesUrl(),
-            levelId,
-            dashboardHostname,
-            useNeighborhood);
+    // Create file loader, or use ContentManager if not using dashboard sources
+    final ProjectFileLoader userProjectFileLoader =
+        useDashboardSources
+            ? new UserProjectFileLoader(
+                GlobalProtocol.getInstance().generateSourcesUrl(),
+                levelId,
+                dashboardHostname,
+                useNeighborhood)
+            : contentManager;
 
     // manually set font configuration file since there is no font configuration on a lambda.
     java.util.Properties props = System.getProperties();
@@ -176,6 +187,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
 
     try {
       // start code build and block until completed
+      Logger.getLogger(MAIN_LOGGER).info("Using dashboard sources: " + useDashboardSources);
       codeExecutionManager.execute();
     } catch (Throwable e) {
       // All errors should be caught, but if for any reason we encounter an error here, make sure we

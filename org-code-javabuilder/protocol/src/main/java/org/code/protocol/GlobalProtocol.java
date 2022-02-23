@@ -47,15 +47,18 @@ public class GlobalProtocol {
       String channelId,
       String levelId,
       JavabuilderFileManager fileManager,
-      LifecycleNotifier lifecycleNotifier) {
+      LifecycleNotifier lifecycleNotifier,
+      ContentManager contentManager,
+      boolean useDashboardSources) {
     GlobalProtocol.protocolInstance =
         new GlobalProtocol(
             outputAdapter,
             new InputHandler(inputAdapter),
             dashboardHostname,
             channelId,
-            fileManager,
-            new AssetFileHelper(dashboardHostname, channelId, levelId),
+            new DelegatingFileManager(fileManager, contentManager, useDashboardSources),
+            new DelegatingAssetFileHelper(
+                dashboardHostname, channelId, levelId, contentManager, useDashboardSources),
             lifecycleNotifier);
   }
 
