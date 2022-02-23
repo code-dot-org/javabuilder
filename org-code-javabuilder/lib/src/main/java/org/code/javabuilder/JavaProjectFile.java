@@ -19,7 +19,7 @@ public class JavaProjectFile implements ProjectFile {
 
   public JavaProjectFile(String fileName, String fileContents) throws UserInitiatedException {
     this(fileName);
-    this.fileContents = fileContents;
+    this.fileContents = this.overwriteSystem(fileContents);
   }
 
   @Override
@@ -43,10 +43,14 @@ public class JavaProjectFile implements ProjectFile {
 
   @Override
   public void setFileContents(String fileContents) {
-    this.fileContents = fileContents;
+    this.fileContents = this.overwriteSystem(fileContents);
   }
 
   public void setClassName(String className) {
     this.className = className;
+  }
+
+  private String overwriteSystem(String fileContents) {
+    return "import org.code.studentlib.System;\n" + fileContents;
   }
 }
