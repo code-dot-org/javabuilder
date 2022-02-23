@@ -112,7 +112,6 @@ public class UserClassLoader extends URLClassLoader {
           String.class.getName(),
           StringBuffer.class.getName(),
           StringBuilder.class.getName(),
-          System.class.getName(),
           Throwable.class.getName());
 
   // Allowed packages (any individual class is allowed from these classes)
@@ -128,6 +127,7 @@ public class UserClassLoader extends URLClassLoader {
         "org.code.neighborhood.",
         "org.code.playground.",
         "org.code.theater.",
+        "org.code.studentlib"
       };
 
   // Allowed packages for code with elevated permissions, such as validation code.
