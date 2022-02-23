@@ -127,7 +127,6 @@ public class WebSocketServer {
             });
 
     codeExecutor.start();
-    System.out.println("Using dashboard sources: " + useDashboardSources);
   }
 
   @OnClose
