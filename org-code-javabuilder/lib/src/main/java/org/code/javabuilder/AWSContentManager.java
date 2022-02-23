@@ -20,9 +20,13 @@ import org.code.protocol.JavabuilderException;
 import org.code.protocol.LoggerUtils;
 
 public class AWSContentManager implements ContentManager, ProjectFileLoader {
-  // Temporary limit on writes per session until we can more fully limit usage.
+  // Temporary limit on writes to S3 per session until we can more fully limit usage.
+  // The only file writing should be during Theater, and there should only be two per session
+  // (theater image and theater audio).
   private static final int WRITES_PER_SESSION = 2;
-  // Limit on the amount of S3 file uploads per session to avoid spamming
+  // Limit on the amount of S3 file uploads per session to avoid spamming. S3 file uploads should
+  // only happen in projects using the Prompter feature. This will cap the total amount of prompter
+  // calls per session.
   private static final int UPLOADS_PER_SESSION = 20;
 
   private final String bucketName;
@@ -85,7 +89,11 @@ public class AWSContentManager implements ContentManager, ProjectFileLoader {
   @Override
   public String generateAssetUploadUrl(String filename) throws JavabuilderException {
     if (this.uploads >= UPLOADS_PER_SESSION) {
-      throw new UserInitiatedException(UserInitiatedExceptionKey.TOO_MANY_UPLOADS);
+      throw new UserInitiatedException(
+          UserInitiatedExceptionKey.TOO_MANY_UPLOADS,
+          String.format(
+              "Too many Prompter images. We currently support up to %s Prompter images per project.\n",
+              UPLOADS_PER_SESSION));
     }
     final String key = this.generateKey(filename);
     final long expirationTimeMs = System.currentTimeMillis() + context.getRemainingTimeInMillis();
