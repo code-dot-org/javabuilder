@@ -28,7 +28,7 @@ public class AWSContentManager implements ContentManager, ProjectFileLoader {
   private final String bucketName;
   private final AmazonS3 s3Client;
   private final String javabuilderSessionId;
-  private final String getContentUrl;
+  private final String contentBucketUrl;
   private final Context context;
   private ProjectData projectData;
   private int writes;
@@ -38,22 +38,22 @@ public class AWSContentManager implements ContentManager, ProjectFileLoader {
       AmazonS3 s3Client,
       String bucketName,
       String javabuilderSessionId,
-      String getContentUrl,
+      String contentBucketUrl,
       Context context) {
-    this(s3Client, bucketName, javabuilderSessionId, getContentUrl, context, null);
+    this(s3Client, bucketName, javabuilderSessionId, contentBucketUrl, context, null);
   }
 
   AWSContentManager(
       AmazonS3 s3Client,
       String bucketName,
       String javabuilderSessionId,
-      String getContentUrl,
+      String contentBucketUrl,
       Context context,
       ProjectData projectData) {
     this.bucketName = bucketName;
     this.s3Client = s3Client;
     this.javabuilderSessionId = javabuilderSessionId;
-    this.getContentUrl = getContentUrl;
+    this.contentBucketUrl = contentBucketUrl;
     this.context = context;
     this.projectData = projectData;
     this.writes = 0;
@@ -96,8 +96,8 @@ public class AWSContentManager implements ContentManager, ProjectFileLoader {
               this.bucketName, key, new Date(expirationTimeMs), HttpMethod.PUT);
       this.uploads++;
       // Add the GET url for this file to the asset map so it can be referenced later.
-      this.projectData.addNewAssetUrl(filename, this.getContentUrl + "/" + key);
-      return this.getContentUrl + presignedUrl.getFile();
+      this.projectData.addNewAssetUrl(filename, this.contentBucketUrl + "/" + key);
+      return this.contentBucketUrl + presignedUrl.getFile();
     } catch (AbortedException e) {
       // this is most likely because the end user interrupted program execution. We can safely
       // ignore this.
@@ -131,7 +131,7 @@ public class AWSContentManager implements ContentManager, ProjectFileLoader {
     }
 
     this.writes++;
-    return this.getContentUrl + "/" + filePath;
+    return this.contentBucketUrl + "/" + filePath;
   }
 
   @Override
@@ -151,6 +151,10 @@ public class AWSContentManager implements ContentManager, ProjectFileLoader {
     }
   }
 
+  /**
+   * Generates the S3 key for this file. All files are stored in the Javabuilder S3 bucket under a
+   * sub-folder named after the current session's ID, so this returns "<session ID>/<file name>"
+   */
   private String generateKey(String filename) {
     return this.javabuilderSessionId + "/" + filename;
   }
