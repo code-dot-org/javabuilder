@@ -1,0 +1,227 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: AWS::Serverless-2016-10-31
+Description: Test provisioning a REST API
+Parameters:
+  BaseDomainName:
+    Type: String
+    Description: Base domain name.
+  BaseDomainNameHostedZonedID:
+    Type: String
+    Description: AWS Route53 Hosted Zone ID for base domain name.
+  SubDomainName:
+    Type: String
+    Description: Sub domain name for javabuilder service.
+  LogBucket:
+    Type: String
+    Default: cdo-logs.s3.amazonaws.com
+  ProvisionedConcurrentExecutions:
+    Type: Number
+    Description: The amount of provisioned concurrency to allocate for the BuildAndRunJavaProject Lambda.
+    MinValue: 1
+    Default: 1
+  ReservedConcurrentExecutions:
+    Type: Number
+    Description: The amount of concurrency to allow for the BuildAndRunJavaProject Lambda.
+    MinValue: 1
+    Default: 3
+Globals:
+  Function:
+    Runtime: ruby2.7
+    Timeout: 30
+    MemorySize: 128
+    Tracing: Active
+Conditions:
+  IsDevCondition: !Equals [!Ref BaseDomainName, "dev-code.org"]
+
+Resources:
+  Domain:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneName: !Sub "${BaseDomainName}."
+      Name: !Sub "${SubDomainName}-rest.${BaseDomainName}"
+      Type: A
+      AliasTarget:
+        DNSName: !GetAtt DomainName.RegionalDomainName
+        HostedZoneId: !GetAtt DomainName.RegionalHostedZoneId
+
+  DomainName:
+    Type: AWS::ApiGatewayV2::DomainName
+    Properties:
+      DomainName: !Sub "${SubDomainName}-rest.${BaseDomainName}"
+      DomainNameConfigurations:
+        - EndpointType: REGIONAL
+          CertificateArn: !Ref Certificate
+          CertificateName: !Sub "${SubDomainName}-rest.${BaseDomainName}"
+
+  Certificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Sub "${SubDomainName}-rest.${BaseDomainName}"
+      ValidationMethod: DNS
+      DomainValidationOptions:
+        - DomainName: !Sub "${SubDomainName}-rest.${BaseDomainName}"
+          HostedZoneId: !Ref BaseDomainNameHostedZonedID
+
+  DomainNameAPIMapping:
+    Type: AWS::ApiGatewayV2::ApiMapping
+    DependsOn:
+      - Domain
+    Properties:
+      ApiId: !Ref RestApi
+      DomainName: !Sub "${SubDomainName}-rest.${BaseDomainName}"
+      Stage: !Ref RestStage
+
+  RestApi:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: !Sub "${SubDomainName}-rest.${BaseDomainName}"
+      ProtocolType: REST
+
+  PutRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref RestApi
+      RouteKey: PUT /seedsources
+      # AuthorizationType: CUSTOM
+      # AuthorizerId: !Ref WebSocketAuthorizer
+      OperationName: PutRoute
+      Target: !Join
+        - '/'
+        - - 'integrations'
+          - !Ref PutIntegration
+
+  PutIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref RestApi
+      Description: PUT Integration
+      IntegrationType: AWS_PROXY
+      IntegrationUri:
+        Fn::Sub:
+          arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${WebsocketAuthorizerLambda.Arn}/invocations
+      PayloadFormatVersion: 1.0
+
+  RestDeployment:
+    Type: AWS::ApiGatewayV2::Deployment
+    DependsOn:
+      - PutRoute
+    Properties:
+      ApiId: !Ref RestApi
+
+  RestStage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      StageName: Prod
+      Description: Prod Stage
+      DeploymentId: !Ref RestDeployment
+      ApiId: !Ref RestApi
+      # DefaultRouteSettings:
+      #   DetailedMetricsEnabled: true
+      #   LoggingLevel: INFO
+      #   DataTraceEnabled: true
+      # AccessLogSettings:
+      #   DestinationArn: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/apigateway/accesslog/${SubDomainName}-rest.${BaseDomainName}"
+      #   # TODO: Also log authorizer status code, authorizer error message, Javabuilder session id, and Origin.
+      #   Format: '{
+      #       "host": "$context.domainName",
+      #       "requestId": "$context.requestId",
+      #       "ip": "$context.identity.sourceIp",
+      #       "requestTime": "$context.requestTime",
+      #       "method": "$context.httpMethod",
+      #       "caller": "$context.identity.caller",
+      #       "routeKey": "$context.routeKey",
+      #       "status": "$context.status",
+      #       "protocol": "$context.protocol",
+      #       "userAgent": "$context.identity.userAgent"
+      #     }'
+
+
+# TEMPORARY
+  WebsocketAuthorizerLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: lambda_function.lambda_handler
+      CodeUri: javabuilder-authorizer/
+      Description: 'Authorize WebSocket connect by decoding JWT in Authorization querystring parameter.'
+      Timeout: 3
+      Role: !ImportValue JavabuilderLambdaExecutionRole
+
+
+  # OutputBucket:
+  #   Type: AWS::S3::Bucket
+  #   Properties:
+  #     BucketName: !If [IsDevCondition, !Sub "cdo-dev-${SubDomainName}-output", !Sub "cdo-${SubDomainName}-output"]
+  #     CorsConfiguration:
+  #       CorsRules:
+  #         - AllowedMethods: [GET, PUT]
+  #           AllowedOrigins: ['*']
+  #           AllowedHeaders: ['*']
+  #     BucketEncryption:
+  #       ServerSideEncryptionConfiguration:
+  #         - ServerSideEncryptionByDefault:
+  #             SSEAlgorithm: 'AES256'
+  #     LifecycleConfiguration:
+  #       Rules:
+  #         - Id: ExpirationRule
+  #           Status: Enabled
+  #           ExpirationInDays: 1
+
+  # OutputBucketPolicy:
+  #   Type: AWS::S3::BucketPolicy
+  #   Properties:
+  #     Bucket: !Ref OutputBucket
+  #     PolicyDocument:
+  #       Statement:
+  #       - Action: ['s3:GetObject']
+  #         Effect: Allow
+  #         Resource: !Sub "arn:aws:s3:::${OutputBucket}/*"
+  #         Principal: '*'
+
+  # OutputAPICertificate:
+  #   Type: AWS::CertificateManager::Certificate
+  #   Properties:
+  #     DomainName: !Sub "${SubDomainName}-output.${BaseDomainName}"
+  #     ValidationMethod: DNS
+  #     DomainValidationOptions:
+  #       - DomainName: !Sub "${SubDomainName}-output.${BaseDomainName}"
+  #         HostedZoneId: !Ref BaseDomainNameHostedZonedID
+
+  # OutputDomain:
+  #   Type: AWS::Route53::RecordSet
+  #   Properties:
+  #     HostedZoneName: !Sub "${BaseDomainName}."
+  #     Name: !Sub "${SubDomainName}-output.${BaseDomainName}"
+  #     Type: A
+  #     AliasTarget:
+  #       DNSName: !GetAtt OutputCDN.DomainName
+  #       HostedZoneId: Z2FDTNDATAQYW2 # static ID for cloudfront aliases
+
+  # OutputCDN:
+  #   Type: AWS::CloudFront::Distribution
+  #   Properties:
+  #     DistributionConfig:
+  #       Enabled: true
+  #       Aliases: [!Sub "${SubDomainName}-output.${BaseDomainName}"]
+  #       ViewerCertificate:
+  #         AcmCertificateArn: !Ref OutputAPICertificate
+  #         MinimumProtocolVersion: TLSv1
+  #         SslSupportMethod: sni-only
+  #       CustomErrorResponses:
+  #         - ErrorCode: 403
+  #           ErrorCachingMinTTL: 0
+  #       # TODO: enable logging when LogBucket is set up
+  #       # Logging:
+  #       #   Bucket: !Ref LogBucket
+  #       #   IncludeCookies: false
+  #       #   Prefix: !Sub "${SubDomainName}-output.${BaseDomainName}"
+  #       Origins:
+  #         - Id: OutputBucket
+  #           DomainName: !GetAtt OutputBucket.DomainName
+  #           S3OriginConfig: {}
+  #       DefaultCacheBehavior:
+  #         TargetOriginId: OutputBucket
+  #         AllowedMethods: [DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT]
+  #         Compress: true
+  #         DefaultTTL: 0
+  #         ForwardedValues: {QueryString: true}
+  #         ViewerProtocolPolicy: redirect-to-https
