@@ -76,6 +76,16 @@ public class LocalContentManager implements ContentManager, ProjectFileLoader {
 
   @Override
   public void verifyAssetFilename(String filename) throws FileNotFoundException {
+    try {
+      // We should only hit this exception if we try to verify an asset before source code has
+      // been loaded, which should only be in the the case of manual testing. Log this exception but
+      // convert to a FileNotFoundException to preserve the method contract.
+      // Note / TODO: Once we fully migrate away from Dashboard sources, we can remove the
+      // loadProjectDataIfNeeded() call here and this exception handling.
+      this.loadProjectDataIfNeeded();
+    } catch (InternalServerError e) {
+      throw new FileNotFoundException("Error loading data");
+    }
     if (!this.projectData.doesAssetUrlExist(filename)) {
       throw new FileNotFoundException(filename);
     }
