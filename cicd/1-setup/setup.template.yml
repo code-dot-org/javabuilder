@@ -4,6 +4,12 @@ Description: Javabulder CI/CD dependencies
     
 Resources:
 
+  # The Artifact Store holds artifacts from codebuild/pipeline so they can be passed
+  # from one stage of a pipeline to the next, or so artifacts can be reviewed.
+  # We use a single bucket, though multiple instances of the pipeline may exist.
+  ArtifactStore:
+    Type: AWS::S3::Bucket
+
   # This role will be used by CodeBuild to execute the CI build. Here we have
   # the common policy rules required. Since we may want to create multiple
   # codebuild projects for different branches, we can append policies when those
@@ -29,28 +35,25 @@ Resources:
                   - "logs:PutLogEvents"
                 Resource:
                   - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/*"
-              # - Effect: Allow
-              #   Action:
-              #     - codebuild:CreateReportGroup
-              #     - codebuild:CreateReport
-              #     - codebuild:UpdateReport
-              #     - codebuild:BatchPutTestCases
-              #     - codebuild:BatchPutCodeCoverage
-              #   Resource:
-              #     # TODO - scope this to one project, maybe add policy when creating build project (2)
-              #     - arn:aws:codebuild:us-east-1:165336972514:report-group/*
-              # - Effect: Allow
-              #   Action:
-              #     - s3:PutObject
-              #     - s3:GetObject
-              #     - s3:GetObjectVersion
-              #     - s3:GetBucketAcl
-              #     - s3:GetBucketLocatio
-              #   Resource:
-              #     # TODO - scope this to project buckets by adding policy in that stack (2)
-              #     - arn:aws:s3:::codepipeline-us-east-1-*
+              - Effect: Allow
+                Action:
+                  - s3:GetBucketAcl
+                  - s3:GetBucketLocation
+                Resource:
+                  - !Sub arn:aws:s3:::${ArtifactStore}
+              - Effect: Allow
+                Action:
+                  - s3:PutObject
+                  - s3:GetObject
+                  - s3:GetObjectVersion
+                Resource:
+                  - !Sub arn:aws:s3:::${ArtifactStore}/*
 
 Outputs:
+  JavabuilderCodeBuildArtifactBucket:
+    Description: Javabuilder CodeBuild Artifact Bucket Name
+    Value: !Ref ArtifactStore
+    Export: {Name: JavabuilderCodeBuildArtifactBucket}
   JavabuilderCodeBuildRoleArn:
     Description: Javabuilder CodeBuild Role ARN
     Value: !GetAtt JavabuilderCodeBuildRole.Arn

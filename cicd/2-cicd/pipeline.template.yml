@@ -18,12 +18,7 @@ Parameters:
     
 Resources:
 
-  # The Artifact Store holds artifacts from the pipeline so they can be passed
-  # from one stage of a pipeline to the next, or so artifacts can be reviewed.
-  ArtifactStore:
-    Type: AWS::S3::Bucket
-
-  # The CodeBuild Project is triggered by commits to the configured repo and
+  # The CodeBuild Project is triggered by pull requests to the configured repo and
   # branch. It will perform any steps defined in the buildspec.yml file.
   PullRequestBuildProject:
     Type: AWS::CodeBuild::Project
@@ -38,7 +33,7 @@ Resources:
         PrivilegedMode: true
         EnvironmentVariables:
           - Name: ARTIFACT_STORE
-            Value: !Ref ArtifactStore
+            Value: !ImportValue JavabuilderCodeBuildArtifactBucket
       Cache:
         Type: LOCAL
         Modes:
@@ -51,13 +46,21 @@ Resources:
         ReportBuildStatus: true
       SourceVersion: !Ref GitHubBranch
       Artifacts:
-        Type: NO_ARTIFACTS
+        # No artifacts for the PR builds as it's 99% noise
+        # Type: NO_ARTIFACTS
+        Type: S3
+        Location: !ImportValue JavabuilderCodeBuildArtifactBucket
+        EncryptionDisabled: true
+        Packaging: ZIP
+        NamespaceType: BUILD_ID
+        Path: !Sub branch/${GitHubBranch}
+        Name: artifacts.zip
       Triggers:
         Webhook: true
         FilterGroups:
           - - Pattern: !Sub ^refs/heads/${GitHubBranch}$
-              ExcludeMatchedPattern: true
-              Type: HEAD_REF
+              # ExcludeMatchedPattern: true
+              Type: BASE_REF
             - Pattern: PULL_REQUEST_CREATED,PULL_REQUEST_UPDATED,PULL_REQUEST_REOPENED
               Type: EVENT
 
@@ -70,15 +73,6 @@ Resources:
       PolicyDocument:
         Version: "2012-10-17"
         Statement:
-          - Effect: Allow
-            Action:
-              - s3:PutObject
-              - s3:GetObject
-              - s3:GetObjectVersion
-              - s3:GetBucketAcl
-              - s3:GetBucketLocatio
-            Resource:
-              - !GetAtt ArtifactStore.Arn
           - Effect: Allow
             Action:
               - codebuild:CreateReportGroup
