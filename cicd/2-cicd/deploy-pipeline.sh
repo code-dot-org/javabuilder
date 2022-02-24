@@ -1,4 +1,6 @@
-#!/bin/bash -xe
+#!/bin/bash
+
+echo Deploying Javabuilder CICD Pipeline
 
 # Create/Update the Javabuilder setup/dependencies stack. This is manually created and maintained, and requires elevated permissions. 
 
@@ -8,14 +10,18 @@ if [[ $(aws sts get-caller-identity --query Arn --output text) =~ "475661607190:
   set -- "$@" --role-arn "arn:aws:iam::$(aws sts get-caller-identity --query Account --output text):role/admin/CloudFormationService"
 fi
 
-TEMPLATE_FILE=cicd/1-setup/setup.template.yml
+TEMPLATE_FILE=cicd/2-cicd/pipeline.template.yml
 
+echo Validating cloudformation template...
 aws cloudformation validate-template \
   --template-body file://${TEMPLATE_FILE} \
   | cat
 
+echo Updating cloudformation stack...
 aws cloudformation deploy \
-  --stack-name darin-javabuilder-ci-deps \
+  --stack-name darin-javabuilder-ci \
   --template-file ${TEMPLATE_FILE} \
   --capabilities CAPABILITY_IAM \
   "$@"
+
+echo Complete!
