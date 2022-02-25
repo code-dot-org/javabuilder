@@ -3,6 +3,10 @@ package org.code.lang;
 import java.io.InputStream;
 import java.io.PrintStream;
 
+/**
+ * User-facing System class. We only support a few methods and fields from java.lang.System, so we
+ * wrap java.lang.System in org.code.lang.System.
+ */
 public class System {
     public static InputStream in = java.lang.System.in;
     public static PrintStream out = java.lang.System.out;
@@ -12,7 +16,6 @@ public class System {
     }
 
     public static long currentTimeMillis() {
-        java.lang.System.out.println("in new currentTimeMillis!");
         return java.lang.System.currentTimeMillis();
     }
 
