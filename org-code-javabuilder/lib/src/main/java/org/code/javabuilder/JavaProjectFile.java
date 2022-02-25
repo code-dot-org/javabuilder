@@ -51,6 +51,6 @@ public class JavaProjectFile implements ProjectFile {
   }
 
   private String overwriteSystem(String fileContents) {
-    return "import org.code.studentlib.System;\n" + fileContents;
+    return "import org.code.lang.System;\n" + fileContents;
   }
 }

@@ -17,7 +17,8 @@ public final class JarUtils {
     "theater-full.jar",
     "playground-full.jar",
     "studentlib-full.jar",
-    "validation-full.jar"
+    "validation-full.jar",
+    "lang-full.jar"
   };
 
   /** @return a URL describing the location the given jar */
