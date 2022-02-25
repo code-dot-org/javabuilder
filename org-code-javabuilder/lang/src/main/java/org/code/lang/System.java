@@ -8,8 +8,8 @@ import java.io.PrintStream;
  * wrap java.lang.System in org.code.lang.System.
  */
 public class System {
-    public static InputStream in = java.lang.System.in;
-    public static PrintStream out = java.lang.System.out;
+    public static final InputStream in = java.lang.System.in;
+    public static final PrintStream out = java.lang.System.out;
 
     public static void arraycopy(Object src, int srcPos, Object dest, int destPos, int length) {
         java.lang.System.arraycopy(src, srcPos, dest, destPos, length);
