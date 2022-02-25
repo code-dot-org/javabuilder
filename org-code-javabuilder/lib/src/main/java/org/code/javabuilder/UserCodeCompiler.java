@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import javax.tools.*;
 import javax.tools.JavaCompiler.CompilationTask;
 import org.code.javabuilder.util.JarUtils;
@@ -43,6 +44,13 @@ public class UserCodeCompiler {
 
     // diagnostics will include any compiler errors
     for (Diagnostic<? extends JavaFileObject> diagnostic : diagnostics.getDiagnostics()) {
+      String customMessage = this.getCustomCompilerError(diagnostic);
+      if (customMessage != null) {
+        // If we got a custom message, just send it and stop sending any more diagnostics to avoid
+        // confusion.
+        outputAdapter.sendMessage(new SystemOutMessage(customMessage));
+        break;
+      }
       outputAdapter.sendMessage(new SystemOutMessage(diagnostic.toString()));
     }
     if (!success) {
@@ -88,5 +96,15 @@ public class UserCodeCompiler {
 
     // create compilation task
     return compiler.getTask(null, fileManager, diagnostics, optionList, null, files);
+  }
+
+  private String getCustomCompilerError(Diagnostic<? extends JavaFileObject> diagnostic) {
+    // Check if the compiler error is due to the student importing java.lang.System
+    // directly and give a more helpful message.
+    if (diagnostic.getCode().equals("compiler.err.already.defined.single.import")
+        && diagnostic.getMessage(Locale.US).contains("org.code.lang.System")) {
+      return "Import of java.lang.System is not supported.";
+    }
+    return null;
   }
 }
