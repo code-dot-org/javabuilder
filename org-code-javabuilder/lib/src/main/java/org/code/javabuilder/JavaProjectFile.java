@@ -53,15 +53,9 @@ public class JavaProjectFile implements ProjectFile {
   }
 
   private String importSystem(String fileContents) {
-    // Check if file contents start with system import only because system import should always
-    // be done by default by us, and therefore be the first thing in the file.
-    // We still want to import System in the rare case where SYSTEM_IMPORT is in
-    // a String somewhere in fileContents. In addition, a duplicate import will
-    // not cause any error to the student, it just makes the file longer.
-    if (!fileContents.startsWith(SYSTEM_IMPORT)) {
-      return "import org.code.lang.System;\n" + fileContents;
-    } else {
-      return fileContents;
-    }
+    // We always import system so users don't need to know about our custom
+    // System class. A duplicate import will not cause any error to the user,
+    // it just makes the file longer.
+    return "import org.code.lang.System;\n" + fileContents;
   }
 }

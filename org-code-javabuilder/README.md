@@ -31,6 +31,9 @@ as the code for the `org.code` Java packages that are used in the Java Lab mini 
 * [studentlib](https://github.com/code-dot-org/javabuilder/tree/main/org-code-javabuilder/studentlib)
   houses all external dependencies required to run and compile student code that are not already
   included by other mini-app packages.
+* [lang](https://github.com/code-dot-org/javabuilder/tree/main/org-code-javabuilder/lang)
+  is used for code.org-specific implementations of java.lang classes, to be used in user project code.
+
 
 ## Local Development
 ### Setup your project
