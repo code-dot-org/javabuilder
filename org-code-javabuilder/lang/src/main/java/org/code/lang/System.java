@@ -1,4 +1,4 @@
-package org.code.studentlib;
+package org.code.lang;
 
 import java.io.InputStream;
 import java.io.PrintStream;
@@ -12,6 +12,7 @@ public class System {
     }
 
     public static long currentTimeMillis() {
+        java.lang.System.out.println("in new currentTimeMillis!");
         return java.lang.System.currentTimeMillis();
     }
 
