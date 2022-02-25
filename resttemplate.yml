@@ -75,7 +75,7 @@ Resources:
     Type: AWS::ApiGatewayV2::Api
     Properties:
       Name: !Sub "${SubDomainName}-rest.${BaseDomainName}"
-      ProtocolType: REST
+      ProtocolType: HTTP
 
   PutRoute:
     Type: AWS::ApiGatewayV2::Route
@@ -95,11 +95,15 @@ Resources:
     Properties:
       ApiId: !Ref RestApi
       Description: PUT Integration
-      IntegrationType: AWS_PROXY
-      IntegrationUri:
-        Fn::Sub:
-          arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${WebsocketAuthorizerLambda.Arn}/invocations
+      IntegrationMethod: PUT
+      IntegrationType: HTTP_PROXY
+      IntegrationUri: !Sub "https://${OutputDomain}"
       PayloadFormatVersion: 1.0
+
+  RestStageLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/apigateway/accesslog/${SubDomainName}-rest.${BaseDomainName}"
 
   RestDeployment:
     Type: AWS::ApiGatewayV2::Deployment
@@ -115,25 +119,28 @@ Resources:
       Description: Prod Stage
       DeploymentId: !Ref RestDeployment
       ApiId: !Ref RestApi
-      # DefaultRouteSettings:
-      #   DetailedMetricsEnabled: true
-      #   LoggingLevel: INFO
-      #   DataTraceEnabled: true
-      # AccessLogSettings:
-      #   DestinationArn: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/apigateway/accesslog/${SubDomainName}-rest.${BaseDomainName}"
-      #   # TODO: Also log authorizer status code, authorizer error message, Javabuilder session id, and Origin.
-      #   Format: '{
-      #       "host": "$context.domainName",
-      #       "requestId": "$context.requestId",
-      #       "ip": "$context.identity.sourceIp",
-      #       "requestTime": "$context.requestTime",
-      #       "method": "$context.httpMethod",
-      #       "caller": "$context.identity.caller",
-      #       "routeKey": "$context.routeKey",
-      #       "status": "$context.status",
-      #       "protocol": "$context.protocol",
-      #       "userAgent": "$context.identity.userAgent"
-      #     }'
+      DefaultRouteSettings:
+        DetailedMetricsEnabled: true
+      AccessLogSettings:
+        DestinationArn: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/apigateway/accesslog/${SubDomainName}-rest.${BaseDomainName}"
+        # TODO: Also log authorizer status code, authorizer error message, Javabuilder session id, and Origin.
+        Format: '{
+            "host": "$context.domainName",
+            "requestId": "$context.requestId",
+            "ip": "$context.identity.sourceIp",
+            "requestTime": "$context.requestTime",
+            "httpMethod": "$context.httpMethod",
+            "caller": "$context.identity.caller",
+            "routeKey": "$context.routeKey",
+            "status": "$context.status",
+            "protocol": "$context.protocol",
+            "userAgent": "$context.identity.userAgent",
+            "responseLength":"$context.responseLength",
+            "contextErrorMessage": "$context.error.message",
+            "contextErrorMessageString": "$context.error.messageString",
+            "integrationError": "$context.integration.error",
+            "authorizerError": "$context.authorizer.error"
+          }'
 
 
 # TEMPORARY
@@ -147,81 +154,81 @@ Resources:
       Role: !ImportValue JavabuilderLambdaExecutionRole
 
 
-  # OutputBucket:
-  #   Type: AWS::S3::Bucket
-  #   Properties:
-  #     BucketName: !If [IsDevCondition, !Sub "cdo-dev-${SubDomainName}-output", !Sub "cdo-${SubDomainName}-output"]
-  #     CorsConfiguration:
-  #       CorsRules:
-  #         - AllowedMethods: [GET, PUT]
-  #           AllowedOrigins: ['*']
-  #           AllowedHeaders: ['*']
-  #     BucketEncryption:
-  #       ServerSideEncryptionConfiguration:
-  #         - ServerSideEncryptionByDefault:
-  #             SSEAlgorithm: 'AES256'
-  #     LifecycleConfiguration:
-  #       Rules:
-  #         - Id: ExpirationRule
-  #           Status: Enabled
-  #           ExpirationInDays: 1
+  OutputBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !If [IsDevCondition, !Sub "cdo-dev-${SubDomainName}-output", !Sub "cdo-${SubDomainName}-output"]
+      CorsConfiguration:
+        CorsRules:
+          - AllowedMethods: [GET, PUT]
+            AllowedOrigins: ['*']
+            AllowedHeaders: ['*']
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: 'AES256'
+      LifecycleConfiguration:
+        Rules:
+          - Id: ExpirationRule
+            Status: Enabled
+            ExpirationInDays: 1
 
-  # OutputBucketPolicy:
-  #   Type: AWS::S3::BucketPolicy
-  #   Properties:
-  #     Bucket: !Ref OutputBucket
-  #     PolicyDocument:
-  #       Statement:
-  #       - Action: ['s3:GetObject']
-  #         Effect: Allow
-  #         Resource: !Sub "arn:aws:s3:::${OutputBucket}/*"
-  #         Principal: '*'
+  OutputBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref OutputBucket
+      PolicyDocument:
+        Statement:
+        - Action: ['s3:GetObject']
+          Effect: Allow
+          Resource: !Sub "arn:aws:s3:::${OutputBucket}/*"
+          Principal: '*'
 
-  # OutputAPICertificate:
-  #   Type: AWS::CertificateManager::Certificate
-  #   Properties:
-  #     DomainName: !Sub "${SubDomainName}-output.${BaseDomainName}"
-  #     ValidationMethod: DNS
-  #     DomainValidationOptions:
-  #       - DomainName: !Sub "${SubDomainName}-output.${BaseDomainName}"
-  #         HostedZoneId: !Ref BaseDomainNameHostedZonedID
+  OutputAPICertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Sub "${SubDomainName}-output.${BaseDomainName}"
+      ValidationMethod: DNS
+      DomainValidationOptions:
+        - DomainName: !Sub "${SubDomainName}-output.${BaseDomainName}"
+          HostedZoneId: !Ref BaseDomainNameHostedZonedID
 
-  # OutputDomain:
-  #   Type: AWS::Route53::RecordSet
-  #   Properties:
-  #     HostedZoneName: !Sub "${BaseDomainName}."
-  #     Name: !Sub "${SubDomainName}-output.${BaseDomainName}"
-  #     Type: A
-  #     AliasTarget:
-  #       DNSName: !GetAtt OutputCDN.DomainName
-  #       HostedZoneId: Z2FDTNDATAQYW2 # static ID for cloudfront aliases
+  OutputDomain:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneName: !Sub "${BaseDomainName}."
+      Name: !Sub "${SubDomainName}-output.${BaseDomainName}"
+      Type: A
+      AliasTarget:
+        DNSName: !GetAtt OutputCDN.DomainName
+        HostedZoneId: Z2FDTNDATAQYW2 # static ID for cloudfront aliases
 
-  # OutputCDN:
-  #   Type: AWS::CloudFront::Distribution
-  #   Properties:
-  #     DistributionConfig:
-  #       Enabled: true
-  #       Aliases: [!Sub "${SubDomainName}-output.${BaseDomainName}"]
-  #       ViewerCertificate:
-  #         AcmCertificateArn: !Ref OutputAPICertificate
-  #         MinimumProtocolVersion: TLSv1
-  #         SslSupportMethod: sni-only
-  #       CustomErrorResponses:
-  #         - ErrorCode: 403
-  #           ErrorCachingMinTTL: 0
-  #       # TODO: enable logging when LogBucket is set up
-  #       # Logging:
-  #       #   Bucket: !Ref LogBucket
-  #       #   IncludeCookies: false
-  #       #   Prefix: !Sub "${SubDomainName}-output.${BaseDomainName}"
-  #       Origins:
-  #         - Id: OutputBucket
-  #           DomainName: !GetAtt OutputBucket.DomainName
-  #           S3OriginConfig: {}
-  #       DefaultCacheBehavior:
-  #         TargetOriginId: OutputBucket
-  #         AllowedMethods: [DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT]
-  #         Compress: true
-  #         DefaultTTL: 0
-  #         ForwardedValues: {QueryString: true}
-  #         ViewerProtocolPolicy: redirect-to-https
+  OutputCDN:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        Aliases: [!Sub "${SubDomainName}-output.${BaseDomainName}"]
+        ViewerCertificate:
+          AcmCertificateArn: !Ref OutputAPICertificate
+          MinimumProtocolVersion: TLSv1
+          SslSupportMethod: sni-only
+        CustomErrorResponses:
+          - ErrorCode: 403
+            ErrorCachingMinTTL: 0
+        # TODO: enable logging when LogBucket is set up
+        # Logging:
+        #   Bucket: !Ref LogBucket
+        #   IncludeCookies: false
+        #   Prefix: !Sub "${SubDomainName}-output.${BaseDomainName}"
+        Origins:
+          - Id: OutputBucket
+            DomainName: !GetAtt OutputBucket.DomainName
+            S3OriginConfig: {}
+        DefaultCacheBehavior:
+          TargetOriginId: OutputBucket
+          AllowedMethods: [DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT]
+          Compress: true
+          DefaultTTL: 0
+          ForwardedValues: {QueryString: true}
+          ViewerProtocolPolicy: redirect-to-https
