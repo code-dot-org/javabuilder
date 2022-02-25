@@ -8,6 +8,8 @@ public class JavaProjectFile implements ProjectFile {
   private String fileContents;
   private String className;
 
+  private static final String SYSTEM_IMPORT = "import org.code.lang.System;";
+
   public JavaProjectFile(String fileName) throws UserInitiatedException {
     this.fileName = fileName;
     if (FileUtils.isJavaFile(fileName)) {
@@ -51,6 +53,15 @@ public class JavaProjectFile implements ProjectFile {
   }
 
   private String importSystem(String fileContents) {
-    return "import org.code.lang.System;\n" + fileContents;
+    // Check if file contents start with system import only because system import should always
+    // be done by default by us, and therefore be the first thing in the file.
+    // We still want to import System in the rare case where SYSTEM_IMPORT is in
+    // a String somewhere in fileContents. In addition, a duplicate import will
+    // not cause any error to the student, it just makes the file longer.
+    if (!fileContents.startsWith(SYSTEM_IMPORT)) {
+      return "import org.code.lang.System;\n" + fileContents;
+    } else {
+      return fileContents;
+    }
   }
 }
