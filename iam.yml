@@ -95,6 +95,9 @@ Resources:
         - PolicyName: JavabuilderAPIGatewayPolicy
           PolicyDocument:
             Statement:
+              - Effect: Permission
+                Action: execute-api:Invoke
+                Resource: "*"
               # Grant the Javabuilder API Gateway permission to invoke its Lambda Authorizer.
               - Effect: Allow
                 Action:
