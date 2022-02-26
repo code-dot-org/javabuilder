@@ -38,7 +38,7 @@ Resources:
     Type: AWS::Route53::RecordSet
     Properties:
       HostedZoneName: !Sub "${BaseDomainName}."
-      Name: !Sub "${SubDomainName}-rest.${BaseDomainName}"
+      Name: !Sub "${SubDomainName}-http.${BaseDomainName}"
       Type: A
       AliasTarget:
         DNSName: !GetAtt DomainName.RegionalDomainName
@@ -47,19 +47,19 @@ Resources:
   DomainName:
     Type: AWS::ApiGatewayV2::DomainName
     Properties:
-      DomainName: !Sub "${SubDomainName}-rest.${BaseDomainName}"
+      DomainName: !Sub "${SubDomainName}-http.${BaseDomainName}"
       DomainNameConfigurations:
         - EndpointType: REGIONAL
           CertificateArn: !Ref Certificate
-          CertificateName: !Sub "${SubDomainName}-rest.${BaseDomainName}"
+          CertificateName: !Sub "${SubDomainName}-http.${BaseDomainName}"
 
   Certificate:
     Type: AWS::CertificateManager::Certificate
     Properties:
-      DomainName: !Sub "${SubDomainName}-rest.${BaseDomainName}"
+      DomainName: !Sub "${SubDomainName}-http.${BaseDomainName}"
       ValidationMethod: DNS
       DomainValidationOptions:
-        - DomainName: !Sub "${SubDomainName}-rest.${BaseDomainName}"
+        - DomainName: !Sub "${SubDomainName}-http.${BaseDomainName}"
           HostedZoneId: !Ref BaseDomainNameHostedZonedID
 
   DomainNameAPIMapping:
@@ -67,21 +67,21 @@ Resources:
     DependsOn:
       - Domain
     Properties:
-      ApiId: !Ref RestApi
-      DomainName: !Sub "${SubDomainName}-rest.${BaseDomainName}"
-      Stage: !Ref RestStage
+      ApiId: !Ref HttpApi
+      DomainName: !Sub "${SubDomainName}-http.${BaseDomainName}"
+      Stage: !Ref HttpStage
 
-  RestApi:
+  HttpApi:
     Type: AWS::ApiGatewayV2::Api
     Properties:
-      Name: !Sub "${SubDomainName}-rest.${BaseDomainName}"
+      Name: !Sub "${SubDomainName}-http.${BaseDomainName}"
       ProtocolType: HTTP
 
   PutRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
-      ApiId: !Ref RestApi
-      RouteKey: PUT /seedsources
+      ApiId: !Ref HttpApi
+      RouteKey: PUT /seedsources/{id}/sources.json
       # AuthorizationType: CUSTOM
       # AuthorizerId: !Ref WebSocketAuthorizer
       OperationName: PutRoute
@@ -90,35 +90,57 @@ Resources:
         - - 'integrations'
           - !Ref PutIntegration
 
+  PutSourcesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: Puts user sources into the S3 bucket
+      CodeUri: api-gateway-routes/
+      Handler: api_gateway_put_function.lambda_handler
+      Role: !ImportValue JavabuilderLambdaExecutionRole
+      Environment:
+        Variables:
+          OUTPUT_BUCKET_NAME: !Ref OutputBucket
+
+  PutSourcesPermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - HttpApi
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref PutSourcesFunction
+      Principal: apigateway.amazonaws.com
+
   PutIntegration:
     Type: AWS::ApiGatewayV2::Integration
     Properties:
-      ApiId: !Ref RestApi
+      ApiId: !Ref HttpApi
       Description: PUT Integration
-      IntegrationMethod: PUT
-      IntegrationType: HTTP_PROXY
-      IntegrationUri: !Sub "https://${OutputDomain}"
-      PayloadFormatVersion: 1.0
+      IntegrationMethod: POST
+      IntegrationType: AWS_PROXY
+      IntegrationUri:
+        Fn::Sub:
+          arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PutSourcesFunction.Arn}/invocations
+      PayloadFormatVersion: 2.0
 
-  RestStageLogs:
+  HttpStageLogs:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub "/aws/apigateway/accesslog/${SubDomainName}-rest.${BaseDomainName}"
+      LogGroupName: !Sub "/aws/apigateway/accesslog/${SubDomainName}-http.${BaseDomainName}"
 
-  RestDeployment:
+  HttpDeployment:
     Type: AWS::ApiGatewayV2::Deployment
     DependsOn:
       - PutRoute
     Properties:
-      ApiId: !Ref RestApi
+      ApiId: !Ref HttpApi
 
-  RestStage:
+  HttpStage:
     Type: AWS::ApiGatewayV2::Stage
     Properties:
       StageName: Prod
       Description: Prod Stage
-      DeploymentId: !Ref RestDeployment
-      ApiId: !Ref RestApi
+      DeploymentId: !Ref HttpDeployment
+      ApiId: !Ref HttpApi
       DefaultRouteSettings:
         DetailedMetricsEnabled: true
       AccessLogSettings:
@@ -141,7 +163,6 @@ Resources:
             "integrationError": "$context.integration.error",
             "authorizerError": "$context.authorizer.error"
           }'
-
 
 # TEMPORARY
   WebsocketAuthorizerLambda:
