@@ -85,5 +85,6 @@ Resources:
           - Effect: Allow
             Action:
               - route53:ListHostedZonesByName
+            Resource: *
       Roles:
         - !ImportValue JavabuilderCodeBuildRoleName
