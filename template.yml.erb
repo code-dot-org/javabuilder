@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: 2010-09-09
 Transform: AWS::Serverless-2016-10-31
-Description: Provision an instance of the Javabuilder service. Empty the OutputBucket before deleting this Stack.
+Description: Provision an instance of the Javabuilder service. Empty the ContentBucket before deleting this Stack.
 Parameters:
   BaseDomainName:
     Type: String
@@ -328,14 +328,14 @@ Resources:
       Environment:
         Variables:
           AWS_LAMBDA_EXEC_WRAPPER: /opt/change_runtime_directory
-          OUTPUT_BUCKET_NAME: !Ref OutputBucket
-          GET_OUTPUT_URL: !Sub "https://${OutputDomain}"
+          CONTENT_BUCKET_NAME: !Ref ContentBucket
+          CONTENT_BUCKET_URL: !Sub "https://${ContentDomain}"
 <%end -%>
 
-  OutputBucket:
+  ContentBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !If [IsDevCondition, !Sub "cdo-dev-${SubDomainName}-output", !Sub "cdo-${SubDomainName}-output"]
+      BucketName: !If [IsDevCondition, !Sub "cdo-dev-${SubDomainName}-content", !Sub "cdo-${SubDomainName}-content"]
       CorsConfiguration:
         CorsRules:
           - AllowedMethods: [GET, PUT]
@@ -351,44 +351,44 @@ Resources:
             Status: Enabled
             ExpirationInDays: 1
 
-  OutputBucketPolicy:
+  ContentBucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:
-      Bucket: !Ref OutputBucket
+      Bucket: !Ref ContentBucket
       PolicyDocument:
         Statement:
         - Action: ['s3:GetObject']
           Effect: Allow
-          Resource: !Sub "arn:aws:s3:::${OutputBucket}/*"
+          Resource: !Sub "arn:aws:s3:::${ContentBucket}/*"
           Principal: '*'
 
-  OutputAPICertificate:
+  ContentAPICertificate:
     Type: AWS::CertificateManager::Certificate
     Properties:
-      DomainName: !Sub "${SubDomainName}-output.${BaseDomainName}"
+      DomainName: !Sub "${SubDomainName}-content.${BaseDomainName}"
       ValidationMethod: DNS
       DomainValidationOptions:
-        - DomainName: !Sub "${SubDomainName}-output.${BaseDomainName}"
+        - DomainName: !Sub "${SubDomainName}-content.${BaseDomainName}"
           HostedZoneId: !Ref BaseDomainNameHostedZonedID
 
-  OutputDomain:
+  ContentDomain:
     Type: AWS::Route53::RecordSet
     Properties:
       HostedZoneName: !Sub "${BaseDomainName}."
-      Name: !Sub "${SubDomainName}-output.${BaseDomainName}"
+      Name: !Sub "${SubDomainName}-content.${BaseDomainName}"
       Type: A
       AliasTarget:
-        DNSName: !GetAtt OutputCDN.DomainName
+        DNSName: !GetAtt ContentCDN.DomainName
         HostedZoneId: Z2FDTNDATAQYW2 # static ID for cloudfront aliases
 
-  OutputCDN:
+  ContentCDN:
     Type: AWS::CloudFront::Distribution
     Properties:
       DistributionConfig:
         Enabled: true
-        Aliases: [!Sub "${SubDomainName}-output.${BaseDomainName}"]
+        Aliases: [!Sub "${SubDomainName}-content.${BaseDomainName}"]
         ViewerCertificate:
-          AcmCertificateArn: !Ref OutputAPICertificate
+          AcmCertificateArn: !Ref ContentAPICertificate
           MinimumProtocolVersion: TLSv1
           SslSupportMethod: sni-only
         CustomErrorResponses:
@@ -398,13 +398,13 @@ Resources:
         # Logging:
         #   Bucket: !Ref LogBucket
         #   IncludeCookies: false
-        #   Prefix: !Sub "${SubDomainName}-output.${BaseDomainName}"
+        #   Prefix: !Sub "${SubDomainName}-content.${BaseDomainName}"
         Origins:
-          - Id: OutputBucket
-            DomainName: !GetAtt OutputBucket.DomainName
+          - Id: ContentBucket
+            DomainName: !GetAtt ContentBucket.DomainName
             S3OriginConfig: {}
         DefaultCacheBehavior:
-          TargetOriginId: OutputBucket
+          TargetOriginId: ContentBucket
           AllowedMethods: [DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT]
           Compress: true
           DefaultTTL: 0
