@@ -19,10 +19,7 @@ phases:
       - gem install bundler
   build:
     commands:
-      # - /bin/bash ./package.sh
-      - touch output.yml
-      - touch configuration.json
-      - touch configuration-staging.json
+      - /bin/bash ./package.sh
       - ls
 artifacts:
   files:
