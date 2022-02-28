@@ -19,7 +19,10 @@ phases:
       - gem install bundler
   build:
     commands:
-      - /bin/bash ./package.sh
+      # - /bin/bash ./package.sh
+      - ./javabuilder-authorizer/build.sh
+      # - ./org-code-javabuilder/build.sh
+      # - aws cloudformation package --template-file template.yml --output-template-file output.yml
       - ls
 artifacts:
   files:

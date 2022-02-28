@@ -82,5 +82,8 @@ Resources:
               - codebuild:BatchPutCodeCoverage
             Resource:
               - !Sub arn:aws:codebuild:us-east-1:165336972514:report-group/${AWS::StackName}-${GitHubBranch}-pr-build
+          - Effect: Allow
+            Action:
+              - route53:ListHostedZonesByName
       Roles:
         - !ImportValue JavabuilderCodeBuildRoleName
