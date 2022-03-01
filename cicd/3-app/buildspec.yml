@@ -22,7 +22,7 @@ phases:
       # - /bin/bash ./package.sh
       - ./javabuilder-authorizer/build.sh
       - ./org-code-javabuilder/build.sh
-      - aws cloudformation package --template-file template.yml --output-template-file output.yml --s3-bucket $ARTIFACT_STORE --s3-prefix "branch/${CODEBUILD_SOURCE_VERSION}/${CODEBUILD__BUILD_ID/cloudformation-package/"
+      - aws cloudformation package --template-file template.yml --output-template-file output.yml --s3-bucket $ARTIFACT_STORE --s3-prefix "branch/$CODEBUILD_SOURCE_VERSION/$CODEBUILD__BUILD_ID/cloudformation-package/"
       - ls
 artifacts:
   files:
