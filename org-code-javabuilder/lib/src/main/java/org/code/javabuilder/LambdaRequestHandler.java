@@ -75,8 +75,8 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     final String dashboardHostname = "https://" + lambdaInput.get("iss");
     final JSONObject options = new JSONObject(lambdaInput.get("options"));
     final String javabuilderSessionId = lambdaInput.get("javabuilderSessionId");
-    final String outputBucketName = System.getenv("OUTPUT_BUCKET_NAME");
-    final String getOutputUrl = System.getenv("GET_OUTPUT_URL");
+    final String contentBucketName = System.getenv("CONTENT_BUCKET_NAME");
+    final String contentBucketUrl = System.getenv("CONTENT_BUCKET_URL");
     final boolean useDashboardSources =
         Boolean.parseBoolean(lambdaInput.get("useDashboardSources"));
     final boolean useNeighborhood =
@@ -112,7 +112,8 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
 
     final AmazonS3 s3Client = AmazonS3ClientBuilder.standard().build();
     final AWSFileManager fileManager =
-        new AWSFileManager(s3Client, outputBucketName, javabuilderSessionId, getOutputUrl, context);
+        new AWSFileManager(
+            s3Client, contentBucketName, javabuilderSessionId, contentBucketUrl, context);
     final LifecycleNotifier lifecycleNotifier = new LifecycleNotifier();
     OutputAdapter outputAdapter = awsOutputAdapter;
     if (executionType == ExecutionType.TEST) {
@@ -121,7 +122,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
 
     final AWSContentManager contentManager =
         new AWSContentManager(
-            s3Client, outputBucketName, javabuilderSessionId, getOutputUrl, context);
+            s3Client, contentBucketName, javabuilderSessionId, contentBucketUrl, context);
 
     // TODO: Move common setup steps into CodeExecutionManager#onPreExecute
     GlobalProtocol.create(
