@@ -90,6 +90,7 @@ Resources:
     Properties:
       ApiId: !Ref WebSocketAPI
       RouteKey: $connect
+      #AuthorizationType: NONE
       AuthorizationType: CUSTOM
       AuthorizerId: !Ref WebSocketAuthorizer
       OperationName: ConnectRoute

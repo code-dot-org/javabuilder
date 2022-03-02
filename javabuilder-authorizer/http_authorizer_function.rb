@@ -7,13 +7,9 @@ require 'jwt'
 # public key (dependant on the environment the request came from),
 # and checks the token has not expired and its issue time is not in the future.
 def lambda_handler(event:, context:)
-  origin = event['headers']['Origin']
+  origin = event['headers']['origin']
   jwt_token = event['queryStringParameters']['Authorization']
-  # Return early if this is the user connectivity test
-  if jwt_token == 'connectivityTest'
-    return generate_allow('connectivityTest', event['methodArn'], {connectivityTest: true})
-  end
-  method_arn = event['methodArn']
+  method_arn = event['routeArn']
 
   if jwt_token
     begin
@@ -103,14 +99,11 @@ def get_public_key(origin)
   # End of temporary code
 
   public_key = ENV["rsa_pub_#{stage_name}"]
-  # Environment variables can't contain newlines
-  # (if you copy over an environment variable with
-  # newlines they are replaced with spaces)
-  # The public keys are saved in the configuration
-  # by copying over the key with literal '\n' at the end of each line.
-  # Environment variable save then escapes '\n' and adds a space.
-  # We need to replace '\\n<space>' with a real '\n'
-  # for the key generation to work.
+  # Environment variables can't contain newlines (if you copy over an environment variable with
+  # newlines they are replaced with spaces) The public keys are saved in the configuration by
+  # copying over the key with literal '\n' at the end of each line. Environment variable save
+  # then escapes '\n' and adds a space. We need to replace '\\n<space>' with a real '\n' for
+  # the key generation to work.
   public_key = public_key.gsub('\n ', "\n")
   OpenSSL::PKey::RSA.new(public_key)
 end
