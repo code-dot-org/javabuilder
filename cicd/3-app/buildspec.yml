@@ -19,14 +19,13 @@ phases:
       - gem install bundler
   build:
     commands:
-      - echo Source_Dir $CODEBUILD_SRC_DIR
       - cd ./javabuilder-authorizer
       - ./build.sh
       - cd $CODEBUILD_SRC_DIR
       - cd org-code-javabuilder
       - ./gradlew test
+      - ./build.sh
       - cd $CODEBUILD_SRC_DIR
-      - pwd
       - BRANCH_NAME=${CODEBUILD_WEBHOOK_HEAD_REF##*/}
       - ARTIFACT_PATH=branch/$BRANCH_NAME/$CODEBUILD_BUILD_NUMBER
       - aws cloudformation package --template-file template.yml --output-template-file cloudformation-output.yml --s3-bucket $ARTIFACT_STORE --s3-prefix "$ARTIFACT_PATH/cloudformation-package"
