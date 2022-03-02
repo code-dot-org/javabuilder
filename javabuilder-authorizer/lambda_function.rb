@@ -7,13 +7,17 @@ require 'jwt'
 # public key (dependant on the environment the request came from),
 # and checks the token has not expired and its issue time is not in the future.
 def lambda_handler(event:, context:)
-  origin = event['headers']['Origin']
+  puts "called lambda_handler"
+  puts event.to_s
+  # Note: Edited origin to be lowercase... but looks like websocket wants it to be uppercase?
+  origin = event['headers']['origin']
   jwt_token = event['queryStringParameters']['Authorization']
   # Return early if this is the user connectivity test
   if jwt_token == 'connectivityTest'
     return generate_allow('connectivityTest', event['methodArn'], {connectivityTest: true})
   end
-  method_arn = event['methodArn']
+  # replace methodArn with routeArn
+  method_arn = event['routeArn']
 
   if jwt_token
     begin
@@ -61,14 +65,18 @@ def generate_policy(principal_id, effect, resource, token_payload)
     auth_response['policyDocument'] = policy_document
   end
   auth_response['context'] = token_payload if token_payload
+  puts auth_response
   auth_response
 end
 
 def generate_allow(principal_id, resource, token_payload)
+  puts "generate_allow"
+  puts resource
   generate_policy(principal_id, 'Allow', resource, token_payload)
 end
 
 def generate_deny(principal_id, resource)
+  puts "generate_deny"
   generate_policy(principal_id, 'Deny', resource, nil)
 end
 
