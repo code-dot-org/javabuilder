@@ -20,10 +20,10 @@ phases:
   build:
     commands:
       - pushd ./javabuilder-authorizer
-      - .build.sh
+      - ./build.sh
       - popd
       - pushd org-code-javabuilder
-      - .gradlew test
+      - ./gradlew test
       - popd
       - BRANCH_NAME=${CODEBUILD_WEBHOOK_HEAD_REF##*/}
       - S3_PATH=branch/$BRANCH_NAME/$CODEBUILD_BUILD_NUMBER
