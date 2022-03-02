@@ -25,13 +25,13 @@ STACK=${SUB_DOMAIN}
 PROVISIONED_CONCURRENT_EXECUTIONS=${PROVISIONED_CONCURRENT_EXECUTIONS-'1'}
 RESERVED_CONCURRENT_EXECUTIONS=${RESERVED_CONCURRENT_EXECUTIONS-'3'}
 
-# erb -T - template.yml.erb > template.yml
-TEMPLATE=resttemplate.yml
+erb -T - template.yml.erb > template.yml
+TEMPLATE=template.yml
 OUTPUT_TEMPLATE=$(mktemp)
 
 # Build each Lambda (that needs to be compiled or has external package dependencies) so it can be uploaded to AWS Lambda.
 ./javabuilder-authorizer/build.sh
-# ./org-code-javabuilder/build.sh
+./org-code-javabuilder/build.sh
 
 aws cloudformation package \
   --template-file ${TEMPLATE} \
