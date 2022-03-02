@@ -5,7 +5,7 @@ def lambda_handler(event:, context:)
   client = Aws::S3::Client.new(region: region)
   client.put_object(
     body: event["body"],
-    bucket: ENV["OUTPUT_BUCKET_NAME"],
-    key: event["pathParameters"]["id"] + "/sources.json"
+    bucket: ENV["CONTENT_BUCKET_NAME"],
+    key: event["requestContext"]["authorizer"]["lambda"]["sid"].to_s + "/sources.json"
   )
 end
