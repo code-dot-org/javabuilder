@@ -228,7 +228,7 @@ Resources:
   WebsocketAuthorizerLambda:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: lambda_function.lambda_handler
+      Handler: websocket_authorizer_function.lambda_handler
       CodeUri: javabuilder-authorizer/
       Description: 'Authorize WebSocket connect by decoding JWT in Authorization querystring parameter.'
       Timeout: 3
