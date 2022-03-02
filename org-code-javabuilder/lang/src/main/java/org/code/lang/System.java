@@ -11,6 +11,9 @@ public class System {
     public static final InputStream in = java.lang.System.in;
     public static final PrintStream out = java.lang.System.out;
 
+    // private constructor so System cannot be instantiated
+    private System() {}
+
     public static void arraycopy(Object src, int srcPos, Object dest, int destPos, int length) {
         java.lang.System.arraycopy(src, srcPos, dest, destPos, length);
     }
