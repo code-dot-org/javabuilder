@@ -19,16 +19,9 @@ phases:
       - gem install bundler
   build:
     commands:
-      # - /bin/bash ./package.sh
       - ./javabuilder-authorizer/build.sh
       - ./org-code-javabuilder/build.sh
       - BRANCH_NAME=${CODEBUILD_WEBHOOK_HEAD_REF##*/}
-      - S3_PATH=branch/$BRANCH_NAME/$CODEBUILD_BUILD_ID
+      - S3_PATH=branch/$BRANCH_NAME/$CODEBUILD_BUILD_NUMBER
       - aws cloudformation package --template-file template.yml --output-template-file cloudformation-output.yml --s3-bucket $ARTIFACT_STORE --s3-prefix "$S3_PATH/cloudformation-package"
       - aws s3 cp ./cloudformation-output.yml "s3://${ARTIFACT_STORE}/${S3_PATH}"
-      - ls
-artifacts:
-  files:
-    - output.yml
-    - configuration.json
-    - configuration-staging.json
