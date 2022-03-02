@@ -23,7 +23,7 @@ phases:
       - ./javabuilder-authorizer/build.sh
       - ./org-code-javabuilder/build.sh
       - BRANCH_NAME=${CODEBUILD_WEBHOOK_HEAD_REF##*/}
-      - aws cloudformation package --template-file template.yml --output-template-file output.yml --s3-bucket $ARTIFACT_STORE --s3-prefix "branch/$BRANCH_NAME/$CODEBUILD__BUILD_ID/cloudformation-package"
+      - aws cloudformation package --template-file template.yml --output-template-file output.yml --s3-bucket $ARTIFACT_STORE --s3-prefix "branch/$BRANCH_NAME/$CODEBUILD_BUILD_ID/cloudformation-package"
       - ls
 artifacts:
   files:

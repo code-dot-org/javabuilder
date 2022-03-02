@@ -46,15 +46,15 @@ Resources:
         ReportBuildStatus: true
       SourceVersion: !Ref GitHubBranch
       Artifacts:
-        # No artifacts for the PR builds as it's 99% noise
-        # Type: NO_ARTIFACTS
-        Type: S3
-        Location: !ImportValue JavabuilderCodeBuildArtifactBucket
-        EncryptionDisabled: true
-        Packaging: ZIP
-        NamespaceType: BUILD_ID
-        Path: !Sub branch/${GitHubBranch}
-        Name: artifacts.zip
+        # We're uplading artifacts manually, to organize by branch.
+        Type: NO_ARTIFACTS
+        # Type: S3
+        # Location: !ImportValue JavabuilderCodeBuildArtifactBucket
+        # EncryptionDisabled: true
+        # Packaging: ZIP
+        # NamespaceType: BUILD_ID
+        # Path: !Sub branch/${GitHubBranch}
+        # Name: artifacts.zip
       Triggers:
         Webhook: true
         FilterGroups:
@@ -85,6 +85,6 @@ Resources:
           - Effect: Allow
             Action:
               - route53:ListHostedZonesByName
-            Resource: *
+            Resource: "*"
       Roles:
         - !ImportValue JavabuilderCodeBuildRoleName
