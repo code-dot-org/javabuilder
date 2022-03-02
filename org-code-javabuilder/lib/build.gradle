@@ -89,7 +89,8 @@ afterEvaluate {
             [':theater', 'buildTheater'],
             [':playground', 'buildPlayground'],
             [':studentlib', 'buildStudentlib'],
-            [':validation', 'buildValidation']
+            [':validation', 'buildValidation'],
+            [':lang', 'buildLang']
     ]
 
     // Clean and build before a production deploy

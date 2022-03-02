@@ -8,6 +8,8 @@ public class JavaProjectFile implements ProjectFile {
   private String fileContents;
   private String className;
 
+  private static final String SYSTEM_IMPORT = "import org.code.lang.System;";
+
   public JavaProjectFile(String fileName) throws UserInitiatedException {
     this.fileName = fileName;
     if (FileUtils.isJavaFile(fileName)) {
@@ -19,7 +21,7 @@ public class JavaProjectFile implements ProjectFile {
 
   public JavaProjectFile(String fileName, String fileContents) throws UserInitiatedException {
     this(fileName);
-    this.fileContents = fileContents;
+    this.fileContents = this.importSystem(fileContents);
   }
 
   @Override
@@ -43,10 +45,17 @@ public class JavaProjectFile implements ProjectFile {
 
   @Override
   public void setFileContents(String fileContents) {
-    this.fileContents = fileContents;
+    this.fileContents = this.importSystem(fileContents);
   }
 
   public void setClassName(String className) {
     this.className = className;
+  }
+
+  private String importSystem(String fileContents) {
+    // We always import system so users don't need to know about our custom
+    // System class. A duplicate import will not cause any error to the user,
+    // it just makes the file longer.
+    return "import org.code.lang.System;\n" + fileContents;
   }
 }

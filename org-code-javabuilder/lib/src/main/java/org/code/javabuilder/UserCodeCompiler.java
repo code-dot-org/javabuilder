@@ -2,16 +2,12 @@ package org.code.javabuilder;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.io.Reader;
+import java.util.*;
 import javax.tools.*;
 import javax.tools.JavaCompiler.CompilationTask;
 import org.code.javabuilder.util.JarUtils;
-import org.code.protocol.InternalErrorKey;
-import org.code.protocol.OutputAdapter;
-import org.code.protocol.StatusMessage;
-import org.code.protocol.StatusMessageKey;
+import org.code.protocol.*;
 
 /**
  * Compiles all user code managed by the ProjectFileManager. Any compiler output will be passed
@@ -43,7 +39,14 @@ public class UserCodeCompiler {
 
     // diagnostics will include any compiler errors
     for (Diagnostic<? extends JavaFileObject> diagnostic : diagnostics.getDiagnostics()) {
-      outputAdapter.sendMessage(new SystemOutMessage(diagnostic.toString()));
+      String customMessage = this.getCustomCompilerError(diagnostic);
+      if (customMessage != null) {
+        // If we got a custom message, just send it and stop sending any more diagnostics to avoid
+        // confusion.
+        outputAdapter.sendMessage(new SystemOutMessage(customMessage));
+        break;
+      }
+      outputAdapter.sendMessage(new SystemOutMessage(this.getCompilerError(diagnostic)));
     }
     if (!success) {
       throw new UserInitiatedException(UserInitiatedExceptionKey.COMPILER_ERROR);
@@ -88,5 +91,108 @@ public class UserCodeCompiler {
 
     // create compilation task
     return compiler.getTask(null, fileManager, diagnostics, optionList, null, files);
+  }
+
+  /**
+   * For specific compiler errors we want to return custom messages. Check if the given diagnostic
+   * is due to one of those errors and return the more specific message, or null if not.
+   *
+   * @param diagnostic
+   * @return custom compiler error or null
+   */
+  private String getCustomCompilerError(Diagnostic<? extends JavaFileObject> diagnostic) {
+    // Check if the compiler error is due to the student importing java.lang.System
+    // directly and give a more helpful message.
+    if (diagnostic.getCode().equals("compiler.err.already.defined.single.import")
+        && diagnostic.getMessage(Locale.US).contains("org.code.lang.System")) {
+      return "Import of java.lang.System is not supported.";
+    }
+    return null;
+  }
+
+  /**
+   * Get the compiler error as a String from the given diagnostic. We create a compiler error here
+   * because we need to subtract 1 from the line number due to our auto-import of System.
+   *
+   * <p>The compiler error format is:
+   *
+   * <pre>
+   * FileName:line number: error/warning: {error type}
+   * {code snippet}
+   * ^ (caret pointing to location of error)
+   * {error details if applicable}
+   * </pre>
+   *
+   * <p>Example:
+   *
+   * <pre>
+   * /SystemTest.java:26: error: cannot find symbol
+   *     System.out.println(System.currenTimeMillis());
+   *                              ^
+   *   symbol:   method currenTimeMillis()
+   *   location: class org.code.lang.System
+   * </pre>
+   *
+   * @param diagnostic
+   * @return compiler error String
+   */
+  private String getCompilerError(Diagnostic<? extends JavaFileObject> diagnostic) {
+    // Subtract 1 from the line number to account for our auto-import
+    long lineNumber = diagnostic.getLineNumber() - 1;
+    String diagnosticMessage = diagnostic.getMessage(Locale.US);
+    String firstMessageLine = diagnosticMessage;
+    String secondMessageLine = "";
+    // If the diagnostic message has multiple lines, split it into two strings. We will
+    // put the code snippet after the first line, then put the details after the code snippet.
+    if (diagnosticMessage.indexOf("\n") > 0) {
+      firstMessageLine = diagnosticMessage.substring(0, diagnosticMessage.indexOf("\n"));
+      secondMessageLine = diagnosticMessage.substring(diagnosticMessage.indexOf("\n") + 1) + "\n";
+    }
+    String message =
+        String.format(
+            "%s:%d: %s: %s",
+            diagnostic.getSource().getName(),
+            lineNumber,
+            diagnostic.getKind().toString().toLowerCase(),
+            firstMessageLine);
+    String codeSnippet = this.getCodeSnippet(diagnostic);
+    return String.format("%s\n%s\n%s", message, codeSnippet, secondMessageLine);
+  }
+
+  /**
+   * Get the code from the line where the diagnostic error occurred, as well as a pointer to the
+   * specific location of the error. For example:
+   *
+   * <pre>
+   *     System.out.println(System.currenTimeMillis());
+   *                              ^
+   * </pre>
+   *
+   * @param diagnostic
+   * @return code snippet as a String, or an empty String if a code snippet could not be created.
+   */
+  private String getCodeSnippet(Diagnostic<? extends JavaFileObject> diagnostic) {
+    String codeSnippet = "";
+    try {
+      Reader reader = diagnostic.getSource().openReader(false);
+      Scanner scanner = new Scanner(reader);
+      int linesRead = 0;
+      while (linesRead < diagnostic.getLineNumber() - 1) {
+        scanner.nextLine();
+        linesRead++;
+      }
+      codeSnippet = scanner.nextLine();
+    } catch (IOException e) {
+      // If we had an issue reading the code, log the error and return an empty String
+      // so we still can get a somewhat useful compiler error.
+      LoggerUtils.logException(e);
+      return "";
+    }
+    String linePointer = "";
+    for (int i = 1; i < diagnostic.getColumnNumber(); i++) {
+      linePointer += " ";
+    }
+    linePointer += "^";
+    return String.format("%s\n%s", codeSnippet, linePointer);
   }
 }
