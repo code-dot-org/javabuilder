@@ -11,4 +11,8 @@ public class UserInitiatedException extends JavabuilderException {
   public UserInitiatedException(UserInitiatedExceptionKey key, Throwable cause) {
     super(key, cause);
   }
+
+  public UserInitiatedException(UserInitiatedExceptionKey key, String fallbackMessage) {
+    super(key, fallbackMessage);
+  }
 }

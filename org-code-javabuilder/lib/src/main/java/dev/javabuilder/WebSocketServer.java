@@ -61,6 +61,7 @@ public class WebSocketServer {
     final ExecutionType executionType =
         ExecutionType.valueOf(queryInput.getString("execution_type"));
     final String dashboardHostname = "http://" + queryInput.get("iss") + ":3000";
+    final boolean useDashboardSources = queryInput.getBoolean("use_dashboard_sources");
     final JSONObject options = new JSONObject(queryInput.getString("options"));
     final boolean useNeighborhood =
         JSONUtils.booleanFromJSONObjectMember(options, "useNeighborhood");
@@ -82,6 +83,7 @@ public class WebSocketServer {
       outputAdapter = new UserTestOutputAdapter(websocketOutputAdapter);
     }
     final LifecycleNotifier lifecycleNotifier = new LifecycleNotifier();
+    final LocalContentManager contentManager = new LocalContentManager();
     GlobalProtocol.create(
         outputAdapter,
         inputAdapter,
@@ -89,13 +91,17 @@ public class WebSocketServer {
         channelId,
         levelId,
         new LocalFileManager(),
-        lifecycleNotifier);
-    final UserProjectFileLoader fileLoader =
-        new UserProjectFileLoader(
-            GlobalProtocol.getInstance().generateSourcesUrl(),
-            levelId,
-            dashboardHostname,
-            useNeighborhood);
+        lifecycleNotifier,
+        contentManager,
+        useDashboardSources);
+    final ProjectFileLoader fileLoader =
+        useDashboardSources
+            ? new UserProjectFileLoader(
+                GlobalProtocol.getInstance().generateSourcesUrl(),
+                levelId,
+                dashboardHostname,
+                useNeighborhood)
+            : contentManager;
 
     // the code must be run in a thread so we can receive input messages
     Thread codeExecutor =
