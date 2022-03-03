@@ -34,26 +34,26 @@ Conditions:
   IsDevCondition: !Equals [!Ref BaseDomainName, "dev-code.org"]
 
 Resources:
-  Domain:
+  HttpDomain:
     Type: AWS::Route53::RecordSet
     Properties:
       HostedZoneName: !Sub "${BaseDomainName}."
       Name: !Sub "${SubDomainName}-http.${BaseDomainName}"
       Type: A
       AliasTarget:
-        DNSName: !GetAtt DomainName.RegionalDomainName
-        HostedZoneId: !GetAtt DomainName.RegionalHostedZoneId
+        DNSName: !GetAtt HttpDomainName.RegionalDomainName
+        HostedZoneId: !GetAtt HttpDomainName.RegionalHostedZoneId
 
-  DomainName:
+  HttpDomainName:
     Type: AWS::ApiGatewayV2::DomainName
     Properties:
       DomainName: !Sub "${SubDomainName}-http.${BaseDomainName}"
       DomainNameConfigurations:
         - EndpointType: REGIONAL
-          CertificateArn: !Ref Certificate
+          CertificateArn: !Ref HttpCertificate
           CertificateName: !Sub "${SubDomainName}-http.${BaseDomainName}"
 
-  Certificate:
+  HttpCertificate:
     Type: AWS::CertificateManager::Certificate
     Properties:
       DomainName: !Sub "${SubDomainName}-http.${BaseDomainName}"
@@ -62,10 +62,10 @@ Resources:
         - DomainName: !Sub "${SubDomainName}-http.${BaseDomainName}"
           HostedZoneId: !Ref BaseDomainNameHostedZonedID
 
-  DomainNameAPIMapping:
+  HttpDomainNameAPIMapping:
     Type: AWS::ApiGatewayV2::ApiMapping
     DependsOn:
-      - Domain
+      - HttpDomain
     Properties:
       ApiId: !Ref HttpApi
       DomainName: !Sub "${SubDomainName}-http.${BaseDomainName}"

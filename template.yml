@@ -66,11 +66,11 @@ Resources:
     DependsOn:
       - HttpDomain
     Properties:
-      ApiId: !Ref HttpApi
+      ApiId: !Ref HttpAPI
       DomainName: !Sub "${SubDomainName}-http.${BaseDomainName}"
       Stage: !Ref HttpStage
 
-  HttpApi:
+  HttpAPI:
     Type: AWS::ApiGatewayV2::Api
     Properties:
       Name: !Sub "${SubDomainName}-http.${BaseDomainName}"
@@ -79,7 +79,7 @@ Resources:
   PutRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
-      ApiId: !Ref HttpApi
+      ApiId: !Ref HttpAPI
       RouteKey: PUT /seedsources/sources.json
       AuthorizationType: CUSTOM
       AuthorizerId: !Ref HttpAuthorizer
@@ -103,7 +103,7 @@ Resources:
   PutSourcesPermission:
     Type: AWS::Lambda::Permission
     DependsOn:
-      - HttpApi
+      - HttpAPI
     Properties:
       Action: lambda:InvokeFunction
       FunctionName: !Ref PutSourcesFunction
@@ -112,7 +112,7 @@ Resources:
   PutIntegration:
     Type: AWS::ApiGatewayV2::Integration
     Properties:
-      ApiId: !Ref HttpApi
+      ApiId: !Ref HttpAPI
       Description: PUT Integration
       # Integration method must be POST for AWS_PROXY integrations even though we're PUTting into an S3 bucket
       IntegrationMethod: POST
@@ -135,7 +135,7 @@ Resources:
       AutoDeploy: true
       StageName: Prod
       Description: Prod Stage
-      ApiId: !Ref HttpApi
+      ApiId: !Ref HttpAPI
       DefaultRouteSettings:
         DetailedMetricsEnabled: true
       AccessLogSettings:
@@ -162,7 +162,7 @@ Resources:
   HttpAuthorizer:
     Type: AWS::ApiGatewayV2::Authorizer
     Properties:
-      ApiId: !Ref HttpApi
+      ApiId: !Ref HttpAPI
       AuthorizerCredentialsArn:
         Fn::ImportValue: JavabuilderAPIGatewayRole
       AuthorizerPayloadFormatVersion: 2.0
@@ -328,7 +328,11 @@ Resources:
             "status": "$context.status",
             "connectionId": "$context.connectionId",
             "protocol": "$context.protocol",
-            "userAgent": "$context.identity.userAgent"
+            "userAgent": "$context.identity.userAgent",
+            "contextErrorMessage": "$context.error.message",
+            "contextErrorMessageString": "$context.error.messageString",
+            "integrationError": "$context.integration.error",
+            "authorizerError": "$context.authorizer.error"
           }'
 
   StartSessionAndRelayMessagesFunction:
@@ -411,7 +415,7 @@ Resources:
       Action: lambda:InvokeFunction
       FunctionName: !Ref HttpAuthorizerLambda
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/authorizers/${HttpAuthorizer}"
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpAPI}/authorizers/${HttpAuthorizer}"
   WebSocketAuthorizerLambda:
     Type: AWS::Serverless::Function
     Properties:
@@ -466,7 +470,7 @@ Resources:
       Action: lambda:InvokeFunction
       FunctionName: !Ref WebSocketAuthorizerLambda
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${WebSocketApi}/authorizers/${WebSocketAuthorizer}"
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${WebSocketAPI}/authorizers/${WebSocketAuthorizer}"
 
   ChangeJavaRuntimeDirectoryLayer:
     Type: AWS::Serverless::LayerVersion
