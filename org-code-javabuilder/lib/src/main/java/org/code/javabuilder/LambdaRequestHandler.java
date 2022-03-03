@@ -130,11 +130,8 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
         inputAdapter,
         dashboardHostname,
         channelId,
-        levelId,
-        fileManager,
         lifecycleNotifier,
-        contentManager,
-        useDashboardSources);
+        contentManager);
 
     // Create file loader, or use ContentManager if not using dashboard sources
     final ProjectFileLoader userProjectFileLoader =

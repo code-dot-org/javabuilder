@@ -6,37 +6,30 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.io.FileNotFoundException;
-import java.net.URL;
 import java.util.List;
 import org.code.media.Image;
 import org.code.protocol.*;
 import org.code.theater.support.TheaterMessage;
 import org.code.theater.support.TheaterSignalKey;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.MockedStatic;
 
 public class PrompterTest {
   private OutputAdapter outputAdapter;
-  private JavabuilderFileManager fileManager;
+  private ContentManager contentManager;
   private InputHandler inputHandler;
-  private MockedStatic<Image> image;
+  private Prompter.ImageCreator imageCreator;
   private Prompter unitUnderTest;
 
   @BeforeEach
   public void setUp() {
     outputAdapter = mock(OutputAdapter.class);
-    fileManager = mock(JavabuilderFileManager.class);
+    contentManager = mock(ContentManager.class);
     inputHandler = mock(InputHandler.class);
-    image = mockStatic(Image.class);
-    unitUnderTest = new Prompter(outputAdapter, fileManager, inputHandler);
-  }
+    imageCreator = mock(Prompter.ImageCreator.class);
 
-  @AfterEach
-  public void tearDown() {
-    image.close();
+    unitUnderTest = new Prompter(outputAdapter, contentManager, inputHandler, imageCreator);
   }
 
   @Test
@@ -45,11 +38,11 @@ public class PrompterTest {
     String prompt = "Upload an image please!";
     ArgumentCaptor<TheaterMessage> message = ArgumentCaptor.forClass(TheaterMessage.class);
     final String uploadUrl = "uploadUrl";
-    when(fileManager.getUploadUrl(anyString())).thenReturn(uploadUrl);
+    when(contentManager.generateAssetUploadUrl(anyString())).thenReturn(uploadUrl);
     when(inputHandler.getNextMessageForType(InputMessageType.THEATER)).thenReturn(UPLOAD_SUCCESS);
 
     final Image expectedImage = mock(Image.class);
-    image.when(() -> Image.fromMediaFile(anyString())).thenReturn(expectedImage);
+    when(imageCreator.createImage(anyString())).thenReturn(expectedImage);
 
     assertSame(expectedImage, unitUnderTest.getImage(prompt));
 
@@ -63,11 +56,10 @@ public class PrompterTest {
   public void testGetImageIncrementsUploadFileName()
       throws JavabuilderException, FileNotFoundException {
     final ArgumentCaptor<String> fileNameCaptor = ArgumentCaptor.forClass(String.class);
-    when(fileManager.getUploadUrl(fileNameCaptor.capture())).thenReturn("url");
+    when(contentManager.generateAssetUploadUrl(fileNameCaptor.capture())).thenReturn("url");
     when(inputHandler.getNextMessageForType(InputMessageType.THEATER)).thenReturn(UPLOAD_SUCCESS);
 
-    when(fileManager.getFileUrl(anyString())).thenReturn(mock(URL.class));
-    image.when(() -> Image.fromMediaFile(anyString())).thenReturn(mock(Image.class));
+    when(imageCreator.createImage(anyString())).thenReturn(mock(Image.class));
 
     unitUnderTest.getImage("prompt");
     unitUnderTest.getImage("prompt");
@@ -82,7 +74,7 @@ public class PrompterTest {
 
   @Test
   public void testGetImageThrowsExceptionIfUploadFails() throws JavabuilderException {
-    when(fileManager.getUploadUrl(anyString())).thenReturn("url");
+    when(contentManager.generateAssetUploadUrl(anyString())).thenReturn("url");
     when(inputHandler.getNextMessageForType(InputMessageType.THEATER)).thenReturn(UPLOAD_ERROR);
 
     final Exception actual =
@@ -93,7 +85,7 @@ public class PrompterTest {
 
   @Test
   public void testGetImageThrowsExceptionIfUnknownMessageReceived() throws JavabuilderException {
-    when(fileManager.getUploadUrl(anyString())).thenReturn("url");
+    when(contentManager.generateAssetUploadUrl(anyString())).thenReturn("url");
     when(inputHandler.getNextMessageForType(InputMessageType.THEATER)).thenReturn("other message");
 
     final Exception actual =
