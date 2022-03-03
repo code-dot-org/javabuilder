@@ -243,7 +243,7 @@ Resources:
     Properties:
       ApiId: !Ref WebSocketAPI
       AuthorizerType: REQUEST
-      AuthorizerUri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${WebSocketAuthorizerLambda.Arn}/invocations"
+      AuthorizerUri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${WebsocketAuthorizerLambda.Arn}/invocations"
       IdentitySource:
         - route.request.querystring.Authorization
       Name: WebSocketAuthorizer
@@ -368,11 +368,16 @@ Resources:
       FunctionName: !Ref StartSessionAndRelayMessagesFunction
       Principal: apigateway.amazonaws.com
 
+# AWS does not seem to be case sensitive, but is case aware. Therefore, we can't update from
+# Websocket here to WebSocket as is used elsewhere when updating an existing stack. Updating this is
+# a step we should take when we create our non-beta environment from scratch. At that point, we
+# should also update uses of HttpAPI and WebSocketAPI to be HttpApi and WebSocketApi, respectively,
+# to match the AWS standard elsewhere in this template. Example: "AWS::ApiGatewayV2::ApiMapping"
 <%{
-  Http: {Handler: "http_authorizer_function", Description: "'Authorize PUT by decoding JWT in Authorization querystring parameter.'"},
-  WebSocket: {Handler: "websocket_authorizer_function", Description: "'Authorize WebSocket connect by decoding JWT in Authorization querystring parameter.'"},
+  Http: {LambdaName: "Http", Handler: "http_authorizer_function", Description: "'Authorize PUT by decoding JWT in Authorization querystring parameter.'"},
+  WebSocket: {LambdaName: "Websocket", Handler: "websocket_authorizer_function", Description: "'Authorize WebSocket connect by decoding JWT in Authorization querystring parameter.'"},
 }.each do |name, config| -%>
-  <%=name%>AuthorizerLambda:
+  <%=config[:LambdaName]%>AuthorizerLambda:
     Type: AWS::Serverless::Function
     Properties:
       Handler: <%=config[:Handler]%>.lambda_handler
@@ -424,7 +429,7 @@ Resources:
       - <%=name%>Authorizer
     Properties:
       Action: lambda:InvokeFunction
-      FunctionName: !Ref <%=name%>AuthorizerLambda
+      FunctionName: !Ref <%=config[:LambdaName]%>AuthorizerLambda
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${<%=name%>API}/authorizers/${<%=name%>Authorizer}"
 <%end -%>
