@@ -1,4 +1,3 @@
-import java.io.FileNotFoundException;
 import org.code.media.Color;
 import org.code.media.Font;
 import org.code.media.FontStyle;
@@ -33,9 +32,8 @@ public class Theater {
    * Plays the sound referenced by the file name.
    *
    * @param filename the file to play in the asset manager.
-   * @throws FileNotFoundException if the file can't be found in the project.
-   */
-  public void playSound(String filename) throws FileNotFoundException;
+    */
+  public void playSound(String filename);
 
   /**
    * Plays a note with the selected instrument.
@@ -69,7 +67,8 @@ public class Theater {
   /**
    * Clear the canvas and set the background to the given color name.
    *
-   * @param color new background color
+   * @param color new background color name. If the name does not match a known color
+   *    or hex value, this call will set the background to black.
    */
   public void clear(String color);
 
@@ -127,10 +126,8 @@ public class Theater {
    * @param size the width of the image, in pixels. The height will stretch to make sure the
         image does not appear distorted.
    * @param rotation the amount to rotate the image in degrees
-   * @throws FileNotFoundException if the file can't be found in the project.
-   */
-  public void drawImage(String filename, int x, int y, int size, double rotation)
-      throws FileNotFoundException;
+  */
+  public void drawImage(String filename, int x, int y, int size, double rotation);
 
   /**
    * Draw an image on the canvas at the given location and size
@@ -140,11 +137,8 @@ public class Theater {
    * @param y the top of the image in the canvas
    * @param size the width of the image, in pixels. The height will stretch to make sure the
         image does not appear distorted.
-  
-   * @throws FileNotFoundException if the file can't be found in the project.
    */
-  public void drawImage(String filename, int x, int y, int size)
-      throws FileNotFoundException;
+  public void drawImage(String filename, int x, int y, int size);
 
   /**
    * Draw an image on the canvas at the given location,expanded or shrunk to fit the width and
@@ -156,10 +150,8 @@ public class Theater {
    * @param width the width to draw the image on the canvas
    * @param height the height to draw the image on the canvas
    * @param rotation the amount to rotate the image in degrees
-   * @throws FileNotFoundException if the file can't be found in the project.
    */
-  public void drawImage(String filename, int x, int y, int width, int height, double rotation)
-      throws FileNotFoundException;
+  public void drawImage(String filename, int x, int y, int width, int height, double rotation);
 
   /**
    * Set the font and style to draw text in, e.g. sans-serif, monospaced, italic, etc.
@@ -179,7 +171,8 @@ public class Theater {
   /**
    * Set the color to draw text
    *
-   * @param color the name or hex string of the color
+   * @param color the name or hex string of the color. If the name does not match a known color
+   *    or hex value, this call will set the text color to black.
    */
   public final void setTextColor(String color);
 
@@ -268,9 +261,29 @@ public class Theater {
   /**
    * Sets the fill color for all shapes drawn
    *
+   * @param color the color name to fill any shape. If the name doesn't match a known color
+        or hex value, this call will set the fill color to nothing (e.g. transparent fill).
+   */
+  public void setFillColor(String color);
+
+
+  /**
+   * Sets the color of lines drawn.
+   *
+   * @param color the color name to draw lines with.  If the name doesn't match a known color
+        or hex value, this call will set the stroke color to nothing (e.g. transparent stroke)
+   */
+  public void setStrokeColor(Color color);
+
+  /**
+   * Sets the fill color for all shapes drawn
+   *
    * @param color the color value to fill any shape.
    */
   public void setFillColor(Color color);
+
+  /** Removes the stroke color so any shapes have no stroke. */
+  public void removeStrokeColor();
 
   /** Removes the fill color so any shapes have no fill. */
   public void removeFillColor();
