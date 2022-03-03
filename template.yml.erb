@@ -41,43 +41,51 @@ Globals:
 Conditions:
   IsDevCondition: !Equals [!Ref BaseDomainName, "dev-code.org"]
 Resources:
-  HttpDomain:
+# Note: We can't update the name of a DomainName resource once it has been created because the
+# domain name itself has already been provisioned. When we change from javabuilderbeta to
+# javabuilder, we should update the WebSocket resources here to use the prefix "WebSocket"
+<%{
+  Http: {Prefix: "Http", Suffix: "-http"},
+  WebSocket: {Prefix: "", Suffix: ""},
+}.each do |apiName, config| -%>
+  <%=config[:Prefix]%>Domain:
     Type: AWS::Route53::RecordSet
     Properties:
       HostedZoneName: !Sub "${BaseDomainName}."
-      Name: !Sub "${SubDomainName}-http.${BaseDomainName}"
+      Name: !Sub "${SubDomainName}<%=config[:Suffix]%>.${BaseDomainName}"
       Type: A
       AliasTarget:
-        DNSName: !GetAtt HttpDomainName.RegionalDomainName
-        HostedZoneId: !GetAtt HttpDomainName.RegionalHostedZoneId
+        DNSName: !GetAtt <%=config[:Prefix]%>DomainName.RegionalDomainName
+        HostedZoneId: !GetAtt <%=config[:Prefix]%>DomainName.RegionalHostedZoneId
 
-  HttpDomainName:
+  <%=config[:Prefix]%>DomainName:
     Type: AWS::ApiGatewayV2::DomainName
     Properties:
-      DomainName: !Sub "${SubDomainName}-http.${BaseDomainName}"
+      DomainName: !Sub "${SubDomainName}<%=config[:Suffix]%>.${BaseDomainName}"
       DomainNameConfigurations:
         - EndpointType: REGIONAL
-          CertificateArn: !Ref HttpCertificate
-          CertificateName: !Sub "${SubDomainName}-http.${BaseDomainName}"
+          CertificateArn: !Ref <%=config[:Prefix]%>Certificate
+          CertificateName: !Sub "${SubDomainName}<%=config[:Suffix]%>.${BaseDomainName}"
 
-  HttpCertificate:
+  <%=config[:Prefix]%>Certificate:
     Type: AWS::CertificateManager::Certificate
     Properties:
-      DomainName: !Sub "${SubDomainName}-http.${BaseDomainName}"
+      DomainName: !Sub "${SubDomainName}<%=config[:Suffix]%>.${BaseDomainName}"
       ValidationMethod: DNS
       DomainValidationOptions:
-        - DomainName: !Sub "${SubDomainName}-http.${BaseDomainName}"
+        - DomainName: !Sub "${SubDomainName}<%=config[:Suffix]%>.${BaseDomainName}"
           HostedZoneId: !Ref BaseDomainNameHostedZonedID
 
-  HttpDomainNameAPIMapping:
+  <%=config[:Prefix]%>DomainNameAPIMapping:
     Type: AWS::ApiGatewayV2::ApiMapping
     DependsOn:
-      - HttpDomain
+      - <%=config[:Prefix]%>Domain
     Properties:
-      ApiId: !Ref HttpAPI
-      DomainName: !Sub "${SubDomainName}-http.${BaseDomainName}"
-      Stage: !Ref HttpStage
+      ApiId: !Ref <%=apiName%>API
+      DomainName: !Sub "${SubDomainName}<%=config[:Suffix]%>.${BaseDomainName}"
+      Stage: !Ref <%=apiName%>Stage
 
+<%end -%>
   HttpAPI:
     Type: AWS::ApiGatewayV2::Api
     Properties:
@@ -180,43 +188,6 @@ Resources:
       IdentitySource:
         - "$request.querystring.Authorization"
       Name: HttpAuthorizer
-
-  Domain:
-    Type: AWS::Route53::RecordSet
-    Properties:
-      HostedZoneName: !Sub "${BaseDomainName}."
-      Name: !Sub "${SubDomainName}.${BaseDomainName}"
-      Type: A
-      AliasTarget:
-        DNSName: !GetAtt DomainName.RegionalDomainName
-        HostedZoneId: !GetAtt DomainName.RegionalHostedZoneId
-
-  DomainName:
-    Type: AWS::ApiGatewayV2::DomainName
-    Properties:
-      DomainName: !Sub "${SubDomainName}.${BaseDomainName}"
-      DomainNameConfigurations:
-        - EndpointType: REGIONAL
-          CertificateArn: !Ref Certificate
-          CertificateName: !Sub "${SubDomainName}.${BaseDomainName}"
-
-  Certificate:
-    Type: AWS::CertificateManager::Certificate
-    Properties:
-      DomainName: !Sub "${SubDomainName}.${BaseDomainName}"
-      ValidationMethod: DNS
-      DomainValidationOptions:
-        - DomainName: !Sub "${SubDomainName}.${BaseDomainName}"
-          HostedZoneId: !Ref BaseDomainNameHostedZonedID
-
-  DomainNameAPIMapping:
-    Type: AWS::ApiGatewayV2::ApiMapping
-    DependsOn:
-      - Domain
-    Properties:
-      ApiId: !Ref WebSocketAPI
-      DomainName: !Sub "${SubDomainName}.${BaseDomainName}"
-      Stage: !Ref WebSocketStage
 
   WebSocketAPI:
     Type: AWS::ApiGatewayV2::Api
@@ -374,8 +345,16 @@ Resources:
 # should also update uses of HttpAPI and WebSocketAPI to be HttpApi and WebSocketApi, respectively,
 # to match the AWS standard elsewhere in this template. Example: "AWS::ApiGatewayV2::ApiMapping"
 <%{
-  Http: {LambdaName: "Http", Handler: "http_authorizer_function", Description: "'Authorize PUT by decoding JWT in Authorization querystring parameter.'"},
-  WebSocket: {LambdaName: "Websocket", Handler: "websocket_authorizer_function", Description: "'Authorize WebSocket connect by decoding JWT in Authorization querystring parameter.'"},
+  Http: {
+    LambdaName: "Http",
+    Handler: "http_authorizer_function",
+    Description: "'Authorize PUT by decoding JWT in Authorization querystring parameter.'"
+  },
+  WebSocket: {
+    LambdaName: "Websocket",
+    Handler: "websocket_authorizer_function",
+    Description: "'Authorize WebSocket connect by decoding JWT in Authorization querystring parameter.'"
+  },
 }.each do |name, config| -%>
   <%=config[:LambdaName]%>AuthorizerLambda:
     Type: AWS::Serverless::Function
