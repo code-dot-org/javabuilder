@@ -15,4 +15,4 @@
 build
 
 # Ignore the generated template.yml file
-# template.yml
+template.yml

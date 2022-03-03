@@ -432,8 +432,8 @@ Resources:
       FunctionName: !Ref <%=config[:LambdaName]%>AuthorizerLambda
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${<%=name%>API}/authorizers/${<%=name%>Authorizer}"
-<%end -%>
 
+<%end -%>
   ChangeJavaRuntimeDirectoryLayer:
     Type: AWS::Serverless::LayerVersion
     Properties:
