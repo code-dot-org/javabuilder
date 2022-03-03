@@ -173,7 +173,8 @@ class AudioUtils {
    */
   public static double[] readSamplesFromAssetFile(String filename) throws FileNotFoundException {
     try {
-      final URL audioFileUrl = new URL(GlobalProtocol.getInstance().generateAssetUrl(filename));
+      final URL audioFileUrl =
+          new URL(GlobalProtocol.getInstance().getContentManager().getAssetUrl(filename));
       final AudioInputStream audioInputStream =
           AudioUtils.convertStreamToDefaultAudioFormat(
               AudioSystem.getAudioInputStream(audioFileUrl));

@@ -6,26 +6,18 @@ import static org.mockito.Mockito.*;
 import java.awt.image.BufferedImage;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import org.code.protocol.GlobalProtocol;
-import org.junit.jupiter.api.AfterEach;
+import org.code.protocol.ContentManager;
+import org.code.protocol.GlobalProtocolTestFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
 
 public class ImageTest {
-  MockedStatic<GlobalProtocol> globalProtocol;
-  GlobalProtocol globalProtocolInstance;
+  ContentManager contentManager;
 
   @BeforeEach
   public void setUp() {
-    globalProtocol = mockStatic(GlobalProtocol.class);
-    globalProtocolInstance = mock(GlobalProtocol.class);
-    globalProtocol.when(GlobalProtocol::getInstance).thenReturn(globalProtocolInstance);
-  }
-
-  @AfterEach
-  public void tearDown() {
-    globalProtocol.close();
+    contentManager = mock(ContentManager.class);
+    GlobalProtocolTestFactory.builder().withContentManager(contentManager).create();
   }
 
   @Test
@@ -70,7 +62,7 @@ public class ImageTest {
     String imageFileName = "400x400Image.jpg";
     String testFileURL =
         Thread.currentThread().getContextClassLoader().getResource(imageFileName).toString();
-    when(globalProtocolInstance.generateAssetUrl(imageFileName)).thenReturn(testFileURL);
+    when(contentManager.getAssetUrl(imageFileName)).thenReturn(testFileURL);
 
     BufferedImage image = Image.getImageAssetFromFile(imageFileName);
     assertEquals(400, image.getHeight());
@@ -82,7 +74,7 @@ public class ImageTest {
     String imageFileName = "200w300h.png";
     String testFileURL =
         Thread.currentThread().getContextClassLoader().getResource(imageFileName).toString();
-    when(globalProtocolInstance.generateAssetUrl(imageFileName)).thenReturn(testFileURL);
+    when(contentManager.getAssetUrl(imageFileName)).thenReturn(testFileURL);
 
     BufferedImage image = Image.getImageAssetFromFile(imageFileName);
     assertEquals(300, image.getHeight());
@@ -94,7 +86,7 @@ public class ImageTest {
     String imageFileName = "600w300h.png";
     String testFileURL =
         Thread.currentThread().getContextClassLoader().getResource(imageFileName).toString();
-    when(globalProtocolInstance.generateAssetUrl(imageFileName)).thenReturn(testFileURL);
+    when(contentManager.getAssetUrl(imageFileName)).thenReturn(testFileURL);
 
     BufferedImage image = Image.getImageAssetFromFile(imageFileName);
     assertEquals(200, image.getHeight());
@@ -106,7 +98,7 @@ public class ImageTest {
     String imageFileName = "200w800h.png";
     String testFileURL =
         Thread.currentThread().getContextClassLoader().getResource(imageFileName).toString();
-    when(globalProtocolInstance.generateAssetUrl(imageFileName)).thenReturn(testFileURL);
+    when(contentManager.getAssetUrl(imageFileName)).thenReturn(testFileURL);
 
     BufferedImage image = Image.getImageAssetFromFile(imageFileName);
     assertEquals(400, image.getHeight());
