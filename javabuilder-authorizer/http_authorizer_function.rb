@@ -9,34 +9,34 @@ require 'jwt'
 def lambda_handler(event:, context:)
   origin = event['headers']['origin']
   jwt_token = event['queryStringParameters']['Authorization']
-  method_arn = event['routeArn']
+  route_arn = event['routeArn']
 
   if jwt_token
     begin
       decoded_token = JWT.decode(
         jwt_token,
         # Temporarily choose the key based on the client origin rather than the
-        # method_arn until we have environment-specific Javabuilders set up.
-        # get_public_key(method_arn),
+        # route_arn until we have environment-specific Javabuilders set up.
+        # get_public_key(route_arn),
         get_public_key(origin),
         true,
         verify_iat: true, # verify issued at time is valid
         algorithm: 'RS256'
       )
     rescue JWT::ExpiredSignature, JWT::InvalidIatError
-      return generate_deny(nil, method_arn)
+      return generate_deny(nil, route_arn)
     end
 
-    return generate_deny(nil, method_arn) unless decoded_token
+    return generate_deny(nil, route_arn) unless decoded_token
 
     token_payload = decoded_token[0]
     user_id = token_payload['uid']
     issuer = token_payload['iss']
     principal_id = "#{issuer}/#{user_id}"
 
-    generate_allow(principal_id, method_arn, token_payload)
+    generate_allow(principal_id, route_arn, token_payload)
   else
-    generate_deny(nil, method_arn)
+    generate_deny(nil, route_arn)
   end
 end
 
@@ -71,14 +71,14 @@ end
 # Load the JWT public key from the appropriate environment variable
 # based on the environment the request was sent from.
 #
-# method_arn is in format
+# route_arn is in format
 # arn:aws:execute-api:region:account-id:api-id/stage-name/$connect
 # We only care about stage--that tells us the environment (development, staging, etc.)
-# def get_public_key(method_arn)
+# def get_public_key(route_arn)
 def get_public_key(origin)
   # Temporarily choose the key based on the client origin rather than the
-  # method_arn until we have environment-specific Javabuilders set up.
-  # tmp = method_arn.split(':')
+  # route_arn until we have environment-specific Javabuilders set up.
+  # tmp = route_arn.split(':')
   # api_gateway_arn = tmp[5].split('/')
   # stage_name = api_gateway_arn[1]
 
