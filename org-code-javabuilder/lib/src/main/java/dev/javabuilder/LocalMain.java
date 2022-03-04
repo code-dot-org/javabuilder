@@ -33,7 +33,7 @@ public class LocalMain {
             outputAdapter,
             ExecutionType.RUN,
             null,
-            new LocalFileManager(),
+            new LocalTempDirectoryManager(),
             new LifecycleNotifier());
     codeExecutionManager.execute();
   }
