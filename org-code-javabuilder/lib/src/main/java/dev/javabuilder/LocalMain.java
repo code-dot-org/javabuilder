@@ -15,7 +15,6 @@ public class LocalMain {
   public static void main(String[] args) throws InterruptedException {
     final LocalInputAdapter inputAdapter = new LocalInputAdapter();
     final LocalOutputAdapter outputAdapter = new LocalOutputAdapter(System.out);
-    final LocalProjectFileLoader fileLoader = new LocalProjectFileLoader();
 
     Logger logger = Logger.getLogger(MAIN_LOGGER);
     logger.addHandler(new LocalLogHandler(System.out, "levelId", "channelId", "miniAppType"));
@@ -23,13 +22,13 @@ public class LocalMain {
     logger.setUseParentHandlers(false);
 
     GlobalProtocol.create(
-        outputAdapter, inputAdapter, "", "", new LifecycleNotifier(), new LocalContentManager());
+        outputAdapter, inputAdapter, new LifecycleNotifier(), new LocalContentManager());
     CachedResources.create();
 
     // Create and invoke the code execution environment
     CodeExecutionManager codeExecutionManager =
         new CodeExecutionManager(
-            fileLoader,
+            new LocalContentManager(),
             GlobalProtocol.getInstance().getInputHandler(),
             outputAdapter,
             ExecutionType.RUN,

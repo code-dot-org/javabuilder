@@ -60,11 +60,7 @@ public class WebSocketServer {
     final String miniAppType = queryInput.getString("mini_app_type");
     final ExecutionType executionType =
         ExecutionType.valueOf(queryInput.getString("execution_type"));
-    final String dashboardHostname = "http://" + queryInput.get("iss") + ":3000";
-    final boolean useDashboardSources = queryInput.getBoolean("use_dashboard_sources");
     final JSONObject options = new JSONObject(queryInput.getString("options"));
-    final boolean useNeighborhood =
-        JSONUtils.booleanFromJSONObjectMember(options, "useNeighborhood");
     final List<String> compileList = JSONUtils.listFromJSONObjectMember(options, "compileList");
 
     this.logger = Logger.getLogger(MAIN_LOGGER);
@@ -84,22 +80,8 @@ public class WebSocketServer {
     }
     final LifecycleNotifier lifecycleNotifier = new LifecycleNotifier();
     final LocalContentManager contentManager = new LocalContentManager();
-    GlobalProtocol.create(
-        outputAdapter,
-        inputAdapter,
-        dashboardHostname,
-        channelId,
-        lifecycleNotifier,
-        contentManager);
+    GlobalProtocol.create(outputAdapter, inputAdapter, lifecycleNotifier, contentManager);
     final LocalFileManager fileManager = new LocalFileManager();
-    final ProjectFileLoader fileLoader =
-        useDashboardSources
-            ? new UserProjectFileLoader(
-                GlobalProtocol.getInstance().generateSourcesUrl(),
-                levelId,
-                dashboardHostname,
-                useNeighborhood)
-            : contentManager;
 
     // the code must be run in a thread so we can receive input messages
     Thread codeExecutor =
@@ -107,7 +89,7 @@ public class WebSocketServer {
             () -> {
               final CodeExecutionManager executionManager =
                   new CodeExecutionManager(
-                      fileLoader,
+                      contentManager,
                       GlobalProtocol.getInstance().getInputHandler(),
                       outputAdapter,
                       executionType,
