@@ -84,7 +84,6 @@ public class WebSocketServer {
     final LifecycleNotifier lifecycleNotifier = new LifecycleNotifier();
     final LocalContentManager contentManager = new LocalContentManager();
     GlobalProtocol.create(outputAdapter, inputAdapter, lifecycleNotifier, contentManager);
-    final LocalFileManager fileManager = new LocalFileManager();
 
     // the code must be run in a thread so we can receive input messages
     Thread codeExecutor =
@@ -97,7 +96,7 @@ public class WebSocketServer {
                       outputAdapter,
                       executionType,
                       compileList,
-                      fileManager,
+                      new LocalTempDirectoryManager(),
                       lifecycleNotifier);
               executionManager.execute();
               // Clean up session

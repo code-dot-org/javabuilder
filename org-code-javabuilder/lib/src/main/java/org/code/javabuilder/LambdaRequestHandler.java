@@ -108,9 +108,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
 
     // Create user input handlers
     final AWSInputAdapter inputAdapter = new AWSInputAdapter(SQS_CLIENT, queueUrl, queueName);
-    final AWSFileManager fileManager =
-        new AWSFileManager(
-            S3_CLIENT, CONTENT_BUCKET_NAME, javabuilderSessionId, CONTENT_BUCKET_URL, context);
+    final AWSTempDirectoryManager tempDirectoryManager = new AWSTempDirectoryManager();
     final LifecycleNotifier lifecycleNotifier = new LifecycleNotifier();
     OutputAdapter outputAdapter = awsOutputAdapter;
     if (executionType == ExecutionType.TEST) {
@@ -133,7 +131,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
       // Log disk space before clearing the directory
       LoggerUtils.sendDiskSpaceReport();
 
-      fileManager.cleanUpTempDirectory(null);
+      tempDirectoryManager.cleanUpTempDirectory(null);
     } catch (IOException e) {
       // Wrap this in our error type so we can log it and tell the user.
       InternalServerError error = new InternalServerError(INTERNAL_EXCEPTION, e);
@@ -155,7 +153,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
             outputAdapter,
             executionType,
             compileList,
-            fileManager,
+            tempDirectoryManager,
             lifecycleNotifier);
 
     final Thread timeoutNotifierThread =
