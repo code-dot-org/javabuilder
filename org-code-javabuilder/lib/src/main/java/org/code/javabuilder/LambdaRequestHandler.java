@@ -106,9 +106,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     final AWSInputAdapter inputAdapter = new AWSInputAdapter(sqsClient, queueUrl, queueName);
 
     final AmazonS3 s3Client = AmazonS3ClientBuilder.standard().build();
-    final AWSFileManager fileManager =
-        new AWSFileManager(
-            s3Client, contentBucketName, javabuilderSessionId, contentBucketUrl, context);
+    final AWSTempDirectoryManager tempDirectoryManager = new AWSTempDirectoryManager();
     final LifecycleNotifier lifecycleNotifier = new LifecycleNotifier();
     OutputAdapter outputAdapter = awsOutputAdapter;
     if (executionType == ExecutionType.TEST) {
@@ -132,7 +130,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
       LoggerUtils.sendDiskSpaceReport();
 
       LoggerUtils.sendDiskSpaceUpdate(SessionTime.START_SESSION, ClearStatus.BEFORE_CLEAR);
-      fileManager.cleanUpTempDirectory(null);
+      tempDirectoryManager.cleanUpTempDirectory(null);
       LoggerUtils.sendDiskSpaceUpdate(SessionTime.START_SESSION, ClearStatus.AFTER_CLEAR);
     } catch (IOException e) {
       // Wrap this in our error type so we can log it and tell the user.
@@ -155,7 +153,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
             outputAdapter,
             executionType,
             compileList,
-            fileManager,
+            tempDirectoryManager,
             lifecycleNotifier);
 
     final Thread timeoutNotifierThread =
