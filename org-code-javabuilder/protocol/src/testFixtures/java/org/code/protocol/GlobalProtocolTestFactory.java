@@ -10,16 +10,12 @@ public class GlobalProtocolTestFactory {
   public static class Builder {
     private OutputAdapter outputAdapter;
     private InputAdapter inputAdapter;
-    private String dashboardHostname;
-    private String channelId;
     private LifecycleNotifier lifecycleNotifier;
     private ContentManager contentManager;
 
     private Builder() {
       this.outputAdapter = mock(OutputAdapter.class);
       this.inputAdapter = mock(InputAdapter.class);
-      this.dashboardHostname = "";
-      this.channelId = "";
       this.lifecycleNotifier = mock(LifecycleNotifier.class);
       this.contentManager = mock(ContentManager.class);
     }
@@ -31,16 +27,6 @@ public class GlobalProtocolTestFactory {
 
     public Builder withInputAdapter(InputAdapter inputAdapter) {
       this.inputAdapter = inputAdapter;
-      return this;
-    }
-
-    public Builder withDashboardHostname(String dashboardHostname) {
-      this.dashboardHostname = dashboardHostname;
-      return this;
-    }
-
-    public Builder withChannelId(String channelId) {
-      this.channelId = channelId;
       return this;
     }
 
@@ -56,12 +42,7 @@ public class GlobalProtocolTestFactory {
 
     public void create() {
       GlobalProtocol.create(
-          this.outputAdapter,
-          this.inputAdapter,
-          this.dashboardHostname,
-          this.channelId,
-          this.lifecycleNotifier,
-          this.contentManager);
+          this.outputAdapter, this.inputAdapter, this.lifecycleNotifier, this.contentManager);
     }
   }
 }
