@@ -18,8 +18,8 @@ Parameters:
     
 Resources:
 
-  # The CodeBuild Project is triggered by pull requests to the configured repo and
-  # branch. It will perform any steps defined in the buildspec.yml file.
+  # The CodeBuild Project is triggered by pull requests targeting $GitHubBranch
+  # It will perform any steps defined in the buildspec.yml file.
   PullRequestBuildProject:
     Type: AWS::CodeBuild::Project
     Properties:
@@ -48,18 +48,10 @@ Resources:
       Artifacts:
         # We're uplading artifacts manually, to organize by branch.
         Type: NO_ARTIFACTS
-        # Type: S3
-        # Location: !ImportValue JavabuilderCodeBuildArtifactBucket
-        # EncryptionDisabled: true
-        # Packaging: ZIP
-        # NamespaceType: BUILD_ID
-        # Path: !Sub branch/${GitHubBranch}
-        # Name: artifacts.zip
       Triggers:
         Webhook: true
         FilterGroups:
           - - Pattern: !Sub ^refs/heads/${GitHubBranch}$
-              # ExcludeMatchedPattern: true
               Type: BASE_REF
             - Pattern: PULL_REQUEST_CREATED,PULL_REQUEST_UPDATED,PULL_REQUEST_REOPENED
               Type: EVENT

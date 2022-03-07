@@ -15,19 +15,33 @@ phases:
       # https://github.com/aws/aws-codebuild-docker-images/master/al2/x86_64/standard/3.0/Dockerfile#L448-L450
       ruby: 2.7
       java: corretto11
+      python: 3.8
     commands:
       - gem install bundler
-  build:
+      - pip install cfn-lint
+
+    runtime-versions:
+      python: 3.8
     commands:
-      - cd ./javabuilder-authorizer
-      - ./build.sh
-      - cd $CODEBUILD_SRC_DIR
-      - cd org-code-javabuilder
-      - ./gradlew test
-      - ./build.sh
-      - cd $CODEBUILD_SRC_DIR
-      - BRANCH_NAME=${CODEBUILD_WEBHOOK_HEAD_REF##*/}
-      - ARTIFACT_PATH=branch/$BRANCH_NAME/$CODEBUILD_BUILD_NUMBER
-      - aws cloudformation package --template-file template.yml --output-template-file cloudformation-output.yml --s3-bucket $ARTIFACT_STORE --s3-prefix "$ARTIFACT_PATH/cloudformation-package"
-      - aws s3 cp ./cloudformation-output.yml "s3://${ARTIFACT_STORE}/${ARTIFACT_PATH}/cloudformation-output.yml"
-      - echo "Artifacts uploaded to S3, view them at https://console.aws.amazon.com/s3/buckets/${ARTIFACT_STORE}?region=us-east-1&prefix=${ARTIFACT_PATH}/"
+      - apt-get update -y
+      - apt-get install -y uuid-runtime
+      - pip install cfn-lint
+  build:
+    # This should be moved to a shell script if it gets more complicated.
+    commands:
+      - |
+        set -e
+        BRANCH_NAME=${CODEBUILD_WEBHOOK_HEAD_REF##*/}
+        ARTIFACT_PATH=branch/$BRANCH_NAME/$CODEBUILD_BUILD_NUMBER
+        cd ./javabuilder-authorizer
+        ./build.sh
+        cd $CODEBUILD_SRC_DIR
+        cd org-code-javabuilder
+        ./gradlew test
+        ./build.sh
+        cd $CODEBUILD_SRC_DIR
+        cfn-lint -f json > cfnlint-report.json
+        aws s3 cp cfnlint-report.json "s3://${ARTIFACT_STORE}/${ARTIFACT_PATH}/" 
+        aws cloudformation package --template-file template.yml --output-template-file cloudformation-output.yml --s3-bucket $ARTIFACT_STORE --s3-prefix "$ARTIFACT_PATH/cloudformation-package"
+        aws s3 cp cloudformation-output.yml "s3://${ARTIFACT_STORE}/${ARTIFACT_PATH}/"
+        echo "Artifacts uploaded to S3, view them at https://console.aws.amazon.com/s3/buckets/${ARTIFACT_STORE}?region=us-east-1&prefix=${ARTIFACT_PATH}/"
