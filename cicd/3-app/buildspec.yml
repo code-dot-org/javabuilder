@@ -19,13 +19,6 @@ phases:
     commands:
       - gem install bundler
       - pip install cfn-lint
-
-    runtime-versions:
-      python: 3.8
-    commands:
-      - apt-get update -y
-      - apt-get install -y uuid-runtime
-      - pip install cfn-lint
   build:
     # This should be moved to a shell script if it gets more complicated.
     commands:
