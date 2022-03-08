@@ -10,7 +10,8 @@ public class AudioWriterTest {
   public void testWriteAddsSilentSoundIfEmpty() {
     ByteArrayOutputStream stream = new ByteArrayOutputStream();
     AudioWriter writer = new AudioWriter(stream);
-    writer.writeToAudioStreamAndClose();
+    writer.writeToAudioStream();
+    writer.close();
     byte[] result = stream.toByteArray();
     // The length is 46 because there is a lot of metadata before the data begins. The data are
     // zeros because we add in a single silent sound sample.
@@ -24,7 +25,8 @@ public class AudioWriterTest {
     ByteArrayOutputStream stream = new ByteArrayOutputStream();
     AudioWriter writer = new AudioWriter(stream);
     writer.writeAudioSamples(new double[] {1});
-    writer.writeToAudioStreamAndClose();
+    writer.writeToAudioStream();
+    writer.close();
     byte[] result = stream.toByteArray();
     // The exact values don't matter so much as ensuring they are something specific and not zero.
     // The length is 46 because there is a lot of metadata before the data begins.

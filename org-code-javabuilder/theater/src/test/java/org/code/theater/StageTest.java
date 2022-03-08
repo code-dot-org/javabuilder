@@ -19,6 +19,7 @@ import org.code.protocol.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 public class StageTest {
@@ -30,13 +31,21 @@ public class StageTest {
   private GifWriter gifWriter;
   private AudioWriter audioWriter;
   private InstrumentSampleLoader instrumentSampleLoader;
+  private TheaterProgressPublisher progressPublisher;
+  private ArgumentCaptor<LifecycleListener> stageCloseListenerCaptor;
 
   private Stage s;
 
   @BeforeEach
   public void setUp() {
-    GlobalProtocol.create(
-        outputAdapter, mock(InputAdapter.class), "", "", "", mock(JavabuilderFileWriter.class));
+    final LifecycleNotifier lifecycleNotifier = mock(LifecycleNotifier.class);
+    stageCloseListenerCaptor = ArgumentCaptor.forClass(LifecycleListener.class);
+    doNothing().when(lifecycleNotifier).registerListener(stageCloseListenerCaptor.capture());
+    GlobalProtocolTestFactory.builder()
+        .withOutputAdapter(outputAdapter)
+        .withLifecycleNotifier(lifecycleNotifier)
+        .create();
+    CachedResources.create();
     System.setOut(new PrintStream(outputStreamCaptor));
     bufferedImage = mock(BufferedImage.class);
     graphics = mock(Graphics2D.class);
@@ -51,8 +60,15 @@ public class StageTest {
     when(audioWriterFactory.createAudioWriter(any(ByteArrayOutputStream.class)))
         .thenReturn(audioWriter);
     instrumentSampleLoader = mock(InstrumentSampleLoader.class);
+    progressPublisher = mock(TheaterProgressPublisher.class);
 
-    s = new Stage(bufferedImage, gifWriterFactory, audioWriterFactory, instrumentSampleLoader);
+    s =
+        new Stage(
+            bufferedImage,
+            gifWriterFactory,
+            audioWriterFactory,
+            instrumentSampleLoader,
+            progressPublisher);
   }
 
   @AfterEach
@@ -219,6 +235,44 @@ public class StageTest {
     verify(graphics).rotate(radians, 50, 150);
     // verify we reset the transform
     verify(graphics).setTransform(any());
+  }
+
+  @Test
+  void testPauseUpdatesProgressListener() {
+    final double pauseTime = 15.0;
+    s.pause(pauseTime);
+    verify(progressPublisher).onPause(pauseTime);
+  }
+
+  @Test
+  void testPlayUpdatesProgressListener() {
+    final double audioLength = 30.0;
+    when(audioWriter.getTotalAudioLength()).thenReturn(audioLength);
+    s.play();
+    verify(progressPublisher).onPlay(audioLength);
+  }
+
+  @Test
+  void testClosesStreamsOnPlay() {
+    s.play();
+    verify(gifWriter, times(1)).close();
+    verify(audioWriter, times(1)).close();
+  }
+
+  @Test
+  void testClosesStreamsIfExecutionEnded() {
+    final LifecycleListener stageCloseListener = stageCloseListenerCaptor.getValue();
+
+    stageCloseListener.onExecutionEnded();
+
+    verify(gifWriter, times(1)).close();
+    verify(audioWriter, times(1)).close();
+
+    // Should not close again if close was already called
+    reset(gifWriter, audioWriter);
+    s.play();
+    verify(gifWriter, never()).close();
+    verify(audioWriter, never()).close();
   }
 
   private void verifyInvalidShapeThrowsException(Stage s, int[] points, boolean close) {

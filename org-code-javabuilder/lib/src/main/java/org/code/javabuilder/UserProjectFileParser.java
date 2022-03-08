@@ -3,6 +3,7 @@ package org.code.javabuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.Map;
+import org.code.javabuilder.util.FileUtils;
 import org.code.protocol.InternalErrorKey;
 
 public class UserProjectFileParser {
@@ -29,7 +30,7 @@ public class UserProjectFileParser {
       for (String fileName : sources.keySet()) {
         UserFileData fileData = sources.get(fileName);
 
-        if (fileName.endsWith(".java")) {
+        if (FileUtils.isJavaFile(fileName)) {
           userProjectFiles.addJavaFile(new JavaProjectFile(fileName, fileData.getText()));
         } else {
           // we treat any non-Java file as a plain text file

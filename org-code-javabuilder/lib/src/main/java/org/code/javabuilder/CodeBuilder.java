@@ -1,33 +1,27 @@
 package org.code.javabuilder;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import org.code.protocol.*;
+import org.code.protocol.GlobalProtocol;
+import org.code.protocol.InternalErrorKey;
+import org.code.protocol.JavabuilderException;
+import org.code.protocol.OutputAdapter;
 
 /** The orchestrator for code compilation and execution. */
-public class CodeBuilder implements AutoCloseable {
+public class CodeBuilder {
   private final OutputAdapter outputAdapter;
-  private final InputHandler inputHandler;
   private final File tempFolder;
-  private final PrintStream sysout;
-  private final InputStream sysin;
   private final UserProjectFiles userProjectFiles;
 
-  public CodeBuilder(GlobalProtocol protocol, UserProjectFiles userProjectFiles)
+  public CodeBuilder(GlobalProtocol protocol, UserProjectFiles userProjectFiles, File tempFolder)
       throws InternalServerError {
-    this.sysout = System.out;
-    this.sysin = System.in;
     this.outputAdapter = protocol.getOutputAdapter();
-    this.inputHandler = protocol.getInputHandler();
     this.userProjectFiles = userProjectFiles;
-    try {
-      this.tempFolder = Files.createTempDirectory("tmpdir").toFile();
-    } catch (IOException e) {
-      throw new InternalServerError(InternalErrorKey.INTERNAL_EXCEPTION, e);
-    }
+    this.tempFolder = tempFolder;
   }
 
   /**
@@ -36,11 +30,38 @@ public class CodeBuilder implements AutoCloseable {
    * @throws InternalServerError if the user's code contains a compiler error or if we are unable to
    *     compile due to internal errors.
    */
-  public void buildUserCode() throws InternalServerError, UserInitiatedException {
+  public void buildAllUserCode() throws InternalServerError, UserInitiatedException {
+    this.compileCode(this.userProjectFiles.getJavaFiles());
+  }
+
+  /**
+   * Saves non-source code assets to storage and compiles a subset of the user's code.
+   *
+   * @param compileList a list of file names to compile
+   * @throws InternalServerError if there is an internal error compiling or saving
+   * @throws UserInitiatedException if no matching file names are found, or there is an issue
+   *     compiling
+   */
+  public void buildUserCode(List<String> compileList)
+      throws InternalServerError, UserInitiatedException {
+    if (compileList == null) {
+      throw new UserInitiatedException(UserInitiatedExceptionKey.NO_FILES_TO_COMPILE);
+    }
+    final List<JavaProjectFile> javaProjectFiles =
+        this.userProjectFiles.getMatchingJavaFiles(compileList);
+
+    this.compileCode(javaProjectFiles);
+  }
+
+  private void compileCode(List<JavaProjectFile> javaProjectFiles)
+      throws InternalServerError, UserInitiatedException {
+    if (javaProjectFiles.isEmpty()) {
+      throw new UserInitiatedException(UserInitiatedExceptionKey.NO_FILES_TO_COMPILE);
+    }
+
     this.saveProjectAssets();
     UserCodeCompiler codeCompiler =
-        new UserCodeCompiler(
-            this.userProjectFiles.getJavaFiles(), this.tempFolder, this.outputAdapter);
+        new UserCodeCompiler(javaProjectFiles, this.tempFolder, this.outputAdapter);
     codeCompiler.compileProgram();
   }
 
@@ -54,33 +75,8 @@ public class CodeBuilder implements AutoCloseable {
     this.createJavaRunner().runTests();
   }
 
-  /**
-   * Resets System.in and System.out. Removes the temporary folder we generated to compile the
-   * user's code.
-   *
-   * @throws InternalFacingException if the folder cannot be deleted.
-   */
-  @Override
-  public void close() throws InternalFacingException {
-    System.setOut(this.sysout);
-    System.setIn(this.sysin);
-    if (this.tempFolder != null) {
-      try {
-        // Recursively delete the temp folder
-        Util.recursivelyClearDirectory(this.tempFolder.toPath());
-      } catch (IOException e) {
-        throw new InternalFacingException(e.toString(), e);
-      }
-    }
-  }
-
-  /**
-   * Replaces System.in and System.out with our custom implementation and creates a runner for
-   * executing code
-   */
+  /** Creates a runner for executing code */
   private JavaRunner createJavaRunner() throws InternalServerError {
-    System.setOut(new OutputPrintStream(this.outputAdapter));
-    System.setIn(new InputRedirectionStream(this.inputHandler));
     try {
       return new JavaRunner(
           this.tempFolder.toURI().toURL(),

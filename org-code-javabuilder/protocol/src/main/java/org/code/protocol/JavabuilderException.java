@@ -1,13 +1,10 @@
 package org.code.protocol;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.HashMap;
-
 /** Parent exception for all exceptions that will be displayed to the user. */
 public abstract class JavabuilderException extends Exception
     implements JavabuilderThrowableProtocol {
   private final Enum key;
+  private String fallbackMessage;
 
   protected JavabuilderException(Enum key) {
     super(key.toString());
@@ -19,24 +16,19 @@ public abstract class JavabuilderException extends Exception
     this.key = key;
   }
 
-  public JavabuilderThrowableMessage getExceptionMessage() {
-    HashMap<String, String> detail = new HashMap<>();
-    detail.put(ClientMessageDetailKeys.CONNECTION_ID, Properties.getConnectionId());
-    if (this.getCause() != null) {
-      detail.put(ClientMessageDetailKeys.CAUSE, this.getLoggingString());
-      if (this.getCause().getMessage() != null) {
-        detail.put(ClientMessageDetailKeys.CAUSE_MESSAGE, this.getCause().getMessage());
-      }
-    }
+  protected JavabuilderException(Enum key, String fallbackMessage) {
+    super(key.toString());
+    this.key = key;
+    this.fallbackMessage = fallbackMessage;
+  }
 
-    return new JavabuilderThrowableMessage(this.key, detail);
+  public JavabuilderThrowableMessage getExceptionMessage() {
+    return JavabuilderThrowableMessageUtils.getExceptionMessage(
+        this, this.key, this.fallbackMessage);
   }
 
   /** @return A pretty version of the exception and stack trace. */
   public String getLoggingString() {
-    StringWriter stringWriter = new StringWriter();
-    PrintWriter printWriter = new PrintWriter(stringWriter);
-    this.printStackTrace(printWriter);
-    return stringWriter.toString();
+    return JavabuilderThrowableMessageUtils.getLoggingString(this);
   }
 }

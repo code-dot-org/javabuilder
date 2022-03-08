@@ -25,7 +25,6 @@ public class UserProjectFileParserTest {
     assertEquals(projectFiles.getJavaFiles().size(), 1);
     ProjectFile firstFile = projectFiles.getJavaFiles().get(0);
     assertEquals(firstFile.getFileName(), "HelloWorld.java");
-    assertEquals(firstFile.getFileContents(), expectedCode);
   }
 
   @Test

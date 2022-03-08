@@ -5,5 +5,7 @@ public enum ExecutionType {
   // Compile and run the main method
   RUN,
   // Compile and run tests
-  TEST
+  TEST,
+  // Only compile the code
+  COMPILE_ONLY
 }
