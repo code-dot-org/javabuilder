@@ -1,0 +1,64 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: AWS::Serverless-2016-10-31
+Description: Javabulder CI/CD dependencies
+    
+Resources:
+
+  # The Artifact Store holds artifacts from codebuild/pipeline so they can be passed
+  # from one stage of a pipeline to the next, or so artifacts can be reviewed.
+  # We use a single bucket, though multiple instances of the pipeline may exist.
+  ArtifactStore:
+    Type: AWS::S3::Bucket
+
+  # This role will be used by CodeBuild to execute the CI build. Here we have
+  # the common policy rules required. Since we may want to create multiple
+  # codebuild projects for different branches, we can append policies when those
+  # stack resources are created (in "2-cicd")
+  JavabuilderCodeBuildRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: ['sts:AssumeRole']
+            Effect: Allow
+            Principal: {Service: [codebuild.amazonaws.com]}
+        Version: '2012-10-17'
+      Path: /service-role/
+      Policies:
+        - PolicyName: CodeBuildResourcesAccess
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "logs:CreateLogGroup"
+                  - "logs:CreateLogStream"
+                  - "logs:PutLogEvents"
+                Resource:
+                  - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/*"
+              - Effect: Allow
+                Action:
+                  - s3:GetBucketAcl
+                  - s3:GetBucketLocation
+                Resource:
+                  - !Sub arn:aws:s3:::${ArtifactStore}
+              - Effect: Allow
+                Action:
+                  - s3:PutObject
+                  - s3:GetObject
+                  - s3:GetObjectVersion
+                Resource:
+                  - !Sub arn:aws:s3:::${ArtifactStore}/*
+
+Outputs:
+  JavabuilderCodeBuildArtifactBucket:
+    Description: Javabuilder CodeBuild Artifact Bucket Name
+    Value: !Ref ArtifactStore
+    Export: {Name: JavabuilderCodeBuildArtifactBucket}
+  JavabuilderCodeBuildRoleArn:
+    Description: Javabuilder CodeBuild Role ARN
+    Value: !GetAtt JavabuilderCodeBuildRole.Arn
+    Export: {Name: JavabuilderCodeBuildRoleArn}
+  JavabuilderCodeBuildRoleName:
+    Description: Javabuilder CodeBuild Role Name
+    Value: !Ref JavabuilderCodeBuildRole
+    Export: {Name: JavabuilderCodeBuildRoleName}
