@@ -11,9 +11,10 @@ Parameters:
   SubDomainName:
     Type: String
     Description: Sub domain name for javabuilder service.
-  LogBucket:
-    Type: String
-    Default: cdo-logs.s3.amazonaws.com
+  # TODO: enable logging when LogBucket is set up
+  # LogBucket:
+  #   Type: String
+  #   Default: cdo-logs.s3.amazonaws.com
   ProvisionedConcurrentExecutions:
     Type: Number
     Description: The amount of provisioned concurrency to allocate for the BuildAndRunJavaProject Lambda.
