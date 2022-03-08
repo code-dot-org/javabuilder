@@ -3,17 +3,21 @@ package dev.javabuilder;
 import java.io.PrintStream;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public class LocalLogHandler extends Handler {
   private final PrintStream logStream;
   private final String levelId;
   private final String channelId;
+  private final String miniAppType;
 
-  public LocalLogHandler(PrintStream logStream, String levelId, String channelId) {
+  public LocalLogHandler(
+      PrintStream logStream, String levelId, String channelId, String miniAppType) {
     this.logStream = logStream;
     this.levelId = levelId;
     this.channelId = channelId;
+    this.miniAppType = miniAppType;
   }
 
   @Override
@@ -21,13 +25,21 @@ public class LocalLogHandler extends Handler {
     JSONObject sessionMetadata = new JSONObject();
     sessionMetadata.put("levelId", this.levelId);
     sessionMetadata.put("channelId", this.channelId);
+    sessionMetadata.put("miniAppType", this.miniAppType);
 
     JSONObject logData = new JSONObject();
     logData.put("sessionMetadata", sessionMetadata);
-    logData.put("message", record.getMessage());
+
+    String message = record.getMessage();
+    try {
+      JSONObject jsonMessage = new JSONObject(message);
+      logData.put("message", jsonMessage);
+    } catch (JSONException e) {
+      logData.put("message", message);
+    }
     logData.put("level", record.getLevel());
 
-    this.logStream.println(logData.toString());
+    this.logStream.println(logData);
   }
 
   @Override

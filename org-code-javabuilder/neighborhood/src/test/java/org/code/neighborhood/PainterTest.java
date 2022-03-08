@@ -21,8 +21,7 @@ public class PainterTest {
 
   @BeforeEach
   public void setUp() {
-    GlobalProtocol.create(
-        outputAdapter, mock(InputAdapter.class), "", "", "", mock(JavabuilderFileWriter.class));
+    GlobalProtocolTestFactory.builder().withOutputAdapter(outputAdapter).create();
     System.setOut(new PrintStream(outputStreamCaptor));
     World w = new World(singleSquareGrid);
     World.setInstance(w);

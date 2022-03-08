@@ -19,6 +19,8 @@ class GifWriter {
   private ImageWriter writer;
   private ImageWriteParam params;
   private ImageOutputStream imageOutputStream;
+  // 30 mb
+  private static final int MAX_STREAM_LENGTH_BYTES = 31457280;
 
   public static class Factory {
     public GifWriter createGifWriter(ByteArrayOutputStream out) {
@@ -48,6 +50,9 @@ class GifWriter {
    */
   public void writeToGif(BufferedImage img, int delay) {
     try {
+      if (this.imageOutputStream.length() > MAX_STREAM_LENGTH_BYTES) {
+        throw new TheaterRuntimeException(ExceptionKeys.VIDEO_TOO_LARGE);
+      }
       this.writer.writeToSequence(
           new IIOImage(img, null, getMetadataForFrame(delay, img.getType())), this.params);
 
@@ -65,6 +70,7 @@ class GifWriter {
     try {
       this.writer.endWriteSequence();
       this.imageOutputStream.flush();
+      this.imageOutputStream.close();
     } catch (IOException e) {
       throw new InternalServerRuntimeError(
           InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e.getCause());

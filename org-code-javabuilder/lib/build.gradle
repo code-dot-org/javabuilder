@@ -32,15 +32,19 @@ dependencies {
     // jaxb-api is needed to get rid of warning on run
     // https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api
     implementation group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
+    // https://mvnrepository.com/artifact/org.junit.platform/junit-platform-launcher
+    implementation 'org.junit.platform:junit-platform-launcher:1.8.1'
     implementation project(':protocol')
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
-    // https://mvnrepository.com/artifact/org.mockito/mockito-core
-    testImplementation group: 'org.mockito', name: 'mockito-core', version: '3.9.0'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.6.0'
+    implementation project(':validation')
+    implementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
+    // https://mvnrepository.com/artifact/org.mockito/mockito-inline
+    testImplementation group: 'org.mockito', name: 'mockito-inline', version: '3.9.0'
+    implementation 'org.junit.jupiter:junit-jupiter-engine:5.6.0'
     // https://mvnrepository.com/artifact/javax.websocket/javax.websocket-api
     compileOnly group: 'javax.websocket', name: 'javax.websocket-api', version: '1.1'
     // https://mvnrepository.com/artifact/javax.servlet/javax.servlet-api
     compileOnly group: 'javax.servlet', name: 'javax.servlet-api', version: '4.0.1'
+    testImplementation testFixtures(project(':protocol'))
 }
 
 test {
@@ -79,15 +83,34 @@ build.dependsOn installGitHook
 build.dependsOn buildZip
 
 afterEvaluate {
+    // List of projects to generate jars for along with their specific fat-jar task names
+    def projects = [
+            [':neighborhood', 'buildNeighborhood'],
+            [':theater', 'buildTheater'],
+            [':playground', 'buildPlayground'],
+            [':studentlib', 'buildStudentlib'],
+            [':validation', 'buildValidation'],
+            [':lang', 'buildLang']
+    ]
+
     // Clean and build before a production deploy
     tasks.compileJava.dependsOn clean
-    tasks.processResources.dependsOn project(':neighborhood').getTasksByName('build', false)
-    tasks.processResources.dependsOn project(':theater').getTasksByName('build', false)
-    tasks.processResources.dependsOn project(':playground').getTasksByName('build', false)
 
     // Clean and build before setting up the local server
     tasks.prepareInplaceWebAppFolder.dependsOn clean
-    tasks.prepareInplaceWebAppFolder.dependsOn project(':neighborhood').getTasksByName('buildNeighborhood', false)
-    tasks.prepareInplaceWebAppFolder.dependsOn project(':theater').getTasksByName('buildTheater', false)
-    tasks.prepareInplaceWebAppFolder.dependsOn project(':playground').getTasksByName('buildPlayground', false)
+
+    projects.each {
+        def projectName = it[0]
+        def jarTask = it[1]
+        // Fully build each project for a production deploy
+        tasks.processResources.dependsOn project(projectName).getTasksByName('build', false)
+
+        // Only generate each project's jar for local server
+        tasks.prepareInplaceWebAppFolder.dependsOn project(projectName).getTasksByName(jarTask, false)
+
+        // Ensure all tasks happen after clean
+        project(projectName).getAllTasks(false).each {
+            it.getValue().each { it.dependsOn clean }
+        }
+    }
 }

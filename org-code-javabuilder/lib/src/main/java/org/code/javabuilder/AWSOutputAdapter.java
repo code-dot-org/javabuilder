@@ -1,6 +1,7 @@
 package org.code.javabuilder;
 
 import com.amazonaws.services.apigatewaymanagementapi.AmazonApiGatewayManagementApi;
+import com.amazonaws.services.apigatewaymanagementapi.model.GoneException;
 import com.amazonaws.services.apigatewaymanagementapi.model.PostToConnectionRequest;
 import java.nio.ByteBuffer;
 import org.code.protocol.*;
@@ -25,7 +26,7 @@ public class AWSOutputAdapter implements OutputAdapter {
     PostToConnectionRequest post = new PostToConnectionRequest();
     post.setConnectionId(connectionId);
     post.setData(ByteBuffer.wrap((message.getFormattedMessage()).getBytes()));
-    api.postToConnection(post);
+    this.sendMessageHelper(post);
   }
 
   public void sendDebuggingMessage(ClientMessage message) {
@@ -33,6 +34,14 @@ public class AWSOutputAdapter implements OutputAdapter {
     PostToConnectionRequest post = new PostToConnectionRequest();
     post.setConnectionId(connectionId);
     post.setData(ByteBuffer.wrap((message + " " + time).getBytes()));
-    api.postToConnection(post);
+    this.sendMessageHelper(post);
+  }
+
+  private void sendMessageHelper(PostToConnectionRequest post) {
+    try {
+      this.api.postToConnection(post);
+    } catch (GoneException e) {
+      throw new InternalServerRuntimeError(InternalErrorKey.CONNECTION_TERMINATED, e);
+    }
   }
 }

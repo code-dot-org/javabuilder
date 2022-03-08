@@ -55,7 +55,7 @@ public class Grid {
         new NeighborhoodSignalMessage(NeighborhoodSignalKey.SHOW_BUCKETS, new HashMap<>()));
   }
 
-  protected int getSize() {
+  public int getSize() {
     return this.grid.length;
   }
 }

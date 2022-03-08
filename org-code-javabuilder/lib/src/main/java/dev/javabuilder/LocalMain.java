@@ -12,20 +12,38 @@ import org.code.protocol.*;
  * resources folder is the "user program." Output goes to the console.
  */
 public class LocalMain {
-  public static void main(String[] args) {
+  public static void main(String[] args) throws InterruptedException {
     final LocalInputAdapter inputAdapter = new LocalInputAdapter();
     final LocalOutputAdapter outputAdapter = new LocalOutputAdapter(System.out);
     final LocalProjectFileLoader fileLoader = new LocalProjectFileLoader();
 
     Logger logger = Logger.getLogger(MAIN_LOGGER);
-    logger.addHandler(new LocalLogHandler(System.out, "levelId", "channelId"));
+    logger.addHandler(new LocalLogHandler(System.out, "levelId", "channelId", "miniAppType"));
     // turn off the default console logger
     logger.setUseParentHandlers(false);
 
-    GlobalProtocol.create(outputAdapter, inputAdapter, "", "", "", new LocalFileWriter());
+    GlobalProtocol.create(
+        outputAdapter,
+        inputAdapter,
+        "",
+        "",
+        "",
+        new LocalFileManager(),
+        new LifecycleNotifier(),
+        new LocalContentManager(),
+        true);
+    CachedResources.create();
 
     // Create and invoke the code execution environment
-    CodeBuilderWrapper codeBuilderWrapper = new CodeBuilderWrapper(fileLoader, outputAdapter);
-    codeBuilderWrapper.executeCodeBuilder(ExecutionType.RUN);
+    CodeExecutionManager codeExecutionManager =
+        new CodeExecutionManager(
+            fileLoader,
+            GlobalProtocol.getInstance().getInputHandler(),
+            outputAdapter,
+            ExecutionType.RUN,
+            null,
+            GlobalProtocol.getInstance().getFileManager(),
+            new LifecycleNotifier());
+    codeExecutionManager.execute();
   }
 }

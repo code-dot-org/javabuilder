@@ -20,13 +20,7 @@ public class ItemTest {
   public void setUp() {
     playgroundMessageHandler = mock(PlaygroundMessageHandler.class);
     messageCaptor = ArgumentCaptor.forClass(PlaygroundMessage.class);
-    GlobalProtocol.create(
-        mock(OutputAdapter.class),
-        mock(InputAdapter.class),
-        "",
-        "",
-        "",
-        mock(JavabuilderFileWriter.class));
+    GlobalProtocolTestFactory.builder().create();
 
     messageHandlerMockedStatic = mockStatic(PlaygroundMessageHandler.class);
     messageHandlerMockedStatic

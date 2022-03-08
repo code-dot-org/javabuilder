@@ -5,6 +5,7 @@ import static org.code.protocol.LoggerNames.MAIN_LOGGER;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Base64;
+import java.util.List;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
 import javax.websocket.OnClose;
@@ -15,6 +16,7 @@ import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
 import org.code.javabuilder.*;
 import org.code.protocol.*;
+import org.code.validation.support.UserTestOutputAdapter;
 import org.json.JSONObject;
 
 /**
@@ -27,9 +29,14 @@ import org.json.JSONObject;
 @ServerEndpoint("/javabuilder")
 public class WebSocketServer {
   private WebSocketInputAdapter inputAdapter;
-  private WebSocketOutputAdapter outputAdapter;
+  private WebSocketOutputAdapter websocketOutputAdapter;
+  private OutputAdapter outputAdapter;
   private Handler logHandler;
   private Logger logger;
+
+  public WebSocketServer() {
+    CachedResources.create();
+  }
 
   /**
    * This acts as the main function for the WebSocket server. Therefore, we do many of the same
@@ -50,47 +57,67 @@ public class WebSocketServer {
     final String connectionId = "LocalhostWebSocketConnection";
     final String levelId = queryInput.getString("level_id");
     final String channelId = queryInput.getString("channel_id");
-    final String dashboardHostname = "http://" + queryInput.get("iss") + ":3000";
-    final JSONObject options = new JSONObject(queryInput.getString("options"));
-    boolean useNeighborhood = false;
-    if (options.has("useNeighborhood")) {
-      String useNeighborhoodStr = options.getString("useNeighborhood");
-      useNeighborhood = Boolean.parseBoolean(useNeighborhoodStr);
-    }
-
-    final String executionTypeString =
-        queryInput.has("execution_type") ? queryInput.getString("execution_type") : null;
-    // TODO: in order to not break current behavior in Javalab, execution type defaults to 'RUN'.
-    // Once Javalab is sending the execution type parameter, remove this fallback
+    final String miniAppType = queryInput.getString("mini_app_type");
     final ExecutionType executionType =
-        executionTypeString == null
-            ? ExecutionType.RUN
-            : ExecutionType.valueOf(executionTypeString);
+        ExecutionType.valueOf(queryInput.getString("execution_type"));
+    final String dashboardHostname = "http://" + queryInput.get("iss") + ":3000";
+    final boolean useDashboardSources = queryInput.getBoolean("use_dashboard_sources");
+    final JSONObject options = new JSONObject(queryInput.getString("options"));
+    final boolean useNeighborhood =
+        JSONUtils.booleanFromJSONObjectMember(options, "useNeighborhood");
+    final List<String> compileList = JSONUtils.listFromJSONObjectMember(options, "compileList");
 
     this.logger = Logger.getLogger(MAIN_LOGGER);
-    this.logHandler = new LocalLogHandler(System.out, levelId, channelId);
+    this.logHandler = new LocalLogHandler(System.out, levelId, channelId, miniAppType);
     this.logger.addHandler(this.logHandler);
     // turn off the default console logger
     this.logger.setUseParentHandlers(false);
 
     Properties.setConnectionId(connectionId);
 
-    outputAdapter = new WebSocketOutputAdapter(session);
+    websocketOutputAdapter = new WebSocketOutputAdapter(session);
     inputAdapter = new WebSocketInputAdapter();
+    outputAdapter = websocketOutputAdapter;
+
+    if (executionType == ExecutionType.TEST) {
+      outputAdapter = new UserTestOutputAdapter(websocketOutputAdapter);
+    }
+    final LifecycleNotifier lifecycleNotifier = new LifecycleNotifier();
+    final LocalContentManager contentManager = new LocalContentManager();
     GlobalProtocol.create(
-        outputAdapter, inputAdapter, dashboardHostname, channelId, levelId, new LocalFileWriter());
-    final UserProjectFileLoader fileLoader =
-        new UserProjectFileLoader(
-            GlobalProtocol.getInstance().generateSourcesUrl(),
-            levelId,
-            dashboardHostname,
-            useNeighborhood);
+        outputAdapter,
+        inputAdapter,
+        dashboardHostname,
+        channelId,
+        levelId,
+        new LocalFileManager(),
+        lifecycleNotifier,
+        contentManager,
+        useDashboardSources);
+    final ProjectFileLoader fileLoader =
+        useDashboardSources
+            ? new UserProjectFileLoader(
+                GlobalProtocol.getInstance().generateSourcesUrl(),
+                levelId,
+                dashboardHostname,
+                useNeighborhood)
+            : contentManager;
+
+    // the code must be run in a thread so we can receive input messages
     Thread codeExecutor =
         new Thread(
             () -> {
-              CodeBuilderWrapper codeBuilderWrapper =
-                  new CodeBuilderWrapper(fileLoader, outputAdapter);
-              codeBuilderWrapper.executeCodeBuilder(executionType);
+              final CodeExecutionManager executionManager =
+                  new CodeExecutionManager(
+                      fileLoader,
+                      GlobalProtocol.getInstance().getInputHandler(),
+                      outputAdapter,
+                      executionType,
+                      compileList,
+                      GlobalProtocol.getInstance().getFileManager(),
+                      lifecycleNotifier);
+              executionManager.execute();
+              // Clean up session
               try {
                 session.close();
                 logger.removeHandler(this.logHandler);
@@ -98,12 +125,13 @@ public class WebSocketServer {
                 e.printStackTrace();
               }
             });
+
     codeExecutor.start();
   }
 
   @OnClose
   public void myOnClose() {
-    Logger.getLogger(MAIN_LOGGER).info("WebSocket Closed");
+    Logger.getLogger(MAIN_LOGGER).info("WebSocket closed.");
   }
 
   /**

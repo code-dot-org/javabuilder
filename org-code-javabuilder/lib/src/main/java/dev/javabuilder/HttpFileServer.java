@@ -1,17 +1,20 @@
 package dev.javabuilder;
 
 import static dev.javabuilder.LocalWebserverConstants.DIRECTORY;
-import static org.code.protocol.AllowedFileNames.THEATER_AUDIO_NAME;
-import static org.code.protocol.AllowedFileNames.THEATER_IMAGE_NAME;
+import static dev.javabuilder.LocalWebserverConstants.SEED_SOURCES_ENDPOINT;
+import static org.code.protocol.AllowedFileNames.PROMPTER_FILE_NAME_PREFIX;
 
+import dev.javabuilder.util.TempDirectoryUtils;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.code.javabuilder.ProjectData;
 
 /**
  * This sets up an HTTP server for local development when the client needs to be able to access
@@ -20,10 +23,7 @@ import javax.servlet.http.HttpServletResponse;
  */
 @WebServlet(
     name = "FileServlet",
-    urlPatterns = {
-      "/" + DIRECTORY + "/" + THEATER_IMAGE_NAME,
-      "/" + DIRECTORY + "/" + THEATER_AUDIO_NAME
-    })
+    urlPatterns = {"/" + DIRECTORY + "/*"})
 public class HttpFileServer extends HttpServlet {
   /**
    * Returns the file requested by the client. Listens at http://localhost:8080/files/<filename>.
@@ -36,16 +36,46 @@ public class HttpFileServer extends HttpServlet {
     // NOTE: This is _NOT_ a safe method of handling requests from a client. We are serving
     // filesystem files to the user without authentication/authorization. This should _ONLY_ be used
     // for local development.
-    String[] urlParts = request.getRequestURI().split("/");
-    String fileName = urlParts[urlParts.length - 1];
-    if (!fileName.equals(THEATER_IMAGE_NAME) && !fileName.equals(THEATER_AUDIO_NAME)) {
-      response.sendError(
-          403,
-          String.format("Only %s and %s can be accessed.", THEATER_IMAGE_NAME, THEATER_AUDIO_NAME));
-      return;
-    }
+
+    final String fileName = this.getFileName(request);
     OutputStream out = response.getOutputStream();
     Files.copy(Paths.get(System.getProperty("java.io.tmpdir"), DIRECTORY, fileName), out);
     out.flush();
+  }
+
+  @Override
+  protected void doPut(HttpServletRequest request, HttpServletResponse response)
+      throws IOException {
+    String fileName = this.getFileName(request);
+    if (!this.putAllowed(fileName)) {
+      response.sendError(
+          403,
+          String.format(
+              "Only files sent to the %s endpoint, or prefixed with %s can be uploaded.",
+              SEED_SOURCES_ENDPOINT, PROMPTER_FILE_NAME_PREFIX));
+      return;
+    }
+
+    if (fileName.equals(SEED_SOURCES_ENDPOINT)) {
+      // If a client is accessing this endpoint, they are uploading project data as a JSON payload.
+      // Use the pre-defined project data file name (rather than the endpoint name).
+      fileName = ProjectData.PROJECT_DATA_FILE_NAME;
+    }
+
+    TempDirectoryUtils.createTempDirectoryIfNeeded();
+    Files.copy(
+        request.getInputStream(),
+        Paths.get(System.getProperty("java.io.tmpdir"), DIRECTORY, fileName),
+        StandardCopyOption.REPLACE_EXISTING);
+  }
+
+  private boolean putAllowed(String fileName) {
+    return fileName.indexOf(PROMPTER_FILE_NAME_PREFIX) == 0
+        || fileName.equals(SEED_SOURCES_ENDPOINT);
+  }
+
+  private String getFileName(HttpServletRequest request) {
+    final String[] urlParts = request.getRequestURI().split("/");
+    return urlParts[urlParts.length - 1];
   }
 }

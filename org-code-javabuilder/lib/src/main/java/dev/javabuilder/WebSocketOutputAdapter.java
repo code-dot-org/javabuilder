@@ -4,6 +4,8 @@ import java.io.IOException;
 import javax.websocket.RemoteEndpoint;
 import javax.websocket.Session;
 import org.code.protocol.ClientMessage;
+import org.code.protocol.InternalErrorKey;
+import org.code.protocol.InternalServerRuntimeError;
 import org.code.protocol.OutputAdapter;
 
 /**
@@ -22,6 +24,8 @@ public class WebSocketOutputAdapter implements OutputAdapter {
       endpoint.sendText(message.getFormattedMessage());
     } catch (IOException e) {
       e.printStackTrace();
+    } catch (IllegalStateException e) {
+      throw new InternalServerRuntimeError(InternalErrorKey.CONNECTION_TERMINATED, e);
     }
   }
 
@@ -30,6 +34,8 @@ public class WebSocketOutputAdapter implements OutputAdapter {
       endpoint.sendText(message.getFormattedMessage());
     } catch (IOException e) {
       e.printStackTrace();
+    } catch (IllegalStateException e) {
+      throw new InternalServerRuntimeError(InternalErrorKey.CONNECTION_TERMINATED, e);
     }
   }
 }

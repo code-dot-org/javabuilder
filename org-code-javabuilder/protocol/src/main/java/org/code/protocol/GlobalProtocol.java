@@ -15,26 +15,29 @@ public class GlobalProtocol {
   private static GlobalProtocol protocolInstance;
   private final OutputAdapter outputAdapter;
   private final InputHandler inputHandler;
-  private final JavabuilderFileWriter fileWriter;
+  private final JavabuilderFileManager fileManager;
   private final String dashboardHostname;
   private final String channelId;
   private final AssetFileHelper assetFileHelper;
-  private Set<MessageHandler> messageHandlers;
+  private final Set<MessageHandler> messageHandlers;
+  private final LifecycleNotifier lifecycleNotifier;
 
   private GlobalProtocol(
       OutputAdapter outputAdapter,
       InputHandler inputHandler,
       String dashboardHostname,
       String channelId,
-      JavabuilderFileWriter fileWriter,
-      AssetFileHelper assetFileHelper) {
+      JavabuilderFileManager fileManager,
+      AssetFileHelper assetFileHelper,
+      LifecycleNotifier lifecycleNotifier) {
     this.outputAdapter = outputAdapter;
     this.inputHandler = inputHandler;
     this.dashboardHostname = dashboardHostname;
     this.channelId = channelId;
-    this.fileWriter = fileWriter;
+    this.fileManager = fileManager;
     this.assetFileHelper = assetFileHelper;
     this.messageHandlers = new HashSet<>();
+    this.lifecycleNotifier = lifecycleNotifier;
   }
 
   public static void create(
@@ -43,15 +46,20 @@ public class GlobalProtocol {
       String dashboardHostname,
       String channelId,
       String levelId,
-      JavabuilderFileWriter fileWriter) {
+      JavabuilderFileManager fileManager,
+      LifecycleNotifier lifecycleNotifier,
+      ContentManager contentManager,
+      boolean useDashboardSources) {
     GlobalProtocol.protocolInstance =
         new GlobalProtocol(
             outputAdapter,
             new InputHandler(inputAdapter),
             dashboardHostname,
             channelId,
-            fileWriter,
-            new AssetFileHelper(dashboardHostname, channelId, levelId));
+            new DelegatingFileManager(fileManager, contentManager, useDashboardSources),
+            new DelegatingAssetFileHelper(
+                dashboardHostname, channelId, levelId, contentManager, useDashboardSources),
+            lifecycleNotifier);
   }
 
   public static GlobalProtocol getInstance() {
@@ -70,8 +78,8 @@ public class GlobalProtocol {
     return this.inputHandler;
   }
 
-  public JavabuilderFileWriter getFileWriter() {
-    return this.fileWriter;
+  public JavabuilderFileManager getFileManager() {
+    return this.fileManager;
   }
 
   public String generateAssetUrl(String filename) {
@@ -88,6 +96,10 @@ public class GlobalProtocol {
 
   public void registerMessageHandler(MessageHandler handler) {
     this.messageHandlers.add(handler);
+  }
+
+  public void registerLifecycleListener(LifecycleListener listener) {
+    this.lifecycleNotifier.registerListener(listener);
   }
 
   // Clean up resources that require explicit clean up before exiting
