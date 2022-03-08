@@ -41,42 +41,153 @@ Globals:
 Conditions:
   IsDevCondition: !Equals [!Ref BaseDomainName, "dev-code.org"]
 Resources:
-  Domain:
+# Note: We can't update the name of a DomainName resource once it has been created because the
+# domain name itself has already been provisioned. When we change from javabuilderbeta to
+# javabuilder, we should update the WebSocket resources here to use the prefix "WebSocket"
+<%{
+  Http: {Prefix: "Http", Suffix: "-http"},
+  WebSocket: {Prefix: "", Suffix: ""},
+}.each do |apiName, config| -%>
+  <%=config[:Prefix]%>Domain:
     Type: AWS::Route53::RecordSet
     Properties:
       HostedZoneName: !Sub "${BaseDomainName}."
-      Name: !Sub "${SubDomainName}.${BaseDomainName}"
+      Name: !Sub "${SubDomainName}<%=config[:Suffix]%>.${BaseDomainName}"
       Type: A
       AliasTarget:
-        DNSName: !GetAtt DomainName.RegionalDomainName
-        HostedZoneId: !GetAtt DomainName.RegionalHostedZoneId
+        DNSName: !GetAtt <%=config[:Prefix]%>DomainName.RegionalDomainName
+        HostedZoneId: !GetAtt <%=config[:Prefix]%>DomainName.RegionalHostedZoneId
 
-  DomainName:
+  <%=config[:Prefix]%>DomainName:
     Type: AWS::ApiGatewayV2::DomainName
     Properties:
-      DomainName: !Sub "${SubDomainName}.${BaseDomainName}"
+      DomainName: !Sub "${SubDomainName}<%=config[:Suffix]%>.${BaseDomainName}"
       DomainNameConfigurations:
         - EndpointType: REGIONAL
-          CertificateArn: !Ref Certificate
-          CertificateName: !Sub "${SubDomainName}.${BaseDomainName}"
+          CertificateArn: !Ref <%=config[:Prefix]%>Certificate
+          CertificateName: !Sub "${SubDomainName}<%=config[:Suffix]%>.${BaseDomainName}"
 
-  Certificate:
+  <%=config[:Prefix]%>Certificate:
     Type: AWS::CertificateManager::Certificate
     Properties:
-      DomainName: !Sub "${SubDomainName}.${BaseDomainName}"
+      DomainName: !Sub "${SubDomainName}<%=config[:Suffix]%>.${BaseDomainName}"
       ValidationMethod: DNS
       DomainValidationOptions:
-        - DomainName: !Sub "${SubDomainName}.${BaseDomainName}"
+        - DomainName: !Sub "${SubDomainName}<%=config[:Suffix]%>.${BaseDomainName}"
           HostedZoneId: !Ref BaseDomainNameHostedZonedID
 
-  DomainNameAPIMapping:
+  <%=config[:Prefix]%>DomainNameAPIMapping:
     Type: AWS::ApiGatewayV2::ApiMapping
     DependsOn:
-      - Domain
+      - <%=config[:Prefix]%>Domain
     Properties:
-      ApiId: !Ref WebSocketAPI
-      DomainName: !Sub "${SubDomainName}.${BaseDomainName}"
-      Stage: !Ref WebSocketStage
+      ApiId: !Ref <%=apiName%>API
+      DomainName: !Sub "${SubDomainName}<%=config[:Suffix]%>.${BaseDomainName}"
+      Stage: !Ref <%=apiName%>Stage
+
+<%end -%>
+  HttpAPI:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: !Sub "${SubDomainName}-http.${BaseDomainName}"
+      ProtocolType: HTTP
+
+  PutRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpAPI
+      RouteKey: PUT /seedsources/sources.json
+      AuthorizationType: CUSTOM
+      AuthorizerId: !Ref HttpAuthorizer
+      OperationName: PutRoute
+      Target: !Join
+        - '/'
+        - - 'integrations'
+          - !Ref PutIntegration
+
+  PutSourcesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: Puts user sources into the S3 bucket
+      CodeUri: api-gateway-routes/
+      Handler: api_gateway_put_function.lambda_handler
+      Role: !ImportValue JavabuilderLambdaExecutionRole
+      Environment:
+        Variables:
+          CONTENT_BUCKET_NAME: !Ref ContentBucket
+
+  PutSourcesPermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - HttpAPI
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref PutSourcesFunction
+      Principal: apigateway.amazonaws.com
+
+  PutIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref HttpAPI
+      Description: PUT Integration
+      # Integration method must be POST for AWS_PROXY integrations even though we're PUTting into an S3 bucket
+      IntegrationMethod: POST
+      IntegrationType: AWS_PROXY
+      IntegrationUri:
+        Fn::Sub:
+          arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PutSourcesFunction.Arn}/invocations
+      PayloadFormatVersion: 2.0
+
+  HttpStageLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/apigateway/accesslog/${SubDomainName}-http.${BaseDomainName}"
+
+  HttpStage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      # Using AutoDeploy rather than a Deployment resource (as we do with the WebSocket API) because
+      # the Deployment resource doesn't seem to work with HTTP APIs.
+      AutoDeploy: true
+      StageName: Prod
+      Description: Prod Stage
+      ApiId: !Ref HttpAPI
+      DefaultRouteSettings:
+        DetailedMetricsEnabled: true
+      AccessLogSettings:
+        DestinationArn: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/apigateway/accesslog/${SubDomainName}-http.${BaseDomainName}"
+        # TODO: Also log authorizer status code, authorizer error message, Javabuilder session id, and Origin.
+        Format: '{
+            "host": "$context.domainName",
+            "requestId": "$context.requestId",
+            "ip": "$context.identity.sourceIp",
+            "requestTime": "$context.requestTime",
+            "httpMethod": "$context.httpMethod",
+            "caller": "$context.identity.caller",
+            "routeKey": "$context.routeKey",
+            "status": "$context.status",
+            "protocol": "$context.protocol",
+            "userAgent": "$context.identity.userAgent",
+            "responseLength":"$context.responseLength",
+            "contextErrorMessage": "$context.error.message",
+            "contextErrorMessageString": "$context.error.messageString",
+            "integrationError": "$context.integration.error",
+            "authorizerError": "$context.authorizer.error"
+          }'
+
+  HttpAuthorizer:
+    Type: AWS::ApiGatewayV2::Authorizer
+    Properties:
+      ApiId: !Ref HttpAPI
+      AuthorizerCredentialsArn:
+        Fn::ImportValue: JavabuilderAPIGatewayRole
+      AuthorizerPayloadFormatVersion: 2.0
+      AuthorizerResultTtlInSeconds: 0
+      AuthorizerType: REQUEST
+      AuthorizerUri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${HttpAuthorizerLambda.Arn}/invocations"
+      IdentitySource:
+        - "$request.querystring.Authorization"
+      Name: HttpAuthorizer
 
   WebSocketAPI:
     Type: AWS::ApiGatewayV2::Api
@@ -90,7 +201,6 @@ Resources:
     Properties:
       ApiId: !Ref WebSocketAPI
       RouteKey: $connect
-      #AuthorizationType: NONE
       AuthorizationType: CUSTOM
       AuthorizerId: !Ref WebSocketAuthorizer
       OperationName: ConnectRoute
@@ -197,7 +307,11 @@ Resources:
             "status": "$context.status",
             "connectionId": "$context.connectionId",
             "protocol": "$context.protocol",
-            "userAgent": "$context.identity.userAgent"
+            "userAgent": "$context.identity.userAgent",
+            "contextErrorMessage": "$context.error.message",
+            "contextErrorMessageString": "$context.error.messageString",
+            "integrationError": "$context.integration.error",
+            "authorizerError": "$context.authorizer.error"
           }'
 
   StartSessionAndRelayMessagesFunction:
@@ -225,12 +339,29 @@ Resources:
       FunctionName: !Ref StartSessionAndRelayMessagesFunction
       Principal: apigateway.amazonaws.com
 
-  WebsocketAuthorizerLambda:
+# AWS does not seem to be case sensitive, but is case aware. Therefore, we can't update from
+# Websocket here to WebSocket as is used elsewhere when updating an existing stack. Updating this is
+# a step we should take when we create our non-beta environment from scratch. At that point, we
+# should also update uses of HttpAPI and WebSocketAPI to be HttpApi and WebSocketApi, respectively,
+# to match the AWS standard elsewhere in this template. Example: "AWS::ApiGatewayV2::ApiMapping"
+<%{
+  Http: {
+    LambdaName: "Http",
+    Handler: "http_authorizer_function",
+    Description: "'Authorize PUT by decoding JWT in Authorization querystring parameter.'"
+  },
+  WebSocket: {
+    LambdaName: "Websocket",
+    Handler: "websocket_authorizer_function",
+    Description: "'Authorize WebSocket connect by decoding JWT in Authorization querystring parameter.'"
+  },
+}.each do |name, config| -%>
+  <%=config[:LambdaName]%>AuthorizerLambda:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: lambda_function.lambda_handler
+      Handler: <%=config[:Handler]%>.lambda_handler
       CodeUri: javabuilder-authorizer/
-      Description: 'Authorize WebSocket connect by decoding JWT in Authorization querystring parameter.'
+      Description: <%=config[:Description]%>
       Timeout: 3
       Role: !ImportValue JavabuilderLambdaExecutionRole
       Environment:
@@ -271,16 +402,17 @@ Resources:
             JTJJ4dWJ2cw61prbeU/HVCWD8OaNumz9tQIDAQAB\n
             -----END RSA PUBLIC KEY-----'
 
-  WebSocketAuthorizerPermission:
+  <%=name%>AuthorizerPermission:
     Type: AWS::Lambda::Permission
     DependsOn:
-      - WebSocketAuthorizer
+      - <%=name%>Authorizer
     Properties:
       Action: lambda:InvokeFunction
-      FunctionName: !Ref WebsocketAuthorizerLambda
+      FunctionName: !Ref <%=config[:LambdaName]%>AuthorizerLambda
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${WebSocketAPI}/authorizers/${WebSocketAuthorizer}"
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${<%=name%>API}/authorizers/${<%=name%>Authorizer}"
 
+<%end -%>
   ChangeJavaRuntimeDirectoryLayer:
     Type: AWS::Serverless::LayerVersion
     Properties:
