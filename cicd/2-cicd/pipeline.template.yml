@@ -14,7 +14,7 @@ Parameters:
   GitHubBranch:
     Type: String
     Description: The branch that these resources test and deploy. Not necessarily `main`.
-    Default: darin-javabuilder-cicd
+    Default: main
     
 Resources:
 

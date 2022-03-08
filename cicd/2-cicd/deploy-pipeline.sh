@@ -19,7 +19,7 @@ aws cloudformation validate-template \
 
 echo Updating cloudformation stack...
 aws cloudformation deploy \
-  --stack-name darin-javabuilder-ci \
+  --stack-name javabuilder-cicd \
   --template-file ${TEMPLATE_FILE} \
   --capabilities CAPABILITY_IAM \
   "$@"
