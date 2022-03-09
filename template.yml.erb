@@ -412,6 +412,8 @@ Resources:
             ZUbJMN3hMFIFP4smAtjkKqguLJPFdcMij7WFDjL5kPQpxuc4RSq97iXRODIBjW1B\n zdN9ZpGRA4MDOu3BtLC69PwoFrSULAzlUmC5fJIwpaXoRGZEYRMQThlJ9VsRGwTG\n
             JTJJ4dWJ2cw61prbeU/HVCWD8OaNumz9tQIDAQAB\n
             -----END RSA PUBLIC KEY-----'
+          limit_per_hour: !Ref LimitPerHour
+          limit_per_day: !Ref LimitPerDay
 
   <%=name%>AuthorizerPermission:
     Type: AWS::Lambda::Permission
