@@ -10,6 +10,7 @@ if [[ $(aws sts get-caller-identity --query Arn --output text) =~ "475661607190:
   set -- "$@" --role-arn "arn:aws:iam::$(aws sts get-caller-identity --query Account --output text):role/admin/CloudFormationService"
 fi
 
+STACK_NAME=javabuilder-cicd
 TEMPLATE_FILE=cicd/2-cicd/pipeline.template.yml
 
 echo Validating cloudformation template...
@@ -19,8 +20,9 @@ aws cloudformation validate-template \
 
 echo Updating cloudformation stack...
 aws cloudformation deploy \
-  --stack-name javabuilder-cicd \
-  --template-file ${TEMPLATE_FILE} \
+  --stack-name $STACK_NAME \
+  --template-file $TEMPLATE_FILE \
+  --parameter-overrides GitHubBranch=main \
   --capabilities CAPABILITY_IAM \
   "$@"
 
