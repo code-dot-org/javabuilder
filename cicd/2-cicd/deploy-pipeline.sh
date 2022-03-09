@@ -2,7 +2,7 @@
 
 echo Deploying Javabuilder CICD Pipeline
 
-# Create/Update the Javabuilder setup/dependencies stack. This is manually created and maintained, and requires elevated permissions. 
+# Create/Update the Javabuilder build/deploy pipeline stack. This is manually created and maintained, but should not require elevated permissions. 
 
 # 'Developer' role requires a specific service role for all CloudFormation operations.
 if [[ $(aws sts get-caller-identity --query Arn --output text) =~ "475661607190:assumed-role/Developer/" ]]; then
