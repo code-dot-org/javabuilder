@@ -24,6 +24,17 @@ Parameters:
     Description: The amount of concurrency to allow for the BuildAndRunJavaProject Lambda.
     MinValue: 1
     Default: 3
+  LimitPerHour:
+    Type: Number
+    Description: The number of Javabuilder invocations allowed per user per hour.
+    MinValue: 1
+    Default: 10
+  LimitPerDay:
+    Type: Number
+    Description: The number of Javabuilder invocations allowed per user per day.
+    MinValue: 1
+    Default: 40
+
 <%
 JAVALAB_APP_TYPES = %w(
   Theater
