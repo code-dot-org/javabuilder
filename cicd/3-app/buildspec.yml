@@ -1,18 +1,7 @@
 version: 0.2
-env:
-  variables:
-    REF_NAME: ${GitHubBranch}
-    TEMPLATE_BUCKET: ${TemplateBucket}
-    OUTPUT_TEMPLATE: output.yml
-    SUB_DOMAIN: ${SubDomainName}
-    STAGING_SUB_DOMAIN: ${StagingSubDomainName}
-    TEMPLATE_CONFIG: configuration.json
-    STAGING_TEMPLATE_CONFIG: configuration-staging.json
 phases:
   install:
     runtime-versions:
-      # This appears to currently be Ruby 2.7.2
-      # https://github.com/aws/aws-codebuild-docker-images/master/al2/x86_64/standard/3.0/Dockerfile#L448-L450
       ruby: 2.7
       java: corretto11
       python: 3.8
