@@ -5,10 +5,30 @@ import org.code.media.Font;
 import org.code.media.FontStyle;
 import org.code.media.Image;
 
-public class Actor {
+public class Scene {
   
-  /** Initialize Theater with a default image. */
-  public Actor();
+  public Scene();
+
+  /** Returns the width of the theater canvas. */
+  public int getWidth();
+
+  /** Returns the height of the theater canvas. */
+  public int getHeight();
+
+  /**
+   * Clear the canvas and set the background to the given color name.
+   *
+   * @param color new background color name. If the name does not match a known color
+   *    or hex value, this call will set the background to black.
+   */
+  public void clear(String color);
+
+  /**
+   * Clear the canvas and set the background to the given color
+   *
+   * @param color new background color
+   */
+  public void clear(Color color);
 
   /**
    * Plays the array of samples provided.
@@ -200,7 +220,7 @@ public class Actor {
   /**
    * Draws an ellipse (an oval or a circle) on the canvas.
    *
-   * @param x the left side of the ellipse.
+   * @param x the left side of the ellipse
    * @param y the top of the ellipse
    * @param width the width of the ellipse
    * @param height the height of the ellipse
@@ -210,10 +230,10 @@ public class Actor {
   /**
    * Draws a rectangle on the canvas.
    *
-   * @param x the left side of the rectangle.
-   * @param y the top of the rectangle.
-   * @param width the width of the rectangle.
-   * @param height the height of the rectangle.
+   * @param x the left side of the rectangle
+   * @param y the top of the rectangle
+   * @param width the width of the rectangle
+   * @param height the height of the rectangle
    */
   public void drawRectangle(int x, int y, int width, int height);
 
