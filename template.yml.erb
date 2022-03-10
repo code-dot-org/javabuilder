@@ -693,6 +693,21 @@ Resources:
                 Period: 300
                 Stat: Sum
 <%end -%>
+# Need to update attribute type to N (number)
+# Should we dedupe user_id attribute name? Only way I see to do that is as a parameter, but we don't actually want to parameterize.
+  BlockedUsersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: javabuilder_blocked_users
+      KeySchema:
+        - AttributeName: user_id
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1000
+        WriteCapacityUnits: 5
+      AttributeDefinitions:
+        - AttributeName: user_id
+          AttributeType: S
 Outputs:
   JavabuilderURL:
     Value:
