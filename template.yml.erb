@@ -34,7 +34,6 @@ Parameters:
     Description: The number of Javabuilder invocations allowed per user per day.
     MinValue: 1
     Default: 40
-
 <%
 JAVALAB_APP_TYPES = %w(
   Theater
@@ -693,21 +692,90 @@ Resources:
                 Period: 300
                 Stat: Sum
 <%end -%>
-# Need to update attribute type to N (number)
-# Should we dedupe user_id attribute name? Only way I see to do that is as a parameter, but we don't actually want to parameterize.
+# We use shortened versions of names for partition keys (eg, user_id),
+# but values will be a concatenation of the domain name and appropriate ID.
+# Values will look something like:
+# studio.code.org#123456 (user_requests table)
+# studio.code.org#UserId#123456 (blocked_users table)
+<%
+  DOMAIN_AND_USER_ID_COMPOSITE_ATTRIBUTE_NAME = 'user_id'
+  DOMAIN_AND_TOKEN_ID_COMPOSITE_ATTRIBUTE_NAME = 'token_id'
+  DOMAIN_AND_SECTION_OWNER_ID_COMPOSITE_ATTRIBUTE_NAME = 'section_owner_id'
+  ISSUED_AT_TIMESTAMP_ATTRIBUTE_NAME = 'issued_at'
+  READ_CAPACITY_PER_SECOND = 1000
+  WRITE_CAPACITY_PER_SECOND = 5
+-%>
   BlockedUsersTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: javabuilder_blocked_users
+      TableName: !Sub "${SubDomainName}_blocked_users"
       KeySchema:
-        - AttributeName: user_id
+        - AttributeName: <%=DOMAIN_AND_USER_ID_COMPOSITE_ATTRIBUTE_NAME%>
           KeyType: HASH
       ProvisionedThroughput:
-        ReadCapacityUnits: 1000
-        WriteCapacityUnits: 5
+        ReadCapacityUnits: <%=READ_CAPACITY_PER_SECOND%>
+        WriteCapacityUnits: <%=WRITE_CAPACITY_PER_SECOND%>
       AttributeDefinitions:
-        - AttributeName: user_id
+        - AttributeName: <%=DOMAIN_AND_USER_ID_COMPOSITE_ATTRIBUTE_NAME%>
           AttributeType: S
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+  TokenStatusTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "${SubDomainName}_tokens"
+      KeySchema:
+        - AttributeName: <%=DOMAIN_AND_TOKEN_ID_COMPOSITE_ATTRIBUTE_NAME%>
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: <%=READ_CAPACITY_PER_SECOND%>
+        WriteCapacityUnits: <%=WRITE_CAPACITY_PER_SECOND%>
+      AttributeDefinitions:
+        - AttributeName: <%=DOMAIN_AND_TOKEN_ID_COMPOSITE_ATTRIBUTE_NAME%>
+          AttributeType: S
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+  UserRequestsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "${SubDomainName}_user_requests"
+      KeySchema:
+        - AttributeName: <%=DOMAIN_AND_TOKEN_ID_COMPOSITE_ATTRIBUTE_NAME%>
+          KeyType: HASH
+        - AttributeName: <%=ISSUED_AT_TIMESTAMP_ATTRIBUTE_NAME%>
+          KeyType: RANGE
+      ProvisionedThroughput:
+        ReadCapacityUnits: <%=READ_CAPACITY_PER_SECOND%>
+        WriteCapacityUnits: <%=WRITE_CAPACITY_PER_SECOND%>
+      AttributeDefinitions:
+        - AttributeName: <%=DOMAIN_AND_TOKEN_ID_COMPOSITE_ATTRIBUTE_NAME%>
+          AttributeType: S
+        - AttributeName: <%=ISSUED_AT_TIMESTAMP_ATTRIBUTE_NAME%>
+          AttributeType: N
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+  TeacherAssociatedRequestsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "${SubDomainName}_teacher_associated_requests"
+      KeySchema:
+        - AttributeName: <%=DOMAIN_AND_SECTION_OWNER_ID_COMPOSITE_ATTRIBUTE_NAME%>
+          KeyType: HASH
+        - AttributeName: <%=ISSUED_AT_TIMESTAMP_ATTRIBUTE_NAME%>
+          KeyType: RANGE
+      ProvisionedThroughput:
+        ReadCapacityUnits: <%=READ_CAPACITY_PER_SECOND%>
+        WriteCapacityUnits: <%=WRITE_CAPACITY_PER_SECOND%>
+      AttributeDefinitions:
+        - AttributeName: <%=DOMAIN_AND_SECTION_OWNER_ID_COMPOSITE_ATTRIBUTE_NAME%>
+          AttributeType: S
+        - AttributeName: <%=ISSUED_AT_TIMESTAMP_ATTRIBUTE_NAME%>
+          AttributeType: N
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
 Outputs:
   JavabuilderURL:
     Value:
