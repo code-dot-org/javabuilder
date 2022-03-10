@@ -24,6 +24,17 @@ Parameters:
     Description: The amount of concurrency to allow for the BuildAndRunJavaProject Lambda.
     MinValue: 1
     Default: 3
+  LimitPerHour:
+    Type: Number
+    Description: The number of Javabuilder invocations allowed per user per hour.
+    MinValue: 1
+    Default: 10
+  LimitPerDay:
+    Type: Number
+    Description: The number of Javabuilder invocations allowed per user per day.
+    MinValue: 1
+    Default: 40
+
 <%
 JAVALAB_APP_TYPES = %w(
   Theater
@@ -344,6 +355,9 @@ Resources:
 # a step we should take when we create our non-beta environment from scratch. At that point, we
 # should also update uses of HttpAPI and WebSocketAPI to be HttpApi and WebSocketApi, respectively,
 # to match the AWS standard elsewhere in this template. Example: "AWS::ApiGatewayV2::ApiMapping"
+#
+# Note: hourly and daily limit values provided to both authorizers here as environment variables,
+# but are only needed in the HTTP authorizer.
 <%{
   Http: {
     LambdaName: "Http",
@@ -401,6 +415,8 @@ Resources:
             ZUbJMN3hMFIFP4smAtjkKqguLJPFdcMij7WFDjL5kPQpxuc4RSq97iXRODIBjW1B\n zdN9ZpGRA4MDOu3BtLC69PwoFrSULAzlUmC5fJIwpaXoRGZEYRMQThlJ9VsRGwTG\n
             JTJJ4dWJ2cw61prbeU/HVCWD8OaNumz9tQIDAQAB\n
             -----END RSA PUBLIC KEY-----'
+          limit_per_hour: !Ref LimitPerHour
+          limit_per_day: !Ref LimitPerDay
 
   <%=name%>AuthorizerPermission:
     Type: AWS::Lambda::Permission

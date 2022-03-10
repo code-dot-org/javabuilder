@@ -25,6 +25,10 @@ STACK=${SUB_DOMAIN}
 PROVISIONED_CONCURRENT_EXECUTIONS=${PROVISIONED_CONCURRENT_EXECUTIONS-'1'}
 RESERVED_CONCURRENT_EXECUTIONS=${RESERVED_CONCURRENT_EXECUTIONS-'3'}
 
+# Default per-user limits to prevent javabuilder abuse.
+LIMIT_PER_HOUR=${LIMIT_PER_HOUR-'10'}
+LIMIT_PER_DAY=${LIMIT_PER_DAY-'40'}
+
 erb -T - template.yml.erb > template.yml
 TEMPLATE=template.yml
 OUTPUT_TEMPLATE=$(mktemp)
@@ -46,6 +50,8 @@ fi
 
 aws cloudformation deploy \
   --template-file ${OUTPUT_TEMPLATE} \
-  --parameter-overrides SubDomainName=$SUB_DOMAIN BaseDomainName=$BASE_DOMAIN BaseDomainNameHostedZonedID=$BASE_DOMAIN_HOSTED_ZONE_ID ProvisionedConcurrentExecutions=$PROVISIONED_CONCURRENT_EXECUTIONS ReservedConcurrentExecutions=$RESERVED_CONCURRENT_EXECUTIONS \
+  --parameter-overrides SubDomainName=$SUB_DOMAIN BaseDomainName=$BASE_DOMAIN BaseDomainNameHostedZonedID=$BASE_DOMAIN_HOSTED_ZONE_ID \
+    ProvisionedConcurrentExecutions=$PROVISIONED_CONCURRENT_EXECUTIONS ReservedConcurrentExecutions=$RESERVED_CONCURRENT_EXECUTIONS \
+    LimitPerHour=$LIMIT_PER_HOUR LimitPerDay=$LIMIT_PER_DAY \
   --stack-name ${STACK} \
   "$@"
