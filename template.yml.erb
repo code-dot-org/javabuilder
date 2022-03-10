@@ -355,6 +355,9 @@ Resources:
 # a step we should take when we create our non-beta environment from scratch. At that point, we
 # should also update uses of HttpAPI and WebSocketAPI to be HttpApi and WebSocketApi, respectively,
 # to match the AWS standard elsewhere in this template. Example: "AWS::ApiGatewayV2::ApiMapping"
+#
+# Note: hourly and daily limit values provided to both authorizers here as environment variables,
+# but are only needed in the HTTP authorizer.
 <%{
   Http: {
     LambdaName: "Http",
