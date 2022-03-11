@@ -357,6 +357,8 @@ Resources:
 #
 # Note: hourly and daily limit values provided to both authorizers here as environment variables,
 # but are only needed in the HTTP authorizer.
+# Both authorizers need to access the token_status DynamoDB table, but only the HTTP authorizer
+# needs to access to the other tables.
 <%{
   Http: {
     LambdaName: "Http",
