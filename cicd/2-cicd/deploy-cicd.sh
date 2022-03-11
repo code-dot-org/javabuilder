@@ -11,7 +11,7 @@ if [[ $(aws sts get-caller-identity --query Arn --output text) =~ "475661607190:
 fi
 
 STACK_NAME=javabuilder-cicd
-TEMPLATE_FILE=cicd/2-cicd/pipeline.template.yml
+TEMPLATE_FILE=cicd/2-cicd/cicd.template.yml
 
 echo Validating cloudformation template...
 aws cloudformation validate-template \

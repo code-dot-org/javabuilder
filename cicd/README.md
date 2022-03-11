@@ -42,8 +42,8 @@ In order to trigger the application resources to be updated upon changes to the 
 
 These resources are deployed manually when changes occur. We could make yet another CodePipeline resource in the Setup section, but not today.
 
-* "deploy-pipeline.sh" - Shell script to deploy this stack.
-* "pipeline.template.yml" - AWS resources for the CI/CD infrastructure
+* "deploy-cicd.sh" - Shell script to deploy this stack.
+* "cicd.template.yml" - AWS resources for the CI/CD infrastructure
 
 ### 1 - Setup
 
