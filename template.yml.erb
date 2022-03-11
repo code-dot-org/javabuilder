@@ -698,6 +698,7 @@ Resources:
                 Period: 300
                 Stat: Sum
 <%end -%>
+
 # We use shortened versions of names for partition keys (eg, user_id),
 # but values will be a concatenation of the domain name and appropriate ID.
 # Values will look something like:
@@ -727,6 +728,7 @@ Resources:
           AttributeType: S
       PointInTimeRecoverySpecification:
         PointInTimeRecoveryEnabled: true
+
   TokenStatusTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -743,12 +745,13 @@ Resources:
       TimeToLiveSpecification:
         AttributeName: <%=TIME_TO_LIVE_ATTRIBUTE_NAME%>
         Enabled: true
+
   UserRequestsTable:
     Type: AWS::DynamoDB::Table
     Properties:
       TableName: !Sub "${SubDomainName}_user_requests"
       KeySchema:
-        - AttributeName: <%=DOMAIN_AND_TOKEN_ID_COMPOSITE_ATTRIBUTE_NAME%>
+        - AttributeName: <%=DOMAIN_AND_USER_ID_COMPOSITE_ATTRIBUTE_NAME%>
           KeyType: HASH
         - AttributeName: <%=ISSUED_AT_TIMESTAMP_ATTRIBUTE_NAME%>
           KeyType: RANGE
@@ -756,13 +759,14 @@ Resources:
         ReadCapacityUnits: <%=READ_CAPACITY_PER_SECOND%>
         WriteCapacityUnits: <%=WRITE_CAPACITY_PER_SECOND%>
       AttributeDefinitions:
-        - AttributeName: <%=DOMAIN_AND_TOKEN_ID_COMPOSITE_ATTRIBUTE_NAME%>
+        - AttributeName: <%=DOMAIN_AND_USER_ID_COMPOSITE_ATTRIBUTE_NAME%>
           AttributeType: S
         - AttributeName: <%=ISSUED_AT_TIMESTAMP_ATTRIBUTE_NAME%>
           AttributeType: N
       TimeToLiveSpecification:
         AttributeName: <%=TIME_TO_LIVE_ATTRIBUTE_NAME%>
         Enabled: true
+
   TeacherAssociatedRequestsTable:
     Type: AWS::DynamoDB::Table
     Properties:
