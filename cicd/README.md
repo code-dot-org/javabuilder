@@ -23,16 +23,31 @@ Objectives:
   * If Test environment passes all tests, then deploy to Prod environment
   * Deploy the application to a Dev environment
 
-## Implementation
+## CI/CD Implementation
 
-### cicd/1-setup
+There are three phases of the CI/CD configuration. They are best explained in reverse order from the way they flow in practice.
 
-The CI/CD resources require certain IAM Roles, S3 Buckets, and other resources to exist. These resources are more global and could be used by multiple builds and pipelines. The <cicd/1-setup/setup.template.yml> cloudformation template creates and exports shared resources. It is deployed manually whenever there are changes via the <cicd/1-setup/deploy-setup.sh> script.
+### 3 - App
 
-### cicd/2-cicd
+All of the application resources are defined in a CloudFormation template. We could manually update the CloudFormation stack with an updated template every time we have a code change, but it is considerably less effort and less risky to automate this with a CI/CD pipeline. By using parameters, we can use the same code to deploy multiple environments.
 
-This directory contains CodeBuild and CodePipeline resources for building, verifying, and deploying the application. Templates here are parameterized to scope resources to a **target branch**, likely `main`. Any changes to files in this directory will need to be manually applied via the <cicd/2-cicd/deploy-pipeline.sh> script.
+We also keep some CodeBuild configuration here, as this code tends to be more coupled to current application code, than the CI/CD code in the next section.
 
-### cicd/3-app
+* "app.template.yml" - AWS resources for the application
+* "buildspec.yml" - Main build/verify instructions
 
-This directory contains resources necessary for running the application itself. Templates are parameterized to allow multiple environments to be deployed with the same code. The build/verify scripts are also stored here. Any changes to files in this directory will be enacted upon PR or merge by the CodeBuild and CodePipeline resources defined in "cicd/2-cicd"
+### 2 - CI/CD
+
+In order to trigger the application resources to be updated upon changes to the source code, we need CI/CD resources. This is accomplished by a CloudFormation template that defines a stack of resources, primarily including a CodeBuild project and a CodePipeline pipeline which update the [App Stack](#3---app). These CI/CD resources only need to be deployed once per deployable branch, `main` in our case (we might choose to create adhoc environments by launching a new CI/CD stack targeting that branch).
+
+These resources are deployed manually when changes occur. We could make yet another CodePipeline resource in the Setup section, but not today.
+
+* "deploy-pipeline.sh" - Shell script to deploy this stack.
+* "pipeline.template.yml" - AWS resources for the CI/CD infrastructure
+
+### 1 - Setup
+
+Finally, all of the above need some Roles to exist in the AWS accounts before we can run things with appropriate permisions. These roles are exported and used elsewhere. Elevated permissions is likely required to update these. This only needs to be created once, as roles and other resources can be shared by all CI/CD stacks for this application.
+
+* "deploy-setup.sh"
+* "setup.template.yml" - AWS resources for the Setup infrastructure
