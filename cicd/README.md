@@ -31,6 +31,8 @@ There are three phases of the CI/CD configuration. They are best explained in re
 
 All of the application resources are defined in a CloudFormation template. We could manually update the CloudFormation stack with an updated template every time we have a code change, but it is considerably less effort and less risky to automate this with a CI/CD pipeline. By using parameters, we can use the same code to deploy multiple environments.
 
+**Note: The application template has not been incorporated into the CI/CD implementation yet. That is the next step. The plan is to migrate 'template.yml.erb' from the root, into this folder.**
+
 We also keep some CodeBuild configuration here, as this code tends to be more coupled to current application code, than the CI/CD code in the next section.
 
 * "app.template.yml" - AWS resources for the application
