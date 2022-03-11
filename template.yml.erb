@@ -416,6 +416,10 @@ Resources:
             -----END RSA PUBLIC KEY-----'
           limit_per_hour: !Ref LimitPerHour
           limit_per_day: !Ref LimitPerDay
+          blocked_users_table: !Ref BlockedUsersTable
+          token_status_table: !Ref TokenStatusTable
+          user_requests_table: !Ref UserRequestsTable
+          teacher_associated_requests_table: !Ref TeacherAssociatedRequestsTable
 
   <%=name%>AuthorizerPermission:
     Type: AWS::Lambda::Permission
@@ -702,6 +706,7 @@ Resources:
   DOMAIN_AND_TOKEN_ID_COMPOSITE_ATTRIBUTE_NAME = 'token_id'
   DOMAIN_AND_SECTION_OWNER_ID_COMPOSITE_ATTRIBUTE_NAME = 'section_owner_id'
   ISSUED_AT_TIMESTAMP_ATTRIBUTE_NAME = 'issued_at'
+  TIME_TO_LIVE_ATTRIBUTE_NAME = 'ttl'
   READ_CAPACITY_PER_SECOND = 1000
   WRITE_CAPACITY_PER_SECOND = 1000
 -%>
@@ -734,7 +739,7 @@ Resources:
         - AttributeName: <%=DOMAIN_AND_TOKEN_ID_COMPOSITE_ATTRIBUTE_NAME%>
           AttributeType: S
       TimeToLiveSpecification:
-        AttributeName: ttl
+        AttributeName: <%=TIME_TO_LIVE_ATTRIBUTE_NAME%>
         Enabled: true
   UserRequestsTable:
     Type: AWS::DynamoDB::Table
@@ -754,7 +759,7 @@ Resources:
         - AttributeName: <%=ISSUED_AT_TIMESTAMP_ATTRIBUTE_NAME%>
           AttributeType: N
       TimeToLiveSpecification:
-        AttributeName: ttl
+        AttributeName: <%=TIME_TO_LIVE_ATTRIBUTE_NAME%>
         Enabled: true
   TeacherAssociatedRequestsTable:
     Type: AWS::DynamoDB::Table
@@ -774,7 +779,7 @@ Resources:
         - AttributeName: <%=ISSUED_AT_TIMESTAMP_ATTRIBUTE_NAME%>
           AttributeType: N
       TimeToLiveSpecification:
-        AttributeName: ttl
+        AttributeName: <%=TIME_TO_LIVE_ATTRIBUTE_NAME%>
         Enabled: true
 Outputs:
   JavabuilderURL:
