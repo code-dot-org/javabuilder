@@ -12,7 +12,7 @@ phases:
     # This should be moved to a shell script if it gets more complicated.
     commands:
       - set -e
-      - BRANCH_NAME=${CODEBUILD_WEBHOOK_HEAD_REF##*/}
+      - BRANCH_NAME=${CODEBUILD_WEBHOOK_HEAD_REF#"refs/heads/"}
       - ARTIFACT_PATH=branch/$BRANCH_NAME/$CODEBUILD_BUILD_NUMBER
       - cd ./javabuilder-authorizer
       - ./build.sh
