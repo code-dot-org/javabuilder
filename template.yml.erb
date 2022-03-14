@@ -34,7 +34,6 @@ Parameters:
     Description: The number of Javabuilder invocations allowed per user per day.
     MinValue: 1
     Default: 40
-
 <%
 JAVALAB_APP_TYPES = %w(
   Theater
@@ -358,6 +357,8 @@ Resources:
 #
 # Note: hourly and daily limit values provided to both authorizers here as environment variables,
 # but are only needed in the HTTP authorizer.
+# Both authorizers need to access the token_status DynamoDB table, but only the HTTP authorizer
+# needs to access to the other tables.
 <%{
   Http: {
     LambdaName: "Http",
@@ -417,6 +418,10 @@ Resources:
             -----END RSA PUBLIC KEY-----'
           limit_per_hour: !Ref LimitPerHour
           limit_per_day: !Ref LimitPerDay
+          blocked_users_table: !Ref BlockedUsersTable
+          token_status_table: !Ref TokenStatusTable
+          user_requests_table: !Ref UserRequestsTable
+          teacher_associated_requests_table: !Ref TeacherAssociatedRequestsTable
 
   <%=name%>AuthorizerPermission:
     Type: AWS::Lambda::Permission
@@ -693,6 +698,95 @@ Resources:
                 Period: 300
                 Stat: Sum
 <%end -%>
+
+# We use shortened versions of names for partition keys (eg, user_id),
+# but values will be a concatenation of the domain name and appropriate ID.
+# Values will look something like:
+# studio.code.org#123456 (user_requests table)
+# studio.code.org#UserId#123456 (blocked_users table)
+<%
+  DOMAIN_AND_USER_ID_COMPOSITE_ATTRIBUTE_NAME = 'user_id'
+  DOMAIN_AND_TOKEN_ID_COMPOSITE_ATTRIBUTE_NAME = 'token_id'
+  DOMAIN_AND_SECTION_OWNER_ID_COMPOSITE_ATTRIBUTE_NAME = 'section_owner_id'
+  ISSUED_AT_TIMESTAMP_ATTRIBUTE_NAME = 'issued_at'
+  TIME_TO_LIVE_ATTRIBUTE_NAME = 'ttl'
+  READ_CAPACITY_PER_SECOND = 1000
+  WRITE_CAPACITY_PER_SECOND = 1000
+-%>
+  BlockedUsersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "${SubDomainName}_blocked_users"
+      KeySchema:
+        - AttributeName: <%=DOMAIN_AND_USER_ID_COMPOSITE_ATTRIBUTE_NAME%>
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: <%=READ_CAPACITY_PER_SECOND%>
+        WriteCapacityUnits: <%=WRITE_CAPACITY_PER_SECOND%>
+      AttributeDefinitions:
+        - AttributeName: <%=DOMAIN_AND_USER_ID_COMPOSITE_ATTRIBUTE_NAME%>
+          AttributeType: S
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+
+  TokenStatusTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "${SubDomainName}_tokens"
+      KeySchema:
+        - AttributeName: <%=DOMAIN_AND_TOKEN_ID_COMPOSITE_ATTRIBUTE_NAME%>
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: <%=READ_CAPACITY_PER_SECOND%>
+        WriteCapacityUnits: <%=WRITE_CAPACITY_PER_SECOND%>
+      AttributeDefinitions:
+        - AttributeName: <%=DOMAIN_AND_TOKEN_ID_COMPOSITE_ATTRIBUTE_NAME%>
+          AttributeType: S
+      TimeToLiveSpecification:
+        AttributeName: <%=TIME_TO_LIVE_ATTRIBUTE_NAME%>
+        Enabled: true
+
+  UserRequestsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "${SubDomainName}_user_requests"
+      KeySchema:
+        - AttributeName: <%=DOMAIN_AND_USER_ID_COMPOSITE_ATTRIBUTE_NAME%>
+          KeyType: HASH
+        - AttributeName: <%=ISSUED_AT_TIMESTAMP_ATTRIBUTE_NAME%>
+          KeyType: RANGE
+      ProvisionedThroughput:
+        ReadCapacityUnits: <%=READ_CAPACITY_PER_SECOND%>
+        WriteCapacityUnits: <%=WRITE_CAPACITY_PER_SECOND%>
+      AttributeDefinitions:
+        - AttributeName: <%=DOMAIN_AND_USER_ID_COMPOSITE_ATTRIBUTE_NAME%>
+          AttributeType: S
+        - AttributeName: <%=ISSUED_AT_TIMESTAMP_ATTRIBUTE_NAME%>
+          AttributeType: N
+      TimeToLiveSpecification:
+        AttributeName: <%=TIME_TO_LIVE_ATTRIBUTE_NAME%>
+        Enabled: true
+
+  TeacherAssociatedRequestsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "${SubDomainName}_teacher_associated_requests"
+      KeySchema:
+        - AttributeName: <%=DOMAIN_AND_SECTION_OWNER_ID_COMPOSITE_ATTRIBUTE_NAME%>
+          KeyType: HASH
+        - AttributeName: <%=ISSUED_AT_TIMESTAMP_ATTRIBUTE_NAME%>
+          KeyType: RANGE
+      ProvisionedThroughput:
+        ReadCapacityUnits: <%=READ_CAPACITY_PER_SECOND%>
+        WriteCapacityUnits: <%=WRITE_CAPACITY_PER_SECOND%>
+      AttributeDefinitions:
+        - AttributeName: <%=DOMAIN_AND_SECTION_OWNER_ID_COMPOSITE_ATTRIBUTE_NAME%>
+          AttributeType: S
+        - AttributeName: <%=ISSUED_AT_TIMESTAMP_ATTRIBUTE_NAME%>
+          AttributeType: N
+      TimeToLiveSpecification:
+        AttributeName: <%=TIME_TO_LIVE_ATTRIBUTE_NAME%>
+        Enabled: true
 Outputs:
   JavabuilderURL:
     Value:
