@@ -1,4 +1,4 @@
-package org.code.theater;
+package org.code.theater.support;
 
 public enum ExceptionKeys {
   DUPLICATE_PLAY_COMMAND,

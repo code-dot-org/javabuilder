@@ -1,4 +1,4 @@
-package org.code.theater;
+package org.code.theater.support;
 
 public enum TheaterSignalKey {
   // This message contains the url to a visual element

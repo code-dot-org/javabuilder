@@ -1,4 +1,4 @@
-package org.code.theater;
+package org.code.theater.support;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
@@ -15,7 +15,7 @@ import org.code.protocol.InternalServerRuntimeError;
  * Writer to generate a gif from a set of images. The gif will be stored in the given
  * ByteArrayOutputStream.
  */
-class GifWriter {
+public class GifWriter {
   private ImageWriter writer;
   private ImageWriteParam params;
   private ImageOutputStream imageOutputStream;
