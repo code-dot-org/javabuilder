@@ -1,4 +1,4 @@
-package org.code.theater;
+package org.code.theater.support;
 
 import java.util.HashMap;
 import org.code.protocol.*;
@@ -7,7 +7,7 @@ import org.code.protocol.*;
  * Publishes progress updates to the {@link OutputAdapter} while Theater projects are being
  * generated
  */
-class TheaterProgressPublisher {
+public class TheaterProgressPublisher {
   private static final double UPDATE_TIME_S = 5.0;
   private static final double MAX_TIME_S = 120.0;
 
