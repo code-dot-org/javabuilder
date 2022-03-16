@@ -13,7 +13,7 @@ public class Scene {
   private static final int SCENE_HEIGHT = 400;
 
   // Visible for testing
-  static final Font DEFAULT_FONT = Font.MONO;
+  static final Font DEFAULT_FONT = Font.SANS;
   static final FontStyle DEFAULT_FONT_STYLE = FontStyle.NORMAL;
   static final int DEFAULT_TEXT_HEIGHT = 20;
   static final Color DEFAULT_COLOR = Color.BLACK;
