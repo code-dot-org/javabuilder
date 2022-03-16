@@ -2,11 +2,19 @@ import ws from 'k6/ws';
 import http from 'k6/http';
 import { check, sleep } from 'k6';
 import { Counter } from 'k6/metrics';
+import { helloWorld, throwsException } from './sources.js';
 
 
 export const options = {
-  vus: 2,
-  duration: '30s',
+  stages: [
+    {duration: '30s', target: 5}, // ramp up to 5 users over 30 seconds
+    {duration: '30s', target: 5}, // stay at 5 users for 30 seconds
+    {duration: '30s', target: 0}, // ramp down to 0 users over 30 seconds
+  ],
+  thresholds: {
+    'exceptions': ['count == 0'],
+    'errors': ['count == 0']
+  }
 };
 
 const exceptionCounter = new Counter('exceptions');
@@ -28,16 +36,8 @@ const uploadParams = {
   },
 };
 
-
-const sources = JSON.stringify({
-  "sources": {
-    "main.json": "{\"source\":{\"HelloWorld.java\":{\"text\":\"public class HelloWorld {\\n  public static void main(String[] args)  {\\n    System.out.println(\\\"Hello World\\\");\\n  }\\n}\",\"isVisible\":true}},\"animations\":{}}"
-  },
-  "assetUrls": {}
-});
-
 export default function () {
-  const uploadResult = http.put(uploadUrl, sources, uploadParams);
+  const uploadResult = http.put(uploadUrl, helloWorld, uploadParams);
 
   const res = ws.connect(url, websocketParams, function (socket) {
     socket.on('open', () => console.log('connected'));
