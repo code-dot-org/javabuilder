@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.code.media.Image;
 import org.code.protocol.*;
+import org.code.theater.support.TheaterMessage;
+import org.code.theater.support.TheaterSignalKey;
 
 public class Prompter {
   private static final AtomicInteger FILE_INDEX = new AtomicInteger(0);

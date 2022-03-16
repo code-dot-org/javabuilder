@@ -10,6 +10,8 @@ import java.net.URL;
 import java.util.List;
 import org.code.media.Image;
 import org.code.protocol.*;
+import org.code.theater.support.TheaterMessage;
+import org.code.theater.support.TheaterSignalKey;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

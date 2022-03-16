@@ -1,4 +1,4 @@
-package org.code.theater;
+package org.code.theater.support;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;

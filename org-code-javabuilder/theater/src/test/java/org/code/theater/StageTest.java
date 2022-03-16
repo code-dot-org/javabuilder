@@ -16,6 +16,7 @@ import org.code.media.Font;
 import org.code.media.FontStyle;
 import org.code.media.Image;
 import org.code.protocol.*;
+import org.code.theater.support.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

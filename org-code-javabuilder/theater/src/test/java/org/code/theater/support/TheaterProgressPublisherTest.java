@@ -1,4 +1,4 @@
-package org.code.theater;
+package org.code.theater.support;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;

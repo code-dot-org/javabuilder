@@ -1,13 +1,13 @@
-package org.code.theater;
+package org.code.theater.support;
 
 import org.code.protocol.JavabuilderRuntimeException;
 
 public class TheaterRuntimeException extends JavabuilderRuntimeException {
-  protected TheaterRuntimeException(ExceptionKeys key) {
+  public TheaterRuntimeException(ExceptionKeys key) {
     super(key);
   }
 
-  protected TheaterRuntimeException(ExceptionKeys key, Throwable cause) {
+  public TheaterRuntimeException(ExceptionKeys key, Throwable cause) {
     super(key, cause);
   }
 
