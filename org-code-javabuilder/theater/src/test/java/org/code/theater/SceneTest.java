@@ -23,17 +23,20 @@ class SceneTest {
   }
 
   @Test
-  public void testAllActions() {
-    // CLEAR_SCENE
+  public void testClearScene() {
     unitUnderTest.clear(Color.AQUA);
     assertEquals(Color.AQUA, getLastAction(ClearSceneAction.class).getColor());
+  }
 
-    // PLAY_SOUND
+  @Test
+  public void testPlaySound() {
     final double[] samples = {1.0, 0.0, 1.0, 0.0};
     unitUnderTest.playSound(samples);
     assertEquals(samples, getLastAction(PlaySoundAction.class).getSamples());
+  }
 
-    // PLAY_NOTE
+  @Test
+  public void testPlayNote() {
     final Instrument instrument = Instrument.PIANO;
     final int note = 84;
     final double duration = 2.0;
@@ -41,12 +44,27 @@ class SceneTest {
     assertEquals(instrument, getLastAction(PlayNoteAction.class).getInstrument());
     assertEquals(note, getLastAction(PlayNoteAction.class).getNote());
     assertEquals(duration, getLastAction(PlayNoteAction.class).getSeconds());
+  }
 
-    // PAUSE
+  @Test
+  public void testPlayNoteWithDefaultInstrument() {
+    final int note = 84;
+    final double duration = 2.0;
+    unitUnderTest.playNote(note, duration);
+    assertEquals(DEFAULT_INSTRUMENT, getLastAction(PlayNoteAction.class).getInstrument());
+    assertEquals(note, getLastAction(PlayNoteAction.class).getNote());
+    assertEquals(duration, getLastAction(PlayNoteAction.class).getSeconds());
+  }
+
+  @Test
+  public void testPause() {
+    final double duration = 2.0;
     unitUnderTest.pause(duration);
     assertEquals(duration, getLastAction(PauseAction.class).getSeconds());
+  }
 
-    // DRAW_IMAGE
+  @Test
+  public void testDrawImage() {
     final Image image = mock(Image.class);
     final int x = 100;
     final int y = 100;
@@ -67,15 +85,21 @@ class SceneTest {
     assertEquals(width, getLastAction(DrawImageAction.class).getWidth());
     assertEquals(height, getLastAction(DrawImageAction.class).getHeight());
     assertEquals(rotation, getLastAction(DrawImageAction.class).getRotation());
+  }
 
-    // DRAW_TEXT
+  @Test
+  public void testDrawText() {
+    final int x = 100;
+    final int y = 100;
     final String text = "text123";
     unitUnderTest.drawText(text, x, y);
     assertSame(text, getLastAction(DrawTextAction.class).getText());
     assertEquals(x, getLastAction(DrawTextAction.class).getX());
     assertEquals(y, getLastAction(DrawTextAction.class).getY());
+  }
 
-    // DRAW_LINE
+  @Test
+  public void testDrawLine() {
     final int startX = 5;
     final int startY = 10;
     final int endX = 15;
@@ -85,8 +109,12 @@ class SceneTest {
     assertEquals(startY, getLastAction(DrawLineAction.class).getStartY());
     assertEquals(endX, getLastAction(DrawLineAction.class).getEndX());
     assertEquals(endY, getLastAction(DrawLineAction.class).getEndY());
+  }
 
-    // DRAW_POLYGON
+  @Test
+  public void testDrawPolygon() {
+    final int x = 100;
+    final int y = 100;
     final int sides = 5;
     final int radius = 100;
     unitUnderTest.drawRegularPolygon(x, y, sides, radius);
@@ -94,22 +122,36 @@ class SceneTest {
     assertEquals(y, getLastAction(DrawPolygonAction.class).getY());
     assertEquals(sides, getLastAction(DrawPolygonAction.class).getSides());
     assertEquals(radius, getLastAction(DrawPolygonAction.class).getRadius());
+  }
 
-    // DRAW_SHAPE
+  @Test
+  public void testDrawShape() {
     final int[] points = {1, 2, 3, 4, 5, 6};
     final boolean close = true;
     unitUnderTest.drawShape(points, close);
     assertEquals(points, getLastAction(DrawShapeAction.class).getPoints());
     assertEquals(close, getLastAction(DrawShapeAction.class).isClosed());
+  }
 
-    // DRAW_ELLIPSE
+  @Test
+  public void testDrawEllipse() {
+    final int x = 100;
+    final int y = 100;
+    final int width = 150;
+    final int height = 150;
     unitUnderTest.drawEllipse(x, y, width, height);
     assertEquals(x, getLastAction(DrawEllipseAction.class).getX());
     assertEquals(y, getLastAction(DrawEllipseAction.class).getY());
     assertEquals(width, getLastAction(DrawEllipseAction.class).getWidth());
     assertEquals(height, getLastAction(DrawEllipseAction.class).getHeight());
+  }
 
-    // DRAW_RECTANGLE
+  @Test
+  public void testDrawRectangle() {
+    final int x = 100;
+    final int y = 100;
+    final int width = 150;
+    final int height = 150;
     unitUnderTest.drawRectangle(x, y, width, height);
     assertEquals(x, getLastAction(DrawRectangleAction.class).getX());
     assertEquals(y, getLastAction(DrawRectangleAction.class).getY());

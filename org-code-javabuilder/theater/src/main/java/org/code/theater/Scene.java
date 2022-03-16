@@ -9,8 +9,8 @@ import org.code.media.*;
 import org.code.theater.support.*;
 
 public class Scene {
-  private static final int WIDTH = 400;
-  private static final int HEIGHT = 400;
+  private static final int SCENE_WIDTH = 400;
+  private static final int SCENE_HEIGHT = 400;
 
   // Visible for testing
   static final Font DEFAULT_FONT = Font.MONO;
@@ -18,6 +18,7 @@ public class Scene {
   static final int DEFAULT_TEXT_HEIGHT = 20;
   static final Color DEFAULT_COLOR = Color.BLACK;
   static final double DEFAULT_STROKE_WIDTH = 1.0;
+  static final Instrument DEFAULT_INSTRUMENT = Instrument.PIANO;
 
   private final List<SceneAction> actions;
 
@@ -43,12 +44,12 @@ public class Scene {
 
   /** Returns the width of the theater canvas. */
   public final int getWidth() {
-    return Scene.WIDTH;
+    return SCENE_WIDTH;
   }
 
   /** Returns the height of the theater canvas. */
   public final int getHeight() {
-    return Scene.HEIGHT;
+    return SCENE_HEIGHT;
   }
 
   /**
@@ -89,6 +90,30 @@ public class Scene {
     } catch (FileNotFoundException e) {
       throw new TheaterRuntimeException(ExceptionKeys.FILE_NOT_FOUND, e);
     }
+  }
+
+  /**
+   * Plays a note with the default instrument (piano).
+   *
+   * @param note the note to play. 60 represents middle C on a piano.
+   * @param seconds length of the note.
+   */
+  public final void playNote(int note, double seconds) {
+    this.playNote(DEFAULT_INSTRUMENT, note, seconds);
+  }
+
+  /**
+   * Plays a note with the default instrument (piano) and adds a pause in drawing/audio for the
+   * duration of the note, so that subsequent play commands begin after the note has finished
+   * playing. Convenience method for playing notes in sequence without needing to call pause()
+   * between each one.
+   *
+   * @param note the note to play. 60 represents middle C on a piano.
+   * @param seconds length of the note.
+   */
+  public final void playNoteAndPause(int note, double seconds) {
+    this.playNote(DEFAULT_INSTRUMENT, note, seconds);
+    this.pause(seconds);
   }
 
   /**
@@ -374,7 +399,7 @@ public class Scene {
 
   /**
    * Sets the fill color for all shapes drawn. Note that this only applies to drawing operations
-   * performed by this scene.
+   * displayed by this scene.
    *
    * @param color the color value to fill any shape.
    */
@@ -383,8 +408,8 @@ public class Scene {
   }
 
   /**
-   * Sets the color of lines drawn. Note that this only applies to drawing operations performed by
-   * this actor.
+   * Sets the color of lines drawn. Note that this only applies to drawing operations displayed by
+   * this scene.
    *
    * @param color the color to draw lines with.
    */
@@ -394,7 +419,7 @@ public class Scene {
 
   /**
    * Sets the fill color for all shapes drawn. Note that this only applies to drawing operations
-   * performed by this actor.
+   * displayed by this scene.
    *
    * @param color the color name to fill any shape. If the name doesn't match a known color or hex
    *     value, this call will set the fill color to nothing (e.g. transparent fill).
@@ -408,7 +433,7 @@ public class Scene {
    *
    * @param color the color name to draw lines with. If the name doesn't match a known color or hex
    *     value, this call will set the stroke color to nothing (e.g. transparent stroke). Note that
-   *     this only applies to drawing operations performed by this actor.
+   *     this only applies to drawing operations displayed by this scene.
    */
   public final void setStrokeColor(String color) {
     this.setStrokeColor(new Color(color));
@@ -416,7 +441,7 @@ public class Scene {
 
   /**
    * Removes the stroke color so any shapes have no stroke. Note that this only applies to drawing
-   * operations performed by this actor.
+   * operations displayed by this scene.
    */
   public final void removeStrokeColor() {
     this.strokeColor = null;
@@ -424,7 +449,7 @@ public class Scene {
 
   /**
    * Removes the fill color so any shapes have no fill. Note that this only applies to drawing
-   * operations performed by this actor.
+   * operations displayed by this scene.
    */
   public final void removeFillColor() {
     this.fillColor = null;
