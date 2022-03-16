@@ -14,6 +14,7 @@ import org.code.media.Color;
 import org.code.media.Font;
 import org.code.media.Image;
 import org.code.protocol.*;
+import org.code.theater.support.*;
 
 public class Stage {
   private final BufferedImage image;

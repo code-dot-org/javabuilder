@@ -1,9 +1,10 @@
-package org.code.theater;
+package org.code.theater.support;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.code.theater.Instrument;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
