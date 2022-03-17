@@ -17,14 +17,13 @@ import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
 import org.code.protocol.*;
-import org.code.protocol.LoggerUtils.ClearStatus;
-import org.code.protocol.LoggerUtils.SessionTime;
 import org.code.validation.support.UserTestOutputAdapter;
 import org.json.JSONObject;
 
@@ -62,6 +61,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
    */
   @Override
   public String handleRequest(Map<String, String> lambdaInput, Context context) {
+    context.getLogger().log("1: " + LocalDateTime.now().toString());
     // The lambda handler should have minimal application logic:
     // https://docs.aws.amazon.com/lambda/latest/dg/best-practices.html
     final String connectionId = lambdaInput.get("connectionId");
@@ -83,6 +83,10 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
         JSONUtils.booleanFromJSONObjectMember(options, "useNeighborhood");
     final List<String> compileList = JSONUtils.listFromJSONObjectMember(options, "compileList");
 
+    // The biggest chunk of time happens between points 2 and 3. Followed by points 3-4. Can we
+    // reuse parts of this between invocations.
+    // Also, wtf is going on with Neighborhood not updating??
+    context.getLogger().log("2: " + LocalDateTime.now().toString());
     Logger logger = Logger.getLogger(MAIN_LOGGER);
     logger.addHandler(
         new LambdaLogHandler(
@@ -105,6 +109,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
                 new AwsClientBuilder.EndpointConfiguration(apiEndpoint, "us-east-1"))
             .build();
     final AWSOutputAdapter awsOutputAdapter = new AWSOutputAdapter(connectionId, api);
+    context.getLogger().log("3: " + LocalDateTime.now().toString());
 
     // Create user input handlers
     final AmazonSQS sqsClient = AmazonSQSClientBuilder.defaultClient();
@@ -119,6 +124,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     if (executionType == ExecutionType.TEST) {
       outputAdapter = new UserTestOutputAdapter(awsOutputAdapter);
     }
+    context.getLogger().log("4: " + LocalDateTime.now().toString());
 
     final AWSContentManager contentManager =
         new AWSContentManager(
@@ -135,6 +141,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
         lifecycleNotifier,
         contentManager,
         useDashboardSources);
+    context.getLogger().log("5: " + LocalDateTime.now().toString());
 
     // Create file loader, or use ContentManager if not using dashboard sources
     final ProjectFileLoader userProjectFileLoader =
@@ -150,14 +157,13 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     java.util.Properties props = System.getProperties();
     // /opt is the folder all layer files go into.
     props.put("sun.awt.fontconfig", "/opt/fontconfig.properties");
+    context.getLogger().log("6: " + LocalDateTime.now().toString());
 
     try {
       // Log disk space before clearing the directory
       LoggerUtils.sendDiskSpaceReport();
 
-      LoggerUtils.sendDiskSpaceUpdate(SessionTime.START_SESSION, ClearStatus.BEFORE_CLEAR);
       fileManager.cleanUpTempDirectory(null);
-      LoggerUtils.sendDiskSpaceUpdate(SessionTime.START_SESSION, ClearStatus.AFTER_CLEAR);
     } catch (IOException e) {
       // Wrap this in our error type so we can log it and tell the user.
       InternalServerError error = new InternalServerError(INTERNAL_EXCEPTION, e);
@@ -171,6 +177,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
       cleanUpResources(connectionId, api);
       return "error clearing tmpdir";
     }
+    context.getLogger().log("7: " + LocalDateTime.now().toString());
 
     final CodeExecutionManager codeExecutionManager =
         new CodeExecutionManager(
@@ -186,6 +193,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
         createTimeoutThread(context, outputAdapter, codeExecutionManager, connectionId, api);
     timeoutNotifierThread.start();
 
+    context.getLogger().log("8: " + LocalDateTime.now().toString());
     try {
       // start code build and block until completed
       codeExecutionManager.execute();
