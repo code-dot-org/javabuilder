@@ -56,7 +56,8 @@ public class WebSocketServer {
 
     final String connectionId = "LocalhostWebSocketConnection";
     final String levelId = queryInput.getString("level_id");
-    final String channelId = queryInput.getString("channel_id");
+    final String channelId =
+        queryInput.has("channel_id") ? queryInput.getString("channel_id") : "noneProvided";
     final String miniAppType = queryInput.getString("mini_app_type");
     final ExecutionType executionType =
         ExecutionType.valueOf(queryInput.getString("execution_type"));
