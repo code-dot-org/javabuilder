@@ -17,7 +17,6 @@ import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -44,7 +43,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
   private static final String CONTENT_BUCKET_NAME = System.getenv("CONTENT_BUCKET_NAME");
   private static final String CONTENT_BUCKET_URL = System.getenv("CONTENT_BUCKET_URL");
   private static final String API_ENDPOINT = System.getenv("API_ENDPOINT");
-  private final AmazonApiGatewayManagementApi API;
+  private final AmazonApiGatewayManagementApi API_CLIENT;
   private final AmazonSQS SQS_CLIENT;
   private final AmazonS3 S3_CLIENT;
 
@@ -53,7 +52,10 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     // This will only be called once in the initial creation of the lambda instance.
     // Documentation: https://docs.aws.amazon.com/lambda/latest/dg/java-handler.html
     CachedResources.create();
-    API =
+
+    // Creating these clients here rather than in the request handler method allows us to use
+    // provisioned concurrency to decrease cold boot time by 3-10 seconds, depending on the lambda
+    API_CLIENT =
         AmazonApiGatewayManagementApiClientBuilder.standard()
             .withEndpointConfiguration(
                 new AwsClientBuilder.EndpointConfiguration(API_ENDPOINT, "us-east-1"))
@@ -74,7 +76,6 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
    */
   @Override
   public String handleRequest(Map<String, String> lambdaInput, Context context) {
-    context.getLogger().log("1: " + LocalDateTime.now().toString());
     // The lambda handler should have minimal application logic:
     // https://docs.aws.amazon.com/lambda/latest/dg/best-practices.html
     final String connectionId = lambdaInput.get("connectionId");
@@ -93,10 +94,6 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
         JSONUtils.booleanFromJSONObjectMember(options, "useNeighborhood");
     final List<String> compileList = JSONUtils.listFromJSONObjectMember(options, "compileList");
 
-    // The biggest chunk of time happens between points 2 and 3. Followed by points 3-4. Can we
-    // reuse parts of this between invocations.
-    // Also, wtf is going on with Neighborhood not updating??
-    context.getLogger().log("2: " + LocalDateTime.now().toString());
     Logger logger = Logger.getLogger(MAIN_LOGGER);
     logger.addHandler(
         new LambdaLogHandler(
@@ -112,8 +109,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     Properties.setConnectionId(connectionId);
 
     // Create user-program output handlers
-    final AWSOutputAdapter awsOutputAdapter = new AWSOutputAdapter(connectionId, API);
-    context.getLogger().log("3: " + LocalDateTime.now().toString());
+    final AWSOutputAdapter awsOutputAdapter = new AWSOutputAdapter(connectionId, API_CLIENT);
 
     // Create user input handlers
     final AWSInputAdapter inputAdapter = new AWSInputAdapter(SQS_CLIENT, queueUrl, queueName);
@@ -125,7 +121,6 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     if (executionType == ExecutionType.TEST) {
       outputAdapter = new UserTestOutputAdapter(awsOutputAdapter);
     }
-    context.getLogger().log("4: " + LocalDateTime.now().toString());
 
     final AWSContentManager contentManager =
         new AWSContentManager(
@@ -142,7 +137,6 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
         lifecycleNotifier,
         contentManager,
         useDashboardSources);
-    context.getLogger().log("5: " + LocalDateTime.now().toString());
 
     // Create file loader, or use ContentManager if not using dashboard sources
     final ProjectFileLoader userProjectFileLoader =
@@ -158,7 +152,6 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     java.util.Properties props = System.getProperties();
     // /opt is the folder all layer files go into.
     props.put("sun.awt.fontconfig", "/opt/fontconfig.properties");
-    context.getLogger().log("6: " + LocalDateTime.now().toString());
 
     try {
       // Log disk space before clearing the directory
@@ -175,10 +168,9 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
       // This affected the user. Let's tell them about it.
       outputAdapter.sendMessage(error.getExceptionMessage());
 
-      cleanUpResources(connectionId, API);
+      cleanUpResources(connectionId, API_CLIENT);
       return "error clearing tmpdir";
     }
-    context.getLogger().log("7: " + LocalDateTime.now().toString());
 
     final CodeExecutionManager codeExecutionManager =
         new CodeExecutionManager(
@@ -191,10 +183,9 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
             lifecycleNotifier);
 
     final Thread timeoutNotifierThread =
-        createTimeoutThread(context, outputAdapter, codeExecutionManager, connectionId, API);
+        createTimeoutThread(context, outputAdapter, codeExecutionManager, connectionId, API_CLIENT);
     timeoutNotifierThread.start();
 
-    context.getLogger().log("8: " + LocalDateTime.now().toString());
     try {
       // start code build and block until completed
       codeExecutionManager.execute();
@@ -205,7 +196,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     } finally {
       // Stop timeout listener and clean up
       timeoutNotifierThread.interrupt();
-      cleanUpResources(connectionId, API);
+      cleanUpResources(connectionId, API_CLIENT);
       File f = Paths.get(System.getProperty("java.io.tmpdir")).toFile();
       if ((double) f.getUsableSpace() / f.getTotalSpace() < 0.5) {
         // The current project holds a lock on too many resources. Force the JVM to quit in
