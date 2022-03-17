@@ -483,6 +483,7 @@ Resources:
           AWS_LAMBDA_EXEC_WRAPPER: /opt/change_runtime_directory
           CONTENT_BUCKET_NAME: !Ref ContentBucket
           CONTENT_BUCKET_URL: !Sub "https://${ContentDomain}"
+          API_ENDPOINT: !GetAtt WebSocketAPI.ApiEndpoint
 <%end -%>
 
   ContentBucket:
