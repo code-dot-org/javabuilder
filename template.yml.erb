@@ -34,6 +34,10 @@ Parameters:
     Description: The number of Javabuilder invocations allowed per user per day.
     MinValue: 1
     Default: 40
+  StageName:
+    Type: String
+    Description: The default stage name in the API Gateway APIs
+    Default: Prod
 <%
 JAVALAB_APP_TYPES = %w(
   Theater
@@ -159,8 +163,8 @@ Resources:
       # Using AutoDeploy rather than a Deployment resource (as we do with the WebSocket API) because
       # the Deployment resource doesn't seem to work with HTTP APIs.
       AutoDeploy: true
-      StageName: Prod
-      Description: Prod Stage
+      StageName: !Sub "${StageName}"
+      Description: The stage to deploy
       ApiId: !Ref HttpAPI
       DefaultRouteSettings:
         DetailedMetricsEnabled: true
@@ -294,8 +298,8 @@ Resources:
   WebSocketStage:
     Type: AWS::ApiGatewayV2::Stage
     Properties:
-      StageName: Prod
-      Description: Prod Stage
+      StageName: !Sub "${StageName}"
+      Description: The stage to deploy
       DeploymentId: !Ref WebSocketDeployment
       ApiId: !Ref WebSocketAPI
       DefaultRouteSettings:
@@ -483,7 +487,9 @@ Resources:
           AWS_LAMBDA_EXEC_WRAPPER: /opt/change_runtime_directory
           CONTENT_BUCKET_NAME: !Ref ContentBucket
           CONTENT_BUCKET_URL: !Sub "https://${ContentDomain}"
-          API_ENDPOINT: !GetAtt WebSocketAPI.ApiEndpoint
+          API_ENDPOINT: !Sub
+            - "https://${ApiId}.execute-api.${AWS::Region}.amazonaws.com/${StageName}"
+            - ApiId: !Ref WebSocketAPI
 <%end -%>
 
   ContentBucket:
