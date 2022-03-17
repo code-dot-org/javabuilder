@@ -41,12 +41,25 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
   // This is an error code we made up to signal that available disk space is less than 50%.
   // It may be used in tracking on Cloud Watch.
   private static final int LOW_DISK_SPACE_ERROR_CODE = 50;
+  private static final String CONTENT_BUCKET_NAME = System.getenv("CONTENT_BUCKET_NAME");
+  private static final String CONTENT_BUCKET_URL = System.getenv("CONTENT_BUCKET_URL");
+  private static final String API_ENDPOINT = System.getenv("API_ENDPOINT");
+  private final AmazonApiGatewayManagementApi API;
+  private final AmazonSQS SQS_CLIENT;
+  final AmazonS3 S3_CLIENT;
 
   public LambdaRequestHandler() {
     // create CachedResources once for the entire container.
     // This will only be called once in the initial creation of the lambda instance.
     // Documentation: https://docs.aws.amazon.com/lambda/latest/dg/java-handler.html
     CachedResources.create();
+    API =
+        AmazonApiGatewayManagementApiClientBuilder.standard()
+            .withEndpointConfiguration(
+                new AwsClientBuilder.EndpointConfiguration(API_ENDPOINT, "us-east-1"))
+            .build();
+    SQS_CLIENT = AmazonSQSClientBuilder.defaultClient();
+    S3_CLIENT = AmazonS3ClientBuilder.standard().build();
   }
 
   /**
@@ -54,9 +67,9 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
    * executed.
    *
    * @param lambdaInput A map of the json input to this lambda function. Input is formatted like
-   *     this: { "queueUrl": <session-specific-url>, "apiEndpoint": <environment-specific-url>,
+   *     this: { "queueUrl": <session-specific-url>, "queueName": <session-specific-string>
    *     "connectionId": <session-specific-string>, "channelId": <project-specific-string> }
-   * @param context Currently unused, this is the context in which the lambda was invoked.
+   * @param context This is the context in which the lambda was invoked.
    * @return A string. Right now, we aren't using this, so anything can be returned.
    */
   @Override
@@ -65,7 +78,6 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     // The lambda handler should have minimal application logic:
     // https://docs.aws.amazon.com/lambda/latest/dg/best-practices.html
     final String connectionId = lambdaInput.get("connectionId");
-    final String apiEndpoint = lambdaInput.get("apiEndpoint");
     final String queueUrl = lambdaInput.get("queueUrl");
     final String queueName = lambdaInput.get("queueName");
     final String levelId = lambdaInput.get("levelId");
@@ -75,8 +87,6 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     final String dashboardHostname = "https://" + lambdaInput.get("iss");
     final JSONObject options = new JSONObject(lambdaInput.get("options"));
     final String javabuilderSessionId = lambdaInput.get("javabuilderSessionId");
-    final String contentBucketName = System.getenv("CONTENT_BUCKET_NAME");
-    final String contentBucketUrl = System.getenv("CONTENT_BUCKET_URL");
     final boolean useDashboardSources =
         Boolean.parseBoolean(lambdaInput.get("useDashboardSources"));
     final boolean useNeighborhood =
@@ -99,26 +109,17 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
             miniAppType));
     // turn off the default console logger
     logger.setUseParentHandlers(false);
-
     Properties.setConnectionId(connectionId);
 
     // Create user-program output handlers
-    AmazonApiGatewayManagementApi api =
-        AmazonApiGatewayManagementApiClientBuilder.standard()
-            .withEndpointConfiguration(
-                new AwsClientBuilder.EndpointConfiguration(apiEndpoint, "us-east-1"))
-            .build();
-    final AWSOutputAdapter awsOutputAdapter = new AWSOutputAdapter(connectionId, api);
+    final AWSOutputAdapter awsOutputAdapter = new AWSOutputAdapter(connectionId, API);
     context.getLogger().log("3: " + LocalDateTime.now().toString());
 
     // Create user input handlers
-    final AmazonSQS sqsClient = AmazonSQSClientBuilder.defaultClient();
-    final AWSInputAdapter inputAdapter = new AWSInputAdapter(sqsClient, queueUrl, queueName);
-
-    final AmazonS3 s3Client = AmazonS3ClientBuilder.standard().build();
+    final AWSInputAdapter inputAdapter = new AWSInputAdapter(SQS_CLIENT, queueUrl, queueName);
     final AWSFileManager fileManager =
         new AWSFileManager(
-            s3Client, contentBucketName, javabuilderSessionId, contentBucketUrl, context);
+            S3_CLIENT, CONTENT_BUCKET_NAME, javabuilderSessionId, CONTENT_BUCKET_URL, context);
     final LifecycleNotifier lifecycleNotifier = new LifecycleNotifier();
     OutputAdapter outputAdapter = awsOutputAdapter;
     if (executionType == ExecutionType.TEST) {
@@ -128,7 +129,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
 
     final AWSContentManager contentManager =
         new AWSContentManager(
-            s3Client, contentBucketName, javabuilderSessionId, contentBucketUrl, context);
+            S3_CLIENT, CONTENT_BUCKET_NAME, javabuilderSessionId, CONTENT_BUCKET_URL, context);
 
     // TODO: Move common setup steps into CodeExecutionManager#onPreExecute
     GlobalProtocol.create(
@@ -174,7 +175,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
       // This affected the user. Let's tell them about it.
       outputAdapter.sendMessage(error.getExceptionMessage());
 
-      cleanUpResources(connectionId, api);
+      cleanUpResources(connectionId, API);
       return "error clearing tmpdir";
     }
     context.getLogger().log("7: " + LocalDateTime.now().toString());
@@ -190,7 +191,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
             lifecycleNotifier);
 
     final Thread timeoutNotifierThread =
-        createTimeoutThread(context, outputAdapter, codeExecutionManager, connectionId, api);
+        createTimeoutThread(context, outputAdapter, codeExecutionManager, connectionId, API);
     timeoutNotifierThread.start();
 
     context.getLogger().log("8: " + LocalDateTime.now().toString());
@@ -204,7 +205,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     } finally {
       // Stop timeout listener and clean up
       timeoutNotifierThread.interrupt();
-      cleanUpResources(connectionId, api);
+      cleanUpResources(connectionId, API);
       File f = Paths.get(System.getProperty("java.io.tmpdir")).toFile();
       if ((double) f.getUsableSpace() / f.getTotalSpace() < 0.5) {
         // The current project holds a lock on too many resources. Force the JVM to quit in
