@@ -46,7 +46,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
   private static final String API_ENDPOINT = System.getenv("API_ENDPOINT");
   private final AmazonApiGatewayManagementApi API;
   private final AmazonSQS SQS_CLIENT;
-  final AmazonS3 S3_CLIENT;
+  private final AmazonS3 S3_CLIENT;
 
   public LambdaRequestHandler() {
     // create CachedResources once for the entire container.
