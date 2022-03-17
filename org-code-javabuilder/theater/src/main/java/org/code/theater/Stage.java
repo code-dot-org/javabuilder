@@ -428,6 +428,7 @@ public class Stage {
 
   /** Plays the instructions. */
   public void play() {
+    TheaterPlayer.getInstance().onStagePlay();
     if (this.hasPlayed) {
       throw new TheaterRuntimeException(ExceptionKeys.DUPLICATE_PLAY_COMMAND);
     } else {
