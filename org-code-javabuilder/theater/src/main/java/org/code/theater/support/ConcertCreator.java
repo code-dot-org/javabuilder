@@ -249,7 +249,6 @@ public class ConcertCreator implements AutoCloseable {
   @Override
   public void close() {
     if (!this.hasClosed) {
-      System.out.println("Closing ConcertCreator!");
       this.gifWriter.close();
       this.audioWriter.close();
       this.hasClosed = true;
