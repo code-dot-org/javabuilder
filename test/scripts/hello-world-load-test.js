@@ -1,24 +1,26 @@
 import ws from 'k6/ws';
 import http from 'k6/http';
 import { check, sleep } from 'k6';
-import { Counter } from 'k6/metrics';
+import { Counter, Trend } from 'k6/metrics';
 import { helloWorld, throwsException } from './sources.js';
 
 
 export const options = {
   stages: [
-    {duration: '30s', target: 5}, // ramp up to 5 users over 30 seconds
-    {duration: '30s', target: 5}, // stay at 5 users for 30 seconds
-    {duration: '30s', target: 0}, // ramp down to 0 users over 30 seconds
+    //{duration: '30s', target: 10}, 
+    {duration: '1m', target: 10}, 
+    //{duration: '30s', target: 0}, 
   ],
   thresholds: {
     'exceptions': ['count == 0'],
-    'errors': ['count == 0']
+    'errors': ['count == 0'],
+    'websocket_session_duration_without_sleep': ['p(99) < 5000']
   }
 };
 
 const exceptionCounter = new Counter('exceptions');
-const errorCounter = new Counter('errors')
+const errorCounter = new Counter('errors');
+const connectToCloseTime = new Trend('websocket_session_duration_without_sleep', true);
 
 const uploadUrl = `https://javabuilder-molly-http.dev-code.org/seedsources/sources.json?Authorization=${__ENV.AUTH_TOKEN}`; 
 const url = `wss://javabuilder-molly.dev-code.org?Authorization=${__ENV.AUTH_TOKEN}`;
@@ -38,7 +40,7 @@ const uploadParams = {
 
 export default function () {
   const uploadResult = http.put(uploadUrl, helloWorld, uploadParams);
-
+  const startTime = Date.now();
   const res = ws.connect(url, websocketParams, function (socket) {
     socket.on('open', () => console.log('connected'));
 
@@ -52,14 +54,17 @@ export default function () {
     });
 
     socket.on('close', () => {
-      console.log('disconnected, sleeping for 10 seconds');
+      console.log('disconnected');
+      connectToCloseTime.add(Date.now() - startTime);
+      console.log('sleeping for 10 seconds');
       sleep(10);
     });
 
     socket.on('error', function(e) {
       console.log('error occurred: ' + e.error());
       errorCounter.add(1);
-    })
+    });
+
   });
 
   check(res, 
