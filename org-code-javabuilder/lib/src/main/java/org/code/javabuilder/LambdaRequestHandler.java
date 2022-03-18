@@ -43,25 +43,22 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
   private static final String CONTENT_BUCKET_NAME = System.getenv("CONTENT_BUCKET_NAME");
   private static final String CONTENT_BUCKET_URL = System.getenv("CONTENT_BUCKET_URL");
   private static final String API_ENDPOINT = System.getenv("API_ENDPOINT");
-  private final AmazonApiGatewayManagementApi API_CLIENT;
-  private final AmazonSQS SQS_CLIENT;
-  private final AmazonS3 S3_CLIENT;
+
+  // Creating these clients here rather than in the request handler method allows us to use
+  // provisioned concurrency to decrease cold boot time by 3-10 seconds, depending on the lambda
+  private static final AmazonApiGatewayManagementApi API_CLIENT =
+      AmazonApiGatewayManagementApiClientBuilder.standard()
+          .withEndpointConfiguration(
+              new AwsClientBuilder.EndpointConfiguration(API_ENDPOINT, "us-east-1"))
+          .build();
+  private static final AmazonSQS SQS_CLIENT = AmazonSQSClientBuilder.defaultClient();
+  private static final AmazonS3 S3_CLIENT = AmazonS3ClientBuilder.standard().build();
 
   public LambdaRequestHandler() {
     // create CachedResources once for the entire container.
     // This will only be called once in the initial creation of the lambda instance.
     // Documentation: https://docs.aws.amazon.com/lambda/latest/dg/java-handler.html
     CachedResources.create();
-
-    // Creating these clients here rather than in the request handler method allows us to use
-    // provisioned concurrency to decrease cold boot time by 3-10 seconds, depending on the lambda
-    API_CLIENT =
-        AmazonApiGatewayManagementApiClientBuilder.standard()
-            .withEndpointConfiguration(
-                new AwsClientBuilder.EndpointConfiguration(API_ENDPOINT, "us-east-1"))
-            .build();
-    SQS_CLIENT = AmazonSQSClientBuilder.defaultClient();
-    S3_CLIENT = AmazonS3ClientBuilder.standard().build();
   }
 
   /**
