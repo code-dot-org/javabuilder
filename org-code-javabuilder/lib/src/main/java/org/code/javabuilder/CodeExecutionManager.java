@@ -10,8 +10,6 @@ import java.nio.file.Files;
 import java.util.List;
 import java.util.logging.Logger;
 import org.code.protocol.*;
-import org.code.protocol.LoggerUtils.ClearStatus;
-import org.code.protocol.LoggerUtils.SessionTime;
 
 /**
  * Manages the execution of code in a project. When started, it performs the necessary pre-execution
@@ -164,9 +162,7 @@ public class CodeExecutionManager {
     GlobalProtocol.getInstance().cleanUpResources();
     try {
       // Clear temp folder
-      LoggerUtils.sendDiskSpaceUpdate(SessionTime.END_SESSION, ClearStatus.BEFORE_CLEAR);
       this.fileManager.cleanUpTempDirectory(this.tempFolder);
-      LoggerUtils.sendDiskSpaceUpdate(SessionTime.END_SESSION, ClearStatus.AFTER_CLEAR);
       // Close custom input/output streams
       this.overrideInputStream.close();
       this.overrideOutputStream.close();
