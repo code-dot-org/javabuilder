@@ -24,6 +24,7 @@ public class ClientMessageDetailKeys {
   public static final String UPLOAD_URL = "uploadUrl";
   public static final String PROGRESS_TIME = "progressTime";
   public static final String TOTAL_TIME = "totalTime";
+  public static final String URL = "url";
 
   // Exception specific
   public static final String CONNECTION_ID = "connectionId";
