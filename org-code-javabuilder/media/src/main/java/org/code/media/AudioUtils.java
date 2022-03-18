@@ -8,7 +8,7 @@ import org.code.protocol.GlobalProtocol;
 import org.code.protocol.InternalErrorKey;
 import org.code.protocol.InternalServerRuntimeError;
 
-class AudioUtils {
+public class AudioUtils {
   private static final int MONO_CHANNELS = 1;
   private static final int STEREO_CHANNELS = 2;
   private static final double MAX_16_BIT_VALUE = 32768; // Max signed 16-bit value
