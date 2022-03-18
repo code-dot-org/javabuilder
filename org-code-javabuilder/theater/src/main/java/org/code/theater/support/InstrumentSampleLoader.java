@@ -1,12 +1,13 @@
-package org.code.theater;
+package org.code.theater.support;
 
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+import org.code.theater.Instrument;
 
-class InstrumentSampleLoader {
+public class InstrumentSampleLoader {
 
   private static Map<Instrument, Map<Integer, String>> generateInstrumentFileMap() {
     final Map<Integer, String> pianoMap = new HashMap<>();
@@ -31,7 +32,7 @@ class InstrumentSampleLoader {
   // Map of Instrument -> Map of note value (int) -> file path / name
   private final Map<Instrument, Map<Integer, String>> instrumentFileMap;
 
-  protected InstrumentSampleLoader() {
+  public InstrumentSampleLoader() {
     this(InstrumentSampleLoader.generateInstrumentFileMap());
   }
 
@@ -47,7 +48,7 @@ class InstrumentSampleLoader {
    * @param note
    * @return filename of sample, or null if no sample is found.
    */
-  String getSampleFilePath(Instrument instrument, int note) {
+  public String getSampleFilePath(Instrument instrument, int note) {
     if (!instrumentFileMap.containsKey(instrument)) {
       System.out.printf("No notes available for instrument %s%n", instrument);
       return null;
