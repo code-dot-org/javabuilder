@@ -11,9 +11,9 @@ Parameters:
   SubDomainName:
     Type: String
     Description: Sub domain name for javabuilder service.
-  LogBucket:
-    Type: String
-    Default: cdo-logs.s3.amazonaws.com
+  # LogBucket:
+  #   Type: String
+  #   Default: cdo-logs.s3.amazonaws.com
   ProvisionedConcurrentExecutions:
     Type: Number
     Description: The amount of provisioned concurrency to allocate for the BuildAndRunJavaProject Lambda.
@@ -578,11 +578,8 @@ Resources:
 <%end -%>
           Then post in #ap-csa-dev.
       ActionsEnabled: true
-      OKActions: []
       AlarmActions:
           - !If [IsDevCondition, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-dev-test", !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:CDO-Urgent"]
-      InsufficientDataActions: []
-      Dimensions: []
       EvaluationPeriods: 10
       DatapointsToAlarm: 10
       Threshold: 50
@@ -616,11 +613,8 @@ Resources:
           minutes. Occasional spikes are expected, but a sustained high error rate
           is an indication of an outage.
       ActionsEnabled: true
-      OKActions: []
       AlarmActions:
           - !If [IsDevCondition, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-dev-test", !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:Javabuilder-high-error-rate"]
-      InsufficientDataActions: []
-      Dimensions: []
       EvaluationPeriods: 4
       DatapointsToAlarm: 4
       Threshold: 10
@@ -637,7 +631,6 @@ Resources:
                 Metric:
                     Namespace: Javabuilder
                     MetricName: Javabuilder <%=name%> "SEVERE" errors
-                    Dimensions: []
                 Period: 300
                 Stat: Sum
           - Id: m2
@@ -660,11 +653,8 @@ Resources:
           Javabuilder, which executes student <%=name%> code) exceeded 10% for four
           consecutive 5 minute periods.
       ActionsEnabled: true
-      OKActions: []
       AlarmActions:
           - !If [IsDevCondition, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-dev-test", !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-build-and-run-lambda-error-rate"]
-      InsufficientDataActions: []
-      Dimensions: []
       EvaluationPeriods: 4
       DatapointsToAlarm: 4
       Threshold: 25
