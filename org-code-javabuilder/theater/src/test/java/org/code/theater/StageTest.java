@@ -63,6 +63,9 @@ public class StageTest {
     instrumentSampleLoader = mock(InstrumentSampleLoader.class);
     progressPublisher = mock(TheaterProgressPublisher.class);
 
+    // Reset before each test
+    TheaterPlayer.getInstance().onExecutionEnded();
+
     s =
         new Stage(
             bufferedImage,
