@@ -69,7 +69,8 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     final String queueUrl = lambdaInput.get("queueUrl");
     final String queueName = lambdaInput.get("queueName");
     final String levelId = lambdaInput.get("levelId");
-    final String channelId = lambdaInput.get("channelId");
+    final String channelId =
+        lambdaInput.get("channelId") == null ? "noneProvided" : lambdaInput.get("channelId");
     final String miniAppType = lambdaInput.get("miniAppType");
     final ExecutionType executionType = ExecutionType.valueOf(lambdaInput.get("executionType"));
     final String dashboardHostname = "https://" + lambdaInput.get("iss");
