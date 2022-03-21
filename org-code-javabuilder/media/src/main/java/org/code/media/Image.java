@@ -165,27 +165,6 @@ public class Image {
   }
 
   /**
-   * Load the given image from a media file located in content storage.
-   *
-   * @param filename name of the image located in content storage
-   * @return Image object
-   * @throws FileNotFoundException if the file is not found
-   */
-  public static Image fromMediaFile(String filename) throws FileNotFoundException {
-    // This should ideally be a constructor, but an Image constructor that takes in a String
-    // already exists, which assumes that the file name refers to a file in the asset manager.
-    // TODO: Potentially refactor how asset and media/generated files are accessed by Javabuilder
-    // into a consistent interface.
-    try {
-      return new Image(
-          Image.getImageFromUrl(
-              GlobalProtocol.getInstance().getFileManager().getFileUrl(filename)));
-    } catch (IOException e) {
-      throw new FileNotFoundException(filename);
-    }
-  }
-
-  /**
    * Load the given image asset from file and return it as a BufferedImage
    *
    * @param filename
@@ -195,7 +174,7 @@ public class Image {
   public static BufferedImage getImageAssetFromFile(String filename) throws FileNotFoundException {
     try {
       return Image.getImageFromUrl(
-          new URL(GlobalProtocol.getInstance().generateAssetUrl(filename)));
+          new URL(GlobalProtocol.getInstance().getContentManager().getAssetUrl(filename)));
     } catch (IOException e) {
       throw new FileNotFoundException(filename);
     }

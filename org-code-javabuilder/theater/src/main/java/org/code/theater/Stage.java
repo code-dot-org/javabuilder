@@ -19,7 +19,7 @@ import org.code.theater.support.*;
 public class Stage {
   private final BufferedImage image;
   private final OutputAdapter outputAdapter;
-  private final JavabuilderFileManager fileManager;
+  private final ContentManager contentManager;
   private final GifWriter gifWriter;
   private final ByteArrayOutputStream imageOutputStream;
   private final Graphics2D graphics;
@@ -78,7 +78,7 @@ public class Stage {
     this.image = image;
     this.graphics = this.image.createGraphics();
     this.outputAdapter = GlobalProtocol.getInstance().getOutputAdapter();
-    this.fileManager = GlobalProtocol.getInstance().getFileManager();
+    this.contentManager = GlobalProtocol.getInstance().getContentManager();
     this.imageOutputStream = new ByteArrayOutputStream();
     this.gifWriter = gifWriterFactory.createGifWriter(this.imageOutputStream);
     this.audioOutputStream = new ByteArrayOutputStream();
@@ -475,10 +475,10 @@ public class Stage {
   private void writeImageAndAudioToFile() {
     try {
       String imageUrl =
-          this.fileManager.writeToFile(
+          this.contentManager.writeToOutputFile(
               THEATER_IMAGE_NAME, this.imageOutputStream.toByteArray(), "image/gif");
       String audioUrl =
-          this.fileManager.writeToFile(
+          this.contentManager.writeToOutputFile(
               THEATER_AUDIO_NAME, this.audioOutputStream.toByteArray(), "audio/wav");
 
       HashMap<String, String> imageMessage = new HashMap<>();
