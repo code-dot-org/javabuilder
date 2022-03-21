@@ -12,22 +12,16 @@ public class GlobalProtocolTestFactory {
     private InputAdapter inputAdapter;
     private String dashboardHostname;
     private String channelId;
-    private String levelId;
-    private JavabuilderFileManager fileManager;
     private LifecycleNotifier lifecycleNotifier;
     private ContentManager contentManager;
-    private boolean useDashboardSources;
 
     private Builder() {
       this.outputAdapter = mock(OutputAdapter.class);
       this.inputAdapter = mock(InputAdapter.class);
       this.dashboardHostname = "";
       this.channelId = "";
-      this.levelId = "";
-      this.fileManager = mock(JavabuilderFileManager.class);
       this.lifecycleNotifier = mock(LifecycleNotifier.class);
       this.contentManager = mock(ContentManager.class);
-      this.useDashboardSources = true;
     }
 
     public Builder withOutputAdapter(OutputAdapter outputAdapter) {
@@ -50,16 +44,6 @@ public class GlobalProtocolTestFactory {
       return this;
     }
 
-    public Builder withLevelId(String levelId) {
-      this.levelId = levelId;
-      return this;
-    }
-
-    public Builder withFileManager(JavabuilderFileManager fileManager) {
-      this.fileManager = fileManager;
-      return this;
-    }
-
     public Builder withLifecycleNotifier(LifecycleNotifier lifecycleNotifier) {
       this.lifecycleNotifier = lifecycleNotifier;
       return this;
@@ -70,22 +54,14 @@ public class GlobalProtocolTestFactory {
       return this;
     }
 
-    public Builder withUseDashboardSources(boolean useDashboardSources) {
-      this.useDashboardSources = useDashboardSources;
-      return this;
-    }
-
     public void create() {
       GlobalProtocol.create(
           this.outputAdapter,
           this.inputAdapter,
           this.dashboardHostname,
           this.channelId,
-          this.levelId,
-          this.fileManager,
           this.lifecycleNotifier,
-          this.contentManager,
-          this.useDashboardSources);
+          this.contentManager);
     }
   }
 }

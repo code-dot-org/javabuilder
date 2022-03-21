@@ -90,11 +90,9 @@ public class WebSocketServer {
         inputAdapter,
         dashboardHostname,
         channelId,
-        levelId,
-        new LocalFileManager(),
         lifecycleNotifier,
-        contentManager,
-        useDashboardSources);
+        contentManager);
+    final LocalFileManager fileManager = new LocalFileManager();
     final ProjectFileLoader fileLoader =
         useDashboardSources
             ? new UserProjectFileLoader(
@@ -115,7 +113,7 @@ public class WebSocketServer {
                       outputAdapter,
                       executionType,
                       compileList,
-                      GlobalProtocol.getInstance().getFileManager(),
+                      fileManager,
                       lifecycleNotifier);
               executionManager.execute();
               // Clean up session
