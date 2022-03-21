@@ -55,7 +55,6 @@ public class ProjectData {
       projectFiles.addTextFile(
           new TextProjectFile(MAZE_FILE_KEY, sources.getString(MAZE_FILE_KEY)));
     }
-
     return projectFiles;
   }
 
@@ -82,5 +81,17 @@ public class ProjectData {
     }
 
     this.jsonData.getJSONObject(ASSET_URLS_KEY).put(filename, url);
+  }
+
+  public UserProjectFiles getValidation() throws InternalServerError, UserInitiatedException {
+    if (!this.jsonData.has(VALIDATION_KEY)) {
+      throw new InternalServerError(
+              InternalErrorKey.INTERNAL_EXCEPTION, new Exception("Code sources missing"));
+    }
+    System.out.println();
+    System.out.println(this.jsonData.getString(VALIDATION_KEY));
+    final UserProjectFiles validationFiles =
+            this.projectFileParser.parseFileJson(this.jsonData.getString(VALIDATION_KEY));
+    return validationFiles;
   }
 }

@@ -71,6 +71,12 @@ public class AWSContentManager implements ContentManager, ProjectFileLoader {
   }
 
   @Override
+  public UserProjectFiles loadValidation() throws InternalServerError, UserInitiatedException {
+    this.loadProjectDataIfNeeded();
+    return this.projectData.getSources();
+  }
+
+  @Override
   public String getAssetUrl(String filename) {
     try {
       this.loadProjectDataIfNeeded();

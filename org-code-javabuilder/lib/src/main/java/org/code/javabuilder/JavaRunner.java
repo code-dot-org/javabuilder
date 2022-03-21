@@ -2,6 +2,7 @@ package org.code.javabuilder;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.code.javabuilder.util.JarUtils;
@@ -13,26 +14,35 @@ public class JavaRunner {
   private final URL executableLocation;
   private final MainRunner mainRunner;
   private final TestRunner testRunner;
+  private final ValidationRunner validationRunner;
   private final List<String> javaClassNames;
+  private final List<String> validationAndJavaClassNames;
 
   public JavaRunner(
-      URL executableLocation, List<JavaProjectFile> javaFiles, OutputAdapter outputAdapter) {
+      URL executableLocation, List<JavaProjectFile> javaFiles,  List<JavaProjectFile> validationFiles, OutputAdapter outputAdapter) {
     this(
         executableLocation,
         new MainRunner(javaFiles, outputAdapter),
         new TestRunner(javaFiles, outputAdapter),
-        javaFiles);
+        new ValidationRunner(validationFiles, javaFiles, outputAdapter),
+        javaFiles,
+        validationFiles);
   }
 
   JavaRunner(
       URL executableLocation,
       MainRunner mainRunner,
       TestRunner testRunner,
-      List<JavaProjectFile> javaFiles) {
+      ValidationRunner validationRunner,
+      List<JavaProjectFile> javaFiles,
+      List<JavaProjectFile> validationFiles) {
     this.executableLocation = executableLocation;
     this.mainRunner = mainRunner;
     this.testRunner = testRunner;
+    this.validationRunner = validationRunner;
     this.javaClassNames = this.parseClassNames(javaFiles);
+    this.validationAndJavaClassNames = new ArrayList<>(this.javaClassNames);
+    this.validationAndJavaClassNames.addAll(this.parseClassNames(validationFiles));
   }
 
   /**
@@ -44,17 +54,18 @@ public class JavaRunner {
    *     finished executing.
    */
   public void runMain() throws InternalFacingException, JavabuilderException {
-    this.run(this.mainRunner, RunPermissionLevel.USER);
+    this.run(this.mainRunner, RunPermissionLevel.USER, this.javaClassNames);
   }
 
   public void runTests() throws JavabuilderException, InternalFacingException {
     // Tests have more permissions than a regular run: as of now, all
     // tests will be run under the VALIDATOR permission. Once we split out validation and
     // project tests run we will need to give different permissions to each run type.
-    this.run(this.testRunner, RunPermissionLevel.VALIDATOR);
+    this.run(this.validationRunner, RunPermissionLevel.VALIDATOR, this.validationAndJavaClassNames);
+    this.run(this.testRunner, RunPermissionLevel.USER, this.javaClassNames);
   }
 
-  private void run(CodeRunner runner, RunPermissionLevel permissionLevel)
+  private void run(CodeRunner runner, RunPermissionLevel permissionLevel, List<String> classNames)
       throws JavabuilderException, InternalFacingException {
     // Include the user-facing api jars in the code we are loading so student code can access them.
     URL[] classLoaderUrls = JarUtils.getAllJarURLs(this.executableLocation);
@@ -65,7 +76,7 @@ public class JavaRunner {
         new UserClassLoader(
             classLoaderUrls,
             JavaRunner.class.getClassLoader(),
-            this.javaClassNames,
+            classNames,
             permissionLevel);
 
     runner.run(urlClassLoader);
