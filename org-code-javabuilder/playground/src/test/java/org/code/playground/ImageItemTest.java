@@ -16,7 +16,7 @@ public class ImageItemTest {
   private PlaygroundMessageHandler playgroundMessageHandler;
   private ArgumentCaptor<PlaygroundMessage> messageCaptor;
   private MockedStatic<PlaygroundMessageHandler> messageHandlerMockedStatic;
-  private AssetFileHelper assetFileHelper;
+  private ContentManager contentManager;
 
   @BeforeEach
   public void setUp() {
@@ -27,7 +27,7 @@ public class ImageItemTest {
     messageHandlerMockedStatic
         .when(PlaygroundMessageHandler::getInstance)
         .thenReturn(playgroundMessageHandler);
-    assetFileHelper = mock(AssetFileHelper.class);
+    contentManager = mock(ContentManager.class);
   }
 
   @AfterEach
@@ -37,7 +37,7 @@ public class ImageItemTest {
 
   @Test
   public void settersSendChangeMessagesIfTheyAreOn() throws FileNotFoundException {
-    ImageItem imageItem = new ImageItem("test", 0, 0, 10, 10, assetFileHelper);
+    ImageItem imageItem = new ImageItem("test", 0, 0, 10, 10, contentManager);
     imageItem.turnOnChangeMessages();
 
     String newFilename = "new_filename";
@@ -55,7 +55,7 @@ public class ImageItemTest {
 
   @Test
   public void settersDoNotSendChangeMessagesByDefault() throws FileNotFoundException {
-    ImageItem imageItem = new ImageItem("test", 0, 0, 10, 10, assetFileHelper);
+    ImageItem imageItem = new ImageItem("test", 0, 0, 10, 10, contentManager);
     String newFilename = "new_filename";
     int newWidth = 100;
 
@@ -71,22 +71,21 @@ public class ImageItemTest {
   @Test
   public void testConstructorThrowsExceptionIfFileNotFound() throws FileNotFoundException {
     final FileNotFoundException expected = new FileNotFoundException();
-    doThrow(expected).when(assetFileHelper).verifyAssetFilename(anyString());
+    doThrow(expected).when(contentManager).verifyAssetFilename(anyString());
 
     final FileNotFoundException actual =
         assertThrows(
-            FileNotFoundException.class,
-            () -> new ImageItem("test", 0, 0, 10, 10, assetFileHelper));
+            FileNotFoundException.class, () -> new ImageItem("test", 0, 0, 10, 10, contentManager));
 
     assertSame(expected, actual);
   }
 
   @Test
   public void testSetFilenameThrowsExceptionIfFileNotFound() throws FileNotFoundException {
-    ImageItem imageItem = new ImageItem("test", 0, 0, 10, 10, assetFileHelper);
+    ImageItem imageItem = new ImageItem("test", 0, 0, 10, 10, contentManager);
 
     final FileNotFoundException expected = new FileNotFoundException();
-    doThrow(expected).when(assetFileHelper).verifyAssetFilename(anyString());
+    doThrow(expected).when(contentManager).verifyAssetFilename(anyString());
 
     final FileNotFoundException actual =
         assertThrows(FileNotFoundException.class, () -> imageItem.setFilename("otherFile"));

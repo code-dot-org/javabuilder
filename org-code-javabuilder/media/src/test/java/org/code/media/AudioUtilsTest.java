@@ -33,18 +33,16 @@ class AudioUtilsTest {
     (byte) 0x00, (byte) 0x00 // 0.0
   };
 
-  private MockedStatic<GlobalProtocol> globalProtocol;
   private MockedStatic<AudioSystem> audioSystem;
   private AudioInputStream audioInputStream;
   private AudioFormat audioFormat;
 
   @BeforeEach
   public void setUp() {
-    globalProtocol = mockStatic(GlobalProtocol.class);
-    final GlobalProtocol globalProtocolInstance = mock(GlobalProtocol.class);
+    final ContentManager contentManager = mock(ContentManager.class);
+    GlobalProtocolTestFactory.builder().withContentManager(contentManager).create();
 
-    globalProtocol.when(GlobalProtocol::getInstance).thenReturn(globalProtocolInstance);
-    when(globalProtocolInstance.generateAssetUrl(TEST_FILE_NAME)).thenReturn(TEST_FILE_URL);
+    when(contentManager.getAssetUrl(TEST_FILE_NAME)).thenReturn(TEST_FILE_URL);
 
     audioSystem = mockStatic(AudioSystem.class);
     audioInputStream = mock(AudioInputStream.class);
@@ -56,7 +54,6 @@ class AudioUtilsTest {
 
   @AfterEach
   public void tearDown() {
-    globalProtocol.close();
     audioSystem.close();
   }
 

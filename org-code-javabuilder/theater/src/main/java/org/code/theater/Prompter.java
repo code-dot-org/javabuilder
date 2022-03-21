@@ -15,32 +15,45 @@ import org.code.theater.support.TheaterSignalKey;
 public class Prompter {
   private static final AtomicInteger FILE_INDEX = new AtomicInteger(0);
 
+  // Convenience class just for unit testing
+  static class ImageCreator {
+    public Image createImage(String filename) throws FileNotFoundException {
+      return new Image(filename);
+    }
+  }
+
   private final OutputAdapter outputAdapter;
-  private final JavabuilderFileManager fileManager;
+  private final ContentManager contentManager;
   private final InputHandler inputHandler;
+  private final ImageCreator imageCreator;
 
   // Used in Theater to create Prompter "singleton"
   // accessed by students.
   protected Prompter() {
     this(
         GlobalProtocol.getInstance().getOutputAdapter(),
-        GlobalProtocol.getInstance().getFileManager(),
-        GlobalProtocol.getInstance().getInputHandler());
+        GlobalProtocol.getInstance().getContentManager(),
+        GlobalProtocol.getInstance().getInputHandler(),
+        new ImageCreator());
   }
 
   // Used to directly instantiate Prompter in tests.
   protected Prompter(
-      OutputAdapter outputAdapter, JavabuilderFileManager fileManager, InputHandler inputHandler) {
+      OutputAdapter outputAdapter,
+      ContentManager contentManager,
+      InputHandler inputHandler,
+      ImageCreator imageCreator) {
     this.outputAdapter = outputAdapter;
-    this.fileManager = fileManager;
+    this.contentManager = contentManager;
     this.inputHandler = inputHandler;
+    this.imageCreator = imageCreator;
   }
 
   public Image getImage(String prompt) {
     final String prompterFileName = PROMPTER_FILE_NAME_PREFIX + FILE_INDEX.incrementAndGet();
     final String uploadUrl;
     try {
-      uploadUrl = this.fileManager.getUploadUrl(prompterFileName);
+      uploadUrl = this.contentManager.generateAssetUploadUrl(prompterFileName);
     } catch (JavabuilderException e) {
       throw new InternalServerRuntimeError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e);
     }
@@ -54,7 +67,7 @@ public class Prompter {
     final String statusMessage = this.inputHandler.getNextMessageForType(InputMessageType.THEATER);
     if (statusMessage.equals(UPLOAD_SUCCESS)) {
       try {
-        return Image.fromMediaFile(prompterFileName);
+        return this.imageCreator.createImage(prompterFileName);
       } catch (FileNotFoundException e) {
         // If the image was uploaded successfully, a FileNotFoundException means an error on our end
         throw new InternalServerRuntimeError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e);

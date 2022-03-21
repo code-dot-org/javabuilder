@@ -26,7 +26,7 @@ import org.code.theater.Instrument;
 public class ConcertCreator implements AutoCloseable {
   private final BufferedImage image;
   private final OutputAdapter outputAdapter;
-  private final JavabuilderFileManager fileManager;
+  private final ContentManager contentManager;
   private final GifWriter gifWriter;
   private final ByteArrayOutputStream imageOutputStream;
   private final GraphicsHelper graphicsHelper;
@@ -45,7 +45,7 @@ public class ConcertCreator implements AutoCloseable {
         new InstrumentSampleLoader(),
         new TheaterProgressPublisher(),
         GlobalProtocol.getInstance().getOutputAdapter(),
-        GlobalProtocol.getInstance().getFileManager());
+        GlobalProtocol.getInstance().getContentManager());
   }
 
   // Visible for testing
@@ -57,7 +57,7 @@ public class ConcertCreator implements AutoCloseable {
       InstrumentSampleLoader instrumentSampleLoader,
       TheaterProgressPublisher progressPublisher,
       OutputAdapter outputAdapter,
-      JavabuilderFileManager fileManager) {
+      ContentManager contentManager) {
     this.imageOutputStream = new ByteArrayOutputStream();
     this.audioOutputStream = new ByteArrayOutputStream();
 
@@ -69,7 +69,7 @@ public class ConcertCreator implements AutoCloseable {
     this.instrumentSampleLoader = instrumentSampleLoader;
     this.progressPublisher = progressPublisher;
     this.outputAdapter = outputAdapter;
-    this.fileManager = fileManager;
+    this.contentManager = contentManager;
     this.hasClosed = false;
 
     // set up the image for drawing (set a white background and black stroke/fill)
@@ -225,10 +225,10 @@ public class ConcertCreator implements AutoCloseable {
 
     try {
       String imageUrl =
-          this.fileManager.writeToFile(
+          this.contentManager.writeToOutputFile(
               THEATER_IMAGE_NAME, this.imageOutputStream.toByteArray(), "image/gif");
       String audioUrl =
-          this.fileManager.writeToFile(
+          this.contentManager.writeToOutputFile(
               THEATER_AUDIO_NAME, this.audioOutputStream.toByteArray(), "audio/wav");
 
       HashMap<String, String> imageMessage = new HashMap<>();
