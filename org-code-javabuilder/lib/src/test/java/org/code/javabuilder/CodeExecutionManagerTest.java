@@ -44,7 +44,6 @@ class CodeExecutionManagerTest {
 
     GlobalProtocolTestFactory.builder()
         .withOutputAdapter(outputAdapter)
-        .withFileManager(fileManager)
         .withLifecycleNotifier(lifecycleNotifier)
         .create();
 

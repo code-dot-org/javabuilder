@@ -12,10 +12,7 @@ import java.awt.image.BufferedImage;
 import java.io.FileNotFoundException;
 import java.util.List;
 import org.code.media.*;
-import org.code.protocol.CachedResources;
-import org.code.protocol.JavabuilderException;
-import org.code.protocol.JavabuilderFileManager;
-import org.code.protocol.OutputAdapter;
+import org.code.protocol.*;
 import org.code.theater.Instrument;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,7 +27,7 @@ class ConcertCreatorTest {
   private InstrumentSampleLoader instrumentSampleLoader;
   private TheaterProgressPublisher theaterProgressPublisher;
   private OutputAdapter outputAdapter;
-  private JavabuilderFileManager fileManager;
+  private ContentManager contentManager;
   private ArgumentCaptor<TheaterMessage> theaterMessageCaptor;
   private ConcertCreator unitUnderTest;
 
@@ -44,7 +41,7 @@ class ConcertCreatorTest {
     instrumentSampleLoader = mock(InstrumentSampleLoader.class);
     theaterProgressPublisher = mock(TheaterProgressPublisher.class);
     outputAdapter = mock(OutputAdapter.class);
-    fileManager = mock(JavabuilderFileManager.class);
+    contentManager = mock(ContentManager.class);
     theaterMessageCaptor = ArgumentCaptor.forClass(TheaterMessage.class);
 
     final GifWriter.Factory gifWriterFactory = mock(GifWriter.Factory.class);
@@ -63,7 +60,7 @@ class ConcertCreatorTest {
             instrumentSampleLoader,
             theaterProgressPublisher,
             outputAdapter,
-            fileManager);
+            contentManager);
   }
 
   @Test
@@ -249,8 +246,10 @@ class ConcertCreatorTest {
 
     final String imageUrl = "imageUrl";
     final String audioUrl = "audioUrl";
-    when(fileManager.writeToFile(eq(THEATER_IMAGE_NAME), any(), any())).thenReturn(imageUrl);
-    when(fileManager.writeToFile(eq(THEATER_AUDIO_NAME), any(), any())).thenReturn(audioUrl);
+    when(contentManager.writeToOutputFile(eq(THEATER_IMAGE_NAME), any(), any()))
+        .thenReturn(imageUrl);
+    when(contentManager.writeToOutputFile(eq(THEATER_AUDIO_NAME), any(), any()))
+        .thenReturn(audioUrl);
     doNothing().when(outputAdapter).sendMessage(theaterMessageCaptor.capture());
 
     unitUnderTest.publishConcert(List.of());
