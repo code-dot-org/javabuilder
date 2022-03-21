@@ -41,8 +41,10 @@ public class CodeBuilderRunnable implements Runnable {
   private void executeCodeBuilder() {
     try {
       UserProjectFiles userProjectFiles = fileLoader.loadFiles();
+      UserProjectFiles validationFiles = fileLoader.loadValidation();
       CodeBuilder codeBuilder =
-          new CodeBuilder(GlobalProtocol.getInstance(), userProjectFiles, this.tempFolder);
+          new CodeBuilder(
+              GlobalProtocol.getInstance(), userProjectFiles, validationFiles, this.tempFolder);
       switch (this.executionType) {
         case COMPILE_ONLY:
           codeBuilder.buildUserCode(this.compileList);
@@ -53,7 +55,8 @@ public class CodeBuilderRunnable implements Runnable {
           break;
         case TEST:
           codeBuilder.buildAllUserCode();
-          codeBuilder.runUserTests();
+          codeBuilder.buildValidation();
+          codeBuilder.runTests();
           break;
       }
     } catch (InternalServerError | InternalServerRuntimeError e) {

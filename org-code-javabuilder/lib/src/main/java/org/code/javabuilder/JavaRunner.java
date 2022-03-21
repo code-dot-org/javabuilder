@@ -19,7 +19,10 @@ public class JavaRunner {
   private final List<String> validationAndJavaClassNames;
 
   public JavaRunner(
-      URL executableLocation, List<JavaProjectFile> javaFiles,  List<JavaProjectFile> validationFiles, OutputAdapter outputAdapter) {
+      URL executableLocation,
+      List<JavaProjectFile> javaFiles,
+      List<JavaProjectFile> validationFiles,
+      OutputAdapter outputAdapter) {
     this(
         executableLocation,
         new MainRunner(javaFiles, outputAdapter),
@@ -74,10 +77,7 @@ public class JavaRunner {
     // packages/classes.
     UserClassLoader urlClassLoader =
         new UserClassLoader(
-            classLoaderUrls,
-            JavaRunner.class.getClassLoader(),
-            classNames,
-            permissionLevel);
+            classLoaderUrls, JavaRunner.class.getClassLoader(), classNames, permissionLevel);
 
     runner.run(urlClassLoader);
 
