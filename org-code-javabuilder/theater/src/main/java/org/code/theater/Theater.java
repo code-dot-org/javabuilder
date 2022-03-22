@@ -9,7 +9,19 @@ public final class Theater {
   public static final Stage stage = new Stage();
   public static final Prompter prompter = new Prompter();
 
-  public static void play(Scene... scenes) {
+  public static void playScenes(Scene scene) {
+    Theater.playInternal(scene);
+  }
+
+  public static void playScenes(Scene... scenes) {
+    Theater.playInternal(scenes);
+  }
+
+  public static void play(Scene[] scenes) {
+    Theater.playInternal(scenes);
+  }
+
+  private static void playInternal(Scene... scenes) {
     final List<SceneAction> allActions = new ArrayList<>();
     for (Scene scene : scenes) {
       allActions.addAll(scene.getActions());
