@@ -15,8 +15,6 @@ public class GlobalProtocol {
   private static GlobalProtocol protocolInstance;
   private final OutputAdapter outputAdapter;
   private final InputHandler inputHandler;
-  private final String dashboardHostname;
-  private final String channelId;
   private final Set<MessageHandler> messageHandlers;
   private final LifecycleNotifier lifecycleNotifier;
   private final ContentManager contentManager;
@@ -24,14 +22,10 @@ public class GlobalProtocol {
   private GlobalProtocol(
       OutputAdapter outputAdapter,
       InputHandler inputHandler,
-      String dashboardHostname,
-      String channelId,
       LifecycleNotifier lifecycleNotifier,
       ContentManager contentManager) {
     this.outputAdapter = outputAdapter;
     this.inputHandler = inputHandler;
-    this.dashboardHostname = dashboardHostname;
-    this.channelId = channelId;
     this.messageHandlers = new HashSet<>();
     this.lifecycleNotifier = lifecycleNotifier;
     this.contentManager = contentManager;
@@ -40,18 +34,11 @@ public class GlobalProtocol {
   public static void create(
       OutputAdapter outputAdapter,
       InputAdapter inputAdapter,
-      String dashboardHostname,
-      String channelId,
       LifecycleNotifier lifecycleNotifier,
       ContentManager contentManager) {
     GlobalProtocol.protocolInstance =
         new GlobalProtocol(
-            outputAdapter,
-            new InputHandler(inputAdapter),
-            dashboardHostname,
-            channelId,
-            lifecycleNotifier,
-            contentManager);
+            outputAdapter, new InputHandler(inputAdapter), lifecycleNotifier, contentManager);
   }
 
   public static GlobalProtocol getInstance() {
@@ -72,10 +59,6 @@ public class GlobalProtocol {
 
   public InputHandler getInputHandler() {
     return this.inputHandler;
-  }
-
-  public String generateSourcesUrl() {
-    return String.format("%s/v3/sources/%s", this.dashboardHostname, this.channelId);
   }
 
   public void registerMessageHandler(MessageHandler handler) {
