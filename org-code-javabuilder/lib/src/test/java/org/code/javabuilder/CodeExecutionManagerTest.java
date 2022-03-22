@@ -20,7 +20,7 @@ class CodeExecutionManagerTest {
   private OutputAdapter outputAdapter;
   private ExecutionType executionType;
   private List<String> compileList;
-  private JavabuilderFileManager fileManager;
+  private TempDirectoryManager tempDirectoryManager;
   private LifecycleNotifier lifecycleNotifier;
   private CodeBuilderRunnableFactory codeBuilderRunnableFactory;
   private CodeBuilderRunnable codeBuilderRunnable;
@@ -33,7 +33,7 @@ class CodeExecutionManagerTest {
     outputAdapter = mock(OutputAdapter.class);
     executionType = ExecutionType.RUN;
     compileList = mock(List.class);
-    fileManager = mock(JavabuilderFileManager.class);
+    tempDirectoryManager = mock(TempDirectoryManager.class);
     lifecycleNotifier = mock(LifecycleNotifier.class);
     codeBuilderRunnableFactory = mock(CodeBuilderRunnableFactory.class);
     codeBuilderRunnable = mock(CodeBuilderRunnable.class);
@@ -54,7 +54,7 @@ class CodeExecutionManagerTest {
             outputAdapter,
             executionType,
             compileList,
-            fileManager,
+            tempDirectoryManager,
             lifecycleNotifier,
             codeBuilderRunnableFactory);
   }
