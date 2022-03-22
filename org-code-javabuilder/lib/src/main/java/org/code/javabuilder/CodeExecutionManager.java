@@ -22,7 +22,7 @@ public class CodeExecutionManager {
   private final OutputAdapter outputAdapter;
   private final ExecutionType executionType;
   private final List<String> compileList;
-  private final JavabuilderFileManager fileManager;
+  private final TempDirectoryManager tempDirectoryManager;
   private final LifecycleNotifier lifecycleNotifier;
   private final CodeBuilderRunnableFactory codeBuilderRunnableFactory;
 
@@ -51,7 +51,7 @@ public class CodeExecutionManager {
       OutputAdapter outputAdapter,
       ExecutionType executionType,
       List<String> compileList,
-      JavabuilderFileManager fileManager,
+      TempDirectoryManager tempDirectoryManager,
       LifecycleNotifier lifecycleNotifier) {
     this(
         fileLoader,
@@ -59,7 +59,7 @@ public class CodeExecutionManager {
         outputAdapter,
         executionType,
         compileList,
-        fileManager,
+        tempDirectoryManager,
         lifecycleNotifier,
         new CodeBuilderRunnableFactory());
   }
@@ -70,7 +70,7 @@ public class CodeExecutionManager {
       OutputAdapter outputAdapter,
       ExecutionType executionType,
       List<String> compileList,
-      JavabuilderFileManager fileManager,
+      TempDirectoryManager tempDirectoryManager,
       LifecycleNotifier lifecycleNotifier,
       CodeBuilderRunnableFactory codeBuilderRunnableFactory) {
     this.fileLoader = fileLoader;
@@ -78,7 +78,7 @@ public class CodeExecutionManager {
     this.outputAdapter = outputAdapter;
     this.executionType = executionType;
     this.compileList = compileList;
-    this.fileManager = fileManager;
+    this.tempDirectoryManager = tempDirectoryManager;
     this.lifecycleNotifier = lifecycleNotifier;
     this.codeBuilderRunnableFactory = codeBuilderRunnableFactory;
     this.executionInProgress = false;
@@ -162,7 +162,7 @@ public class CodeExecutionManager {
     GlobalProtocol.getInstance().cleanUpResources();
     try {
       // Clear temp folder
-      this.fileManager.cleanUpTempDirectory(this.tempFolder);
+      this.tempDirectoryManager.cleanUpTempDirectory(this.tempFolder);
       // Close custom input/output streams
       this.overrideInputStream.close();
       this.overrideOutputStream.close();
