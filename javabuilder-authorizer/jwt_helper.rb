@@ -66,25 +66,20 @@ module JwtHelper
     # tmp = route_arn.split(':')
     # api_gateway_arn = tmp[5].split('/')
     # stage_name = api_gateway_arn[1]
-
-    # TODO: Update the following strings to use the exact origin that requests come from.
-    # For now, log where the request came from so we can ensure we use the correct strings
-    # when we update this.
-    puts origin
-
+    standardized_origin = origin.delete_prefix("https://").delete_prefix("http://").delete_suffix(":3000")
     stage_name = ""
-    if origin.include? "localhost"
+    if standardized_origin == "localhost-studio.code.org"
       stage_name = "development"
-    elsif origin.include? "staging"
+    elsif standardized_origin == "staging-studio.code.org"
       stage_name = "staging"
-    elsif origin.include? "levelbuilder"
+    elsif standardized_origin == "levelbuilder-studio.code.org"
       stage_name = "levelbuilder"
-    elsif origin.include? "test"
+    elsif standardized_origin == "test-studio.code.org"
       stage_name = "test"
-    elsif origin.include? "adhoc"
-      stage_name = "adhoc"
-    else
+    elsif standardized_origin == "studio.code.org"
       stage_name = "production"
+    elsif standardized_origin.start_with?("adhoc-") && standardized_origin.end_with?("-studio.cdn-code.org")
+      stage_name = "adhoc"
     end
     # End of temporary code
 
