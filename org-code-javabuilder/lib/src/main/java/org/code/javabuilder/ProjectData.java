@@ -83,10 +83,10 @@ public class ProjectData {
     this.jsonData.getJSONObject(ASSET_URLS_KEY).put(filename, url);
   }
 
-  public UserProjectFiles getValidation() throws InternalServerError, UserInitiatedException {
+  public UserProjectFiles getValidation() throws UserInitiatedException, InternalServerError {
     if (!this.jsonData.has(VALIDATION_KEY)) {
-      throw new InternalServerError(
-          InternalErrorKey.INTERNAL_EXCEPTION, new Exception("Code sources missing"));
+      // return empty file list if there is no validation, as no validation is expected behavior
+      return new UserProjectFiles();
     }
     final UserProjectFiles validationFiles =
         this.projectFileParser.parseFileJson(this.jsonData.getString(VALIDATION_KEY));
