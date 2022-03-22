@@ -88,8 +88,6 @@ public class ProjectData {
       throw new InternalServerError(
           InternalErrorKey.INTERNAL_EXCEPTION, new Exception("Code sources missing"));
     }
-    System.out.println();
-    System.out.println(this.jsonData.getString(VALIDATION_KEY));
     final UserProjectFiles validationFiles =
         this.projectFileParser.parseFileJson(this.jsonData.getString(VALIDATION_KEY));
     return validationFiles;

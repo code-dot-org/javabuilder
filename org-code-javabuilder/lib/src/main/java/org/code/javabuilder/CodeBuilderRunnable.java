@@ -54,8 +54,7 @@ public class CodeBuilderRunnable implements Runnable {
           codeBuilder.runUserCode();
           break;
         case TEST:
-          codeBuilder.buildAllUserCode();
-          codeBuilder.buildValidation();
+          codeBuilder.buildUserAndValidationFiles();
           codeBuilder.runTests();
           break;
       }
