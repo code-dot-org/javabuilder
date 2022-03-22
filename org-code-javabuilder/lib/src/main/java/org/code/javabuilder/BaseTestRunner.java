@@ -41,8 +41,11 @@ public class BaseTestRunner implements CodeRunner {
    * @throws InternalServerError if there is an error running tests
    */
   @Override
-  public void run(URLClassLoader urlClassLoader)
+  public boolean run(URLClassLoader urlClassLoader)
       throws InternalServerError, UserInitiatedException {
+    if (this.files.size() == 0) {
+      return false;
+    }
     try {
       // Search all project files for tests
       final List<ClassSelector> classSelectors = new ArrayList<>();
@@ -59,9 +62,13 @@ public class BaseTestRunner implements CodeRunner {
         launcher.registerTestExecutionListeners(this.listener);
         // Discover tests and build a test plan
         final TestPlan testPlan = launcher.discover(request);
+        if (!testPlan.containsTests()) {
+          return false;
+        }
         this.outputAdapter.sendMessage(new StatusMessage(this.statusMessageKey));
         // Execute test plan
         launcher.execute(testPlan);
+        return true;
       }
     } catch (PreconditionViolationException | ClassNotFoundException e) {
       throw new InternalServerError(InternalErrorKey.INTERNAL_EXCEPTION, e);

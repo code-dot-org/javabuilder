@@ -38,10 +38,10 @@ public class ValidationRunner extends BaseTestRunner {
    * @throws InternalServerError if there is an error running tests
    */
   @Override
-  public void run(URLClassLoader urlClassLoader)
+  public boolean run(URLClassLoader urlClassLoader)
       throws InternalServerError, UserInitiatedException {
     this.setUpForValidation(urlClassLoader);
-    super.run(urlClassLoader);
+    return super.run(urlClassLoader);
   }
 
   private void setUpForValidation(URLClassLoader urlClassLoader) throws UserInitiatedException {

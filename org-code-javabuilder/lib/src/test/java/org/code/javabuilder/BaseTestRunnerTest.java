@@ -110,6 +110,7 @@ public class BaseTestRunnerTest {
     launcherFactory.when(LauncherFactory::openSession).thenReturn(launcherSession);
     when(launcherSession.getLauncher()).thenReturn(launcher);
     when(launcher.discover(discoveryRequest)).thenReturn(testPlan);
+    when(testPlan.containsTests()).thenReturn(true);
 
     unitUnderTest.run(urlClassLoader);
 
