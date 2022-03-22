@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import org.code.protocol.GlobalProtocol;
 import org.code.protocol.InternalErrorKey;
@@ -59,8 +60,10 @@ public class CodeBuilder {
     this.compileCode(javaProjectFiles);
   }
 
-  public void buildValidation() throws InternalServerError, UserInitiatedException {
-    this.compileCode(this.validationFiles.getJavaFiles());
+  public void buildUserAndValidationFiles() throws InternalServerError, UserInitiatedException {
+    List<JavaProjectFile> allFiles = new ArrayList<>(this.validationFiles.getJavaFiles());
+    allFiles.addAll(this.userProjectFiles.getJavaFiles());
+    this.compileCode(allFiles);
   }
 
   private void compileCode(List<JavaProjectFile> javaProjectFiles)
