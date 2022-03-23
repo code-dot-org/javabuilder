@@ -39,6 +39,7 @@ public class BaseTestRunner implements CodeRunner {
    *
    * @param urlClassLoader class loader to load compiled classes
    * @throws InternalServerError if there is an error running tests
+   * @return true if there were tests to run, false if there were not.
    */
   @Override
   public boolean run(URLClassLoader urlClassLoader)

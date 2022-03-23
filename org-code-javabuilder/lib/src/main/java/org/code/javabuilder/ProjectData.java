@@ -59,6 +59,17 @@ public class ProjectData implements ProjectFileLoader {
     return projectFiles;
   }
 
+  @Override
+  public UserProjectFiles getValidation() throws UserInitiatedException, InternalServerError {
+    if (!this.jsonData.has(VALIDATION_KEY)) {
+      // return empty file list if there is no validation, as no validation is expected behavior
+      return new UserProjectFiles();
+    }
+    final UserProjectFiles validationFiles =
+        this.projectFileParser.parseFileJson(this.jsonData.getString(VALIDATION_KEY));
+    return validationFiles;
+  }
+
   public String getAssetUrl(String filename) {
     if (!this.jsonData.has(ASSET_URLS_KEY)
         || !this.jsonData.getJSONObject(ASSET_URLS_KEY).has(filename)) {
@@ -82,15 +93,5 @@ public class ProjectData implements ProjectFileLoader {
     }
 
     this.jsonData.getJSONObject(ASSET_URLS_KEY).put(filename, url);
-  }
-
-  public UserProjectFiles getValidation() throws UserInitiatedException, InternalServerError {
-    if (!this.jsonData.has(VALIDATION_KEY)) {
-      // return empty file list if there is no validation, as no validation is expected behavior
-      return new UserProjectFiles();
-    }
-    final UserProjectFiles validationFiles =
-        this.projectFileParser.parseFileJson(this.jsonData.getString(VALIDATION_KEY));
-    return validationFiles;
   }
 }

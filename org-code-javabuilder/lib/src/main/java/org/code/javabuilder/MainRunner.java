@@ -23,6 +23,7 @@ public class MainRunner implements CodeRunner {
    *
    * @param urlClassLoader class loader to load compiled classes
    * @throws JavabuilderException when the user's code hits an error
+   * @return true if there was code to run, false if there was not.
    */
   public boolean run(URLClassLoader urlClassLoader) throws JavabuilderException {
     try {

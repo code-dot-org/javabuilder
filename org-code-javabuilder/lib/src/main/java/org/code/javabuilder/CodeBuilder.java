@@ -60,6 +60,13 @@ public class CodeBuilder {
     this.compileCode(javaProjectFiles);
   }
 
+  /**
+   * Saves non-source code assets to storage and compiles both the user's code and any validation
+   * files provided.
+   *
+   * @throws InternalServerError if the code contains a compiler error or if we are unable to
+   *     compile due to internal errors.
+   */
   public void buildUserAndValidationFiles() throws InternalServerError, UserInitiatedException {
     List<JavaProjectFile> allFiles = new ArrayList<>(this.validationFiles.getJavaFiles());
     allFiles.addAll(this.userProjectFiles.getJavaFiles());
