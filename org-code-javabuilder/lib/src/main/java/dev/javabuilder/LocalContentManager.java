@@ -14,7 +14,7 @@ import org.code.protocol.InternalErrorKey;
 import org.code.protocol.JavabuilderException;
 import org.json.JSONException;
 
-public class LocalContentManager implements ContentManager, ProjectFileLoader {
+public class LocalContentManager implements ContentManager {
   private static final String SERVER_URL_FORMAT = "http://localhost:8080/%s/%s";
 
   private final ProjectData projectData;
@@ -28,9 +28,8 @@ public class LocalContentManager implements ContentManager, ProjectFileLoader {
     this.projectData = projectData;
   }
 
-  @Override
-  public UserProjectFiles loadFiles() throws InternalServerError, UserInitiatedException {
-    return this.projectData.getSources();
+  public ProjectFileLoader getProjectFileLoader() {
+    return this.projectData;
   }
 
   @Override

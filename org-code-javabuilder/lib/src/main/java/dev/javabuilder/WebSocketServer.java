@@ -93,20 +93,19 @@ public class WebSocketServer {
       outputAdapter.sendMessage(e.getExceptionMessage());
       return;
     }
-    GlobalProtocol.create(outputAdapter, inputAdapter, lifecycleNotifier, contentManager);
-
     // the code must be run in a thread so we can receive input messages
     Thread codeExecutor =
         new Thread(
             () -> {
               final CodeExecutionManager executionManager =
                   new CodeExecutionManager(
-                      contentManager,
-                      GlobalProtocol.getInstance().getInputHandler(),
+                      contentManager.getProjectFileLoader(),
+                      inputAdapter,
                       outputAdapter,
                       executionType,
                       compileList,
                       new LocalTempDirectoryManager(),
+                      contentManager,
                       lifecycleNotifier);
               executionManager.execute();
               // Clean up session

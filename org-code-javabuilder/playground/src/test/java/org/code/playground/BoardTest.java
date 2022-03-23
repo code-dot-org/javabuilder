@@ -9,6 +9,7 @@ import org.code.media.Color;
 import org.code.media.Font;
 import org.code.media.FontStyle;
 import org.code.protocol.*;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -30,6 +31,11 @@ class BoardTest {
 
     GlobalProtocolTestFactory.builder().withContentManager(contentManager).create();
     unitUnderTest = new Board(playgroundMessageHandler, inputHandler, contentManager);
+  }
+
+  @AfterEach
+  public void tearDown() {
+    GlobalProtocolTestFactory.tearDown();
   }
 
   @Test
