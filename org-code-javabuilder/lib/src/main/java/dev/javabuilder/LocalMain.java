@@ -21,14 +21,22 @@ public class LocalMain {
     // turn off the default console logger
     logger.setUseParentHandlers(false);
 
+    final LocalContentManager localContentManager;
+    try {
+      localContentManager = new LocalContentManager();
+    } catch (InternalServerError e) {
+      System.out.println("Error loading data");
+      return;
+    }
+
     GlobalProtocol.create(
-        outputAdapter, inputAdapter, new LifecycleNotifier(), new LocalContentManager());
+        outputAdapter, inputAdapter, new LifecycleNotifier(), localContentManager);
     CachedResources.create();
 
     // Create and invoke the code execution environment
     CodeExecutionManager codeExecutionManager =
         new CodeExecutionManager(
-            new LocalContentManager(),
+            localContentManager,
             GlobalProtocol.getInstance().getInputHandler(),
             outputAdapter,
             ExecutionType.RUN,

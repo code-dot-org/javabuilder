@@ -82,7 +82,17 @@ public class WebSocketServer {
       outputAdapter = new UserTestOutputAdapter(websocketOutputAdapter);
     }
     final LifecycleNotifier lifecycleNotifier = new LifecycleNotifier();
-    final LocalContentManager contentManager = new LocalContentManager();
+    final LocalContentManager contentManager;
+    try {
+      contentManager = new LocalContentManager();
+    } catch (InternalServerError e) {
+      // Log the error
+      LoggerUtils.logError(e);
+
+      // This affected the user. Let's tell them about it.
+      outputAdapter.sendMessage(e.getExceptionMessage());
+      return;
+    }
     GlobalProtocol.create(outputAdapter, inputAdapter, lifecycleNotifier, contentManager);
 
     // the code must be run in a thread so we can receive input messages
