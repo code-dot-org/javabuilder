@@ -56,8 +56,16 @@ public class ProjectData implements ProjectFileLoader {
       projectFiles.addTextFile(
           new TextProjectFile(MAZE_FILE_KEY, sources.getString(MAZE_FILE_KEY)));
     }
-
     return projectFiles;
+  }
+
+  @Override
+  public UserProjectFiles getValidation() throws UserInitiatedException, InternalServerError {
+    if (!this.jsonData.has(VALIDATION_KEY)) {
+      // return empty file list if there is no validation, as no validation is expected behavior
+      return new UserProjectFiles();
+    }
+    return this.projectFileParser.parseFileJson(this.jsonData.getString(VALIDATION_KEY));
   }
 
   public String getAssetUrl(String filename) {

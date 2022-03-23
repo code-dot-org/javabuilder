@@ -5,7 +5,9 @@ import static org.mockito.Mockito.*;
 
 import java.net.URLClassLoader;
 import java.util.List;
+import org.code.protocol.InternalErrorKey;
 import org.code.protocol.OutputAdapter;
+import org.code.protocol.StatusMessageKey;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,7 +22,7 @@ import org.junit.platform.launcher.core.LauncherFactory;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 
-public class TestRunnerTest {
+public class BaseTestRunnerTest {
   private JavaProjectFile file1;
   private JavaProjectFile file2;
   private Class javaClass1;
@@ -41,7 +43,7 @@ public class TestRunnerTest {
   private MockedStatic<LauncherDiscoveryRequestBuilder> requestBuilder;
   private MockedStatic<LauncherFactory> launcherFactory;
 
-  private TestRunner unitUnderTest;
+  private BaseTestRunner unitUnderTest;
 
   /**
    * Suppresses warnings for instantiating classSelectorsCaptor with type List instead of
@@ -70,7 +72,12 @@ public class TestRunnerTest {
     requestBuilder = mockStatic(LauncherDiscoveryRequestBuilder.class);
     launcherFactory = mockStatic(LauncherFactory.class);
 
-    unitUnderTest = new TestRunner(List.of(file1, file2), listener, mock(OutputAdapter.class));
+    unitUnderTest =
+        new BaseTestRunner(
+            List.of(file1, file2),
+            listener,
+            mock(OutputAdapter.class),
+            StatusMessageKey.RUNNING_PROJECT_TESTS);
   }
 
   @AfterEach
@@ -103,11 +110,12 @@ public class TestRunnerTest {
     launcherFactory.when(LauncherFactory::openSession).thenReturn(launcherSession);
     when(launcherSession.getLauncher()).thenReturn(launcher);
     when(launcher.discover(discoveryRequest)).thenReturn(testPlan);
+    when(testPlan.containsTests()).thenReturn(true);
 
     unitUnderTest.run(urlClassLoader);
 
-    verify(urlClassLoader, times(2)).loadClass(file1.getClassName());
-    verify(urlClassLoader, times(2)).loadClass(file2.getClassName());
+    verify(urlClassLoader, times(1)).loadClass(file1.getClassName());
+    verify(urlClassLoader, times(1)).loadClass(file2.getClassName());
     verify(requestBuilderInstance).selectors(classSelectorsCaptor.capture());
 
     final List<ClassSelector> classSelectors = classSelectorsCaptor.getValue();
@@ -124,9 +132,9 @@ public class TestRunnerTest {
     when(urlClassLoader.loadClass(file1.getClassName())).thenThrow(cause);
 
     final Exception actual =
-        assertThrows(UserInitiatedException.class, () -> unitUnderTest.run(urlClassLoader));
+        assertThrows(InternalServerError.class, () -> unitUnderTest.run(urlClassLoader));
 
-    assertEquals(UserInitiatedExceptionKey.CLASS_NOT_FOUND.toString(), actual.getMessage());
+    assertEquals(InternalErrorKey.INTERNAL_EXCEPTION.toString(), actual.getMessage());
     assertSame(cause, actual.getCause());
   }
 }

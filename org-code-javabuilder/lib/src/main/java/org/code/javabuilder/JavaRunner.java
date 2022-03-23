@@ -2,37 +2,56 @@ package org.code.javabuilder;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.code.javabuilder.util.JarUtils;
 import org.code.protocol.JavabuilderException;
 import org.code.protocol.OutputAdapter;
+import org.code.protocol.StatusMessage;
+import org.code.protocol.StatusMessageKey;
 
 /** The class that executes the student's code */
 public class JavaRunner {
   private final URL executableLocation;
   private final MainRunner mainRunner;
-  private final TestRunner testRunner;
+  private final UserTestRunner userTestRunner;
+  private final ValidationRunner validationRunner;
   private final List<String> javaClassNames;
+  private final List<String> validationAndJavaClassNames;
+  private final OutputAdapter outputAdapter;
 
   public JavaRunner(
-      URL executableLocation, List<JavaProjectFile> javaFiles, OutputAdapter outputAdapter) {
+      URL executableLocation,
+      List<JavaProjectFile> javaFiles,
+      List<JavaProjectFile> validationFiles,
+      OutputAdapter outputAdapter) {
     this(
         executableLocation,
         new MainRunner(javaFiles, outputAdapter),
-        new TestRunner(javaFiles, outputAdapter),
-        javaFiles);
+        new UserTestRunner(javaFiles, outputAdapter),
+        new ValidationRunner(validationFiles, javaFiles, outputAdapter),
+        javaFiles,
+        validationFiles,
+        outputAdapter);
   }
 
   JavaRunner(
       URL executableLocation,
       MainRunner mainRunner,
-      TestRunner testRunner,
-      List<JavaProjectFile> javaFiles) {
+      UserTestRunner userTestRunner,
+      ValidationRunner validationRunner,
+      List<JavaProjectFile> javaFiles,
+      List<JavaProjectFile> validationFiles,
+      OutputAdapter outputAdapter) {
     this.executableLocation = executableLocation;
     this.mainRunner = mainRunner;
-    this.testRunner = testRunner;
+    this.userTestRunner = userTestRunner;
+    this.validationRunner = validationRunner;
     this.javaClassNames = this.parseClassNames(javaFiles);
+    this.validationAndJavaClassNames = new ArrayList<>(this.javaClassNames);
+    this.validationAndJavaClassNames.addAll(this.parseClassNames(validationFiles));
+    this.outputAdapter = outputAdapter;
   }
 
   /**
@@ -44,17 +63,25 @@ public class JavaRunner {
    *     finished executing.
    */
   public void runMain() throws InternalFacingException, JavabuilderException {
-    this.run(this.mainRunner, RunPermissionLevel.USER);
+    this.run(this.mainRunner, RunPermissionLevel.USER, this.javaClassNames);
   }
 
   public void runTests() throws JavabuilderException, InternalFacingException {
     // Tests have more permissions than a regular run: as of now, all
     // tests will be run under the VALIDATOR permission. Once we split out validation and
     // project tests run we will need to give different permissions to each run type.
-    this.run(this.testRunner, RunPermissionLevel.VALIDATOR);
+    boolean hasValidation =
+        this.run(
+            this.validationRunner, RunPermissionLevel.VALIDATOR, this.validationAndJavaClassNames);
+    boolean hasUserTests =
+        this.run(this.userTestRunner, RunPermissionLevel.USER, this.javaClassNames);
+    if (!hasValidation && !hasUserTests) {
+      this.outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.NO_TESTS_FOUND));
+    }
   }
 
-  private void run(CodeRunner runner, RunPermissionLevel permissionLevel)
+  private boolean run(
+      CodeRunner runner, RunPermissionLevel permissionLevel, List<String> classNames)
       throws JavabuilderException, InternalFacingException {
     // Include the user-facing api jars in the code we are loading so student code can access them.
     URL[] classLoaderUrls = JarUtils.getAllJarURLs(this.executableLocation);
@@ -63,12 +90,9 @@ public class JavaRunner {
     // packages/classes.
     UserClassLoader urlClassLoader =
         new UserClassLoader(
-            classLoaderUrls,
-            JavaRunner.class.getClassLoader(),
-            this.javaClassNames,
-            permissionLevel);
+            classLoaderUrls, JavaRunner.class.getClassLoader(), classNames, permissionLevel);
 
-    runner.run(urlClassLoader);
+    boolean runResult = runner.run(urlClassLoader);
 
     try {
       urlClassLoader.close();
@@ -77,6 +101,7 @@ public class JavaRunner {
       // error message.
       throw new InternalFacingException("Error closing urlClassLoader: " + e, e);
     }
+    return runResult;
   }
 
   /**

@@ -23,8 +23,9 @@ public class MainRunner implements CodeRunner {
    *
    * @param urlClassLoader class loader to load compiled classes
    * @throws JavabuilderException when the user's code hits an error
+   * @return true if there was code to run, false if there was not.
    */
-  public void run(URLClassLoader urlClassLoader) throws JavabuilderException {
+  public boolean run(URLClassLoader urlClassLoader) throws JavabuilderException {
     try {
       // load and run the main method of the class
       Method mainMethod = ProjectLoadUtils.findMainMethod(urlClassLoader, this.javaFiles);
@@ -33,6 +34,7 @@ public class MainRunner implements CodeRunner {
       }
       this.outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.RUNNING));
       mainMethod.invoke(null, new Object[] {null});
+      return true;
     } catch (IllegalAccessException e) {
       // TODO: this error message may not be not very friendly
       throw new UserInitiatedException(UserInitiatedExceptionKey.ILLEGAL_METHOD_ACCESS, e);
