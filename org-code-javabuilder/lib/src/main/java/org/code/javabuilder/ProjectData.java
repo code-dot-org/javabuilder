@@ -65,9 +65,7 @@ public class ProjectData implements ProjectFileLoader {
       // return empty file list if there is no validation, as no validation is expected behavior
       return new UserProjectFiles();
     }
-    final UserProjectFiles validationFiles =
-        this.projectFileParser.parseFileJson(this.jsonData.getString(VALIDATION_KEY));
-    return validationFiles;
+    return this.projectFileParser.parseFileJson(this.jsonData.getString(VALIDATION_KEY));
   }
 
   public String getAssetUrl(String filename) {
