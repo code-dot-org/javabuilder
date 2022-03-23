@@ -41,7 +41,7 @@ public class CodeBuilderRunnable implements Runnable {
   private void executeCodeBuilder() {
     try {
       UserProjectFiles userProjectFiles = fileLoader.loadFiles();
-      UserProjectFiles validationFiles = fileLoader.loadValidation();
+      UserProjectFiles validationFiles = fileLoader.getValidation();
       CodeBuilder codeBuilder =
           new CodeBuilder(
               GlobalProtocol.getInstance(), userProjectFiles, validationFiles, this.tempFolder);
