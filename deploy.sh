@@ -49,6 +49,7 @@ if [[ $(aws sts get-caller-identity --query Arn --output text) =~ "assumed-role/
 fi
 
 aws cloudformation deploy \
+  --s3-bucket ${TEMPLATE_BUCKET} \
   --template-file ${OUTPUT_TEMPLATE} \
   --parameter-overrides SubDomainName=$SUB_DOMAIN BaseDomainName=$BASE_DOMAIN BaseDomainNameHostedZonedID=$BASE_DOMAIN_HOSTED_ZONE_ID \
     ProvisionedConcurrentExecutions=$PROVISIONED_CONCURRENT_EXECUTIONS ReservedConcurrentExecutions=$RESERVED_CONCURRENT_EXECUTIONS \
