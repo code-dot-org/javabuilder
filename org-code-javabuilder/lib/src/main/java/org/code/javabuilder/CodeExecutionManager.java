@@ -18,12 +18,13 @@ import org.code.protocol.*;
  */
 public class CodeExecutionManager {
   private final ProjectFileLoader fileLoader;
-  private final InputHandler inputHandler;
+  private final InputAdapter inputAdapter;
   private final OutputAdapter outputAdapter;
   private final ExecutionType executionType;
   private final List<String> compileList;
   private final TempDirectoryManager tempDirectoryManager;
   private final LifecycleNotifier lifecycleNotifier;
+  private final ContentManager contentManager;
   private final CodeBuilderRunnableFactory codeBuilderRunnableFactory;
 
   private File tempFolder;
@@ -47,39 +48,43 @@ public class CodeExecutionManager {
 
   public CodeExecutionManager(
       ProjectFileLoader fileLoader,
-      InputHandler inputHandler,
+      InputAdapter inputAdapter,
       OutputAdapter outputAdapter,
       ExecutionType executionType,
       List<String> compileList,
       TempDirectoryManager tempDirectoryManager,
+      ContentManager contentManager,
       LifecycleNotifier lifecycleNotifier) {
     this(
         fileLoader,
-        inputHandler,
+        inputAdapter,
         outputAdapter,
         executionType,
         compileList,
         tempDirectoryManager,
         lifecycleNotifier,
+        contentManager,
         new CodeBuilderRunnableFactory());
   }
 
   CodeExecutionManager(
       ProjectFileLoader fileLoader,
-      InputHandler inputHandler,
+      InputAdapter inputAdapter,
       OutputAdapter outputAdapter,
       ExecutionType executionType,
       List<String> compileList,
       TempDirectoryManager tempDirectoryManager,
       LifecycleNotifier lifecycleNotifier,
+      ContentManager contentManager,
       CodeBuilderRunnableFactory codeBuilderRunnableFactory) {
     this.fileLoader = fileLoader;
-    this.inputHandler = inputHandler;
+    this.inputAdapter = inputAdapter;
     this.outputAdapter = outputAdapter;
     this.executionType = executionType;
     this.compileList = compileList;
     this.tempDirectoryManager = tempDirectoryManager;
     this.lifecycleNotifier = lifecycleNotifier;
+    this.contentManager = contentManager;
     this.codeBuilderRunnableFactory = codeBuilderRunnableFactory;
     this.executionInProgress = false;
   }
@@ -128,9 +133,14 @@ public class CodeExecutionManager {
   }
 
   /**
-   * Pre-execution steps: 1) create temporary folder, 2) Replace System.in/out with custom in/out
+   * Pre-execution steps: 1) Create GlobalProtocol, 2) create temporary folder, 3) Replace
+   * System.in/out with custom in/out
    */
   private void onPreExecute() throws InternalServerError {
+    // Create the Global Protocol instance
+    GlobalProtocol.create(
+        this.outputAdapter, this.inputAdapter, this.lifecycleNotifier, this.contentManager);
+
     // Create temp folder
     try {
       this.tempFolder = Files.createTempDirectory("tmpdir").toFile();
@@ -141,7 +151,8 @@ public class CodeExecutionManager {
     // Save System in/out and replace with custom in/out
     this.systemInputStream = System.in;
     this.systemOutputStream = System.out;
-    this.overrideInputStream = new InputRedirectionStream(this.inputHandler);
+    this.overrideInputStream =
+        new InputRedirectionStream(GlobalProtocol.getInstance().getInputHandler());
     this.overrideOutputStream = new OutputPrintStream(this.outputAdapter);
     System.setOut(this.overrideOutputStream);
     System.setIn(this.overrideInputStream);
@@ -149,7 +160,8 @@ public class CodeExecutionManager {
 
   /**
    * Post-execution steps: 1) Notify listeners, 2) clean up global resources, 3) clear temporary
-   * folder, 4) close custom in/out streams, 5) Replace System.in/out with original in/out
+   * folder, 4) close custom in/out streams, 5) Replace System.in/out with original in/out, 6)
+   * Destroy Global Protocol
    */
   private void onPostExecute() throws InternalServerError {
     if (!this.executionInProgress) {
@@ -169,9 +181,10 @@ public class CodeExecutionManager {
     } catch (IOException e) {
       throw new InternalServerError(InternalErrorKey.INTERNAL_EXCEPTION, e);
     } finally {
-      // Replace System in/out with original System in/out
+      // Replace System in/out with original System in/out and destroy Global Protocol
       System.setIn(this.systemInputStream);
       System.setOut(this.systemOutputStream);
+      GlobalProtocol.destroy();
       this.executionInProgress = false;
     }
   }

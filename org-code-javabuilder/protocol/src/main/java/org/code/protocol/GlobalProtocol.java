@@ -36,6 +36,11 @@ public class GlobalProtocol {
       InputAdapter inputAdapter,
       LifecycleNotifier lifecycleNotifier,
       ContentManager contentManager) {
+    if (GlobalProtocol.protocolInstance != null) {
+      throw new InternalServerRuntimeError(
+          InternalErrorKey.INTERNAL_EXCEPTION,
+          new Exception("Tried to create GlobalProtocol instance when one already exists."));
+    }
     GlobalProtocol.protocolInstance =
         new GlobalProtocol(
             outputAdapter, new InputHandler(inputAdapter), lifecycleNotifier, contentManager);
@@ -47,6 +52,16 @@ public class GlobalProtocol {
     }
 
     return GlobalProtocol.protocolInstance;
+  }
+
+  public static void destroy() {
+    if (GlobalProtocol.protocolInstance == null) {
+      throw new InternalServerRuntimeError(
+          InternalErrorKey.INTERNAL_EXCEPTION,
+          new Exception("Tried to destroy GlobalProtocol instance when one does not exist."));
+    }
+
+    GlobalProtocol.protocolInstance = null;
   }
 
   public ContentManager getContentManager() {
