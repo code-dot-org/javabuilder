@@ -15,11 +15,11 @@ import org.code.protocol.StatusMessageKey;
 public class JavaRunner {
   private final URL executableLocation;
   private final MainRunner mainRunner;
-  private final TestRunner testRunner;
+  private final UserTestRunner userTestRunner;
   private final ValidationRunner validationRunner;
   private final List<String> javaClassNames;
   private final List<String> validationAndJavaClassNames;
-  private OutputAdapter outputAdapter;
+  private final OutputAdapter outputAdapter;
 
   public JavaRunner(
       URL executableLocation,
@@ -29,7 +29,7 @@ public class JavaRunner {
     this(
         executableLocation,
         new MainRunner(javaFiles, outputAdapter),
-        new TestRunner(javaFiles, outputAdapter),
+        new UserTestRunner(javaFiles, outputAdapter),
         new ValidationRunner(validationFiles, javaFiles, outputAdapter),
         javaFiles,
         validationFiles,
@@ -39,14 +39,14 @@ public class JavaRunner {
   JavaRunner(
       URL executableLocation,
       MainRunner mainRunner,
-      TestRunner testRunner,
+      UserTestRunner userTestRunner,
       ValidationRunner validationRunner,
       List<JavaProjectFile> javaFiles,
       List<JavaProjectFile> validationFiles,
       OutputAdapter outputAdapter) {
     this.executableLocation = executableLocation;
     this.mainRunner = mainRunner;
-    this.testRunner = testRunner;
+    this.userTestRunner = userTestRunner;
     this.validationRunner = validationRunner;
     this.javaClassNames = this.parseClassNames(javaFiles);
     this.validationAndJavaClassNames = new ArrayList<>(this.javaClassNames);
@@ -73,7 +73,8 @@ public class JavaRunner {
     boolean hasValidation =
         this.run(
             this.validationRunner, RunPermissionLevel.VALIDATOR, this.validationAndJavaClassNames);
-    boolean hasUserTests = this.run(this.testRunner, RunPermissionLevel.USER, this.javaClassNames);
+    boolean hasUserTests =
+        this.run(this.userTestRunner, RunPermissionLevel.USER, this.javaClassNames);
     if (!hasValidation && !hasUserTests) {
       this.outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.NO_TESTS_FOUND));
     }

@@ -5,13 +5,13 @@ import org.code.protocol.OutputAdapter;
 import org.code.protocol.StatusMessageKey;
 
 /** Runs all tests for a given set of Java files */
-public class TestRunner extends BaseTestRunner {
+public class UserTestRunner extends BaseTestRunner {
 
-  public TestRunner(List<JavaProjectFile> javaFiles, OutputAdapter outputAdapter) {
+  public UserTestRunner(List<JavaProjectFile> javaFiles, OutputAdapter outputAdapter) {
     this(javaFiles, new JavabuilderTestExecutionListener(outputAdapter, false), outputAdapter);
   }
 
-  TestRunner(
+  UserTestRunner(
       List<JavaProjectFile> javaFiles,
       JavabuilderTestExecutionListener listener,
       OutputAdapter outputAdapter) {

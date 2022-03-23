@@ -33,11 +33,6 @@ public class LocalContentManager implements ContentManager {
   }
 
   @Override
-  public UserProjectFiles getValidation() throws InternalServerError, UserInitiatedException {
-    return this.projectData.getValidation();
-  }
-
-  @Override
   public String getAssetUrl(String filename) {
     return this.projectData.getAssetUrl(filename);
   }
