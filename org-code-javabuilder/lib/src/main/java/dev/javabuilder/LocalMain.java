@@ -29,19 +29,18 @@ public class LocalMain {
       return;
     }
 
-    GlobalProtocol.create(
-        outputAdapter, inputAdapter, new LifecycleNotifier(), localContentManager);
     CachedResources.create();
 
     // Create and invoke the code execution environment
     CodeExecutionManager codeExecutionManager =
         new CodeExecutionManager(
-            localContentManager,
-            GlobalProtocol.getInstance().getInputHandler(),
+            localContentManager.getProjectFileLoader(),
+            inputAdapter,
             outputAdapter,
             ExecutionType.RUN,
             null,
             new LocalTempDirectoryManager(),
+            localContentManager,
             new LifecycleNotifier());
     codeExecutionManager.execute();
   }

@@ -19,7 +19,7 @@ import org.code.protocol.InternalErrorKey;
 import org.code.protocol.JavabuilderException;
 import org.json.JSONException;
 
-public class AWSContentManager implements ContentManager, ProjectFileLoader {
+public class AWSContentManager implements ContentManager {
   // Temporary limit on writes to S3 per session until we can more fully limit usage.
   // The only file writing should be during Theater, and there should only be two per session
   // (theater image and theater audio).
@@ -34,7 +34,7 @@ public class AWSContentManager implements ContentManager, ProjectFileLoader {
   private final String javabuilderSessionId;
   private final String contentBucketUrl;
   private final Context context;
-  private ProjectData projectData;
+  private final ProjectData projectData;
   private int writes;
   private int uploads;
 
@@ -72,9 +72,8 @@ public class AWSContentManager implements ContentManager, ProjectFileLoader {
     this.uploads = 0;
   }
 
-  @Override
-  public UserProjectFiles loadFiles() throws InternalServerError, UserInitiatedException {
-    return this.projectData.getSources();
+  public ProjectFileLoader getProjectFileLoader() {
+    return this.projectData;
   }
 
   @Override

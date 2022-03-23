@@ -19,7 +19,7 @@ import org.json.JSONObject;
  * }
  * </pre>
  */
-public class ProjectData {
+public class ProjectData implements ProjectFileLoader {
   public static final String PROJECT_DATA_FILE_NAME = "sources.json";
   // Expected JSON keys
   private static final String SOURCES_KEY = "sources";
@@ -41,7 +41,8 @@ public class ProjectData {
     this.projectFileParser = projectFileParser;
   }
 
-  public UserProjectFiles getSources() throws InternalServerError, UserInitiatedException {
+  @Override
+  public UserProjectFiles loadFiles() throws InternalServerError, UserInitiatedException {
     if (!this.jsonData.has(SOURCES_KEY)
         || !this.jsonData.getJSONObject(SOURCES_KEY).has(MAIN_JSON_KEY)) {
       throw new InternalServerError(
