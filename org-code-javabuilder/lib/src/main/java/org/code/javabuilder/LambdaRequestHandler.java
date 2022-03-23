@@ -124,9 +124,6 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
       return onInitializationError("error loading data", e, outputAdapter, connectionId);
     }
 
-    // TODO: Move common setup steps into CodeExecutionManager#onPreExecute
-    GlobalProtocol.create(outputAdapter, inputAdapter, lifecycleNotifier, contentManager);
-
     // manually set font configuration file since there is no font configuration on a lambda.
     java.util.Properties props = System.getProperties();
     // /opt is the folder all layer files go into.
@@ -145,12 +142,13 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
 
     final CodeExecutionManager codeExecutionManager =
         new CodeExecutionManager(
-            contentManager,
-            GlobalProtocol.getInstance().getInputHandler(),
+            contentManager.getProjectFileLoader(),
+            inputAdapter,
             outputAdapter,
             executionType,
             compileList,
             tempDirectoryManager,
+            contentManager,
             lifecycleNotifier);
 
     final Thread timeoutNotifierThread =

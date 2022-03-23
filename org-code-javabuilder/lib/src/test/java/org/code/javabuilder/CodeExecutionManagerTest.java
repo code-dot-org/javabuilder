@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 
 class CodeExecutionManagerTest {
   private ProjectFileLoader fileLoader;
-  private InputHandler inputHandler;
+  private InputAdapter inputAdapter;
   private OutputAdapter outputAdapter;
   private ExecutionType executionType;
   private List<String> compileList;
@@ -24,12 +24,13 @@ class CodeExecutionManagerTest {
   private LifecycleNotifier lifecycleNotifier;
   private CodeBuilderRunnableFactory codeBuilderRunnableFactory;
   private CodeBuilderRunnable codeBuilderRunnable;
+  private ContentManager contentManager;
   private CodeExecutionManager unitUnderTest;
 
   @BeforeEach
   public void setUp() {
     fileLoader = mock(ProjectFileLoader.class);
-    inputHandler = mock(InputHandler.class);
+    inputAdapter = mock(InputAdapter.class);
     outputAdapter = mock(OutputAdapter.class);
     executionType = ExecutionType.RUN;
     compileList = mock(List.class);
@@ -37,25 +38,22 @@ class CodeExecutionManagerTest {
     lifecycleNotifier = mock(LifecycleNotifier.class);
     codeBuilderRunnableFactory = mock(CodeBuilderRunnableFactory.class);
     codeBuilderRunnable = mock(CodeBuilderRunnable.class);
+    contentManager = mock(ContentManager.class);
 
     when(codeBuilderRunnableFactory.createCodeBuilderRunnable(
             eq(fileLoader), eq(outputAdapter), any(File.class), eq(executionType), eq(compileList)))
         .thenReturn(codeBuilderRunnable);
 
-    GlobalProtocolTestFactory.builder()
-        .withOutputAdapter(outputAdapter)
-        .withLifecycleNotifier(lifecycleNotifier)
-        .create();
-
     unitUnderTest =
         new CodeExecutionManager(
             fileLoader,
-            inputHandler,
+            inputAdapter,
             outputAdapter,
             executionType,
             compileList,
             tempDirectoryManager,
             lifecycleNotifier,
+            contentManager,
             codeBuilderRunnableFactory);
   }
 
