@@ -9,6 +9,7 @@ import org.code.protocol.ClientMessageType;
 import org.code.protocol.GlobalProtocolTestFactory;
 import org.code.validation.ClientMessageHelper;
 import org.code.validation.PainterLog;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -21,6 +22,11 @@ class NeighborhoodTrackerTest {
     GlobalProtocolTestFactory.builder().create();
     World.setInstance(new World(GRID_SIZE));
     unitUnderTest = new NeighborhoodTracker();
+  }
+
+  @AfterEach
+  public void tearDown() {
+    GlobalProtocolTestFactory.tearDown();
   }
 
   @Test

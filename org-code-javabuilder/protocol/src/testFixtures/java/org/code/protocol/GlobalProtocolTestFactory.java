@@ -7,6 +7,10 @@ public class GlobalProtocolTestFactory {
     return new Builder();
   }
 
+  public static void tearDown() {
+    GlobalProtocol.destroy();
+  }
+
   public static class Builder {
     private OutputAdapter outputAdapter;
     private InputAdapter inputAdapter;
