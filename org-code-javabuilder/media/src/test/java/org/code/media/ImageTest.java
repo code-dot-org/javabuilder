@@ -8,6 +8,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import org.code.protocol.ContentManager;
 import org.code.protocol.GlobalProtocolTestFactory;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -18,6 +19,11 @@ public class ImageTest {
   public void setUp() {
     contentManager = mock(ContentManager.class);
     GlobalProtocolTestFactory.builder().withContentManager(contentManager).create();
+  }
+
+  @AfterEach
+  public void tearDown() {
+    GlobalProtocolTestFactory.tearDown();
   }
 
   @Test
