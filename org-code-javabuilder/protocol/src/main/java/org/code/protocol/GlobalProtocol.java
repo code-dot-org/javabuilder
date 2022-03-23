@@ -15,51 +15,35 @@ public class GlobalProtocol {
   private static GlobalProtocol protocolInstance;
   private final OutputAdapter outputAdapter;
   private final InputHandler inputHandler;
-  private final JavabuilderFileManager fileManager;
-  private final String dashboardHostname;
-  private final String channelId;
-  private final AssetFileHelper assetFileHelper;
   private final Set<MessageHandler> messageHandlers;
   private final LifecycleNotifier lifecycleNotifier;
+  private final ContentManager contentManager;
 
   private GlobalProtocol(
       OutputAdapter outputAdapter,
       InputHandler inputHandler,
-      String dashboardHostname,
-      String channelId,
-      JavabuilderFileManager fileManager,
-      AssetFileHelper assetFileHelper,
-      LifecycleNotifier lifecycleNotifier) {
+      LifecycleNotifier lifecycleNotifier,
+      ContentManager contentManager) {
     this.outputAdapter = outputAdapter;
     this.inputHandler = inputHandler;
-    this.dashboardHostname = dashboardHostname;
-    this.channelId = channelId;
-    this.fileManager = fileManager;
-    this.assetFileHelper = assetFileHelper;
     this.messageHandlers = new HashSet<>();
     this.lifecycleNotifier = lifecycleNotifier;
+    this.contentManager = contentManager;
   }
 
   public static void create(
       OutputAdapter outputAdapter,
       InputAdapter inputAdapter,
-      String dashboardHostname,
-      String channelId,
-      String levelId,
-      JavabuilderFileManager fileManager,
       LifecycleNotifier lifecycleNotifier,
-      ContentManager contentManager,
-      boolean useDashboardSources) {
+      ContentManager contentManager) {
+    if (GlobalProtocol.protocolInstance != null) {
+      throw new InternalServerRuntimeError(
+          InternalErrorKey.INTERNAL_EXCEPTION,
+          new Exception("Tried to create GlobalProtocol instance when one already exists."));
+    }
     GlobalProtocol.protocolInstance =
         new GlobalProtocol(
-            outputAdapter,
-            new InputHandler(inputAdapter),
-            dashboardHostname,
-            channelId,
-            new DelegatingFileManager(fileManager, contentManager, useDashboardSources),
-            new DelegatingAssetFileHelper(
-                dashboardHostname, channelId, levelId, contentManager, useDashboardSources),
-            lifecycleNotifier);
+            outputAdapter, new InputHandler(inputAdapter), lifecycleNotifier, contentManager);
   }
 
   public static GlobalProtocol getInstance() {
@@ -70,28 +54,26 @@ public class GlobalProtocol {
     return GlobalProtocol.protocolInstance;
   }
 
+  public static void destroy() {
+    if (GlobalProtocol.protocolInstance == null) {
+      throw new InternalServerRuntimeError(
+          InternalErrorKey.INTERNAL_EXCEPTION,
+          new Exception("Tried to destroy GlobalProtocol instance when one does not exist."));
+    }
+
+    GlobalProtocol.protocolInstance = null;
+  }
+
+  public ContentManager getContentManager() {
+    return this.contentManager;
+  }
+
   public OutputAdapter getOutputAdapter() {
     return this.outputAdapter;
   }
 
   public InputHandler getInputHandler() {
     return this.inputHandler;
-  }
-
-  public JavabuilderFileManager getFileManager() {
-    return this.fileManager;
-  }
-
-  public String generateAssetUrl(String filename) {
-    return this.assetFileHelper.generateAssetUrl(filename);
-  }
-
-  public AssetFileHelper getAssetFileHelper() {
-    return this.assetFileHelper;
-  }
-
-  public String generateSourcesUrl() {
-    return String.format("%s/v3/sources/%s", this.dashboardHostname, this.channelId);
   }
 
   public void registerMessageHandler(MessageHandler handler) {

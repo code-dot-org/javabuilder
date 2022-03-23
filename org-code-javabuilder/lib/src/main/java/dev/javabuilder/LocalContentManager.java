@@ -12,16 +12,15 @@ import org.code.javabuilder.*;
 import org.code.protocol.ContentManager;
 import org.code.protocol.InternalErrorKey;
 import org.code.protocol.JavabuilderException;
-import org.code.protocol.LoggerUtils;
 import org.json.JSONException;
 
-public class LocalContentManager implements ContentManager, ProjectFileLoader {
+public class LocalContentManager implements ContentManager {
   private static final String SERVER_URL_FORMAT = "http://localhost:8080/%s/%s";
 
-  private ProjectData projectData;
+  private final ProjectData projectData;
 
-  public LocalContentManager() {
-    this.projectData = null;
+  public LocalContentManager() throws InternalServerError {
+    this.projectData = this.loadProjectData();
   }
 
   // Used for testing
@@ -29,31 +28,17 @@ public class LocalContentManager implements ContentManager, ProjectFileLoader {
     this.projectData = projectData;
   }
 
-  @Override
-  public UserProjectFiles loadFiles() throws InternalServerError, UserInitiatedException {
-    this.loadProjectDataIfNeeded();
-    return this.projectData.getSources();
+  public ProjectFileLoader getProjectFileLoader() {
+    return this.projectData;
   }
 
   @Override
   public String getAssetUrl(String filename) {
-    try {
-      this.loadProjectDataIfNeeded();
-    } catch (InternalServerError e) {
-      // We should only hit this exception if we try to load an asset URL before source code has
-      // been loaded, which should only be in the the case of manual testing. Log this exception but
-      // don't throw to preserve the method contract.
-      // Note / TODO: Once we fully migrate away from Dashboard sources, we can remove the
-      // loadProjectDataIfNeeded() call here and this exception handling.
-      LoggerUtils.logException(e);
-      return null;
-    }
     return this.projectData.getAssetUrl(filename);
   }
 
   @Override
   public String generateAssetUploadUrl(String filename) throws InternalServerError {
-    this.loadProjectDataIfNeeded();
     final String uploadUrl = String.format(SERVER_URL_FORMAT, DIRECTORY, filename);
     // The URL to GET this asset once it is uploaded will be the same as the upload
     // URL since it points to the same location on the local file server. Add this
@@ -76,35 +61,20 @@ public class LocalContentManager implements ContentManager, ProjectFileLoader {
 
   @Override
   public void verifyAssetFilename(String filename) throws FileNotFoundException {
-    try {
-      // We should only hit this exception if we try to verify an asset before source code has
-      // been loaded, which should only be in the the case of manual testing. Log this exception but
-      // convert to a FileNotFoundException to preserve the method contract.
-      // Note / TODO: Once we fully migrate away from Dashboard sources, we can remove the
-      // loadProjectDataIfNeeded() call here and this exception handling.
-      this.loadProjectDataIfNeeded();
-    } catch (InternalServerError e) {
-      throw new FileNotFoundException("Error loading data");
-    }
     if (!this.projectData.doesAssetUrlExist(filename)) {
       throw new FileNotFoundException(filename);
     }
   }
 
-  // TODO: Project JSON data loading is deferred because it will not exist if we are
-  // still using dashboard sources. Once we stop using dashboard sources, this step
-  // can probably just happen immediately in the constructor.
-  private void loadProjectDataIfNeeded() throws InternalServerError {
-    if (this.projectData == null) {
-      final Path sourcesPath =
-          Paths.get(
-              System.getProperty("java.io.tmpdir"), DIRECTORY, ProjectData.PROJECT_DATA_FILE_NAME);
-      try {
-        this.projectData = new ProjectData(Files.readString(sourcesPath));
-      } catch (IOException | JSONException e) {
-        // Error reading JSON file from local storage
-        throw new InternalServerError(InternalErrorKey.INTERNAL_EXCEPTION, e);
-      }
+  private ProjectData loadProjectData() throws InternalServerError {
+    final Path sourcesPath =
+        Paths.get(
+            System.getProperty("java.io.tmpdir"), DIRECTORY, ProjectData.PROJECT_DATA_FILE_NAME);
+    try {
+      return new ProjectData(Files.readString(sourcesPath));
+    } catch (IOException | JSONException e) {
+      // Error reading JSON file from local storage
+      throw new InternalServerError(InternalErrorKey.INTERNAL_EXCEPTION, e);
     }
   }
 }

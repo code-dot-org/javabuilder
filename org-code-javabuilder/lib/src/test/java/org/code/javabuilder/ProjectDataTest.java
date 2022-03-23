@@ -40,11 +40,11 @@ class ProjectDataTest {
   @Test
   public void testGetSourcesThrowsExceptionIfSourcesOrMainJsonMissing() {
     unitUnderTest = new ProjectData("{}", projectFileParser);
-    Exception actual = assertThrows(InternalServerError.class, () -> unitUnderTest.getSources());
+    Exception actual = assertThrows(InternalServerError.class, () -> unitUnderTest.loadFiles());
     assertEquals(InternalErrorKey.INTERNAL_EXCEPTION.toString(), actual.getMessage());
 
     unitUnderTest = new ProjectData("{ 'sources': {} }", projectFileParser);
-    actual = assertThrows(InternalServerError.class, () -> unitUnderTest.getSources());
+    actual = assertThrows(InternalServerError.class, () -> unitUnderTest.loadFiles());
     assertEquals(InternalErrorKey.INTERNAL_EXCEPTION.toString(), actual.getMessage());
   }
 
@@ -54,7 +54,7 @@ class ProjectDataTest {
     when(projectFileParser.parseFileJson(MAIN_JSON_CONTENT)).thenReturn(projectFiles);
     doNothing().when(projectFiles).addTextFile(textProjectFileCaptor.capture());
 
-    assertSame(projectFiles, unitUnderTest.getSources());
+    assertSame(projectFiles, unitUnderTest.loadFiles());
     verify(projectFileParser).parseFileJson(MAIN_JSON_CONTENT);
     assertEquals(MAZE_FILE_CONTENT, textProjectFileCaptor.getValue().getFileContents());
   }

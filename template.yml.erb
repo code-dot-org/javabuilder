@@ -11,9 +11,9 @@ Parameters:
   SubDomainName:
     Type: String
     Description: Sub domain name for javabuilder service.
-  LogBucket:
-    Type: String
-    Default: cdo-logs.s3.amazonaws.com
+  # LogBucket:
+  #   Type: String
+  #   Default: cdo-logs.s3.amazonaws.com
   ProvisionedConcurrentExecutions:
     Type: Number
     Description: The amount of provisioned concurrency to allocate for the BuildAndRunJavaProject Lambda.
@@ -34,6 +34,10 @@ Parameters:
     Description: The number of Javabuilder invocations allowed per user per day.
     MinValue: 1
     Default: 40
+  StageName:
+    Type: String
+    Description: The default stage name in the API Gateway APIs
+    Default: Prod
 <%
 JAVALAB_APP_TYPES = %w(
   Theater
@@ -159,8 +163,8 @@ Resources:
       # Using AutoDeploy rather than a Deployment resource (as we do with the WebSocket API) because
       # the Deployment resource doesn't seem to work with HTTP APIs.
       AutoDeploy: true
-      StageName: Prod
-      Description: Prod Stage
+      StageName: !Sub "${StageName}"
+      Description: The stage to deploy
       ApiId: !Ref HttpAPI
       DefaultRouteSettings:
         DetailedMetricsEnabled: true
@@ -294,8 +298,8 @@ Resources:
   WebSocketStage:
     Type: AWS::ApiGatewayV2::Stage
     Properties:
-      StageName: Prod
-      Description: Prod Stage
+      StageName: !Sub "${StageName}"
+      Description: The stage to deploy
       DeploymentId: !Ref WebSocketDeployment
       ApiId: !Ref WebSocketAPI
       DefaultRouteSettings:
@@ -483,6 +487,9 @@ Resources:
           AWS_LAMBDA_EXEC_WRAPPER: /opt/change_runtime_directory
           CONTENT_BUCKET_NAME: !Ref ContentBucket
           CONTENT_BUCKET_URL: !Sub "https://${ContentDomain}"
+          API_ENDPOINT: !Sub
+            - "https://${ApiId}.execute-api.${AWS::Region}.amazonaws.com/${StageName}"
+            - ApiId: !Ref WebSocketAPI
 <%end -%>
 
   ContentBucket:
@@ -578,11 +585,8 @@ Resources:
 <%end -%>
           Then post in #ap-csa-dev.
       ActionsEnabled: true
-      OKActions: []
       AlarmActions:
           - !If [IsDevCondition, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-dev-test", !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:CDO-Urgent"]
-      InsufficientDataActions: []
-      Dimensions: []
       EvaluationPeriods: 10
       DatapointsToAlarm: 10
       Threshold: 50
@@ -616,11 +620,8 @@ Resources:
           minutes. Occasional spikes are expected, but a sustained high error rate
           is an indication of an outage.
       ActionsEnabled: true
-      OKActions: []
       AlarmActions:
           - !If [IsDevCondition, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-dev-test", !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:Javabuilder-high-error-rate"]
-      InsufficientDataActions: []
-      Dimensions: []
       EvaluationPeriods: 4
       DatapointsToAlarm: 4
       Threshold: 10
@@ -637,7 +638,6 @@ Resources:
                 Metric:
                     Namespace: Javabuilder
                     MetricName: Javabuilder <%=name%> "SEVERE" errors
-                    Dimensions: []
                 Period: 300
                 Stat: Sum
           - Id: m2
@@ -660,11 +660,8 @@ Resources:
           Javabuilder, which executes student <%=name%> code) exceeded 10% for four
           consecutive 5 minute periods.
       ActionsEnabled: true
-      OKActions: []
       AlarmActions:
           - !If [IsDevCondition, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-dev-test", !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-build-and-run-lambda-error-rate"]
-      InsufficientDataActions: []
-      Dimensions: []
       EvaluationPeriods: 4
       DatapointsToAlarm: 4
       Threshold: 25

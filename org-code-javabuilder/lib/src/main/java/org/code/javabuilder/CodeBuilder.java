@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import org.code.protocol.GlobalProtocol;
 import org.code.protocol.InternalErrorKey;
@@ -16,11 +17,17 @@ public class CodeBuilder {
   private final OutputAdapter outputAdapter;
   private final File tempFolder;
   private final UserProjectFiles userProjectFiles;
+  private final UserProjectFiles validationFiles;
 
-  public CodeBuilder(GlobalProtocol protocol, UserProjectFiles userProjectFiles, File tempFolder)
+  public CodeBuilder(
+      GlobalProtocol protocol,
+      UserProjectFiles userProjectFiles,
+      UserProjectFiles validationFiles,
+      File tempFolder)
       throws InternalServerError {
     this.outputAdapter = protocol.getOutputAdapter();
     this.userProjectFiles = userProjectFiles;
+    this.validationFiles = validationFiles;
     this.tempFolder = tempFolder;
   }
 
@@ -53,6 +60,19 @@ public class CodeBuilder {
     this.compileCode(javaProjectFiles);
   }
 
+  /**
+   * Saves non-source code assets to storage and compiles both the user's code and any validation
+   * files provided.
+   *
+   * @throws InternalServerError if the code contains a compiler error or if we are unable to
+   *     compile due to internal errors.
+   */
+  public void buildUserAndValidationFiles() throws InternalServerError, UserInitiatedException {
+    List<JavaProjectFile> allFiles = new ArrayList<>(this.validationFiles.getJavaFiles());
+    allFiles.addAll(this.userProjectFiles.getJavaFiles());
+    this.compileCode(allFiles);
+  }
+
   private void compileCode(List<JavaProjectFile> javaProjectFiles)
       throws InternalServerError, UserInitiatedException {
     if (javaProjectFiles.isEmpty()) {
@@ -70,8 +90,8 @@ public class CodeBuilder {
     this.createJavaRunner().runMain();
   }
 
-  /** Runs all tests in the student's code */
-  public void runUserTests() throws InternalFacingException, JavabuilderException {
+  /** Runs all tests in the student's code and any validation provided for the code */
+  public void runTests() throws InternalFacingException, JavabuilderException {
     this.createJavaRunner().runTests();
   }
 
@@ -81,6 +101,7 @@ public class CodeBuilder {
       return new JavaRunner(
           this.tempFolder.toURI().toURL(),
           this.userProjectFiles.getJavaFiles(),
+          this.validationFiles.getJavaFiles(),
           this.outputAdapter);
     } catch (MalformedURLException e) {
       throw new InternalServerError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e);

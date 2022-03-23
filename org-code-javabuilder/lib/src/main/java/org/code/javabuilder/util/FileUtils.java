@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
-import org.code.protocol.LoggerUtils;
 
 /** Convenience methods for handling file operations */
 public final class FileUtils {
@@ -28,6 +27,5 @@ public final class FileUtils {
 
   public static void recursivelyClearDirectory(Path directory) throws IOException {
     Files.walk(directory).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
-    LoggerUtils.sendClearedDirectoryLog(directory);
   }
 }
