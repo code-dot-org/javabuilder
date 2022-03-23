@@ -115,9 +115,14 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
       outputAdapter = new UserTestOutputAdapter(awsOutputAdapter);
     }
 
-    final AWSContentManager contentManager =
-        new AWSContentManager(
-            S3_CLIENT, CONTENT_BUCKET_NAME, javabuilderSessionId, CONTENT_BUCKET_URL, context);
+    final AWSContentManager contentManager;
+    try {
+      contentManager =
+          new AWSContentManager(
+              S3_CLIENT, CONTENT_BUCKET_NAME, javabuilderSessionId, CONTENT_BUCKET_URL, context);
+    } catch (InternalServerError e) {
+      return onInitializationError("error loading data", e, outputAdapter, connectionId);
+    }
 
     // TODO: Move common setup steps into CodeExecutionManager#onPreExecute
     GlobalProtocol.create(outputAdapter, inputAdapter, lifecycleNotifier, contentManager);
@@ -135,15 +140,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     } catch (IOException e) {
       // Wrap this in our error type so we can log it and tell the user.
       InternalServerError error = new InternalServerError(INTERNAL_EXCEPTION, e);
-
-      // Log the error
-      LoggerUtils.logError(error);
-
-      // This affected the user. Let's tell them about it.
-      outputAdapter.sendMessage(error.getExceptionMessage());
-
-      cleanUpResources(connectionId, API_CLIENT);
-      return "error clearing tmpdir";
+      return onInitializationError("error clearing tmpdir", error, outputAdapter, connectionId);
     }
 
     final CodeExecutionManager codeExecutionManager =
@@ -180,6 +177,22 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     }
 
     return "done";
+  }
+
+  /** Handles logging and cleanup in the case of an initialization error. */
+  private String onInitializationError(
+      String errorMessage,
+      InternalServerError error,
+      OutputAdapter outputAdapter,
+      String connectionId) {
+    // Log the error
+    LoggerUtils.logError(error);
+
+    // This affected the user. Let's tell them about it.
+    outputAdapter.sendMessage(error.getExceptionMessage());
+
+    cleanUpResources(connectionId, API_CLIENT);
+    return errorMessage;
   }
 
   private Thread createTimeoutThread(
