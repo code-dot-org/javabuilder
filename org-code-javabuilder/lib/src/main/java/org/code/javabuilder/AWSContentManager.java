@@ -17,9 +17,9 @@ import java.util.Date;
 import org.code.protocol.ContentManager;
 import org.code.protocol.InternalErrorKey;
 import org.code.protocol.JavabuilderException;
-import org.code.protocol.LoggerUtils;
+import org.json.JSONException;
 
-public class AWSContentManager implements ContentManager, ProjectFileLoader {
+public class AWSContentManager implements ContentManager {
   // Temporary limit on writes to S3 per session until we can more fully limit usage.
   // The only file writing should be during Theater, and there should only be two per session
   // (theater image and theater audio).
@@ -34,7 +34,7 @@ public class AWSContentManager implements ContentManager, ProjectFileLoader {
   private final String javabuilderSessionId;
   private final String contentBucketUrl;
   private final Context context;
-  private ProjectData projectData;
+  private final ProjectData projectData;
   private int writes;
   private int uploads;
 
@@ -43,8 +43,16 @@ public class AWSContentManager implements ContentManager, ProjectFileLoader {
       String bucketName,
       String javabuilderSessionId,
       String contentBucketUrl,
-      Context context) {
-    this(s3Client, bucketName, javabuilderSessionId, contentBucketUrl, context, null);
+      Context context)
+      throws InternalServerError {
+    this.bucketName = bucketName;
+    this.s3Client = s3Client;
+    this.javabuilderSessionId = javabuilderSessionId;
+    this.contentBucketUrl = contentBucketUrl;
+    this.context = context;
+    this.projectData = this.loadProjectData();
+    this.writes = 0;
+    this.uploads = 0;
   }
 
   AWSContentManager(
@@ -64,25 +72,12 @@ public class AWSContentManager implements ContentManager, ProjectFileLoader {
     this.uploads = 0;
   }
 
-  @Override
-  public UserProjectFiles loadFiles() throws InternalServerError, UserInitiatedException {
-    this.loadProjectDataIfNeeded();
-    return this.projectData.getSources();
+  public ProjectFileLoader getProjectFileLoader() {
+    return this.projectData;
   }
 
   @Override
   public String getAssetUrl(String filename) {
-    try {
-      this.loadProjectDataIfNeeded();
-    } catch (InternalServerError e) {
-      // We should only hit this exception if we try to load an asset URL before source code has
-      // been loaded, which should only be in the the case of manual testing. Log this exception but
-      // don't throw to preserve the method contract.
-      // Note / TODO: Once we fully migrate away from Dashboard sources, we can remove the
-      // loadProjectDataIfNeeded() call here and this exception handling.
-      LoggerUtils.logException(e);
-      return null;
-    }
     return this.projectData.getAssetUrl(filename);
   }
 
@@ -144,16 +139,6 @@ public class AWSContentManager implements ContentManager, ProjectFileLoader {
 
   @Override
   public void verifyAssetFilename(String filename) throws FileNotFoundException {
-    try {
-      // We should only hit this exception if we try to verify an asset before source code has
-      // been loaded, which should only be in the the case of manual testing. Log this exception but
-      // convert to a FileNotFoundException to preserve the method contract.
-      // Note / TODO: Once we fully migrate away from Dashboard sources, we can remove the
-      // loadProjectDataIfNeeded() call here and this exception handling.
-      this.loadProjectDataIfNeeded();
-    } catch (InternalServerError e) {
-      throw new FileNotFoundException("Error loading data");
-    }
     if (!this.projectData.doesAssetUrlExist(filename)) {
       throw new FileNotFoundException(filename);
     }
@@ -167,14 +152,7 @@ public class AWSContentManager implements ContentManager, ProjectFileLoader {
     return this.javabuilderSessionId + "/" + filename;
   }
 
-  // TODO: Project JSON data loading is deferred because it will not exist if we are
-  // still using dashboard sources. Once we stop using dashboard sources, this step
-  // can probably just happen immediately in the constructor.
-  private void loadProjectDataIfNeeded() throws InternalServerError {
-    if (this.projectData != null) {
-      return;
-    }
-
+  private ProjectData loadProjectData() throws InternalServerError {
     final String key = this.generateKey(ProjectData.PROJECT_DATA_FILE_NAME);
     final S3Object sourcesS3Object;
 
@@ -186,8 +164,8 @@ public class AWSContentManager implements ContentManager, ProjectFileLoader {
 
     try (final S3ObjectInputStream inputStream = sourcesS3Object.getObjectContent()) {
       final String jsonString = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
-      this.projectData = new ProjectData(jsonString);
-    } catch (IOException e) {
+      return new ProjectData(jsonString);
+    } catch (JSONException | IOException e) {
       // Error reading JSON file from S3
       throw new InternalServerError(InternalErrorKey.INTERNAL_EXCEPTION, e);
     }

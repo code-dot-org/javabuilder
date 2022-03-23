@@ -13,35 +13,29 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.MockedStatic;
 
 class BoardTest {
 
   private PlaygroundMessageHandler playgroundMessageHandler;
   private InputHandler inputHandler;
-  private AssetFileHelper assetFileHelper;
+  private ContentManager contentManager;
   private ArgumentCaptor<PlaygroundMessage> messageCaptor;
-  private MockedStatic<GlobalProtocol> globalProtocol;
   private Board unitUnderTest;
 
   @BeforeEach
   public void setUp() {
     playgroundMessageHandler = mock(PlaygroundMessageHandler.class);
     messageCaptor = ArgumentCaptor.forClass(PlaygroundMessage.class);
-    assetFileHelper = mock(AssetFileHelper.class);
+    contentManager = mock(ContentManager.class);
     inputHandler = mock(InputHandler.class);
 
-    globalProtocol = mockStatic(GlobalProtocol.class);
-    final GlobalProtocol globalProtocolInstance = mock(GlobalProtocol.class);
-    globalProtocol.when(GlobalProtocol::getInstance).thenReturn(globalProtocolInstance);
-    when(globalProtocolInstance.getAssetFileHelper()).thenReturn(assetFileHelper);
-
-    unitUnderTest = new Board(playgroundMessageHandler, inputHandler, assetFileHelper);
+    GlobalProtocolTestFactory.builder().withContentManager(contentManager).create();
+    unitUnderTest = new Board(playgroundMessageHandler, inputHandler, contentManager);
   }
 
   @AfterEach
   public void tearDown() {
-    globalProtocol.close();
+    GlobalProtocolTestFactory.tearDown();
   }
 
   @Test
@@ -70,7 +64,7 @@ class BoardTest {
   @Test
   public void testPlaySoundThrowsExceptionIfFileNotFound() throws FileNotFoundException {
     final FileNotFoundException expected = new FileNotFoundException();
-    doThrow(expected).when(assetFileHelper).verifyAssetFilename(anyString());
+    doThrow(expected).when(contentManager).verifyAssetFilename(anyString());
 
     final FileNotFoundException actual =
         assertThrows(FileNotFoundException.class, () -> unitUnderTest.playSound("test_file.wav"));
@@ -95,7 +89,7 @@ class BoardTest {
   @Test
   public void testSetBackgroundImageExceptionIfFileNotFound() throws FileNotFoundException {
     final FileNotFoundException expected = new FileNotFoundException();
-    doThrow(expected).when(assetFileHelper).verifyAssetFilename(anyString());
+    doThrow(expected).when(contentManager).verifyAssetFilename(anyString());
 
     final FileNotFoundException actual =
         assertThrows(
@@ -228,7 +222,7 @@ class BoardTest {
   public void testEndWithSoundThrowsExceptionIfFileNotFound()
       throws PlaygroundException, FileNotFoundException {
     final FileNotFoundException expected = new FileNotFoundException();
-    doThrow(expected).when(assetFileHelper).verifyAssetFilename(anyString());
+    doThrow(expected).when(contentManager).verifyAssetFilename(anyString());
 
     when(inputHandler.getNextMessageForType(InputMessageType.PLAYGROUND))
         .thenAnswer(

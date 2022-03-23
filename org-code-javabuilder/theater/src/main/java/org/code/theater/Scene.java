@@ -1,5 +1,7 @@
 package org.code.theater;
 
+import static org.code.theater.support.Constants.THEATER_HEIGHT;
+import static org.code.theater.support.Constants.THEATER_WIDTH;
 import static org.code.theater.support.DrawImageAction.UNSPECIFIED;
 
 import java.io.FileNotFoundException;
@@ -9,9 +11,6 @@ import org.code.media.*;
 import org.code.theater.support.*;
 
 public class Scene {
-  private static final int SCENE_WIDTH = 400;
-  private static final int SCENE_HEIGHT = 400;
-
   // Visible for testing
   static final Font DEFAULT_FONT = Font.SANS;
   static final FontStyle DEFAULT_FONT_STYLE = FontStyle.NORMAL;
@@ -44,12 +43,12 @@ public class Scene {
 
   /** Returns the width of the theater canvas. */
   public final int getWidth() {
-    return SCENE_WIDTH;
+    return THEATER_WIDTH;
   }
 
   /** Returns the height of the theater canvas. */
   public final int getHeight() {
-    return SCENE_HEIGHT;
+    return THEATER_HEIGHT;
   }
 
   /**

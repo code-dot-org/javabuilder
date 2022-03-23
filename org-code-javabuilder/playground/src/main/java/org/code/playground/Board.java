@@ -11,7 +11,7 @@ public class Board {
 
   private final PlaygroundMessageHandler playgroundMessageHandler;
   private final InputHandler inputHandler;
-  private final AssetFileHelper assetFileHelper;
+  private final ContentManager contentManager;
 
   private boolean firstRunStarted;
   private boolean isRunning;
@@ -24,16 +24,16 @@ public class Board {
     this(
         PlaygroundMessageHandler.getInstance(),
         GlobalProtocol.getInstance().getInputHandler(),
-        GlobalProtocol.getInstance().getAssetFileHelper());
+        GlobalProtocol.getInstance().getContentManager());
   }
 
   Board(
       PlaygroundMessageHandler playgroundMessageHandler,
       InputHandler inputHandler,
-      AssetFileHelper assetFileHelper) {
+      ContentManager contentManager) {
     this.playgroundMessageHandler = playgroundMessageHandler;
     this.inputHandler = inputHandler;
-    this.assetFileHelper = assetFileHelper;
+    this.contentManager = contentManager;
     this.firstRunStarted = false;
     this.isRunning = false;
     this.items = new HashMap<>();
@@ -67,7 +67,7 @@ public class Board {
    * @throws FileNotFoundException if the file cannot be found in the asset manager
    */
   public void setBackgroundImage(String filename) throws FileNotFoundException {
-    this.assetFileHelper.verifyAssetFilename(filename);
+    this.contentManager.verifyAssetFilename(filename);
 
     final HashMap<String, String> details = new HashMap<>();
     details.put(ClientMessageDetailKeys.FILENAME, filename);
@@ -152,7 +152,7 @@ public class Board {
    * @throws FileNotFoundException when the sound file cannot be found.
    */
   public void playSound(String filename) throws FileNotFoundException {
-    this.assetFileHelper.verifyAssetFilename(filename);
+    this.contentManager.verifyAssetFilename(filename);
 
     HashMap<String, String> details = new HashMap<>();
     details.put(ClientMessageDetailKeys.FILENAME, filename);

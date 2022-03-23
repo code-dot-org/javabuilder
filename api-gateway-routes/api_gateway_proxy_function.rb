@@ -39,10 +39,8 @@ def on_connect(event, context)
 
   # -- Create Lambda for this session --
   lambda_client = Aws::Lambda::Client.new(region: region)
-  api_endpoint = get_api_endpoint(event, context)
   payload = {
     :queueUrl => sqs_queue.queue_url,
-    :apiEndpoint => api_endpoint,
     :connectionId => request_context["connectionId"],
     :levelId => authorizer["level_id"],
     :options => authorizer["options"],
@@ -51,8 +49,7 @@ def on_connect(event, context)
     :miniAppType => authorizer["mini_app_type"],
     :javabuilderSessionId => authorizer['sid'],
     :queueName => queue_name,
-    :executionType => authorizer['execution_type'],
-    :useDashboardSources => authorizer["use_dashboard_sources"]
+    :executionType => authorizer['execution_type']
   }
 
   response = nil

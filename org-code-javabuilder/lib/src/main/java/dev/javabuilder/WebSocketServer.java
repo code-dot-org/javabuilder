@@ -56,15 +56,14 @@ public class WebSocketServer {
 
     final String connectionId = "LocalhostWebSocketConnection";
     final String levelId = queryInput.getString("level_id");
-    final String channelId = queryInput.getString("channel_id");
+    final String channelId =
+        queryInput.has("channel_id") ? queryInput.getString("channel_id") : "noneProvided";
     final String miniAppType = queryInput.getString("mini_app_type");
     final ExecutionType executionType =
         ExecutionType.valueOf(queryInput.getString("execution_type"));
+    // TODO: dashboardHostname is currently unused but may be needed for stubbing asset files
     final String dashboardHostname = "http://" + queryInput.get("iss") + ":3000";
-    final boolean useDashboardSources = queryInput.getBoolean("use_dashboard_sources");
     final JSONObject options = new JSONObject(queryInput.getString("options"));
-    final boolean useNeighborhood =
-        JSONUtils.booleanFromJSONObjectMember(options, "useNeighborhood");
     final List<String> compileList = JSONUtils.listFromJSONObjectMember(options, "compileList");
 
     this.logger = Logger.getLogger(MAIN_LOGGER);
@@ -83,38 +82,30 @@ public class WebSocketServer {
       outputAdapter = new UserTestOutputAdapter(websocketOutputAdapter);
     }
     final LifecycleNotifier lifecycleNotifier = new LifecycleNotifier();
-    final LocalContentManager contentManager = new LocalContentManager();
-    GlobalProtocol.create(
-        outputAdapter,
-        inputAdapter,
-        dashboardHostname,
-        channelId,
-        levelId,
-        new LocalFileManager(),
-        lifecycleNotifier,
-        contentManager,
-        useDashboardSources);
-    final ProjectFileLoader fileLoader =
-        useDashboardSources
-            ? new UserProjectFileLoader(
-                GlobalProtocol.getInstance().generateSourcesUrl(),
-                levelId,
-                dashboardHostname,
-                useNeighborhood)
-            : contentManager;
+    final LocalContentManager contentManager;
+    try {
+      contentManager = new LocalContentManager();
+    } catch (InternalServerError e) {
+      // Log the error
+      LoggerUtils.logError(e);
 
+      // This affected the user. Let's tell them about it.
+      outputAdapter.sendMessage(e.getExceptionMessage());
+      return;
+    }
     // the code must be run in a thread so we can receive input messages
     Thread codeExecutor =
         new Thread(
             () -> {
               final CodeExecutionManager executionManager =
                   new CodeExecutionManager(
-                      fileLoader,
-                      GlobalProtocol.getInstance().getInputHandler(),
+                      contentManager.getProjectFileLoader(),
+                      inputAdapter,
                       outputAdapter,
                       executionType,
                       compileList,
-                      GlobalProtocol.getInstance().getFileManager(),
+                      new LocalTempDirectoryManager(),
+                      contentManager,
                       lifecycleNotifier);
               executionManager.execute();
               // Clean up session

@@ -7,7 +7,6 @@ import dev.javabuilder.util.TempDirectoryUtils;
 import java.io.FileNotFoundException;
 import org.code.javabuilder.InternalServerError;
 import org.code.javabuilder.ProjectData;
-import org.code.javabuilder.UserInitiatedException;
 import org.code.javabuilder.UserProjectFiles;
 import org.code.protocol.JavabuilderException;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,13 +24,6 @@ class LocalContentManagerTest {
     projectData = mock(ProjectData.class);
     projectFiles = mock(UserProjectFiles.class);
     unitUnderTest = new LocalContentManager(projectData);
-  }
-
-  @Test
-  public void testLoadFilesReturnsSourcesFromProjectData()
-      throws UserInitiatedException, InternalServerError {
-    when(projectData.getSources()).thenReturn(projectFiles);
-    assertSame(projectFiles, unitUnderTest.loadFiles());
   }
 
   @Test

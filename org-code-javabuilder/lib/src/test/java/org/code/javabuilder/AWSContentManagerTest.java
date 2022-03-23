@@ -103,13 +103,6 @@ class AWSContentManagerTest {
   }
 
   @Test
-  public void testLoadFilesReturnsSourcesFromProjectData()
-      throws UserInitiatedException, InternalServerError {
-    when(projectData.getSources()).thenReturn(projectFiles);
-    assertSame(projectFiles, contentManager.loadFiles());
-  }
-
-  @Test
   public void testGenerateAssetUrlReturnsUrlFromProjectData() {
     final String filename = "file";
     final String url = "url";

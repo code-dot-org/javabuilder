@@ -31,6 +31,7 @@ public class ItemTest {
   @AfterEach
   public void tearDown() {
     messageHandlerMockedStatic.close();
+    GlobalProtocolTestFactory.tearDown();
   }
 
   @Test
