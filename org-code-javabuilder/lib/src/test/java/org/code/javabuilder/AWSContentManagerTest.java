@@ -24,7 +24,7 @@ class AWSContentManagerTest {
   private AWSContentManager contentManager;
   private Context context;
   private ProjectData projectData;
-  private UserProjectFiles projectFiles;
+  private AssetFileStubber assetFileStubber;
   private ArgumentCaptor<String> assetUrlCaptor;
 
   private static final String FAKE_BUCKET_NAME = "bucket-name";
@@ -36,11 +36,17 @@ class AWSContentManagerTest {
     s3ClientMock = mock(AmazonS3.class);
     context = mock(Context.class);
     projectData = mock(ProjectData.class);
-    projectFiles = mock(UserProjectFiles.class);
+    assetFileStubber = mock(AssetFileStubber.class);
     assetUrlCaptor = ArgumentCaptor.forClass(String.class);
     contentManager =
         new AWSContentManager(
-            s3ClientMock, FAKE_BUCKET_NAME, FAKE_SESSION_ID, FAKE_OUTPUT_URL, context, projectData);
+            s3ClientMock,
+            FAKE_BUCKET_NAME,
+            FAKE_SESSION_ID,
+            FAKE_OUTPUT_URL,
+            context,
+            projectData,
+            assetFileStubber);
   }
 
   @Test
@@ -56,7 +62,6 @@ class AWSContentManagerTest {
   void writesToS3() throws JavabuilderException {
     byte[] input = new byte[10];
     contentManager.writeToOutputFile("test.txt", input, "text/plain");
-    String key = FAKE_SESSION_ID + "/test.txt";
     verify(s3ClientMock)
         .putObject(anyString(), anyString(), any(ByteArrayInputStream.class), any());
   }
