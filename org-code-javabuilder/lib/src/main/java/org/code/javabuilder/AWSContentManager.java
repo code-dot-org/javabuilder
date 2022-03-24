@@ -1,5 +1,7 @@
 package org.code.javabuilder;
 
+import static org.code.javabuilder.DashboardConstants.DASHBOARD_DOMAIN_SUFFIX;
+
 import com.amazonaws.AbortedException;
 import com.amazonaws.HttpMethod;
 import com.amazonaws.SdkClientException;
@@ -83,10 +85,20 @@ public class AWSContentManager implements ContentManager {
 
   @Override
   public String getAssetUrl(String filename) {
-    if (Properties.isDashboardLocalhost() || Properties.isIntegrationTest()) {
+    final String url = this.projectData.getAssetUrl(filename);
+    if (url == null) {
+      return null;
+    }
+
+    // If this asset file refers to a Dashboard URL, and Javabuilder was invoked by a Dashboard
+    // server running localhost or running an integration test, Javabuilder won't be able access
+    // this file. Use a stubbed file URL instead.
+    if (this.isUrlFromDashboard(url)
+        && (Properties.isDashboardLocalhost() || Properties.isIntegrationTest())) {
       return this.assetFileStubber.getStubAssetUrl(filename);
     }
-    return this.projectData.getAssetUrl(filename);
+
+    return url;
   }
 
   @Override
@@ -158,6 +170,10 @@ public class AWSContentManager implements ContentManager {
    */
   private String generateKey(String filename) {
     return this.javabuilderSessionId + "/" + filename;
+  }
+
+  private boolean isUrlFromDashboard(String url) {
+    return url.contains(DASHBOARD_DOMAIN_SUFFIX);
   }
 
   private ProjectData loadProjectData() throws InternalServerError {

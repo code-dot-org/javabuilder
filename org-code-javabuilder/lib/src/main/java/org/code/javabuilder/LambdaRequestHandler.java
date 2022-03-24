@@ -1,5 +1,6 @@
 package org.code.javabuilder;
 
+import static org.code.javabuilder.DashboardConstants.DASHBOARD_LOCALHOST_URL;
 import static org.code.protocol.InternalErrorKey.INTERNAL_EXCEPTION;
 import static org.code.protocol.LoggerNames.MAIN_LOGGER;
 
@@ -53,8 +54,6 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
           .build();
   private static final AmazonSQS SQS_CLIENT = AmazonSQSClientBuilder.defaultClient();
   private static final AmazonS3 S3_CLIENT = AmazonS3ClientBuilder.standard().build();
-
-  private static final String DASHBOARD_LOCALHOST_URL = "https://localhost-studio.code.org";
 
   public LambdaRequestHandler() {
     // create CachedResources once for the entire container.
