@@ -73,6 +73,7 @@ public class WebSocketServer {
     this.logger.setUseParentHandlers(false);
 
     Properties.setConnectionId(connectionId);
+    Properties.setIsDashboardLocalhost(true);
 
     websocketOutputAdapter = new WebSocketOutputAdapter(session);
     inputAdapter = new WebSocketInputAdapter();

@@ -54,6 +54,8 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
   private static final AmazonSQS SQS_CLIENT = AmazonSQSClientBuilder.defaultClient();
   private static final AmazonS3 S3_CLIENT = AmazonS3ClientBuilder.standard().build();
 
+  private static final String DASHBOARD_LOCALHOST_URL = "https://localhost-studio.code.org";
+
   public LambdaRequestHandler() {
     // create CachedResources once for the entire container.
     // This will only be called once in the initial creation of the lambda instance.
@@ -102,6 +104,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     // turn off the default console logger
     logger.setUseParentHandlers(false);
     Properties.setConnectionId(connectionId);
+    Properties.setIsDashboardLocalhost(dashboardHostname.equals(DASHBOARD_LOCALHOST_URL));
 
     // Create user-program output handlers
     final AWSOutputAdapter awsOutputAdapter = new AWSOutputAdapter(connectionId, API_CLIENT);
