@@ -1,6 +1,6 @@
 package org.code.javabuilder;
 
-import static org.code.javabuilder.DashboardConstants.DASHBOARD_LOCALHOST_URL;
+import static org.code.javabuilder.DashboardConstants.DASHBOARD_LOCALHOST_DOMAIN;
 import static org.code.protocol.InternalErrorKey.INTERNAL_EXCEPTION;
 import static org.code.protocol.LoggerNames.MAIN_LOGGER;
 
@@ -85,7 +85,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     final String miniAppType = lambdaInput.get("miniAppType");
     final ExecutionType executionType = ExecutionType.valueOf(lambdaInput.get("executionType"));
     // TODO: dashboardHostname is currently unused but may be needed for stubbing asset files
-    final String dashboardHostname = "https://" + lambdaInput.get("iss");
+    final String dashboardHostname = lambdaInput.get("iss");
     final JSONObject options = new JSONObject(lambdaInput.get("options"));
     final String javabuilderSessionId = lambdaInput.get("javabuilderSessionId");
     final List<String> compileList = JSONUtils.listFromJSONObjectMember(options, "compileList");
@@ -103,7 +103,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     // turn off the default console logger
     logger.setUseParentHandlers(false);
     Properties.setConnectionId(connectionId);
-    Properties.setIsDashboardLocalhost(dashboardHostname.equals(DASHBOARD_LOCALHOST_URL));
+    Properties.setIsDashboardLocalhost(dashboardHostname.equals(DASHBOARD_LOCALHOST_DOMAIN));
 
     // Create user-program output handlers
     final AWSOutputAdapter awsOutputAdapter = new AWSOutputAdapter(connectionId, API_CLIENT);
