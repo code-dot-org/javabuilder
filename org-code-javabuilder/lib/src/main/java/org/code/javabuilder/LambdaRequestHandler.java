@@ -84,7 +84,6 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
         lambdaInput.get("channelId") == null ? "noneProvided" : lambdaInput.get("channelId");
     final String miniAppType = lambdaInput.get("miniAppType");
     final ExecutionType executionType = ExecutionType.valueOf(lambdaInput.get("executionType"));
-    // TODO: dashboardHostname is currently unused but may be needed for stubbing asset files
     final String dashboardHostname = lambdaInput.get("iss");
     final JSONObject options = new JSONObject(lambdaInput.get("options"));
     final String javabuilderSessionId = lambdaInput.get("javabuilderSessionId");
