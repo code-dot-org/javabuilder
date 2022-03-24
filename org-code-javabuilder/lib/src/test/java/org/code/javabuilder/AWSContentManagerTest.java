@@ -15,6 +15,7 @@ import java.io.FileNotFoundException;
 import java.net.URL;
 import java.util.Date;
 import org.code.protocol.JavabuilderException;
+import org.code.protocol.Properties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -62,6 +63,7 @@ class AWSContentManagerTest {
   void writesToS3() throws JavabuilderException {
     byte[] input = new byte[10];
     contentManager.writeToOutputFile("test.txt", input, "text/plain");
+    String key = FAKE_SESSION_ID + "/test.txt";
     verify(s3ClientMock)
         .putObject(anyString(), anyString(), any(ByteArrayInputStream.class), any());
   }
@@ -123,5 +125,37 @@ class AWSContentManagerTest {
         assertThrows(
             FileNotFoundException.class, () -> contentManager.verifyAssetFilename(filename));
     assertEquals(filename, actual.getMessage());
+  }
+
+  @Test
+  public void testGenerateAssetUrlReturnsStubbedUrlWhenNeeded() {
+    Properties.setIsDashboardLocalhost(true);
+
+    final String filename = "file";
+    final String actualUrl = "staging-studio.code.org/file.wav";
+    final String stubUrl = "stubUrl";
+    when(projectData.getAssetUrl(filename)).thenReturn(actualUrl);
+    when(assetFileStubber.getStubAssetUrl(filename)).thenReturn(stubUrl);
+
+    assertEquals(stubUrl, contentManager.getAssetUrl(filename));
+    verify(projectData).getAssetUrl(filename);
+    verify(assetFileStubber).getStubAssetUrl(filename);
+
+    Properties.setIsDashboardLocalhost(false);
+  }
+
+  @Test
+  public void testGenerateAssetUrlDoesNotReturnStubUrlIfNotDashboard() {
+    Properties.setIsDashboardLocalhost(true);
+
+    final String filename = "file";
+    final String actualUrl = "cdo-javabuilderbeta-content/file.wav";
+    when(projectData.getAssetUrl(filename)).thenReturn(actualUrl);
+
+    assertEquals(actualUrl, contentManager.getAssetUrl(filename));
+    verify(projectData).getAssetUrl(filename);
+    verify(assetFileStubber, never()).getStubAssetUrl(anyString());
+
+    Properties.setIsDashboardLocalhost(false);
   }
 }
