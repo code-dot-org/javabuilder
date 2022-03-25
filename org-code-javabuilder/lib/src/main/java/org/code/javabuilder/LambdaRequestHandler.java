@@ -102,7 +102,8 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     // turn off the default console logger
     logger.setUseParentHandlers(false);
     Properties.setConnectionId(connectionId);
-    Properties.setIsDashboardLocalhost(dashboardHostname.equals(DASHBOARD_LOCALHOST_DOMAIN));
+    // Dashboard assets are only accessible if the dashboard domain is not localhost
+    Properties.setCanAccessDashboardAssets(!dashboardHostname.equals(DASHBOARD_LOCALHOST_DOMAIN));
 
     // Create user-program output handlers
     final AWSOutputAdapter awsOutputAdapter = new AWSOutputAdapter(connectionId, API_CLIENT);

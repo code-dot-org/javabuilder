@@ -90,11 +90,11 @@ public class AWSContentManager implements ContentManager {
       return null;
     }
 
-    // If this asset file refers to a Dashboard URL, and Javabuilder was invoked by a Dashboard
-    // server running localhost or running an integration test, Javabuilder won't be able access
-    // this file. Use a stubbed file URL instead.
+    // If this asset file refers to a Dashboard URL, and Javabuilder cannot access Dashboard for
+    // assets or running an integration test, Javabuilder won't be able access this file. Use a
+    // stubbed file URL instead.
     if (this.isUrlFromDashboard(url)
-        && (Properties.isDashboardLocalhost() || Properties.isIntegrationTest())) {
+        && (!Properties.canAccessDashboardAssets() || Properties.isIntegrationTest())) {
       return this.assetFileStubber.getStubAssetUrl(filename);
     }
 

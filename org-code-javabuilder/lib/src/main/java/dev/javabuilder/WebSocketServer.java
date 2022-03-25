@@ -61,8 +61,6 @@ public class WebSocketServer {
     final String miniAppType = queryInput.getString("mini_app_type");
     final ExecutionType executionType =
         ExecutionType.valueOf(queryInput.getString("execution_type"));
-    // TODO: dashboardHostname is currently unused but may be needed for stubbing asset files
-    final String dashboardHostname = "http://" + queryInput.get("iss") + ":3000";
     final JSONObject options = new JSONObject(queryInput.getString("options"));
     final List<String> compileList = JSONUtils.listFromJSONObjectMember(options, "compileList");
 
@@ -73,7 +71,6 @@ public class WebSocketServer {
     this.logger.setUseParentHandlers(false);
 
     Properties.setConnectionId(connectionId);
-    Properties.setIsDashboardLocalhost(true);
 
     websocketOutputAdapter = new WebSocketOutputAdapter(session);
     inputAdapter = new WebSocketInputAdapter();
