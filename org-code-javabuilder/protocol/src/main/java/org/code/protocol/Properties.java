@@ -3,8 +3,8 @@ package org.code.protocol;
 public class Properties {
   /** The connection ID for the current session */
   private static String connectionId = "localhost";
-  /** If the client invoking Javabuilder is the Dashboard service running on localhost */
-  private static boolean DASHBOARD_LOCALHOST = false;
+  /** If Javabuilder can access assets from the Dashboard service that invoked it */
+  private static boolean CAN_ACCESS_DASHBOARD_ASSETS = true;
   /** Whether Javabuilder is running an integration test */
   private static boolean IS_INTEGRATION_TEST = false;
 
@@ -16,12 +16,12 @@ public class Properties {
     return Properties.connectionId;
   }
 
-  public static void setIsDashboardLocalhost(boolean isDashboardLocalhost) {
-    Properties.DASHBOARD_LOCALHOST = isDashboardLocalhost;
+  public static void setCanAccessDashboardAssets(boolean isDashboardLocalhost) {
+    Properties.CAN_ACCESS_DASHBOARD_ASSETS = isDashboardLocalhost;
   }
 
-  public static boolean isDashboardLocalhost() {
-    return Properties.DASHBOARD_LOCALHOST;
+  public static boolean canAccessDashboardAssets() {
+    return Properties.CAN_ACCESS_DASHBOARD_ASSETS;
   }
 
   public static void setIsIntegrationTest(boolean isIntegrationTest) {

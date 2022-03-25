@@ -129,7 +129,7 @@ class AWSContentManagerTest {
 
   @Test
   public void testGenerateAssetUrlReturnsStubbedUrlWhenNeeded() {
-    Properties.setIsDashboardLocalhost(true);
+    Properties.setCanAccessDashboardAssets(false);
 
     final String filename = "file";
     final String actualUrl = "staging-studio.code.org/file.wav";
@@ -141,12 +141,12 @@ class AWSContentManagerTest {
     verify(projectData).getAssetUrl(filename);
     verify(assetFileStubber).getStubAssetUrl(filename);
 
-    Properties.setIsDashboardLocalhost(false);
+    Properties.setCanAccessDashboardAssets(true);
   }
 
   @Test
   public void testGenerateAssetUrlDoesNotReturnStubUrlIfNotDashboard() {
-    Properties.setIsDashboardLocalhost(true);
+    Properties.setCanAccessDashboardAssets(false);
 
     final String filename = "file";
     final String actualUrl = "cdo-javabuilderbeta-content/file.wav";
@@ -156,6 +156,6 @@ class AWSContentManagerTest {
     verify(projectData).getAssetUrl(filename);
     verify(assetFileStubber, never()).getStubAssetUrl(anyString());
 
-    Properties.setIsDashboardLocalhost(false);
+    Properties.setCanAccessDashboardAssets(true);
   }
 }
