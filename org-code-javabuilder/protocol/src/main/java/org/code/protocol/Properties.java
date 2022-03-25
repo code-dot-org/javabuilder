@@ -16,8 +16,8 @@ public class Properties {
     return Properties.connectionId;
   }
 
-  public static void setCanAccessDashboardAssets(boolean isDashboardLocalhost) {
-    Properties.CAN_ACCESS_DASHBOARD_ASSETS = isDashboardLocalhost;
+  public static void setCanAccessDashboardAssets(boolean canAccessDashboardAssets) {
+    Properties.CAN_ACCESS_DASHBOARD_ASSETS = canAccessDashboardAssets;
   }
 
   public static boolean canAccessDashboardAssets() {
