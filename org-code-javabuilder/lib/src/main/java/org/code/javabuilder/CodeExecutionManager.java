@@ -26,6 +26,7 @@ public class CodeExecutionManager {
   private final LifecycleNotifier lifecycleNotifier;
   private final ContentManager contentManager;
   private final CodeBuilderRunnableFactory codeBuilderRunnableFactory;
+  private final PerformanceTracker performanceTracker;
 
   private File tempFolder;
   private InputRedirectionStream overrideInputStream;
@@ -40,9 +41,10 @@ public class CodeExecutionManager {
         OutputAdapter outputAdapter,
         File tempFolder,
         ExecutionType executionType,
-        List<String> compileList) {
+        List<String> compileList,
+        PerformanceTracker performanceTracker) {
       return new CodeBuilderRunnable(
-          fileLoader, outputAdapter, tempFolder, executionType, compileList);
+          fileLoader, outputAdapter, tempFolder, executionType, compileList, performanceTracker);
     }
   }
 
@@ -54,7 +56,8 @@ public class CodeExecutionManager {
       List<String> compileList,
       TempDirectoryManager tempDirectoryManager,
       ContentManager contentManager,
-      LifecycleNotifier lifecycleNotifier) {
+      LifecycleNotifier lifecycleNotifier,
+      PerformanceTracker performanceTracker) {
     this(
         fileLoader,
         inputAdapter,
@@ -64,6 +67,7 @@ public class CodeExecutionManager {
         tempDirectoryManager,
         lifecycleNotifier,
         contentManager,
+        performanceTracker,
         new CodeBuilderRunnableFactory());
   }
 
@@ -76,6 +80,7 @@ public class CodeExecutionManager {
       TempDirectoryManager tempDirectoryManager,
       LifecycleNotifier lifecycleNotifier,
       ContentManager contentManager,
+      PerformanceTracker performanceTracker,
       CodeBuilderRunnableFactory codeBuilderRunnableFactory) {
     this.fileLoader = fileLoader;
     this.inputAdapter = inputAdapter;
@@ -85,6 +90,7 @@ public class CodeExecutionManager {
     this.tempDirectoryManager = tempDirectoryManager;
     this.lifecycleNotifier = lifecycleNotifier;
     this.contentManager = contentManager;
+    this.performanceTracker = performanceTracker;
     this.codeBuilderRunnableFactory = codeBuilderRunnableFactory;
     this.executionInProgress = false;
   }
@@ -102,7 +108,8 @@ public class CodeExecutionManager {
                 this.outputAdapter,
                 this.tempFolder,
                 this.executionType,
-                this.compileList);
+                this.compileList,
+                this.performanceTracker);
         runnable.run();
       } catch (Throwable e) {
         // Catch any throwable here to ensure that onPostExecute() is always called

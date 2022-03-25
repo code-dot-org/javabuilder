@@ -19,18 +19,21 @@ public class CodeBuilderRunnable implements Runnable {
   private final File tempFolder;
   private final ExecutionType executionType;
   private final List<String> compileList;
+  private final PerformanceTracker performanceTracker;
 
   public CodeBuilderRunnable(
       ProjectFileLoader fileLoader,
       OutputAdapter outputAdapter,
       File tempFolder,
       ExecutionType executionType,
-      List<String> compileList) {
+      List<String> compileList,
+      PerformanceTracker performanceTracker) {
     this.fileLoader = fileLoader;
     this.outputAdapter = outputAdapter;
     this.tempFolder = tempFolder;
     this.executionType = executionType;
     this.compileList = compileList;
+    this.performanceTracker = performanceTracker;
   }
 
   @Override
@@ -44,7 +47,11 @@ public class CodeBuilderRunnable implements Runnable {
       UserProjectFiles validationFiles = fileLoader.getValidation();
       CodeBuilder codeBuilder =
           new CodeBuilder(
-              GlobalProtocol.getInstance(), userProjectFiles, validationFiles, this.tempFolder);
+              GlobalProtocol.getInstance(),
+              userProjectFiles,
+              validationFiles,
+              this.tempFolder,
+              this.performanceTracker);
       switch (this.executionType) {
         case COMPILE_ONLY:
           codeBuilder.buildUserCode(this.compileList);

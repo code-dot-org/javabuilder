@@ -58,7 +58,6 @@ public class WebSocketServer {
     final String levelId = queryInput.getString("level_id");
     final String channelId =
         queryInput.has("channel_id") ? queryInput.getString("channel_id") : "noneProvided";
-    final String miniAppType = queryInput.getString("mini_app_type");
     final ExecutionType executionType =
         ExecutionType.valueOf(queryInput.getString("execution_type"));
     // TODO: dashboardHostname is currently unused but may be needed for stubbing asset files
@@ -67,7 +66,7 @@ public class WebSocketServer {
     final List<String> compileList = JSONUtils.listFromJSONObjectMember(options, "compileList");
 
     this.logger = Logger.getLogger(MAIN_LOGGER);
-    this.logHandler = new LocalLogHandler(System.out, levelId, channelId, miniAppType);
+    this.logHandler = new LocalLogHandler(System.out, levelId, channelId);
     this.logger.addHandler(this.logHandler);
     // turn off the default console logger
     this.logger.setUseParentHandlers(false);
@@ -106,7 +105,8 @@ public class WebSocketServer {
                       compileList,
                       new LocalTempDirectoryManager(),
                       contentManager,
-                      lifecycleNotifier);
+                      lifecycleNotifier,
+                      new PerformanceTracker());
               executionManager.execute();
               // Clean up session
               try {

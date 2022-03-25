@@ -24,7 +24,12 @@ public class CodeBuilderTest {
     userProjectFiles = mock(UserProjectFiles.class);
 
     codeBuilder =
-        new CodeBuilder(globalProtocol, userProjectFiles, mock(UserProjectFiles.class), tempFolder);
+        new CodeBuilder(
+            globalProtocol,
+            userProjectFiles,
+            mock(UserProjectFiles.class),
+            tempFolder,
+            mock(PerformanceTracker.class));
   }
 
   @Test

@@ -20,12 +20,17 @@ public class UserCodeCompiler {
   private final List<JavaProjectFile> javaFiles;
   private final File tempFolder;
   private final OutputAdapter outputAdapter;
+  private final PerformanceTracker performanceTracker;
 
   public UserCodeCompiler(
-      List<JavaProjectFile> javaFiles, File tempFolder, OutputAdapter outputAdapter) {
+      List<JavaProjectFile> javaFiles,
+      File tempFolder,
+      OutputAdapter outputAdapter,
+      PerformanceTracker performanceTracker) {
     this.javaFiles = javaFiles;
     this.tempFolder = tempFolder;
     this.outputAdapter = outputAdapter;
+    this.performanceTracker = performanceTracker;
   }
 
   /**
@@ -36,9 +41,11 @@ public class UserCodeCompiler {
     this.outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.COMPILING));
     DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
 
+    this.performanceTracker.trackCompileStart();
     CompilationTask task = getCompilationTask(diagnostics);
 
     boolean success = task.call();
+    this.performanceTracker.trackCompileEnd();
 
     // diagnostics will include any compiler errors
     for (Diagnostic<? extends JavaFileObject> diagnostic : diagnostics.getDiagnostics()) {

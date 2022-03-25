@@ -20,12 +20,14 @@ public class JavaRunner {
   private final List<String> javaClassNames;
   private final List<String> validationAndJavaClassNames;
   private final OutputAdapter outputAdapter;
+  private final PerformanceTracker performanceTracker;
 
   public JavaRunner(
       URL executableLocation,
       List<JavaProjectFile> javaFiles,
       List<JavaProjectFile> validationFiles,
-      OutputAdapter outputAdapter) {
+      OutputAdapter outputAdapter,
+      PerformanceTracker performanceTracker) {
     this(
         executableLocation,
         new MainRunner(javaFiles, outputAdapter),
@@ -33,7 +35,8 @@ public class JavaRunner {
         new ValidationRunner(validationFiles, javaFiles, outputAdapter),
         javaFiles,
         validationFiles,
-        outputAdapter);
+        outputAdapter,
+        performanceTracker);
   }
 
   JavaRunner(
@@ -43,7 +46,8 @@ public class JavaRunner {
       ValidationRunner validationRunner,
       List<JavaProjectFile> javaFiles,
       List<JavaProjectFile> validationFiles,
-      OutputAdapter outputAdapter) {
+      OutputAdapter outputAdapter,
+      PerformanceTracker performanceTracker) {
     this.executableLocation = executableLocation;
     this.mainRunner = mainRunner;
     this.userTestRunner = userTestRunner;
@@ -52,6 +56,7 @@ public class JavaRunner {
     this.validationAndJavaClassNames = new ArrayList<>(this.javaClassNames);
     this.validationAndJavaClassNames.addAll(this.parseClassNames(validationFiles));
     this.outputAdapter = outputAdapter;
+    this.performanceTracker = performanceTracker;
   }
 
   /**
@@ -92,7 +97,14 @@ public class JavaRunner {
         new UserClassLoader(
             classLoaderUrls, JavaRunner.class.getClassLoader(), classNames, permissionLevel);
 
-    boolean runResult = runner.run(urlClassLoader);
+    // Performance metric here before run
+    boolean runResult;
+    this.performanceTracker.trackUserCodeStart();
+    try {
+      runResult = runner.run(urlClassLoader);
+    } finally {
+      this.performanceTracker.trackUserCodeEnd();
+    }
 
     try {
       urlClassLoader.close();
