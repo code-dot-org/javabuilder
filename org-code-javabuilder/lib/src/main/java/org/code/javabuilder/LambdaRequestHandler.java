@@ -17,6 +17,8 @@ import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.time.Clock;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -32,7 +34,9 @@ import org.json.JSONObject;
  * https://github.com/awsdocs/aws-lambda-developer-guide/tree/main/sample-apps/blank-java
  */
 public class LambdaRequestHandler implements RequestHandler<Map<String, String>, String> {
-
+  //  private static final Clock. // systemUTC().instant();
+  private static final Instant COLD_BOOT_START = Clock.systemUTC().instant();
+  private final Instant COLD_BOOT_END;
   private static final int CHECK_THREAD_INTERVAL_MS = 500;
   private static final int TIMEOUT_WARNING_MS = 20000;
   private static final int TIMEOUT_CLEANUP_BUFFER_MS = 5000;
@@ -59,6 +63,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     // This will only be called once in the initial creation of the lambda instance.
     // Documentation: https://docs.aws.amazon.com/lambda/latest/dg/java-handler.html
     CachedResources.create();
+    COLD_BOOT_END = Clock.systemUTC().instant();
   }
 
   /**
@@ -73,6 +78,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
    */
   @Override
   public String handleRequest(Map<String, String> lambdaInput, Context context) {
+    final Instant instanceStart = Clock.systemUTC().instant();
     // The lambda handler should have minimal application logic:
     // https://docs.aws.amazon.com/lambda/latest/dg/best-practices.html
     final String connectionId = lambdaInput.get("connectionId");
@@ -81,7 +87,6 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     final String levelId = lambdaInput.get("levelId");
     final String channelId =
         lambdaInput.get("channelId") == null ? "noneProvided" : lambdaInput.get("channelId");
-    final String miniAppType = lambdaInput.get("miniAppType");
     final ExecutionType executionType = ExecutionType.valueOf(lambdaInput.get("executionType"));
     // TODO: dashboardHostname is currently unused but may be needed for stubbing asset files
     final String dashboardHostname = "https://" + lambdaInput.get("iss");
@@ -97,11 +102,12 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
             connectionId,
             levelId,
             LambdaRequestHandler.LAMBDA_ID,
-            channelId,
-            miniAppType));
+            channelId));
     // turn off the default console logger
     logger.setUseParentHandlers(false);
     Properties.setConnectionId(connectionId);
+    final PerformanceTracker performanceTracker = new PerformanceTracker();
+    performanceTracker.trackStartup(COLD_BOOT_START, COLD_BOOT_END, instanceStart);
 
     // Create user-program output handlers
     final AWSOutputAdapter awsOutputAdapter = new AWSOutputAdapter(connectionId, API_CLIENT);
@@ -149,7 +155,8 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
             compileList,
             tempDirectoryManager,
             contentManager,
-            lifecycleNotifier);
+            lifecycleNotifier,
+            performanceTracker);
 
     final Thread timeoutNotifierThread =
         createTimeoutThread(context, outputAdapter, codeExecutionManager, connectionId, API_CLIENT);
@@ -165,6 +172,8 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     } finally {
       // Stop timeout listener and clean up
       timeoutNotifierThread.interrupt();
+      performanceTracker.trackInstanceEnd();
+      performanceTracker.logPerformance();
       cleanUpResources(connectionId, API_CLIENT);
       File f = Paths.get(System.getProperty("java.io.tmpdir")).toFile();
       if ((double) f.getUsableSpace() / f.getTotalSpace() < 0.5) {

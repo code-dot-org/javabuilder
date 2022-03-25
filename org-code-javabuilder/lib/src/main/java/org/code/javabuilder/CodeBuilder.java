@@ -18,17 +18,20 @@ public class CodeBuilder {
   private final File tempFolder;
   private final UserProjectFiles userProjectFiles;
   private final UserProjectFiles validationFiles;
+  private final PerformanceTracker performanceTracker;
 
   public CodeBuilder(
       GlobalProtocol protocol,
       UserProjectFiles userProjectFiles,
       UserProjectFiles validationFiles,
-      File tempFolder)
+      File tempFolder,
+      PerformanceTracker performanceTracker)
       throws InternalServerError {
     this.outputAdapter = protocol.getOutputAdapter();
     this.userProjectFiles = userProjectFiles;
     this.validationFiles = validationFiles;
     this.tempFolder = tempFolder;
+    this.performanceTracker = performanceTracker;
   }
 
   /**
@@ -81,7 +84,8 @@ public class CodeBuilder {
 
     this.saveProjectAssets();
     UserCodeCompiler codeCompiler =
-        new UserCodeCompiler(javaProjectFiles, this.tempFolder, this.outputAdapter);
+        new UserCodeCompiler(
+            javaProjectFiles, this.tempFolder, this.outputAdapter, this.performanceTracker);
     codeCompiler.compileProgram();
   }
 
@@ -102,7 +106,8 @@ public class CodeBuilder {
           this.tempFolder.toURI().toURL(),
           this.userProjectFiles.getJavaFiles(),
           this.validationFiles.getJavaFiles(),
-          this.outputAdapter);
+          this.outputAdapter,
+          this.performanceTracker);
     } catch (MalformedURLException e) {
       throw new InternalServerError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e);
     }
