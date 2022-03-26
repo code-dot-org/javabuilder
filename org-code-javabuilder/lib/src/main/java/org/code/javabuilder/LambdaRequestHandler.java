@@ -37,6 +37,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
   //  private static final Clock. // systemUTC().instant();
   private static final Instant COLD_BOOT_START = Clock.systemUTC().instant();
   private final Instant COLD_BOOT_END;
+  private static boolean firstInstance = true;
   private static final int CHECK_THREAD_INTERVAL_MS = 500;
   private static final int TIMEOUT_WARNING_MS = 20000;
   private static final int TIMEOUT_CLEANUP_BUFFER_MS = 5000;
@@ -107,7 +108,8 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     logger.setUseParentHandlers(false);
     Properties.setConnectionId(connectionId);
     final PerformanceTracker performanceTracker = new PerformanceTracker();
-    performanceTracker.trackStartup(COLD_BOOT_START, COLD_BOOT_END, instanceStart);
+    performanceTracker.trackStartup(COLD_BOOT_START, COLD_BOOT_END, instanceStart, firstInstance);
+    firstInstance = false;
 
     // Create user-program output handlers
     final AWSOutputAdapter awsOutputAdapter = new AWSOutputAdapter(connectionId, API_CLIENT);
