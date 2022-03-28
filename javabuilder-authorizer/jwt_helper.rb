@@ -2,10 +2,11 @@ module JwtHelper
   # Verify the token with the appropriate public key (dependant on the
   # environment the request came from), and checks the token has not
   # expired and its issue time is not in the future.
-  def decode_token(token, origin)
+  def decode_token(token, origin, route_arn = nil)
     return false unless token
+    decoded_token = nil
     begin
-      return JWT.decode(
+      decoded_token = JWT.decode(
         token,
         # Temporarily choose the key based on the client origin rather than the
         # resource until we have environment-specific Javabuilders set up.
@@ -17,6 +18,32 @@ module JwtHelper
     rescue JWT::ExpiredSignature, JWT::InvalidIatError
       return false
     end
+
+    token_payload = decoded_token[0]
+    sid = token_payload['sid']
+    puts sid
+    puts sid.class
+
+    if route_arn
+        begin
+          ttl = Time.now.to_i + 120
+          client = Aws::DynamoDB::Client.new(region: get_region(route_arn))
+          # can use simple vetted: true as part of hash to set true/false boolean
+          client.put_item(
+            table_name: 'javabuilder-ben-throttling_tokens',
+            item: {
+              token_id: 'test_2',
+              vetted: true,
+              ttl: ttl
+            },
+            condition_expression: 'attribute_not_exists(token_id)'
+          )
+        rescue Aws::DynamoDB::Errors::ConditionalCheckFailedException
+          puts 'failed'
+        end
+    end
+
+    decoded_token
   end
 
   def generate_allow(resource, decoded_token)
@@ -91,5 +118,10 @@ module JwtHelper
     # the key generation to work.
     public_key = public_key.gsub('\n ', "\n")
     OpenSSL::PKey::RSA.new(public_key)
+  end
+
+  def get_region(route_arn)
+    puts route_arn
+    route_arn.split(':')[3]
   end
 end
