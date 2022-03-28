@@ -1,4 +1,5 @@
 require 'aws-sdk-lambda'
+require 'aws-sdk-dynamodb'
 require 'jwt'
 require_relative 'jwt_helper'
 include JwtHelper
