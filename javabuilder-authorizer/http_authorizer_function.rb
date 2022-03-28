@@ -1,4 +1,5 @@
 require 'aws-sdk-lambda'
+require 'aws-sdk-dynamodb'
 require 'jwt'
 require_relative 'jwt_helper'
 include JwtHelper
@@ -13,7 +14,8 @@ def lambda_handler(event:, context:)
   jwt_token = event['queryStringParameters']['Authorization']
   route_arn = event['routeArn']
 
-  decoded_token = JwtHelper.decode_token(jwt_token, origin)
+  decoded_token = JwtHelper.decode_token(jwt_token, origin, route_arn)
+  # maybe do dynamdodb verification here once token decoded
   return JwtHelper.generate_deny(route_arn) unless decoded_token
   return JwtHelper.generate_allow(route_arn, decoded_token)
 end
