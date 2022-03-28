@@ -61,9 +61,15 @@ Resources:
                   - "xray:PutTraceSegments"
                   - "xray:PutTelemetryRecords"
                 Resource: '*'
+              - Effect: Allow
+                Action:
+                  - 'dynamodb:PutItem'
+                Resource:
+                  - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/*"
       ManagedPolicyArns:
         # Authorizer
         # Currently doesn't require any permissions beyond logging.
+        # ^^ needs to read/write from dynamodb, so not totally true any more.
 
         # Invoke and relay messages to Project Lambda.
         - "arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess"
