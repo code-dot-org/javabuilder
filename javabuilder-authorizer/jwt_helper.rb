@@ -19,29 +19,31 @@ module JwtHelper
       return false
     end
 
+    # does this need to be array?
     token_payload = decoded_token[0]
     sid = token_payload['sid']
     puts sid
     puts sid.class
 
     if route_arn
-        begin
-          ttl = Time.now.to_i + 120
-          client = Aws::DynamoDB::Client.new(region: get_region(route_arn))
-          # we'll actually want to vet here?
-          client.put_item(
-            table_name: 'javabuilder-ben-throttling_tokens',
-            item: {
-              token_id: 'test_2',
-              vetted: true,
-              ttl: ttl
-            },
-            condition_expression: 'attribute_not_exists(token_id)'
-          )
-        rescue Aws::DynamoDB::Errors::ConditionalCheckFailedException
-          # once we actually implement throttling, we'll return false here
-          puts "PUT TOKEN ERROR: token_id already exists"
-        end
+      begin
+        ttl = Time.now.to_i + 120
+        client = Aws::DynamoDB::Client.new(region: get_region(route_arn))
+        # we'll actually want to vet here?
+        # separate out vetting into update_item
+        client.put_item(
+          table_name: ENV['token_status_table'],
+          item: {
+            token_id: sid,
+            vetted: true,
+            ttl: ttl
+          },
+          condition_expression: 'attribute_not_exists(token_id)'
+        )
+      rescue Aws::DynamoDB::Errors::ConditionalCheckFailedException
+        # once we actually implement throttling, we'll return false here
+        puts "PUT TOKEN ERROR: token_id already exists"
+      end
     end
 
     decoded_token

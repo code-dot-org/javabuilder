@@ -18,21 +18,48 @@ def lambda_handler(event:, context:)
     return JwtHelper.generate_policy('connectivityTest', "Allow", method_arn, {connectivityTest: true})
   end
 
-  puts 'in websocket auth function'
+
   decoded_token = JwtHelper.decode_token(jwt_token, origin)
-  validate_token(context)
+  puts decoded_token
+  sid = decoded_token[0]['sid']
+  validate_token(context, sid)
   return JwtHelper.generate_deny(method_arn) unless decoded_token
   return JwtHelper.generate_allow(method_arn, decoded_token)
 end
 
-def validate_token(context)
+def validate_token(context, sid)
   puts 'validating websocket token'
   client = Aws::DynamoDB::Client.new(region: get_region(context))
   response = client.get_item(
-    table_name: 'javabuilder-ben-throttling_tokens',
-    key: {token_id: 'test_1'}
+    table_name: ENV['token_status_table'],
+    key: {token_id: sid}
   )
-  puts response.item
+
+  # return false when for real
+  # need to handle response/item being nil
+  unless response.item
+    puts "GET TOKEN ERROR: unknown token id" unless response.item
+    return true
+  end
+
+  unless response.item['vetted']
+    puts "TOKEN ERROR: not vetted"
+    return true
+  end
+
+  if response.item['used']
+    puts "TOKEN ERROR: reused"
+    return true
+  end
+
+  # return_values not necessary, only for debugging
+  response = client.update_item(
+    table_name: ENV['token_status_table'],
+    key: {token_id: sid},
+    update_expression: 'SET used = :u',
+    expression_attribute_values: {':u': true}
+  )
+  true
 end
 
 # ARN is of the format arn:aws:lambda:{region}:{account_id}:function:{lambda_name}
