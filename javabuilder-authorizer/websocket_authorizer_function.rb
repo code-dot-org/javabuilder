@@ -18,42 +18,41 @@ def lambda_handler(event:, context:)
     return JwtHelper.generate_policy('connectivityTest', "Allow", method_arn, {connectivityTest: true})
   end
 
-
   decoded_token = JwtHelper.decode_token(jwt_token, origin)
-  puts decoded_token
-  sid = decoded_token[0]['sid']
-  validate_token(context, sid)
   return JwtHelper.generate_deny(method_arn) unless decoded_token
-  return JwtHelper.generate_allow(method_arn, decoded_token)
+
+  sid = decoded_token[0]['sid']
+  valid_token = validate_token(context, sid)
+  return JwtHelper.generate_deny(method_arn) unless valid_token
+
+  JwtHelper.generate_allow(method_arn, decoded_token)
 end
 
 def validate_token(context, sid)
-  puts 'validating websocket token'
   client = Aws::DynamoDB::Client.new(region: get_region(context))
   response = client.get_item(
     table_name: ENV['token_status_table'],
     key: {token_id: sid}
   )
 
-  # return false when for real
-  # need to handle response/item being nil
-  unless response.item
-    puts "GET TOKEN ERROR: unknown token id" unless response.item
+  # return validation state so we can error message
+  item = response.item
+  unless item
+    puts "GET TOKEN ERROR: unknown token id" unless item
     return true
   end
 
-  unless response.item['vetted']
+  unless item['vetted']
     puts "TOKEN ERROR: not vetted"
     return true
   end
 
-  if response.item['used']
+  if item['used']
     puts "TOKEN ERROR: reused"
     return true
   end
 
-  # return_values not necessary, only for debugging
-  response = client.update_item(
+  client.update_item(
     table_name: ENV['token_status_table'],
     key: {token_id: sid},
     update_expression: 'SET used = :u',
