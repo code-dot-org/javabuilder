@@ -66,10 +66,10 @@ To connect your dev instance with Java Lab (Code Studio client) running on your 
 
 1. In the code-dot-org repo, edit the `javabuilder_url` value in
    [cdo.rb](https://github.com/code-dot-org/code-dot-org/blob/665a45210d556b4c3d82d6ad2434617c8e2e5ea1/lib/cdo.rb#L127)
-   to point to your local dev deployment (this will typically be wss://javabuilder-\<your name\>.dev-code.org).
+   to point to your local dev deployment (this will typically be wss://javabuilder-<your name\>.dev-code.org).
 1. Edit the `javabuilder_upload_url` value in
    [cdo.rb](https://github.com/code-dot-org/code-dot-org/blob/665a45210d556b4c3d82d6ad2434617c8e2e5ea1/lib/cdo.rb#L137)
-   to point to your local dev HTTP upload API (this will typically be https://javabuilder-\<your name\>-http.dev-code.org/seedsources/sources.json).
+   to point to your local dev HTTP upload API (this will typically be https://javabuilder-<your name\>-http.dev-code.org/seedsources/sources.json).
 1. Launch dashboard using the instructions here:
    https://github.com/code-dot-org/code-dot-org/blob/staging/SETUP.md#overview
 1. Navigate to any Java Lab level, for example:
