@@ -44,15 +44,15 @@ def get_token_status(context, sid)
     return TokenStatus::VALID_WEBSOCKET
   end
 
-  unless item['vetted']
-    puts "TOKEN VALIDATION ERROR: #{TokenStatus::NOT_VETTED} token_id: #{sid}"
-    # return TokenStatus::NOT_VETTED
-    return TokenStatus::VALID_WEBSOCKET
-  end
-
   if item['used']
     puts "TOKEN VALIDATION ERROR: #{TokenStatus::USED} token_id: #{sid}"
     # return TokenStatus::USED
+    return TokenStatus::VALID_WEBSOCKET
+  end
+
+  unless item['vetted']
+    puts "TOKEN VALIDATION ERROR: #{TokenStatus::NOT_VETTED} token_id: #{sid}"
+    # return TokenStatus::NOT_VETTED
     return TokenStatus::VALID_WEBSOCKET
   end
 
