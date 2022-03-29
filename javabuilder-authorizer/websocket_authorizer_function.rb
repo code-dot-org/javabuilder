@@ -18,7 +18,24 @@ def lambda_handler(event:, context:)
     return JwtHelper.generate_policy('connectivityTest', "Allow", method_arn, {connectivityTest: true})
   end
 
+  puts 'in websocket auth function'
   decoded_token = JwtHelper.decode_token(jwt_token, origin)
+  validate_token(context)
   return JwtHelper.generate_deny(method_arn) unless decoded_token
   return JwtHelper.generate_allow(method_arn, decoded_token)
+end
+
+def validate_token(context)
+  puts 'validating websocket token'
+  client = Aws::DynamoDB::Client.new(region: get_region(context))
+  response = client.get_item(
+    table_name: 'javabuilder-ben-throttling_tokens',
+    key: {token_id: 'test_1'}
+  )
+  puts response.item
+end
+
+# ARN is of the format arn:aws:lambda:{region}:{account_id}:function:{lambda_name}
+def get_region(context)
+  context.invoked_function_arn.split(':')[3]
 end
