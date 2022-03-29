@@ -65,7 +65,7 @@ Resources:
                 Action:
                   - 'dynamodb:PutItem'
                 Resource:
-                  - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/*"
+                  - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/*_tokens"
       ManagedPolicyArns:
         # Authorizer
         # Currently doesn't require any permissions beyond logging.
