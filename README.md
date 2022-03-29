@@ -40,57 +40,65 @@ To deploy Javabuilder to production, see the
 instruction doc.
 
 ## Developing Javabuilder
-For developing "core" Javabuilder (the engine that builds & runs student code) you can
-skip directly to the
-[org-code-javabuilder README](https://github.com/code-dot-org/javabuilder/blob/main/org-code-javabuilder/README.md).
-For developing the API Gateway communication layer Lambdas or working on the deployment
-script, read further.
 
-### Dev Deploy of Javabuilder
-For development purposes, you generally shouldn't need a dev deploy of Javabuilder. Some
-cases that do need a dev deploy of Javabuilder:
-* Editing the API Gateway Route Lambdas.
-* Editing the Javabuilder Authorizer Lambda.
-* Editing the Javabuilder Cloud Formation template or deploy script.
-* Editing the AWS Lambda or AWS SQS-specific portions of the build and run Lambda. These
-  are all prefixed with `AWS` or `Lambda` in the org-code-javabuilder directory.
-  
-To deploy Javabuilder to a dev account, see the
-[Deploying Javabuilder](https://docs.google.com/document/d/1mMQK6HhniLsz9lynzhUcm7Tcw_2WVLBxADe0WzqL6rM/edit#)
-instruction doc.
+There are two main ways to develop and run Javabuilder:
+- Using the **[WebSocketServer](https://github.com/code-dot-org/javabuilder/blob/main/org-code-javabuilder/lib/src/main/java/dev/javabuilder/WebSocketServer.java)**: 
+  - this is a local replacement of API Gateway that runs the "core" Javabuilder (the engine that 
+    builds & runs student code) directly. This suits most local development needs that don't touch 
+    any AWS-specific classes, or code outside the [org-code-javabuilder](https://github.com/code-dot-org/javabuilder/tree/main/org-code-javabuilder) 
+    directory. To set up the WebSocketServer, skip directly to the
+    [org-code-javabuilder README](https://github.com/code-dot-org/javabuilder/blob/main/org-code-javabuilder/README.md).
+- Deploying a **development instance** of Javabuilder: 
+  - this allows you to develop against a custom deployment of the full Javabuilder AWS stack in a 
+    prod-like environment. This is useful for developing AWS-specific code (anything prefixed with 
+    `AWS` or `Lambda`), and anything outside the [org-code-javabuilder](https://github.com/code-dot-org/javabuilder/tree/main/org-code-javabuilder) 
+    directory, such as the Lambda authorizers and deployment scripts. To deploy a development instance of 
+    Javabuilder, read further.
 
-Once you have deployed Javabuilder, you can run a basic connection to it with
-```
-wscat -c wss://<host-name>/?Authorization=connectivityTest
-```
-**Developing with deployed Javabuilder**  
-If you need to test against a level's Java code, use the following steps:
-1. Log in to https://staging-studio.code.org
-1. Navigate to the level or project you'd like to test against
-1. Open the network tab on your browser developer tools
-1. Click "Run" in Javalab
-1. Look for the network request to
-   https://staging-studio.code.org/javabuilder/access_token?projectUrl=...
-   in the response, there will be a token. Copy the entire token, without quotes around
-   it.
-1. Open up Postman. Choose new-> WebSocket Request
-1. Put the url of your javabuilder instance in the server url section (such as
-   wss://javabuilder-myname.dev-code.org)
-1. Under Params add the key `Authorization` with the value of the token you copied earlier
-1. Under Headers add the key `Origin` with the value https://staging-studio.code.org
-1. Click connect
+### Deploying a Dev Instance
 
-You should now start seeing messages from Javabuilder! Your token will last for 15
-minutes. If you make changes to the code, you do not need to re-generate your token.
+1. Make and commit your desired changes.
+1. Deploy a development instance of Javabuilder, following the instructions here:
+   [Deploying Javabuilder](https://docs.google.com/document/d/1mMQK6HhniLsz9lynzhUcm7Tcw_2WVLBxADe0WzqL6rM/edit#bookmark=id.6objek4aiiu5).
+   The deployment should take around 10 minutes.
 
-**Developing with deployed Javabuilder and an adhoc environment**
-1. Deploy Javabuilder with the instructions above
+To connect your dev instance with Java Lab (Code Studio client) running on your local Dashboard server:   
+
 1. In the code-dot-org repo, edit the `javabuilder_url` value in
-   [cdo.rb](https://github.com/code-dot-org/code-dot-org/blob/3219e5866689117e086d9891effe0fb39b9ae3f0/lib/cdo.rb#L131)
-   to point to your local dev deployment.
-1. In the code-dot-org repo, also edit the `upgrade_insecure_requests` list to include
-   the deployed Javabuilder hostname. 
+   [cdo.rb](https://github.com/code-dot-org/code-dot-org/blob/665a45210d556b4c3d82d6ad2434617c8e2e5ea1/lib/cdo.rb#L127)
+   to point to your local dev deployment (this will typically be wss://javabuilder-\<your name\>.dev-code.org).
+1. Edit the `javabuilder_upload_url` value in
+   [cdo.rb](https://github.com/code-dot-org/code-dot-org/blob/665a45210d556b4c3d82d6ad2434617c8e2e5ea1/lib/cdo.rb#L137)
+   to point to your local dev HTTP upload API (this will typically be https://javabuilder-\<your name\>-http.dev-code.org/seedsources/sources.json).
+1. Launch dashboard using the instructions here:
+   https://github.com/code-dot-org/code-dot-org/blob/staging/SETUP.md#overview
+1. Navigate to any Java Lab level, for example:
+   http://localhost-studio.code.org:3000/projects/javalab/new
+1. Click the "Run" button
+
+To connect with an adhoc:
+
+1. Make the same changes to cdo.rb listed above.
+1. Additionally, edit the `upgrade_insecure_requests` list to include
+   the deployed Javabuilder hostname.
    [example](https://github.com/code-dot-org/code-dot-org/commit/945fa3ad38be6d85cb7c7aaeda5b3bf2e0fde60c#diff-19cc5be92c36ff06b63767f0ff922d2b9b7b9b8bebe4eaf38e0f331a14b0b528R53)
-1. Deploy the adhoc using the instructions in the
+1. Commit your changes and deploy the adhoc using the instructions in the
    [How to Provision an adhoc Environment](https://docs.google.com/document/d/1nWeQEmEQF1B2l93JTQPyeRpLEFzCzY5NdgJ8kgprcDk/edit)
    document.
+1. Navigate to any Java Lab level, for example:
+       http://\<your-adhoc-name\>.cdn-code.org/projects/javalab/new
+1. Click the "Run" button
+
+_NOTE: Currently, Javabuilder still relies on Dashboard to fetch assets when needed (for example, in Theater
+projects). If you are running Dashboard locally and have connected it to a dev instance of Javabuilder,
+your dev instance will not able to access assets as it cannot make requests to your local machine. 
+In this case, you should expect to see these static [image](https://github.com/code-dot-org/javabuilder/blob/main/org-code-javabuilder/lib/src/main/resources/sampleImageBeach.jpg) 
+and [audio](https://github.com/code-dot-org/javabuilder/blob/main/org-code-javabuilder/lib/src/main/resources/beatbox.wav) 
+files used in replacement of project assets._
+
+### Advanced Usage
+
+You can also develop with a deployed dev instance of Javabuilder without running Dashboard by using tools
+such as Postman and wscat. However, this is a considerably more complicated setup and should only be used 
+in situations where running Dashboard locally or with an adhoc is not possible. For more details, 
+contact the [CSA team](https://github.com/orgs/code-dot-org/teams/csa).
