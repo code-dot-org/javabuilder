@@ -28,7 +28,7 @@ module JwtHelper
         begin
           ttl = Time.now.to_i + 120
           client = Aws::DynamoDB::Client.new(region: get_region(route_arn))
-          # can use simple vetted: true as part of hash to set true/false boolean
+          # we'll actually want to vet here?
           client.put_item(
             table_name: 'javabuilder-ben-throttling_tokens',
             item: {
@@ -39,7 +39,8 @@ module JwtHelper
             condition_expression: 'attribute_not_exists(token_id)'
           )
         rescue Aws::DynamoDB::Errors::ConditionalCheckFailedException
-          puts 'failed'
+          # once we actually implement throttling, we'll return false here
+          puts "PUT TOKEN ERROR: token_id already exists"
         end
     end
 
