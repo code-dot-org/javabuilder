@@ -86,7 +86,7 @@ To connect with an adhoc:
    [How to Provision an adhoc Environment](https://docs.google.com/document/d/1nWeQEmEQF1B2l93JTQPyeRpLEFzCzY5NdgJ8kgprcDk/edit)
    document.
 1. Navigate to any Java Lab level, for example:
-       http://\<your-adhoc-name\>.cdn-code.org/projects/javalab/new
+       http://<your-adhoc-name\>.cdn-code.org/projects/javalab/new
 1. Click the "Run" button
 
 _NOTE: Currently, Javabuilder still relies on Dashboard to fetch assets when needed (for example, in Theater
