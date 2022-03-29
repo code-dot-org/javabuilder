@@ -14,8 +14,50 @@ def lambda_handler(event:, context:)
   jwt_token = event['queryStringParameters']['Authorization']
   route_arn = event['routeArn']
 
-  decoded_token = JwtHelper.decode_token(jwt_token, origin, route_arn)
-  # maybe do dynamdodb verification here once token decoded
+  decoded_token = JwtHelper.decode_token(jwt_token, origin)
   return JwtHelper.generate_deny(route_arn) unless decoded_token
-  return JwtHelper.generate_allow(route_arn, decoded_token)
+
+  sid = decoded_token[0]['sid']
+  valid_token = validate_token(context, sid)
+  return JwtHelper.generate_deny(route_arn) unless valid_token
+
+  JwtHelper.generate_allow(route_arn, decoded_token)
+end
+
+def validate_token(context, sid)
+  client = Aws::DynamoDB::Client.new(region: get_region(context))
+
+  begin
+    ttl = Time.now.to_i + 120
+    # we'll actually want to vet here?
+    # separate out vetting into update_item
+    client.put_item(
+      table_name: ENV['token_status_table'],
+      item: {
+        token_id: sid,
+        ttl: ttl
+      },
+      condition_expression: 'attribute_not_exists(token_id)'
+    )
+  rescue Aws::DynamoDB::Errors::ConditionalCheckFailedException
+    # once we actually implement throttling, we'll return false here
+    puts "PUT TOKEN ERROR: token_id already exists"
+    return true
+  end
+
+  begin
+    client.update_item(
+      table_name: ENV['token_status_table'],
+      key: {token_id: sid},
+      update_expression: 'SET vetted = :v',
+      expression_attribute_values: {':v': true}
+    )
+  end
+
+  true
+end
+
+# ARN is of the format arn:aws:lambda:{region}:{account_id}:function:{lambda_name}
+def get_region(context)
+  context.invoked_function_arn.split(':')[3]
 end
