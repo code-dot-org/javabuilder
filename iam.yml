@@ -61,6 +61,8 @@ Resources:
                   - "xray:PutTraceSegments"
                   - "xray:PutTelemetryRecords"
                 Resource: '*'
+
+              # Authorizer lambdas need to create, read, and update dynamodb records for throttling.
               - Effect: Allow
                 Action:
                   - 'dynamodb:GetItem'
@@ -72,10 +74,6 @@ Resources:
                   - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/*_teacher_associated_requests"
                   - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/*_blocked_users"
       ManagedPolicyArns:
-        # Authorizer
-        # Currently doesn't require any permissions beyond logging.
-        # ^^ needs to read/write from dynamodb, so not totally true any more.
-
         # Invoke and relay messages to Project Lambda.
         - "arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess"
         - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
