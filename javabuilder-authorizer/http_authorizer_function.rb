@@ -23,13 +23,15 @@ def lambda_handler(event:, context:)
   return JwtHelper.generate_deny(route_arn) unless decoded_token
 
   token_payload = decoded_token[0]
-  token_status = get_token_status(context, token_payload['sid'])
+  puts token_payload
+  token_status = get_token_status(context, token_payload)
   return JwtHelper.generate_deny(route_arn) unless token_status == TokenStatus::VALID_HTTP
 
   JwtHelper.generate_allow(route_arn, token_payload)
 end
 
-def get_token_status(context, sid)
+def get_token_status(context, token_payload)
+  sid = token_payload['sid']
   client = Aws::DynamoDB::Client.new(region: get_region(context))
 
   begin
@@ -46,6 +48,91 @@ def get_token_status(context, sid)
     puts "TOKEN VALIDATION ERROR: #{TokenStatus::ALREADY_EXISTS} token_id: #{sid}"
     # return TokenStatus::ALREADY_EXISTS
     return TokenStatus::VALID_HTTP
+  end
+
+  # add logic to block if blocked user or all verified teachers are blocked
+
+  one_hour_ago = Time.now.to_i - 3600
+  # update user id to have domain in it
+  uid = token_payload['uid']
+  response = client.query(
+    table_name: ENV['user_requests_table'],
+    key_condition_expression: "user_id = :uid AND issued_at > :one_hour_ago",
+    expression_attribute_values: {
+      ":uid" => uid.to_s,
+      ":one_hour_ago" => one_hour_ago
+    }
+  )
+  # I think you'd never need to paginate, because you'd be throttled
+  # iterate if response.last_evaluated_key?
+
+  # also check daily limit?
+
+  puts "per-user count: #{response.count}"
+  # if response.count > 1000000
+  if true
+    # logging is kind of gross, looks like
+    # [{"ttl"=>0.1648766446e10, "user_id"=>"611", "issued_at"=>0.1648680046e10}, {...
+    client.put_item(
+      table_name: ENV['blocked_users_table'],
+      item: {
+        user_id: uid.to_s,
+        log: response.items.to_s
+      }
+    )
+    # deny / return?
+  end
+
+  client.put_item(
+    table_name: ENV['user_requests_table'],
+    item: {
+      user_id: uid.to_s,
+      issued_at: Time.now.to_i,
+      ttl: Time.now.to_i + (24 * 60 * 60)
+    }
+  )
+
+  verified_teachers = token_payload['verified_teachers']
+  allow = false
+  verified_teachers.split(',').each do |teacher_id|
+    response = client.query(
+      table_name: ENV['teacher_associated_requests_table'],
+      key_condition_expression: "section_owner_id = :teacher_id AND issued_at > :one_hour_ago",
+      expression_attribute_values: {
+        ":teacher_id" => teacher_id,
+        ":one_hour_ago" => one_hour_ago
+      }
+    )
+    # iterate if response.last_evaluated_key
+
+    # check that response.count is less than limit
+    # if its under limit for at least one class, we allow
+    if true
+      allow = true
+      # quit looping?
+    end
+  end
+
+  verified_teachers.split(',').each do |teacher_id|
+    client.put_item(
+      table_name: ENV['teacher_associated_requests_table'],
+      item: {
+        section_owner_id: teacher_id,
+        issued_at: Time.now.to_i,
+        ttl: Time.now.to_i + (2 * 60 * 60)
+      }
+    )
+  end
+
+  unless allow
+    client.put_item(
+      table_name: ENV['blocked_users_table'],
+      item: {
+        user_id: "localhost-studio.code.org#sectionOwner##{uid}",
+        log: response.items.to_s
+      }
+    )
+    # return?
   end
 
   # Placeholder for when we'll actually vet each token
