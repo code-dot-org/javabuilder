@@ -77,7 +77,8 @@ public class BaseTestRunnerTest {
             List.of(file1, file2),
             listener,
             mock(OutputAdapter.class),
-            StatusMessageKey.RUNNING_PROJECT_TESTS);
+            StatusMessageKey.RUNNING_PROJECT_TESTS,
+            false);
   }
 
   @AfterEach

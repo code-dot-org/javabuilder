@@ -7,6 +7,7 @@ import org.code.protocol.InternalErrorKey;
 import org.code.protocol.OutputAdapter;
 import org.code.protocol.StatusMessage;
 import org.code.protocol.StatusMessageKey;
+import org.code.validation.support.UserTestOutputAdapter;
 import org.junit.platform.commons.PreconditionViolationException;
 import org.junit.platform.engine.discovery.ClassSelector;
 import org.junit.platform.engine.discovery.DiscoverySelectors;
@@ -22,16 +23,19 @@ public class BaseTestRunner implements CodeRunner {
   private final JavabuilderTestExecutionListener listener;
   private final OutputAdapter outputAdapter;
   private final StatusMessageKey statusMessageKey;
+  private final boolean isValidation;
 
   public BaseTestRunner(
       List<JavaProjectFile> files,
       JavabuilderTestExecutionListener listener,
       OutputAdapter outputAdapter,
-      StatusMessageKey statusMessageKey) {
+      StatusMessageKey statusMessageKey,
+      boolean isValidation) {
     this.files = files;
     this.listener = listener;
     this.outputAdapter = outputAdapter;
     this.statusMessageKey = statusMessageKey;
+    this.isValidation = isValidation;
   }
 
   /**
@@ -44,6 +48,9 @@ public class BaseTestRunner implements CodeRunner {
   @Override
   public boolean run(URLClassLoader urlClassLoader)
       throws InternalServerError, UserInitiatedException {
+    if (outputAdapter instanceof UserTestOutputAdapter) {
+      ((UserTestOutputAdapter) outputAdapter).setIsValidation(this.isValidation);
+    }
     if (this.files.size() == 0) {
       return false;
     }

@@ -27,7 +27,7 @@ public class ValidationRunner extends BaseTestRunner {
       List<JavaProjectFile> projectFiles,
       JavabuilderTestExecutionListener listener,
       OutputAdapter outputAdapter) {
-    super(validationFiles, listener, outputAdapter, StatusMessageKey.RUNNING_VALIDATION);
+    super(validationFiles, listener, outputAdapter, StatusMessageKey.RUNNING_VALIDATION, true);
     this.projectFiles = projectFiles;
   }
 
