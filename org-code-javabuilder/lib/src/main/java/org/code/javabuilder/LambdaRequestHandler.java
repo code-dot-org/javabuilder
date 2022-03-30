@@ -35,7 +35,6 @@ import org.json.JSONObject;
  * https://github.com/awsdocs/aws-lambda-developer-guide/tree/main/sample-apps/blank-java
  */
 public class LambdaRequestHandler implements RequestHandler<Map<String, String>, String> {
-  //  private static final Clock. // systemUTC().instant();
   private static final Instant COLD_BOOT_START = Clock.systemUTC().instant();
   private final Instant COLD_BOOT_END;
   private static boolean firstInstance = true;
