@@ -1,6 +1,7 @@
 package org.code.javabuilder;
 
 import static org.code.javabuilder.DashboardConstants.DASHBOARD_LOCALHOST_DOMAIN;
+import static org.code.javabuilder.LambdaErrorCodes.TEMP_DIRECTORY_CLEANUP_ERROR_CODE;
 import static org.code.protocol.InternalErrorKey.INTERNAL_EXCEPTION;
 import static org.code.protocol.LoggerNames.MAIN_LOGGER;
 
@@ -139,7 +140,11 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     } catch (IOException e) {
       // Wrap this in our error type so we can log it and tell the user.
       InternalServerError error = new InternalServerError(INTERNAL_EXCEPTION, e);
-      return onInitializationError("error clearing tmpdir", error, outputAdapter, connectionId);
+      onInitializationError("error clearing tmpdir", error, outputAdapter, connectionId);
+      // If there was an issue clearing the temp directory, this may be because too many files are
+      // open. Force the JVM to quit in order to release the resources for the next use of the
+      // container.
+      System.exit(TEMP_DIRECTORY_CLEANUP_ERROR_CODE);
     }
 
     final CodeExecutionManager codeExecutionManager =
