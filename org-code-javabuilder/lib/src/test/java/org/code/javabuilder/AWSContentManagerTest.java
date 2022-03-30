@@ -15,6 +15,7 @@ import java.io.FileNotFoundException;
 import java.net.URL;
 import java.util.Date;
 import org.code.protocol.JavabuilderException;
+import org.code.protocol.Properties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -24,7 +25,7 @@ class AWSContentManagerTest {
   private AWSContentManager contentManager;
   private Context context;
   private ProjectData projectData;
-  private UserProjectFiles projectFiles;
+  private AssetFileStubber assetFileStubber;
   private ArgumentCaptor<String> assetUrlCaptor;
 
   private static final String FAKE_BUCKET_NAME = "bucket-name";
@@ -36,11 +37,17 @@ class AWSContentManagerTest {
     s3ClientMock = mock(AmazonS3.class);
     context = mock(Context.class);
     projectData = mock(ProjectData.class);
-    projectFiles = mock(UserProjectFiles.class);
+    assetFileStubber = mock(AssetFileStubber.class);
     assetUrlCaptor = ArgumentCaptor.forClass(String.class);
     contentManager =
         new AWSContentManager(
-            s3ClientMock, FAKE_BUCKET_NAME, FAKE_SESSION_ID, FAKE_OUTPUT_URL, context, projectData);
+            s3ClientMock,
+            FAKE_BUCKET_NAME,
+            FAKE_SESSION_ID,
+            FAKE_OUTPUT_URL,
+            context,
+            projectData,
+            assetFileStubber);
   }
 
   @Test
@@ -118,5 +125,37 @@ class AWSContentManagerTest {
         assertThrows(
             FileNotFoundException.class, () -> contentManager.verifyAssetFilename(filename));
     assertEquals(filename, actual.getMessage());
+  }
+
+  @Test
+  public void testGenerateAssetUrlReturnsStubbedUrlWhenNeeded() {
+    Properties.setCanAccessDashboardAssets(false);
+
+    final String filename = "file";
+    final String actualUrl = "staging-studio.code.org/file.wav";
+    final String stubUrl = "stubUrl";
+    when(projectData.getAssetUrl(filename)).thenReturn(actualUrl);
+    when(assetFileStubber.getStubAssetUrl(filename)).thenReturn(stubUrl);
+
+    assertEquals(stubUrl, contentManager.getAssetUrl(filename));
+    verify(projectData).getAssetUrl(filename);
+    verify(assetFileStubber).getStubAssetUrl(filename);
+
+    Properties.setCanAccessDashboardAssets(true);
+  }
+
+  @Test
+  public void testGenerateAssetUrlDoesNotReturnStubUrlIfNotDashboard() {
+    Properties.setCanAccessDashboardAssets(false);
+
+    final String filename = "file";
+    final String actualUrl = "cdo-javabuilderbeta-content/file.wav";
+    when(projectData.getAssetUrl(filename)).thenReturn(actualUrl);
+
+    assertEquals(actualUrl, contentManager.getAssetUrl(filename));
+    verify(projectData).getAssetUrl(filename);
+    verify(assetFileStubber, never()).getStubAssetUrl(anyString());
+
+    Properties.setCanAccessDashboardAssets(true);
   }
 }
