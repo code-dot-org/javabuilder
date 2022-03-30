@@ -27,30 +27,30 @@ public class PerformanceTracker {
 
   public void trackStartup(
       Instant coldBootStart, Instant coldBootEnd, Instant instanceStart, boolean firstInstance) {
-    logs.put(COLD_BOOT_START, coldBootStart.toString());
-    logs.put(COLD_BOOT_END, coldBootEnd.toString());
-    logs.put(INSTANCE_START, instanceStart.toString());
+    logs.put(COLD_BOOT_START, coldBootStart.toEpochMilli());
+    logs.put(COLD_BOOT_END, coldBootEnd.toEpochMilli());
+    logs.put(INSTANCE_START, instanceStart.toEpochMilli());
     logs.put(FIRST_INSTANCE, firstInstance);
   }
 
   public void trackCompileStart() {
-    logs.put(COMPILE_START, Clock.systemUTC().instant().toString());
+    logs.put(COMPILE_START, Clock.systemUTC().instant().toEpochMilli());
   }
 
   public void trackCompileEnd() {
-    logs.put(COMPILE_END, Clock.systemUTC().instant().toString());
+    logs.put(COMPILE_END, Clock.systemUTC().instant().toEpochMilli());
   }
 
   public void trackUserCodeStart() {
-    logs.put(USER_CODE_START, Clock.systemUTC().instant().toString());
+    logs.put(USER_CODE_START, Clock.systemUTC().instant().toEpochMilli());
   }
 
   public void trackUserCodeEnd() {
-    logs.put(USER_CODE_END, Clock.systemUTC().instant().toString());
+    logs.put(USER_CODE_END, Clock.systemUTC().instant().toEpochMilli());
   }
 
   public void trackInstanceEnd() {
-    logs.put(INSTANCE_END, Clock.systemUTC().instant().toString());
+    logs.put(INSTANCE_END, Clock.systemUTC().instant().toEpochMilli());
   }
 
   public void logPerformance() {
