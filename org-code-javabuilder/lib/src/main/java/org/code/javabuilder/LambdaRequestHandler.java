@@ -156,7 +156,8 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
             compileList,
             tempDirectoryManager,
             contentManager,
-            lifecycleNotifier);
+            lifecycleNotifier,
+            new AWSSystemExitHelper(connectionId, API_CLIENT));
 
     final Thread timeoutNotifierThread =
         createTimeoutThread(context, outputAdapter, codeExecutionManager, connectionId, API_CLIENT);
