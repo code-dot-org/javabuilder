@@ -15,6 +15,6 @@ public class UserTestRunner extends BaseTestRunner {
       List<JavaProjectFile> javaFiles,
       JavabuilderTestExecutionListener listener,
       OutputAdapter outputAdapter) {
-    super(javaFiles, listener, outputAdapter, StatusMessageKey.RUNNING_PROJECT_TESTS);
+    super(javaFiles, listener, outputAdapter, StatusMessageKey.RUNNING_PROJECT_TESTS, false);
   }
 }
