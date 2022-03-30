@@ -1,5 +1,6 @@
 package org.code.javabuilder;
 
+import static org.code.javabuilder.LambdaErrorCodes.TEMP_DIRECTORY_CLEANUP_ERROR_CODE;
 import static org.code.protocol.LoggerNames.MAIN_LOGGER;
 
 import java.io.File;
@@ -173,13 +174,17 @@ public class CodeExecutionManager {
     this.lifecycleNotifier.onExecutionEnded();
     GlobalProtocol.getInstance().cleanUpResources();
     try {
-      // Clear temp folder
-      this.tempDirectoryManager.cleanUpTempDirectory(this.tempFolder);
       // Close custom input/output streams
       this.overrideInputStream.close();
       this.overrideOutputStream.close();
+      // Clear temp folder
+      this.tempDirectoryManager.cleanUpTempDirectory(this.tempFolder);
     } catch (IOException e) {
-      throw new InternalServerError(InternalErrorKey.INTERNAL_EXCEPTION, e);
+      // If there was an issue clearing the temp directory, this may be because too many files are
+      // open. Force the JVM to quit in order to release the resources for the next use of the
+      // container. Temporarily logging the exception for investigation purposes.
+      LoggerUtils.logException(e);
+      System.exit(TEMP_DIRECTORY_CLEANUP_ERROR_CODE);
     } finally {
       // Replace System in/out with original System in/out and destroy Global Protocol
       System.setIn(this.systemInputStream);
