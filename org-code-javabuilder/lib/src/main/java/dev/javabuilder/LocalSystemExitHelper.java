@@ -1,6 +1,6 @@
 package dev.javabuilder;
 
-import org.code.protocol.SystemExitHelper;
+import org.code.javabuilder.SystemExitHelper;
 
 public class LocalSystemExitHelper implements SystemExitHelper {
 

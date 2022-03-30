@@ -1,4 +1,4 @@
-package org.code.protocol;
+package org.code.javabuilder;
 
 /**
  * An object that can shut down the JVM in the case of abnormal exit. This allows us to perform any
