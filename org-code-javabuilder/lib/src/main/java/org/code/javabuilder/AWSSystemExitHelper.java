@@ -7,7 +7,6 @@ import com.amazonaws.services.apigatewaymanagementapi.model.DeleteConnectionRequ
 import com.amazonaws.services.apigatewaymanagementapi.model.GoneException;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
-import org.code.protocol.SystemExitHelper;
 
 public class AWSSystemExitHelper implements SystemExitHelper {
   private final String connectionId;
