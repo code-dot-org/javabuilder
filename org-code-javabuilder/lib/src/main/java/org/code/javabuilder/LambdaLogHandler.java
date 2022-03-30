@@ -32,14 +32,6 @@ public class LambdaLogHandler extends Handler {
 
   @Override
   public void publish(LogRecord record) {
-    /*
-    Thoughts:
-     * Set up a verbose and succinct level of data
-     * include less session metadata for the succinct level
-     * always record the verbose level at least once (and perhaps for errors too)
-     * the succinct level should use the session ID only (probably)
-     */
-
     JSONObject sessionMetadata = new JSONObject();
     sessionMetadata.put(LoggerConstants.SESSION_ID, this.sessionId);
     sessionMetadata.put(LoggerConstants.CONNECTION_ID, this.connectionId);

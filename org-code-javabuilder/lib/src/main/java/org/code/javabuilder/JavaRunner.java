@@ -97,7 +97,6 @@ public class JavaRunner {
         new UserClassLoader(
             classLoaderUrls, JavaRunner.class.getClassLoader(), classNames, permissionLevel);
 
-    // Performance metric here before run
     boolean runResult;
     this.performanceTracker.trackUserCodeStart();
     try {
