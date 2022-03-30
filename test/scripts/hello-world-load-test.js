@@ -18,10 +18,9 @@ export const options = {
     // the ramp up time.
     highLoad: {
       executor: "per-vu-iterations",
-      vus: 10,
+      vus: 1,
       iterations: 3,
-      maxDuration: "3m",
-      //startTime: '1m'
+      maxDuration: "3m"
     }
   },
   thresholds: {
@@ -45,7 +44,7 @@ const extraLongWebsocketSessions = new Counter("extra_long_websocket_sessions");
 
 const uploadUrl = `https://javabuilder-molly-http.dev-code.org/seedsources/sources.json?Authorization=`;
 const url = `wss://javabuilder-molly.dev-code.org?Authorization=`;
-const origin = "load-test";
+const origin = "http://localhost-studio.code.org:3000";
   
 const websocketParams = {
   headers: {
@@ -60,47 +59,54 @@ const uploadParams = {
   },
 };
 
+const privateKey = __ENV.AUTH_KEY;
+
 export default function () {
-  console.log("hello from task");
-//   const authToken = "placeholder";
-//   const uploadResult = http.put(uploadUrl + authToken, helloWorld, uploadParams);
-//   const res = ws.connect(url + authToken, websocketParams, (socket) =>
-//     onSocketConnect(socket, Date.now())
-//   );
+  if (privateKey != null) {
+    console.log("found private key!");
+  } else {
+    console.log("did not find private key!");
+  }
+  const authToken = "placeholder";
+  const uploadResult = http.put(uploadUrl + authToken, helloWorld, uploadParams);
+  const res = ws.connect(url + authToken, websocketParams, (socket) =>
+    onSocketConnect(socket, Date.now())
+  );
 
-//   check(res,
-//     { 'websocket status is 101': (r) => r && r.status === 101 }
-//   );
+  check(res,
+    { 'websocket status is 101': (r) => r && r.status === 101 }
+  );
 
-//   check(uploadResult, { "upload status is 200": (r) => r && r.status === 200 });
-// }
+  check(uploadResult, { "upload status is 200": (r) => r && r.status === 200 });
 
-// function onSocketConnect(socket, startTime) {
-//   socket.on("open", () => {});
+  
+}
+  
+function onSocketConnect(socket, startTime) {
+  socket.on("open", () => {});
 
-//   socket.on("message", function (data) {
-//     const parsedData = JSON.parse(data);
-//     if (parsedData.type === "EXCEPTION") {
-//       console.log("hit an exception " + parsedData.value);
-//       exceptionCounter.add(1);
-//     }
-//   });
+  socket.on("message", function (data) {
+    const parsedData = JSON.parse(data);
+    if (parsedData.type === "EXCEPTION") {
+      console.log("hit an exception " + parsedData.value);
+      exceptionCounter.add(1);
+    }
+  });
 
-//   socket.on("close", () => {
-//     const time = Date.now() - startTime;
-//     connectToCloseTime.add(time);
-//     if (time > 5000) {
-//       longWebsocketSessions.add(1);
-//     }
-//     if (time > 10000) {
-//       extraLongWebsocketSessions.add(1);
-//     }
-//     console.log("about to sleep...");
-//     sleep(15);
-//   });
+  socket.on("close", () => {
+    const time = Date.now() - startTime;
+    connectToCloseTime.add(time);
+    if (time > 5000) {
+      longWebsocketSessions.add(1);
+    }
+    if (time > 10000) {
+      extraLongWebsocketSessions.add(1);
+    }
+    sleep(15);
+  });
 
-//   socket.on("error", function (e) {
-//     console.log("error occurred: " + e.error());
-//     errorCounter.add(1);
-//   });
+  socket.on("error", function (e) {
+    console.log("error occurred: " + e.error());
+    errorCounter.add(1);
+  });
 }
