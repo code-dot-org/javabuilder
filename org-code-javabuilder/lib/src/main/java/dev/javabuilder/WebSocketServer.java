@@ -4,10 +4,10 @@ import static org.code.protocol.LoggerNames.MAIN_LOGGER;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.time.Clock;
 import java.util.Base64;
 import java.util.List;
 import java.util.logging.Handler;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.websocket.OnClose;
 import javax.websocket.OnMessage;
@@ -49,6 +49,8 @@ public class WebSocketServer {
    */
   @OnOpen
   public void onOpen(Session session) {
+    PerformanceTracker.resetTracker();
+    PerformanceTracker.getInstance().trackInstanceStart(Clock.systemUTC().instant());
     // Decode the authorization token
     String token = session.getRequestParameterMap().get("Authorization").get(0);
     Base64.Decoder decoder = Base64.getDecoder();
@@ -64,14 +66,11 @@ public class WebSocketServer {
     final JSONObject options = new JSONObject(queryInput.getString("options"));
     final List<String> compileList = JSONUtils.listFromJSONObjectMember(options, "compileList");
 
-    PerformanceTracker.resetTracker();
     this.logger = Logger.getLogger(MAIN_LOGGER);
     this.logHandler = new LocalLogHandler(System.out, levelId, channelId);
     this.logger.addHandler(this.logHandler);
     // turn off the default console logger
-//    this.logger.setUseParentHandlers(false);
-    System.out.println("System out!");
-    this.logger.log(Level.SEVERE, "Hi, this is your logger");
+    this.logger.setUseParentHandlers(false);
 
     Properties.setConnectionId(connectionId);
 
