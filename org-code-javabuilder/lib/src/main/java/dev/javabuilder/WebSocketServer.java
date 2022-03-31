@@ -7,6 +7,7 @@ import java.nio.ByteBuffer;
 import java.util.Base64;
 import java.util.List;
 import java.util.logging.Handler;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.websocket.OnClose;
 import javax.websocket.OnMessage;
@@ -63,11 +64,14 @@ public class WebSocketServer {
     final JSONObject options = new JSONObject(queryInput.getString("options"));
     final List<String> compileList = JSONUtils.listFromJSONObjectMember(options, "compileList");
 
+    PerformanceTracker.resetTracker();
     this.logger = Logger.getLogger(MAIN_LOGGER);
     this.logHandler = new LocalLogHandler(System.out, levelId, channelId);
     this.logger.addHandler(this.logHandler);
     // turn off the default console logger
-    this.logger.setUseParentHandlers(false);
+//    this.logger.setUseParentHandlers(false);
+    System.out.println("System out!");
+    this.logger.log(Level.SEVERE, "Hi, this is your logger");
 
     Properties.setConnectionId(connectionId);
 
@@ -103,8 +107,7 @@ public class WebSocketServer {
                       compileList,
                       new LocalTempDirectoryManager(),
                       contentManager,
-                      lifecycleNotifier,
-                      new PerformanceTracker());
+                      lifecycleNotifier);
               executionManager.execute();
               // Clean up session
               try {
@@ -121,6 +124,7 @@ public class WebSocketServer {
   @OnClose
   public void myOnClose() {
     Logger.getLogger(MAIN_LOGGER).info("WebSocket closed.");
+    PerformanceTracker.getInstance().logPerformance();
   }
 
   /**

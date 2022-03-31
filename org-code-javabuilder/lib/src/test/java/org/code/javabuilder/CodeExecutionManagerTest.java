@@ -43,12 +43,7 @@ class CodeExecutionManagerTest {
     performanceTracker = mock(PerformanceTracker.class);
 
     when(codeBuilderRunnableFactory.createCodeBuilderRunnable(
-            eq(fileLoader),
-            eq(outputAdapter),
-            any(File.class),
-            eq(executionType),
-            eq(compileList),
-            eq(performanceTracker)))
+            eq(fileLoader), eq(outputAdapter), any(File.class), eq(executionType), eq(compileList)))
         .thenReturn(codeBuilderRunnable);
 
     unitUnderTest =
@@ -61,7 +56,6 @@ class CodeExecutionManagerTest {
             tempDirectoryManager,
             lifecycleNotifier,
             contentManager,
-            performanceTracker,
             codeBuilderRunnableFactory);
   }
 

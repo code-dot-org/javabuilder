@@ -8,6 +8,15 @@ import java.util.logging.Logger;
 import org.code.protocol.LoggerConstants;
 import org.json.JSONObject;
 
+/**
+ * This is a helper class that allows performance analysis of a variety of key events that occur
+ * while a user's code is compiling and running. This is mostly intended to help analyze performance
+ * metrics on our Lambdas to drive down the execution time for the portions we control, but it can
+ * also be used within our local dev instances of Javabuilder, such as the WebSocketServer.
+ * Throughout the execution of a student's project, events can be logged to the performance tracker.
+ * Then, at the end of the project execution, PerformanceTracker.logPerformance can be invoked in
+ * order to create a single record of the performance of the project execution.
+ */
 public class PerformanceTracker {
   private static final String FIRST_INSTANCE = "firstInstance";
   private static final String COLD_BOOT_START = "coldBootStart";
@@ -20,9 +29,23 @@ public class PerformanceTracker {
   private static final String INSTANCE_END = "instanceEnd";
   private static final String TYPE = "performanceReport";
   private final JSONObject logs;
+  private static PerformanceTracker instance;
 
-  public PerformanceTracker() {
+  private PerformanceTracker() {
     logs = new JSONObject();
+  }
+
+  public static PerformanceTracker getInstance() {
+    if (PerformanceTracker.instance == null || PerformanceTracker.instance.logs == null) {
+      PerformanceTracker.instance = new PerformanceTracker();
+    }
+
+    return PerformanceTracker.instance;
+  }
+
+  /** Clear out all previous performance logs */
+  public static void resetTracker() {
+    PerformanceTracker.instance = new PerformanceTracker();
   }
 
   public void trackStartup(
@@ -56,5 +79,6 @@ public class PerformanceTracker {
   public void logPerformance() {
     logs.put(LoggerConstants.TYPE, TYPE);
     Logger.getLogger(MAIN_LOGGER).info(logs.toString());
+    PerformanceTracker.instance = null;
   }
 }

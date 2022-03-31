@@ -20,14 +20,12 @@ public class JavaRunner {
   private final List<String> javaClassNames;
   private final List<String> validationAndJavaClassNames;
   private final OutputAdapter outputAdapter;
-  private final PerformanceTracker performanceTracker;
 
   public JavaRunner(
       URL executableLocation,
       List<JavaProjectFile> javaFiles,
       List<JavaProjectFile> validationFiles,
-      OutputAdapter outputAdapter,
-      PerformanceTracker performanceTracker) {
+      OutputAdapter outputAdapter) {
     this(
         executableLocation,
         new MainRunner(javaFiles, outputAdapter),
@@ -35,8 +33,7 @@ public class JavaRunner {
         new ValidationRunner(validationFiles, javaFiles, outputAdapter),
         javaFiles,
         validationFiles,
-        outputAdapter,
-        performanceTracker);
+        outputAdapter);
   }
 
   JavaRunner(
@@ -46,8 +43,7 @@ public class JavaRunner {
       ValidationRunner validationRunner,
       List<JavaProjectFile> javaFiles,
       List<JavaProjectFile> validationFiles,
-      OutputAdapter outputAdapter,
-      PerformanceTracker performanceTracker) {
+      OutputAdapter outputAdapter) {
     this.executableLocation = executableLocation;
     this.mainRunner = mainRunner;
     this.userTestRunner = userTestRunner;
@@ -56,7 +52,6 @@ public class JavaRunner {
     this.validationAndJavaClassNames = new ArrayList<>(this.javaClassNames);
     this.validationAndJavaClassNames.addAll(this.parseClassNames(validationFiles));
     this.outputAdapter = outputAdapter;
-    this.performanceTracker = performanceTracker;
   }
 
   /**
@@ -98,11 +93,11 @@ public class JavaRunner {
             classLoaderUrls, JavaRunner.class.getClassLoader(), classNames, permissionLevel);
 
     boolean runResult;
-    this.performanceTracker.trackUserCodeStart();
+    PerformanceTracker.getInstance().trackUserCodeStart();
     try {
       runResult = runner.run(urlClassLoader);
     } finally {
-      this.performanceTracker.trackUserCodeEnd();
+      PerformanceTracker.getInstance().trackUserCodeEnd();
     }
 
     try {
