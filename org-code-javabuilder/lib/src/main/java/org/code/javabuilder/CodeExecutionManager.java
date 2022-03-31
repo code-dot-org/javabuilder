@@ -1,5 +1,6 @@
 package org.code.javabuilder;
 
+import static org.code.javabuilder.LambdaErrorCodes.TEMP_DIRECTORY_CLEANUP_ERROR_CODE;
 import static org.code.protocol.LoggerNames.MAIN_LOGGER;
 
 import java.io.File;
@@ -25,6 +26,7 @@ public class CodeExecutionManager {
   private final TempDirectoryManager tempDirectoryManager;
   private final LifecycleNotifier lifecycleNotifier;
   private final ContentManager contentManager;
+  private final SystemExitHelper systemExitHelper;
   private final CodeBuilderRunnableFactory codeBuilderRunnableFactory;
 
   private File tempFolder;
@@ -54,7 +56,8 @@ public class CodeExecutionManager {
       List<String> compileList,
       TempDirectoryManager tempDirectoryManager,
       ContentManager contentManager,
-      LifecycleNotifier lifecycleNotifier) {
+      LifecycleNotifier lifecycleNotifier,
+      SystemExitHelper systemExitHelper) {
     this(
         fileLoader,
         inputAdapter,
@@ -64,6 +67,7 @@ public class CodeExecutionManager {
         tempDirectoryManager,
         lifecycleNotifier,
         contentManager,
+        systemExitHelper,
         new CodeBuilderRunnableFactory());
   }
 
@@ -76,6 +80,7 @@ public class CodeExecutionManager {
       TempDirectoryManager tempDirectoryManager,
       LifecycleNotifier lifecycleNotifier,
       ContentManager contentManager,
+      SystemExitHelper systemExitHelper,
       CodeBuilderRunnableFactory codeBuilderRunnableFactory) {
     this.fileLoader = fileLoader;
     this.inputAdapter = inputAdapter;
@@ -85,6 +90,7 @@ public class CodeExecutionManager {
     this.tempDirectoryManager = tempDirectoryManager;
     this.lifecycleNotifier = lifecycleNotifier;
     this.contentManager = contentManager;
+    this.systemExitHelper = systemExitHelper;
     this.codeBuilderRunnableFactory = codeBuilderRunnableFactory;
     this.executionInProgress = false;
   }
@@ -173,13 +179,17 @@ public class CodeExecutionManager {
     this.lifecycleNotifier.onExecutionEnded();
     GlobalProtocol.getInstance().cleanUpResources();
     try {
-      // Clear temp folder
-      this.tempDirectoryManager.cleanUpTempDirectory(this.tempFolder);
       // Close custom input/output streams
       this.overrideInputStream.close();
       this.overrideOutputStream.close();
+      // Clear temp folder
+      this.tempDirectoryManager.cleanUpTempDirectory(this.tempFolder);
     } catch (IOException e) {
-      throw new InternalServerError(InternalErrorKey.INTERNAL_EXCEPTION, e);
+      // If there was an issue clearing the temp directory, this may be because too many files are
+      // open. Force the JVM to quit in order to release the resources for the next use of the
+      // container. Temporarily logging the exception for investigation purposes.
+      LoggerUtils.logException(e);
+      this.systemExitHelper.exit(TEMP_DIRECTORY_CLEANUP_ERROR_CODE);
     } finally {
       // Replace System in/out with original System in/out and destroy Global Protocol
       System.setIn(this.systemInputStream);
