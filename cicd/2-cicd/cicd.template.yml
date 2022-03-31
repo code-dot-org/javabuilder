@@ -23,7 +23,7 @@ Resources:
   EcrRepository:
     Type: AWS::ECR::Repository
     Properties: 
-      RepositoryName: !Sub ${AWS::StackName}
+      RepositoryName: !Sub javabuilder-${GitHubBranch}
       RepositoryPolicyText:
         Version: "2012-10-17"
         Statement: 
