@@ -14,7 +14,7 @@ fi
 
 STACK_NAME=javabuilder-load-test
 TEMPLATE_FILE=load-test.template.yml
-LOAD_TEST_IMAGE=475661607190.dkr.ecr.us-east-1.amazonaws.com/javabuilder-main:molly-test
+LOAD_TEST_IMAGE=${LOAD_TEST_IMAGE}
 
 echo Validating cloudformation template...
 aws cloudformation validate-template \
