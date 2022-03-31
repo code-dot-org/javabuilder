@@ -25,7 +25,6 @@ class CodeExecutionManagerTest {
   private CodeBuilderRunnableFactory codeBuilderRunnableFactory;
   private CodeBuilderRunnable codeBuilderRunnable;
   private ContentManager contentManager;
-  private PerformanceTracker performanceTracker;
   private CodeExecutionManager unitUnderTest;
 
   @BeforeEach
@@ -40,7 +39,6 @@ class CodeExecutionManagerTest {
     codeBuilderRunnableFactory = mock(CodeBuilderRunnableFactory.class);
     codeBuilderRunnable = mock(CodeBuilderRunnable.class);
     contentManager = mock(ContentManager.class);
-    performanceTracker = mock(PerformanceTracker.class);
 
     when(codeBuilderRunnableFactory.createCodeBuilderRunnable(
             eq(fileLoader), eq(outputAdapter), any(File.class), eq(executionType), eq(compileList)))
