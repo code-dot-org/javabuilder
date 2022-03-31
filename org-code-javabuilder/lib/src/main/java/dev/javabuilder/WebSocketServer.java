@@ -104,7 +104,8 @@ public class WebSocketServer {
                       compileList,
                       new LocalTempDirectoryManager(),
                       contentManager,
-                      lifecycleNotifier);
+                      lifecycleNotifier,
+                      new LocalSystemExitHelper());
               executionManager.execute();
               // Clean up session
               try {
