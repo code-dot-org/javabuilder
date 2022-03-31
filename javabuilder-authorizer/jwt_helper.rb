@@ -50,6 +50,10 @@ module JwtHelper
     auth_response
   end
 
+  def get_standardized_origin(origin)
+    origin.delete_prefix("https://").delete_prefix("http://").delete_suffix(":3000")
+  end
+
   private
 
   # Load the JWT public key from the appropriate environment variable
@@ -65,19 +69,18 @@ module JwtHelper
     # tmp = route_arn.split(':')
     # api_gateway_arn = tmp[5].split('/')
     # stage_name = api_gateway_arn[1]
-    standardized_origin = origin.delete_prefix("https://").delete_prefix("http://").delete_suffix(":3000")
     stage_name = ""
-    if standardized_origin == "localhost-studio.code.org"
+    if origin == "localhost-studio.code.org"
       stage_name = "development"
-    elsif standardized_origin == "staging-studio.code.org"
+    elsif origin == "staging-studio.code.org"
       stage_name = "staging"
-    elsif standardized_origin == "levelbuilder-studio.code.org"
+    elsif origin == "levelbuilder-studio.code.org"
       stage_name = "levelbuilder"
-    elsif standardized_origin == "test-studio.code.org"
+    elsif origin == "test-studio.code.org"
       stage_name = "test"
-    elsif standardized_origin == "studio.code.org"
+    elsif origin == "studio.code.org"
       stage_name = "production"
-    elsif standardized_origin.start_with?("adhoc-") && standardized_origin.end_with?("-studio.cdn-code.org")
+    elsif origin.start_with?("adhoc-") && origin.end_with?("-studio.cdn-code.org")
       stage_name = "adhoc"
     end
     # End of temporary code
