@@ -7,7 +7,6 @@ import java.net.URLClassLoader;
 import java.util.List;
 import org.code.protocol.InternalErrorKey;
 import org.code.protocol.OutputAdapter;
-import org.code.protocol.StatusMessageKey;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -73,12 +72,7 @@ public class BaseTestRunnerTest {
     launcherFactory = mockStatic(LauncherFactory.class);
 
     unitUnderTest =
-        new BaseTestRunner(
-            List.of(file1, file2),
-            listener,
-            mock(OutputAdapter.class),
-            StatusMessageKey.RUNNING_PROJECT_TESTS,
-            false);
+        new BaseTestRunner(List.of(file1, file2), listener, mock(OutputAdapter.class), false);
   }
 
   @AfterEach
