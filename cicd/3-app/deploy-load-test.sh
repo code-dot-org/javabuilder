@@ -13,18 +13,19 @@ if [[ $(aws sts get-caller-identity --query Arn --output text) =~ "475661607190:
 fi
 
 STACK_NAME=javabuilder-load-test
-TEMPLATE_FILE=cicd/3-app/load-test.template.yml
+TEMPLATE_FILE=load-test.template.yml
+LOAD_TEST_IMAGE=475661607190.dkr.ecr.us-east-1.amazonaws.com/javabuilder-main:molly-test
 
 echo Validating cloudformation template...
 aws cloudformation validate-template \
   --template-body file://${TEMPLATE_FILE}
 
-# echo Updating cloudformation stack...
-# aws cloudformation deploy \
-#   --stack-name $STACK_NAME \
-#   --template-file $TEMPLATE_FILE \
-#   --parameter-overrides LoadTestImage= \
-#   --capabilities CAPABILITY_IAM \
-#   "$@"
+echo Updating cloudformation stack...
+aws cloudformation deploy \
+  --stack-name $STACK_NAME \
+  --template-file $TEMPLATE_FILE \
+  --parameter-overrides LoadTestImage=$LOAD_TEST_IMAGE \
+  --capabilities CAPABILITY_IAM \
+  "$@"
 
 echo Complete!

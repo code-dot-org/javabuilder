@@ -21,65 +21,67 @@ Resources:
       Tags:
         - Key: "javabuilder-mode"
           Value: "load-test"
-    ECSTaskDefinition:
-      Type: AWS::ECS::TaskDefinition
-      Name: !Sub "${AWS::StackName}-task"
-      Properties: 
-        ContainerDefinitions: 
-          - Name: javabuilder-load-test
-            Image: !Ref LoadTestImage
-            Cpu: 0
-            Memory: 512
-            Environment:
-              - Key: PRIVATE_KEY
-                Value: arn:aws:secretsmanager:us-east-1:475661607190:secret:production/cdo/javabuilder_load_test_key-O3hwTg
-              - Key: PRIVATE_KEY_PASSWORD
-                Value: arn:aws:secretsmanager:us-east-1:475661607190:secret:production/cdo/javabuilder_load_test_key_password-MFH2XA
-            LogConfiguration:
-              LogDriver: awslogs
-              Options:
-                - Key: awslogs-group
-                  Value: !Sub 
-                    - "/ecs/${ECSClusterName}"
-                    - ECSClusterName: !Ref ECSCluster
-                - Key: awslogs-region
-                  Value: !Ref AWS::Region
-                - Key: awslogs-stream-prefix
-                  Value: ecs
-        Cpu: 256
-        ExecutionRoleArn: !Ref ExecutionRole
-        Memory: 512
-        NetworkMode: awsvpc
-        RuntimePlatform: 
-          OperatingSystemFamily: LINUX
-        Tags: 
-          - Key: "javabuilder-mode"
-            Value: "load-test"
-    ExecutionRole:
-      Type: AWS::IAM::Role
-      Properties:
-        AssumeRolePolicyDocument:
-          Statement:
-            - Action: ['sts:AssumeRole']
-              Effect: Allow
-              Principal: {Service: [ecs-tasks.amazonaws.com]}
-        PermissionsBoundary: !ImportValue IAM-DevPermissions
-        ManagedPolicyArns:
-          # AWS-managed policy for executing an ECS task
-          - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
-        Policies:
-          - PolicyName: JavabuilderLoadTestSecretPolicy
-            PolicyDocument:
-              Statement:
-                # secrets needed for creating JWT tokens for load testing
-                - Effect: Allow
-                  Action:
-                    - 'secretsmanager:GetSecretValue'
-                  Resource: 'arn:aws:secretsmanager:us-east-1:475661607190:secret:production/cdo/javabuilder_load_test_key-O3hwTg'
-                - Effect: Allow
-                  Action:
-                    - 'secretsmanager:GetSecretValue'
-                  Resource: 'arn:aws:secretsmanager:us-east-1:475661607190:secret:production/cdo/javabuilder_load_test_key_password-MFH2XA'
-        Tags: 
-          - Key: "javabuilder-mode"
-            Value: "load-test"
+  CloudwatchLogsGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "ECSLogGroup-${AWS::StackName}"
+      RetentionInDays: 14
+  ECSTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    DependsOn:
+      - ECSCluster
+    Properties: 
+      Family: !Sub "${AWS::StackName}-task"
+      ContainerDefinitions: 
+        - Name: javabuilder-load-test
+          Image: !Ref LoadTestImage
+          Cpu: 0
+          Memory: 512
+          Environment:
+            - Name: PRIVATE_KEY
+              Value: arn:aws:secretsmanager:us-east-1:475661607190:secret:production/cdo/javabuilder_load_test_key-O3hwTg
+            - Name: PRIVATE_KEY_PASSWORD
+              Value: arn:aws:secretsmanager:us-east-1:475661607190:secret:production/cdo/javabuilder_load_test_key_password-MFH2XA
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group:  !Ref CloudwatchLogsGroup
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix:  !Sub "${AWS::StackName}-task"
+      Cpu: 256
+      ExecutionRoleArn: !Ref ExecutionRole
+      Memory: 512
+      NetworkMode: awsvpc
+      RuntimePlatform: 
+        OperatingSystemFamily: LINUX
+      Tags: 
+        - Key: "javabuilder-mode"
+          Value: "load-test"
+  ExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: ['sts:AssumeRole']
+            Effect: Allow
+            Principal: {Service: [ecs-tasks.amazonaws.com]}
+      PermissionsBoundary: !ImportValue IAM-DevPermissions
+      ManagedPolicyArns:
+        # AWS-managed policy for executing an ECS task
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+      Policies:
+        - PolicyName: JavabuilderLoadTestSecretPolicy
+          PolicyDocument:
+            Statement:
+              # secrets needed for creating JWT tokens for load testing
+              - Effect: Allow
+                Action:
+                  - 'secretsmanager:GetSecretValue'
+                Resource: 'arn:aws:secretsmanager:us-east-1:475661607190:secret:production/cdo/javabuilder_load_test_key-O3hwTg'
+              - Effect: Allow
+                Action:
+                  - 'secretsmanager:GetSecretValue'
+                Resource: 'arn:aws:secretsmanager:us-east-1:475661607190:secret:production/cdo/javabuilder_load_test_key_password-MFH2XA'
+      Tags: 
+        - Key: "javabuilder-mode"
+          Value: "load-test"
