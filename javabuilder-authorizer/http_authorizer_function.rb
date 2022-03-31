@@ -3,6 +3,7 @@ require 'aws-sdk-dynamodb'
 require 'jwt'
 require_relative 'jwt_helper'
 require_relative 'token_status'
+require_relative 'token_validator'
 include JwtHelper
 include TokenStatus
 
@@ -19,164 +20,29 @@ def lambda_handler(event:, context:)
   jwt_token = event['queryStringParameters']['Authorization']
   route_arn = event['routeArn']
 
-  decoded_token = JwtHelper.decode_token(jwt_token, origin)
+  standardized_origin = JwtHelper.get_standardized_origin(origin)
+  decoded_token = JwtHelper.decode_token(jwt_token, standardized_origin)
   return JwtHelper.generate_deny(route_arn) unless decoded_token
 
   token_payload = decoded_token[0]
-  puts token_payload
-  token_status = get_token_status(context, token_payload)
+  token_status = get_token_status(context, token_payload, standardized_origin)
   return JwtHelper.generate_deny(route_arn) unless token_status == TokenStatus::VALID_HTTP
 
   JwtHelper.generate_allow(route_arn, token_payload)
 end
 
-def get_token_status(context, token_payload)
-  sid = token_payload['sid']
-  client = Aws::DynamoDB::Client.new(region: get_region(context))
+def get_token_status(context, token_payload, origin)
+  region = get_region(context)
+  validator = TokenValidator.new(token_payload, origin, region)
 
-  # 1) put token once decoded. return if already exists.
-  begin
-    ttl = Time.now.to_i + TOKEN_RECORD_TTL_SECONDS
-    client.put_item(
-      table_name: ENV['token_status_table'],
-      item: {
-        token_id: sid,
-        ttl: ttl
-      },
-      condition_expression: 'attribute_not_exists(token_id)'
-    )
-  rescue Aws::DynamoDB::Errors::ConditionalCheckFailedException
-    puts "TOKEN VALIDATION ERROR: #{TokenStatus::ALREADY_EXISTS} token_id: #{sid}"
-    # return TokenStatus::ALREADY_EXISTS
-    return TokenStatus::VALID_HTTP
-  end
-
-  # return true if ThrottlingHelper.log_token()
-  # return true if ThrottlingHelper.user_blocked?()
-  # return true if ThrottlingHelper.teachers_blocked?()
-  # if ThrottlingHelper.user_over_hourly_limit?()
-  #   ThrottlingHelper.block_user
-  #   return true
-  # end
-  # if ThrottlingHelper.teachers_over_hourly_limit()?
-  #   ThrottlingHelper.block_teachers
-  #   return true
-  # end
-  # 2) check if user is blocked.
-  uid = token_payload['uid']
-  response = client.get_item(
-    table_name: ENV['blocked_users_table'],
-    key: {user_id: "localhost-studio.code.org#userId##{uid}"}
-  )
-
-  puts 'found blocked record!' if response.item
-
-  # 3) check if all verified teachers blocked.
-  verified_teachers = token_payload['verified_teachers']
-  allow = false
-  verified_teachers.split(',').each do |teacher_id|
-    response = client.get_item(
-      table_name: ENV['blocked_users_table'],
-      key: {user_id: "localhost-studio.code.org#sectionOwnerId##{uid}"}
-    )
-    allow = true unless response.item
-  end
-
-  puts 'all teachers blocked!' unless allow
-
-  # 4) see if too many requests by user in past hour. add to blocked table if so.
-  # also check daily limit?
-  # update user id to have domain in it
-  one_hour_ago = Time.now.to_i - 3600
-  response = client.query(
-    table_name: ENV['user_requests_table'],
-    key_condition_expression: "user_id = :uid AND issued_at > :one_hour_ago",
-    expression_attribute_values: {
-      ":uid" => "localhost-studio.code.org##{uid}",
-      ":one_hour_ago" => one_hour_ago
-    }
-  )
-  # I think you'd never need to paginate, because you'd be throttled
-  # I guess this might not be true in the 24 hour case where we're not throttling
-  # iterate if response.last_evaluated_key?
-
-  # update with actual limit value
-  puts "per-user count: #{response.count}"
-  if response.count > 1000000
-    # logging is kind of gross, looks like
-    # [{"ttl"=>0.1648766446e10, "user_id"=>"611", "issued_at"=>0.1648680046e10}, {...
-    client.put_item(
-      table_name: ENV['blocked_users_table'],
-      item: {
-        user_id: "localhost-studio.code.org#userId##{uid}",
-        request_log: response.items.to_s
-      }
-    )
-    # deny / return?
-  end
-
-  # 5) see if too many requests by user's teachers in past hour. add teacher to blocked table if so.
-
-  verified_teachers = token_payload['verified_teachers']
-  allow = false
-  verified_teachers.split(',').each do |teacher_id|
-    response = client.query(
-      table_name: ENV['teacher_associated_requests_table'],
-      key_condition_expression: "section_owner_id = :teacher_id AND issued_at > :one_hour_ago",
-      expression_attribute_values: {
-        ":teacher_id" => "localhost-studio.code.org##{teacher_id}",
-        ":one_hour_ago" => one_hour_ago
-      }
-    )
-    # iterate if response.last_evaluated_key
-
-    # check that response.count is less than limit
-    # if its under limit for at least one class, we allow
-    if true
-      allow = true
-      # quit looping?
-    end
-  end
-
-  unless allow
-    client.put_item(
-      table_name: ENV['blocked_users_table'],
-      item: {
-        user_id: "localhost-studio.code.org#sectionOwner##{uid}",
-        request_log: response.items.to_s
-      }
-    )
-    # return?
-  end
-
-  # 6) if user and associated teachers not blocked, log this request to user and teacher tables.
-  client.put_item(
-    table_name: ENV['user_requests_table'],
-    item: {
-      user_id: "localhost-studio.code.org##{uid}",
-      issued_at: Time.now.to_i,
-      ttl: Time.now.to_i + (24 * 60 * 60)
-    }
-  )
-
-  verified_teachers.split(',').each do |teacher_id|
-    client.put_item(
-      table_name: ENV['teacher_associated_requests_table'],
-      item: {
-        section_owner_id: "localhost-studio.code.org##{teacher_id}",
-        issued_at: Time.now.to_i,
-        ttl: Time.now.to_i + (2 * 60 * 60)
-      }
-    )
-  end
-
-  # 7) if all checks pass, mark token as vetted and return
-  client.update_item(
-    table_name: ENV['token_status_table'],
-    key: {token_id: sid},
-    update_expression: 'SET vetted = :v',
-    expression_attribute_values: {':v': true}
-  )
+  puts TokenStatus::ALREADY_EXISTS unless validator.log_token
+  puts TokenStatus::USER_BLOCKED if validator.user_blocked?
+  puts TokenStatus::TEACHERS_BLOCKED if validator.teachers_blocked?
+  puts TokenStatus::USER_OVER_HOURLY_LIMIT if validator.user_over_hourly_limit?
+  puts TokenStatus::USER_OVER_DAILY_LIMIT if validator.user_over_daily_limit?
+  puts TokenStatus::TEACHERS_OVER_HOURLY_LIMIT if validator.teachers_over_hourly_limit?
+  validator.log_token
+  validator.mark_token_as_vetted
 
   TokenStatus::VALID_HTTP
 end
