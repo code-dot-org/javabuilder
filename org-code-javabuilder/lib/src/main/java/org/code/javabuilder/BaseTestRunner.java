@@ -29,12 +29,12 @@ public class BaseTestRunner implements CodeRunner {
       List<JavaProjectFile> files,
       JavabuilderTestExecutionListener listener,
       OutputAdapter outputAdapter,
-      StatusMessageKey statusMessageKey,
       boolean isValidation) {
     this.files = files;
     this.listener = listener;
     this.outputAdapter = outputAdapter;
-    this.statusMessageKey = statusMessageKey;
+    this.statusMessageKey =
+        isValidation ? StatusMessageKey.RUNNING_VALIDATION : StatusMessageKey.RUNNING_PROJECT_TESTS;
     this.isValidation = isValidation;
   }
 
