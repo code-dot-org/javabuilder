@@ -48,12 +48,21 @@ public class PerformanceTracker {
     PerformanceTracker.instance = new PerformanceTracker();
   }
 
-  public void trackStartup(
-      Instant coldBootStart, Instant coldBootEnd, Instant instanceStart, boolean firstInstance) {
+  public void trackColdBoot(Instant coldBootStart, Instant coldBootEnd, Instant instanceStart) {
     logs.put(COLD_BOOT_START, coldBootStart.toEpochMilli());
     logs.put(COLD_BOOT_END, coldBootEnd.toEpochMilli());
     logs.put(INSTANCE_START, instanceStart.toEpochMilli());
-    logs.put(FIRST_INSTANCE, firstInstance);
+    logs.put(FIRST_INSTANCE, true);
+  }
+
+  /**
+   * Unlike the other tracking methods, we take an input here because we want to track the very
+   * first moment when the lambda starts without waiting for other logic to run. Therefore, we take
+   * a snapshot of the Instant at the very beginning of any setup logic, and then set up the
+   * Performance tracker, and then we log that snapshot of the Instant.
+   */
+  public void trackInstanceStart(Instant instanceStart) {
+    logs.put(INSTANCE_START, instanceStart.toEpochMilli());
   }
 
   public void trackCompileStart() {

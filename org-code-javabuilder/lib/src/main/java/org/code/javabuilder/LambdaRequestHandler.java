@@ -37,7 +37,7 @@ import org.json.JSONObject;
 public class LambdaRequestHandler implements RequestHandler<Map<String, String>, String> {
   private static final Instant COLD_BOOT_START = Clock.systemUTC().instant();
   private final Instant COLD_BOOT_END;
-  private static boolean firstInstance = true;
+  private static boolean coldBoot = true;
   private static final int CHECK_THREAD_INTERVAL_MS = 500;
   private static final int TIMEOUT_WARNING_MS = 20000;
   private static final int TIMEOUT_CLEANUP_BUFFER_MS = 5000;
@@ -108,9 +108,12 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     Properties.setConnectionId(connectionId);
 
     PerformanceTracker.resetTracker();
-    PerformanceTracker.getInstance()
-        .trackStartup(COLD_BOOT_START, COLD_BOOT_END, instanceStart, firstInstance);
-    firstInstance = false;
+    if (coldBoot) {
+      PerformanceTracker.getInstance().trackColdBoot(COLD_BOOT_START, COLD_BOOT_END, instanceStart);
+      coldBoot = false;
+    } else {
+      PerformanceTracker.getInstance().trackInstanceStart(instanceStart);
+    }
 
     // Dashboard assets are only accessible if the dashboard domain is not localhost
     Properties.setCanAccessDashboardAssets(!dashboardHostname.equals(DASHBOARD_LOCALHOST_DOMAIN));
