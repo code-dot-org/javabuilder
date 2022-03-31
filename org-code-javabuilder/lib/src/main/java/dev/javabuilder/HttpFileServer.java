@@ -25,6 +25,9 @@ import org.code.javabuilder.ProjectData;
     name = "FileServlet",
     urlPatterns = {"/" + DIRECTORY + "/*"})
 public class HttpFileServer extends HttpServlet {
+  public HttpFileServer() {
+    System.out.println(System.getProperty("java.io.tmpdir"));
+  }
   /**
    * Returns the file requested by the client. Listens at http://localhost:8080/files/<filename>.
    */

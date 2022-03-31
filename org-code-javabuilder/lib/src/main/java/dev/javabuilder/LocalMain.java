@@ -41,8 +41,7 @@ public class LocalMain {
             null,
             new LocalTempDirectoryManager(),
             localContentManager,
-            new LifecycleNotifier(),
-            new PerformanceTracker());
+            new LifecycleNotifier());
     codeExecutionManager.execute();
   }
 }

@@ -107,8 +107,9 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     logger.setUseParentHandlers(false);
     Properties.setConnectionId(connectionId);
 
-    final PerformanceTracker performanceTracker = new PerformanceTracker();
-    performanceTracker.trackStartup(COLD_BOOT_START, COLD_BOOT_END, instanceStart, firstInstance);
+    PerformanceTracker.resetTracker();
+    PerformanceTracker.getInstance()
+        .trackStartup(COLD_BOOT_START, COLD_BOOT_END, instanceStart, firstInstance);
     firstInstance = false;
 
     // Dashboard assets are only accessible if the dashboard domain is not localhost
@@ -160,8 +161,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
             compileList,
             tempDirectoryManager,
             contentManager,
-            lifecycleNotifier,
-            performanceTracker);
+            lifecycleNotifier);
 
     final Thread timeoutNotifierThread =
         createTimeoutThread(context, outputAdapter, codeExecutionManager, connectionId, API_CLIENT);
@@ -177,8 +177,8 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     } finally {
       // Stop timeout listener and clean up
       timeoutNotifierThread.interrupt();
-      performanceTracker.trackInstanceEnd();
-      performanceTracker.logPerformance();
+      PerformanceTracker.getInstance().trackInstanceEnd();
+      PerformanceTracker.getInstance().logPerformance();
       cleanUpResources(connectionId, API_CLIENT);
       File f = Paths.get(System.getProperty("java.io.tmpdir")).toFile();
       if ((double) f.getUsableSpace() / f.getTotalSpace() < 0.5) {
