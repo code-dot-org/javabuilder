@@ -34,6 +34,7 @@ def get_token_status(context, token_payload)
   sid = token_payload['sid']
   client = Aws::DynamoDB::Client.new(region: get_region(context))
 
+  # 1) put token once decoded. return if already exists.
   begin
     ttl = Time.now.to_i + TOKEN_RECORD_TTL_SECONDS
     client.put_item(
@@ -50,47 +51,71 @@ def get_token_status(context, token_payload)
     return TokenStatus::VALID_HTTP
   end
 
-  # add logic to block if blocked user or all verified teachers are blocked
-
-  one_hour_ago = Time.now.to_i - 3600
-  # update user id to have domain in it
+  # return true if ThrottlingHelper.log_token()
+  # return true if ThrottlingHelper.user_blocked?()
+  # return true if ThrottlingHelper.teachers_blocked?()
+  # if ThrottlingHelper.user_over_hourly_limit?()
+  #   ThrottlingHelper.block_user
+  #   return true
+  # end
+  # if ThrottlingHelper.teachers_over_hourly_limit()?
+  #   ThrottlingHelper.block_teachers
+  #   return true
+  # end
+  # 2) check if user is blocked.
   uid = token_payload['uid']
+  response = client.get_item(
+    table_name: ENV['blocked_users_table'],
+    key: {user_id: "localhost-studio.code.org#userId##{uid}"}
+  )
+
+  puts 'found blocked record!' if response.item
+
+  # 3) check if all verified teachers blocked.
+  verified_teachers = token_payload['verified_teachers']
+  allow = false
+  verified_teachers.split(',').each do |teacher_id|
+    response = client.get_item(
+      table_name: ENV['blocked_users_table'],
+      key: {user_id: "localhost-studio.code.org#sectionOwnerId##{uid}"}
+    )
+    allow = true unless response.item
+  end
+
+  puts 'all teachers blocked!' unless allow
+
+  # 4) see if too many requests by user in past hour. add to blocked table if so.
+  # also check daily limit?
+  # update user id to have domain in it
+  one_hour_ago = Time.now.to_i - 3600
   response = client.query(
     table_name: ENV['user_requests_table'],
     key_condition_expression: "user_id = :uid AND issued_at > :one_hour_ago",
     expression_attribute_values: {
-      ":uid" => uid.to_s,
+      ":uid" => "localhost-studio.code.org##{uid}",
       ":one_hour_ago" => one_hour_ago
     }
   )
   # I think you'd never need to paginate, because you'd be throttled
+  # I guess this might not be true in the 24 hour case where we're not throttling
   # iterate if response.last_evaluated_key?
 
-  # also check daily limit?
-
+  # update with actual limit value
   puts "per-user count: #{response.count}"
-  # if response.count > 1000000
-  if true
+  if response.count > 1000000
     # logging is kind of gross, looks like
     # [{"ttl"=>0.1648766446e10, "user_id"=>"611", "issued_at"=>0.1648680046e10}, {...
     client.put_item(
       table_name: ENV['blocked_users_table'],
       item: {
-        user_id: uid.to_s,
-        log: response.items.to_s
+        user_id: "localhost-studio.code.org#userId##{uid}",
+        request_log: response.items.to_s
       }
     )
     # deny / return?
   end
 
-  client.put_item(
-    table_name: ENV['user_requests_table'],
-    item: {
-      user_id: uid.to_s,
-      issued_at: Time.now.to_i,
-      ttl: Time.now.to_i + (24 * 60 * 60)
-    }
-  )
+  # 5) see if too many requests by user's teachers in past hour. add teacher to blocked table if so.
 
   verified_teachers = token_payload['verified_teachers']
   allow = false
@@ -99,7 +124,7 @@ def get_token_status(context, token_payload)
       table_name: ENV['teacher_associated_requests_table'],
       key_condition_expression: "section_owner_id = :teacher_id AND issued_at > :one_hour_ago",
       expression_attribute_values: {
-        ":teacher_id" => teacher_id,
+        ":teacher_id" => "localhost-studio.code.org##{teacher_id}",
         ":one_hour_ago" => one_hour_ago
       }
     )
@@ -113,30 +138,39 @@ def get_token_status(context, token_payload)
     end
   end
 
+  unless allow
+    client.put_item(
+      table_name: ENV['blocked_users_table'],
+      item: {
+        user_id: "localhost-studio.code.org#sectionOwner##{uid}",
+        request_log: response.items.to_s
+      }
+    )
+    # return?
+  end
+
+  # 6) if user and associated teachers not blocked, log this request to user and teacher tables.
+  client.put_item(
+    table_name: ENV['user_requests_table'],
+    item: {
+      user_id: "localhost-studio.code.org##{uid}",
+      issued_at: Time.now.to_i,
+      ttl: Time.now.to_i + (24 * 60 * 60)
+    }
+  )
+
   verified_teachers.split(',').each do |teacher_id|
     client.put_item(
       table_name: ENV['teacher_associated_requests_table'],
       item: {
-        section_owner_id: teacher_id,
+        section_owner_id: "localhost-studio.code.org##{teacher_id}",
         issued_at: Time.now.to_i,
         ttl: Time.now.to_i + (2 * 60 * 60)
       }
     )
   end
 
-  unless allow
-    client.put_item(
-      table_name: ENV['blocked_users_table'],
-      item: {
-        user_id: "localhost-studio.code.org#sectionOwner##{uid}",
-        log: response.items.to_s
-      }
-    )
-    # return?
-  end
-
-  # Placeholder for when we'll actually vet each token
-  # to confirm that it should not be throttled.
+  # 7) if all checks pass, mark token as vetted and return
   client.update_item(
     table_name: ENV['token_status_table'],
     key: {token_id: sid},
