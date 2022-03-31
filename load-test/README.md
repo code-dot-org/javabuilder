@@ -5,7 +5,10 @@ This folder contains scripts and helpers for load testing.
 - [Install Docker](https://docs.docker.com/get-docker/)
 
 ## How to run
+### Local Setup
+Note: this will not work once throttling in enabled.
 - Ensure docker is running. This usually entails opening Docker Desktop.
-- From a local code studio, run a Java Lab project and copy over the authorization token.
+- On localhost code studio, increase the token timeout to the length of time you want to run your test.
+  Then run a Java Lab project and copy over the authorization token to the `authToken` parameter in `hello-world-load-test.js`.
 - From this folder, run `docker build -t load-testing .`
 - Run `docker run load-testing`
