@@ -59,13 +59,14 @@ const uploadParams = {
   },
 };
 
-const privateKey = __ENV.AUTH_KEY;
+const privateKey = __ENV.PRIVATE_KEY;
+const privateKeyPassword = __ENV.PRIVATE_KEY_PASSWORD;
 
 export default function () {
-  if (privateKey != null) {
-    console.log("found private key!");
+  if (privateKey != null && privateKeyPassword != null) {
+    console.log("found private key and password!");
   } else {
-    console.log("did not find private key!");
+    console.log("did not find private key or password!");
   }
   const authToken = "placeholder";
   const uploadResult = http.put(uploadUrl + authToken, helloWorld, uploadParams);
