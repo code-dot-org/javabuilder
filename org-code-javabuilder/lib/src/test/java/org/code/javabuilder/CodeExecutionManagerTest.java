@@ -56,6 +56,7 @@ class CodeExecutionManagerTest {
             tempDirectoryManager,
             lifecycleNotifier,
             contentManager,
+            mock(SystemExitHelper.class),
             codeBuilderRunnableFactory);
   }
 
