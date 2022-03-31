@@ -1,9 +1,6 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: The template used to create the required services for load testing
 Parameters:
-  StackName:
-    Type: String
-    Description: Specifies the stack name to use when naming resources.
   LoadTestImage:
     Type: String
     Description: Load testing docker image. This should be the full name of the image.
@@ -14,7 +11,7 @@ Resources:
       CapacityProviders:
         - FARGATE
         - FARGATE_SPOT
-      ClusterName: !Sub "${StackName}-cluster"
+      ClusterName: !Sub "${AWS::StackName}-cluster"
       ClusterSettings:
         - Name: containerInsights
           Value: disabled
@@ -26,6 +23,7 @@ Resources:
           Value: "load-test"
     ECSTaskDefinition:
       Type: AWS::ECS::TaskDefinition
+      Name: !Sub "${AWS::StackName}-task"
       Properties: 
         ContainerDefinitions: 
           - Name: javabuilder-load-test
