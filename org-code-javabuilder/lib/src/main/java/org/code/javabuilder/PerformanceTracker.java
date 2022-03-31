@@ -21,12 +21,16 @@ public class PerformanceTracker {
   private static final String FIRST_INSTANCE = "firstInstance";
   private static final String COLD_BOOT_START = "coldBootStart";
   private static final String COLD_BOOT_END = "coldBootEnd";
+  private static final String COLD_BOOT_TIME = "coldBootTime";
   private static final String INSTANCE_START = "instanceStart";
-  private static final String COMPILE_START = "compileStart";
+  private static final String COMPILE_START = "compileStart";;
+  private static final String INITIALIZATION_TIME = "initializationTime";
   private static final String COMPILE_END = "compileEnd";
   private static final String USER_CODE_START = "userCodeStart";
+  private static final String TRANSITION_TIME = "transitionTime";
   private static final String USER_CODE_END = "userCodeEnd";
   private static final String INSTANCE_END = "instanceEnd";
+  private static final String CLEANUP_TIME = "cleanupTime";
   private static final String TYPE = "performanceReport";
   private final JSONObject logs;
   private static PerformanceTracker instance;
@@ -87,6 +91,22 @@ public class PerformanceTracker {
 
   public void logPerformance() {
     logs.put(LoggerConstants.TYPE, TYPE);
+    if (!logs.isNull(COLD_BOOT_START) && !logs.isNull(COLD_BOOT_END)) {
+      logs.put(COLD_BOOT_TIME, logs.getLong(COLD_BOOT_END) - logs.getLong(COLD_BOOT_START));
+    }
+
+    if (!logs.isNull(COMPILE_START) && !logs.isNull(INSTANCE_START)) {
+      logs.put(INITIALIZATION_TIME, logs.getLong(COMPILE_START) - logs.getLong(INSTANCE_START));
+    }
+
+    if (!logs.isNull(COMPILE_END) && !logs.isNull(USER_CODE_START)) {
+      logs.put(TRANSITION_TIME, logs.getLong(USER_CODE_START) - logs.getLong(COMPILE_END));
+    }
+
+    if (!logs.isNull(USER_CODE_END) && !logs.isNull(INSTANCE_END)) {
+      logs.put(CLEANUP_TIME, logs.getLong(INSTANCE_END) - logs.getLong(USER_CODE_END));
+    }
+
     Logger.getLogger(MAIN_LOGGER).info(logs.toString());
     PerformanceTracker.instance = null;
   }
