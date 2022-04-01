@@ -8,7 +8,9 @@ import {
   uploadParams,
   uploadUrl,
   websocketParams,
-  url
+  url,
+  LONG_REQUEST_MS,
+  EXTRA_LONG_REQUEST_MS
 } from "./configuration.js";
 
 export const options = basicTestOptions;
@@ -54,10 +56,10 @@ function onSocketConnect(socket, startTime) {
   socket.on("close", () => {
     const time = Date.now() - startTime;
     connectToCloseTime.add(time);
-    if (time > 5000) {
+    if (time > LONG_REQUEST_MS) {
       longWebsocketSessions.add(1);
     }
-    if (time > 10000) {
+    if (time > EXTRA_LONG_REQUEST_MS) {
       extraLongWebsocketSessions.add(1);
     }
     sleep(15);
