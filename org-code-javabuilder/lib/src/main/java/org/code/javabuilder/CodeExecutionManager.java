@@ -112,11 +112,11 @@ public class CodeExecutionManager {
         runnable.run();
       } catch (Throwable e) {
         // Catch any throwable here to ensure that onPostExecute() is always called
-        LoggerUtils.logException(e);
+        LoggerUtils.logSevereException(e);
       }
       this.onPostExecute();
     } catch (InternalServerError e) {
-      LoggerUtils.logError(e);
+      LoggerUtils.logSevereError(e);
     }
   }
 
@@ -134,7 +134,7 @@ public class CodeExecutionManager {
     try {
       this.onPostExecute();
     } catch (InternalServerError e) {
-      LoggerUtils.logError(e);
+      LoggerUtils.logSevereError(e);
     }
   }
 
@@ -188,7 +188,7 @@ public class CodeExecutionManager {
       // If there was an issue clearing the temp directory, this may be because too many files are
       // open. Force the JVM to quit in order to release the resources for the next use of the
       // container. Temporarily logging the exception for investigation purposes.
-      LoggerUtils.logException(e);
+      LoggerUtils.logTrackingException(e);
       this.systemExitHelper.exit(TEMP_DIRECTORY_CLEANUP_ERROR_CODE);
     } finally {
       // Replace System in/out with original System in/out and destroy Global Protocol

@@ -182,7 +182,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     } catch (Throwable e) {
       // All errors should be caught, but if for any reason we encounter an error here, make sure we
       // catch it, log, and always clean up resources
-      LoggerUtils.logException(e);
+      LoggerUtils.logSevereException(e);
     } finally {
       // Stop timeout listener and clean up
       timeoutNotifierThread.interrupt();
@@ -207,7 +207,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
       OutputAdapter outputAdapter,
       String connectionId) {
     // Log the error
-    LoggerUtils.logError(error);
+    LoggerUtils.logSevereError(error);
 
     // This affected the user. Let's tell them about it.
     outputAdapter.sendMessage(error.getExceptionMessage());
