@@ -4,4 +4,4 @@ COPY ./scripts /scripts
 WORKDIR /scripts
 # Override the entry point of the base k6 image
 ENTRYPOINT []
-CMD ["sh", "-c", "k6 run $SCRIPT --include-system-env-vars"]
+CMD ["sh", "-c", "k6 run $SCRIPT"]

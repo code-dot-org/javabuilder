@@ -12,6 +12,7 @@ import {
   LONG_REQUEST_MS,
   EXTRA_LONG_REQUEST_MS
 } from "./configuration.js";
+import generateToken from "./generateToken.js";
 
 export const options = basicTestOptions;
 
@@ -27,7 +28,8 @@ const longWebsocketSessions = new Counter("long_websocket_sessions");
 const extraLongWebsocketSessions = new Counter("extra_long_websocket_sessions");
 
 export default function () {
-  const authToken = "placeholder";
+  const authToken = generateToken("console");
+  console.log(authToken);
   const uploadResult = http.put(
     uploadUrl + authToken,
     helloWorld,
