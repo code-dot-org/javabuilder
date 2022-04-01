@@ -2,14 +2,14 @@ module JwtHelper
   # Verify the token with the appropriate public key (dependant on the
   # environment the request came from), and checks the token has not
   # expired and its issue time is not in the future.
-  def decode_token(token, origin)
+  def decode_token(token, standardized_origin)
     return false unless token
     begin
       return JWT.decode(
         token,
         # Temporarily choose the key based on the client origin rather than the
         # resource until we have environment-specific Javabuilders set up.
-        get_public_key(origin),
+        get_public_key(standardized_origin),
         true,
         verify_iat: true, # verify issued at time is valid
         algorithm: 'RS256'
@@ -63,24 +63,24 @@ module JwtHelper
   # arn:aws:execute-api:region:account-id:api-id/stage-name/$connect
   # We only care about stage--that tells us the environment (development, staging, etc.)
   # def get_public_key(route_arn)
-  def get_public_key(origin)
+  def get_public_key(standardized_origin)
     # Temporarily choose the key based on the client origin rather than the
     # route_arn until we have environment-specific Javabuilders set up.
     # tmp = route_arn.split(':')
     # api_gateway_arn = tmp[5].split('/')
     # stage_name = api_gateway_arn[1]
     stage_name = ""
-    if origin == "localhost-studio.code.org"
+    if standardized_origin == "localhost-studio.code.org"
       stage_name = "development"
-    elsif origin == "staging-studio.code.org"
+    elsif standardized_origin == "staging-studio.code.org"
       stage_name = "staging"
-    elsif origin == "levelbuilder-studio.code.org"
+    elsif standardized_origin == "levelbuilder-studio.code.org"
       stage_name = "levelbuilder"
-    elsif origin == "test-studio.code.org"
+    elsif standardized_origin == "test-studio.code.org"
       stage_name = "test"
-    elsif origin == "studio.code.org"
+    elsif standardized_origin == "studio.code.org"
       stage_name = "production"
-    elsif origin.start_with?("adhoc-") && origin.end_with?("-studio.cdn-code.org")
+    elsif standardized_origin.start_with?("adhoc-") && standardized_origin.end_with?("-studio.cdn-code.org")
       stage_name = "adhoc"
     end
     # End of temporary code
