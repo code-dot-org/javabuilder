@@ -251,6 +251,10 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
         });
   }
 
+  /**
+   * Note: This can sometimes be called twice when a user's project times out. Make sure anything
+   * added here can be run more than once without negative effect.
+   */
   private void cleanUpResources(String connectionId, AmazonApiGatewayManagementApi api) {
     final DeleteConnectionRequest deleteConnectionRequest =
         new DeleteConnectionRequest().withConnectionId(connectionId);
