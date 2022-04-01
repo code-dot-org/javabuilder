@@ -36,11 +36,11 @@ public class PerformanceTracker {
   private static PerformanceTracker instance;
 
   private PerformanceTracker() {
-    logs = new JSONObject();
+    this.logs = new JSONObject();
   }
 
   public static PerformanceTracker getInstance() {
-    if (PerformanceTracker.instance == null || PerformanceTracker.instance.logs == null) {
+    if (PerformanceTracker.instance == null) {
       PerformanceTracker.instance = new PerformanceTracker();
     }
 
