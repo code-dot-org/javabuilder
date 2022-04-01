@@ -197,7 +197,7 @@ public class UserCodeCompiler {
     } catch (IOException e) {
       // If we had an issue reading the code, log the error and return an empty String
       // so we still can get a somewhat useful compiler error.
-      LoggerUtils.logException(e);
+      LoggerUtils.logSevereException(e);
       return "";
     }
     String linePointer = "";

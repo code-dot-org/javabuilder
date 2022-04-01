@@ -87,7 +87,7 @@ public class WebSocketServer {
       contentManager = new LocalContentManager();
     } catch (InternalServerError e) {
       // Log the error
-      LoggerUtils.logError(e);
+      LoggerUtils.logSevereError(e);
 
       // This affected the user. Let's tell them about it.
       outputAdapter.sendMessage(e.getExceptionMessage());
