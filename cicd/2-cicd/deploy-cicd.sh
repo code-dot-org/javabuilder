@@ -22,7 +22,7 @@ echo Updating cloudformation stack...
 aws cloudformation deploy \
   --stack-name $STACK_NAME \
   --template-file $TEMPLATE_FILE \
-  --parameter-overrides GitHubBranch=main \
+  --parameter-overrides GitHubBranch=main GitHubBadgeEnabled=false \
   --capabilities CAPABILITY_IAM \
   "$@"
 
