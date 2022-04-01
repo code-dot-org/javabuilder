@@ -25,26 +25,24 @@ def lambda_handler(event:, context:)
   return JwtHelper.generate_deny(route_arn) unless decoded_token
 
   token_payload = decoded_token[0]
-  token_status = get_token_status(context, token_payload, standardized_origin)
+  region = get_region(context)
+  token_status = get_token_status(token_payload, standardized_origin, region)
   return JwtHelper.generate_deny(route_arn) unless token_status == TokenStatus::VALID_HTTP
 
   JwtHelper.generate_allow(route_arn, token_payload)
 end
 
-def get_token_status(context, token_payload, origin)
-  region = get_region(context)
+def get_token_status(token_payload, origin, region)
   validator = TokenValidator.new(token_payload, origin, region)
 
-  puts TokenStatus::ALREADY_EXISTS unless validator.log_token
-  puts TokenStatus::USER_BLOCKED if validator.user_blocked?
-  puts TokenStatus::TEACHERS_BLOCKED if validator.teachers_blocked?
-  puts TokenStatus::USER_OVER_HOURLY_LIMIT if validator.user_over_hourly_limit?
-  puts TokenStatus::USER_OVER_DAILY_LIMIT if validator.user_over_daily_limit?
-  puts TokenStatus::TEACHERS_OVER_HOURLY_LIMIT if validator.teachers_over_hourly_limit?
+  return validator.error_message unless validator.log_token
+  return validator.error_message if validator.user_blocked?
+  return validator.error_message if validator.teachers_blocked?
+  return validator.error_message if validator.user_over_hourly_limit?
+  return validator.error_message if validator.user_over_daily_limit?
+  return validator.error_message if validator.teachers_over_hourly_limit?
   validator.log_requests
-  validator.mark_token_as_vetted
-
-  TokenStatus::VALID_HTTP
+  return validator.mark_token_as_vetted
 end
 
 # ARN is of the format arn:aws:lambda:{region}:{account_id}:function:{lambda_name}

@@ -4,8 +4,10 @@ class TokenValidator
   ONE_HOUR_SECONDS = 60 * 60
   ONE_DAY_SECONDS = 24 * 60 * 60
   TOKEN_RECORD_TTL_SECONDS = 120 # 2 minutes
-  USER_REQUEST_RECORD_TTL_SECONDS = 24 * 60 * 60 # One day
-  TEACHER_ASSOCIATED_REQUEST_TTL_SECONDS = 2 * 60 * 60 # 2 hours
+  USER_REQUEST_RECORD_TTL_SECONDS = ONE_DAY_SECONDS
+  # TO DO: update this value to two hours once we've evaluated a classroom-level
+  # throttling threshold.
+  TEACHER_ASSOCIATED_REQUEST_TTL_SECONDS = 14 * ONE_DAY_SECONDS
 
   def initialize(payload, origin, region)
     @token_id = payload['sid']
@@ -28,7 +30,7 @@ class TokenValidator
         condition_expression: 'attribute_not_exists(token_id)'
       )
     rescue Aws::DynamoDB::Errors::ConditionalCheckFailedException
-      puts "TOKEN VALIDATION ERROR: #{TokenStatus::ALREADY_EXISTS} token_id: #{@token_id}"
+      @status = TokenStatus::ALREADY_EXISTS
       return false
     end
 
@@ -41,21 +43,29 @@ class TokenValidator
       key: {user_id: blocked_users_user_id}
     )
 
-    !!response.item
+    blocked = !!response.item
+    @status = TokenStatus::USER_BLOCKED if blocked
+    blocked
   end
 
-  # update vs craete
   def teachers_blocked?
-    deny = true
+    blocked = true
     @verified_teachers.split(',').each do |teacher_id|
       response = @client.get_item(
         table_name: ENV['blocked_users_table'],
         key: {user_id: blocked_users_section_owner_id(teacher_id)}
       )
-      deny = false unless response.item
+
+      # As long as at least one teacher is not blocked,
+      # we allow the request through.
+      unless response.item
+        blocked = false
+        break
+      end
     end
 
-    deny
+    @status = TokenStatus::TEACHERS_BLOCKED if blocked
+    blocked
   end
 
   def user_over_hourly_limit?
@@ -74,9 +84,9 @@ class TokenValidator
     )
   end
 
-  # update instead of creat??
   def teachers_over_hourly_limit?
-    deny = true
+    over_limit = true
+
     @verified_teachers.split(',').each do |teacher_id|
       response = @client.query(
         table_name: ENV['teacher_associated_requests_table'],
@@ -86,11 +96,14 @@ class TokenValidator
           ":one_hour_ago" => Time.now.to_i - ONE_HOUR_SECONDS
         }
       )
-      # iterate if response.last_evaluated_key
+      # See user_over_limit? method for notes on pagination
+      if response.last_evaluated_key
+        puts "teacher_associated_requests query has paginated responses. user_id #{@user_id} teacher_id #{teacher_id}"
+      end
 
-      # check that response.count is less than limit
-      # if its under limit for at least one class, we allow
-      if response.count > 1
+      # TO DO: set actual limit value
+      # Setting arbitrary super high value temporarily.
+      if response.count > 1_000_000
         begin
           @client.put_item(
             table_name: ENV['blocked_users_table'],
@@ -102,13 +115,19 @@ class TokenValidator
             condition_expression: 'attribute_not_exists(user_id)'
           )
         rescue Aws::DynamoDB::Errors::ConditionalCheckFailedException
+          # Do nothing if this teacher has already been added to blocked table
+          # (possible if throttling limit was reached by a user on another lambda simultaneously)
         end
       else
-        deny = false
+        # As long as at least one teacher is under the throttling limit,
+        # we allow the request through.
+        over_limit = false
+        break
       end
     end
 
-    deny
+    @status = TokenStatus::TEACHERS_OVER_HOURLY_LIMIT if over_limit
+    over_limit
   end
 
   def log_requests
@@ -140,6 +159,14 @@ class TokenValidator
       update_expression: 'SET vetted = :v',
       expression_attribute_values: {':v': true}
     )
+    @status = TokenStatus::VALID_HTTP
+  end
+
+  # TO DO: return actual error status instead of valid HTTP
+  # when we actually want to throttle.
+  def error_message
+    "TOKEN VALIDATION ERROR: #{@status} user_id: #{@user_id} verified_teachers: #{@verified_teachers} token_id: #{@token_id}"
+    TokenStatus::VALID_HTTP
   end
 
   private
@@ -153,13 +180,22 @@ class TokenValidator
         ":past_time" => Time.now.to_i - time_range_seconds
       }
     )
+    # DynamoDB query will only read through 1 MB of data before paginating.
+    # Our records should be relatively small (roughly 100 bytes, based on AWS docs),
+    # so I think we'd need 10K records to hit paginated responses.
+    # Once we're actually throttling, I don't think we'd get paginated responses
+    # because you'd be throttled before reaching that limit.
+    # Logging in the short term if this happens, so we can get a sense if it occurs.
+    # TO DO: remove this, or handle paginated responses
+    # https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#query-instance_method
+    # https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/CapacityUnitCalculations.html
+    if response.last_evaluated_key
+      puts "user_requests query has paginated responses. user_id #{@user_id}"
+    end
 
-    # I think you'd never need to paginate, because you'd be throttled
-    # I guess this might not be true in the 24 hour case where we're not throttling
-    # iterate if response.last_evaluated_key?
-    deny = response.count > limit
-    if deny
-      # logging is kind of gross, looks like
+    over_limit = response.count > limit
+    if over_limit
+      # logging could be improved,
       # [{"ttl"=>0.1648766446e10, "user_id"=>"611", "issued_at"=>0.1648680046e10}, {...
       begin
         @client.put_item(
@@ -172,10 +208,13 @@ class TokenValidator
           condition_expression: 'attribute_not_exists(user_id)'
         )
       rescue Aws::DynamoDB::Errors::ConditionalCheckFailedException
+        # Do nothing if this user has already been added to blocked table
+        # (possible if throttling limit was reached by the same user executing code on another lambda simultaneously)
       end
     end
 
-    deny
+    @status = logging_message if over_limit
+    over_limit
   end
 
   def blocked_users_section_owner_id(teacher_id)
