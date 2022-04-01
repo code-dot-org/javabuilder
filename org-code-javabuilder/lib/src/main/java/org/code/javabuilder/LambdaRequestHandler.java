@@ -211,7 +211,8 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
 
     // This affected the user. Let's tell them about it.
     outputAdapter.sendMessage(error.getExceptionMessage());
-
+    PerformanceTracker.getInstance().trackInstanceEnd();
+    PerformanceTracker.getInstance().logPerformance();
     cleanUpResources(connectionId, API_CLIENT);
     return errorMessage;
   }
