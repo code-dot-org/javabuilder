@@ -29,8 +29,7 @@ class TokenValidator
       )
     rescue Aws::DynamoDB::Errors::ConditionalCheckFailedException
       puts "TOKEN VALIDATION ERROR: #{TokenStatus::ALREADY_EXISTS} token_id: #{@token_id}"
-      # return false
-      return true
+      return false
     end
 
     true
@@ -47,78 +46,32 @@ class TokenValidator
 
   # update vs craete
   def teachers_blocked?
-    block = true
+    deny = true
     @verified_teachers.split(',').each do |teacher_id|
       response = @client.get_item(
         table_name: ENV['blocked_users_table'],
         key: {user_id: blocked_users_section_owner_id(teacher_id)}
       )
-      block = false unless response.item
+      deny = false unless response.item
     end
 
-    block
+    deny
   end
 
   def user_over_hourly_limit?
-    # also check daily limit?
-    response = @client.query(
-      table_name: ENV['user_requests_table'],
-      key_condition_expression: "user_id = :user_id AND issued_at > :one_hour_ago",
-      expression_attribute_values: {
-        ":user_id" => "#{@origin}##{@user_id}",
-        ":one_hour_ago" => Time.now.to_i - ONE_HOUR_SECONDS
-      }
+    user_over_limit?(
+      ONE_HOUR_SECONDS,
+      ENV['limit_per_hour'].to_i,
+      TokenStatus::USER_OVER_HOURLY_LIMIT
     )
-
-    # I think you'd never need to paginate, because you'd be throttled
-    # I guess this might not be true in the 24 hour case where we're not throttling
-    # iterate if response.last_evaluated_key?
-    deny = response.count > ENV['limit_per_hour'].to_i
-    if deny
-      # logging is kind of gross, looks like
-      # [{"ttl"=>0.1648766446e10, "user_id"=>"611", "issued_at"=>0.1648680046e10}, {...
-      @client.put_item(
-        table_name: ENV['blocked_users_table'],
-        item: {
-          user_id: blocked_users_user_id,
-          request_log: response.items.to_s,
-          reason: TokenStatus::USER_OVER_HOURLY_LIMIT
-        }
-      )
-      # deny / return?
-    end
-
-    deny
   end
 
   def user_over_daily_limit?
-    response = @client.query(
-      table_name: ENV['user_requests_table'],
-      key_condition_expression: "user_id = :user_id AND issued_at > :one_day_ago",
-      expression_attribute_values: {
-        ":user_id" => "#{@origin}##{@user_id}",
-        ":one_day_ago" => Time.now.to_i - ONE_DAY_SECONDS
-      }
+    user_over_limit?(
+      ONE_DAY_SECONDS,
+      ENV['limit_per_day'].to_i,
+      TokenStatus::USER_OVER_DAILY_LIMIT
     )
-
-    # I think you'd never need to paginate, because you'd be throttled
-    # I guess this might not be true in the 24 hour case where we're not throttling
-    # iterate if response.last_evaluated_key?
-    deny = response.count > ENV['limit_per_day'].to_i
-    if deny
-      # logging is kind of gross, looks like
-      # [{"ttl"=>0.1648766446e10, "user_id"=>"611", "issued_at"=>0.1648680046e10}, {...
-      @client.put_item(
-        table_name: ENV['blocked_users_table'],
-        item: {
-          user_id: blocked_users_user_id,
-          request_log: response.items.to_s,
-          reason: TokenStatus::USER_OVER_DAILY_LIMIT
-        }
-      )
-    end
-
-    deny
   end
 
   # update instead of creat??
@@ -138,14 +91,18 @@ class TokenValidator
       # check that response.count is less than limit
       # if its under limit for at least one class, we allow
       if response.count > 1
-        @client.put_item(
-          table_name: ENV['blocked_users_table'],
-          item: {
-            user_id: blocked_users_section_owner_id(teacher_id),
-            request_log: response.items.to_s,
-            reason: TokenStatus::TEACHERS_OVER_HOURLY_LIMIT
-          }
-        )
+        begin
+          @client.put_item(
+            table_name: ENV['blocked_users_table'],
+            item: {
+              user_id: blocked_users_section_owner_id(teacher_id),
+              request_log: response.items.to_s,
+              reason: TokenStatus::TEACHERS_OVER_HOURLY_LIMIT
+            },
+            condition_expression: 'attribute_not_exists(user_id)'
+          )
+        rescue Aws::DynamoDB::Errors::ConditionalCheckFailedException
+        end
       else
         deny = false
       end
@@ -165,10 +122,10 @@ class TokenValidator
     )
 
     @verified_teachers.split(',').each do |teacher_id|
-      client.put_item(
+      @client.put_item(
         table_name: ENV['teacher_associated_requests_table'],
         item: {
-          section_owner_id: "#{origin}##{teacher_id}",
+          section_owner_id: "#{@origin}##{teacher_id}",
           issued_at: Time.now.to_i,
           ttl: Time.now.to_i + TEACHER_ASSOCIATED_REQUEST_TTL_SECONDS
         }
@@ -186,6 +143,40 @@ class TokenValidator
   end
 
   private
+
+  def user_over_limit?(time_range_seconds, limit, logging_message)
+    response = @client.query(
+      table_name: ENV['user_requests_table'],
+      key_condition_expression: "user_id = :user_id AND issued_at > :past_time",
+      expression_attribute_values: {
+        ":user_id" => "#{@origin}##{@user_id}",
+        ":past_time" => Time.now.to_i - time_range_seconds
+      }
+    )
+
+    # I think you'd never need to paginate, because you'd be throttled
+    # I guess this might not be true in the 24 hour case where we're not throttling
+    # iterate if response.last_evaluated_key?
+    deny = response.count > limit
+    if deny
+      # logging is kind of gross, looks like
+      # [{"ttl"=>0.1648766446e10, "user_id"=>"611", "issued_at"=>0.1648680046e10}, {...
+      begin
+        @client.put_item(
+          table_name: ENV['blocked_users_table'],
+          item: {
+            user_id: blocked_users_user_id,
+            request_log: response.items.to_s,
+            reason: logging_message
+          },
+          condition_expression: 'attribute_not_exists(user_id)'
+        )
+      rescue Aws::DynamoDB::Errors::ConditionalCheckFailedException
+      end
+    end
+
+    deny
+  end
 
   def blocked_users_section_owner_id(teacher_id)
     "#{@origin}#sectionOwnerId##{teacher_id}"
