@@ -48,5 +48,9 @@ export const uploadParams = {
 };
 
 // These will be used for generating the JWT token
-export const privateKey = __ENV.PRIVATE_KEY;
-export const privateKeyPassword = __ENV.PRIVATE_KEY_PASSWORD;
+export const PRIVATE_KEY = __ENV.PRIVATE_KEY;
+export const PRIVATE_KEY_PASSWORD = __ENV.PRIVATE_KEY_PASSWORD;
+
+// Thresholds for metrics
+export const LONG_REQUEST_MS = 5000;
+export const EXTRA_LONG_REQUEST_MS = 10000;
