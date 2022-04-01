@@ -41,7 +41,7 @@ def get_token_status(context, token_payload, origin)
   puts TokenStatus::USER_OVER_HOURLY_LIMIT if validator.user_over_hourly_limit?
   puts TokenStatus::USER_OVER_DAILY_LIMIT if validator.user_over_daily_limit?
   puts TokenStatus::TEACHERS_OVER_HOURLY_LIMIT if validator.teachers_over_hourly_limit?
-  validator.log_token
+  validator.log_requests
   validator.mark_token_as_vetted
 
   TokenStatus::VALID_HTTP
