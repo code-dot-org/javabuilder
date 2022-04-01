@@ -21,7 +21,7 @@ Resources:
         Statement:
           - Action: ['sts:AssumeRole']
             Effect: Allow
-            Principal: {Service: [codebuild.amazonaws.com]}
+            Principal: {Service: [codebuild.amazonaws.com, codepipeline.amazonaws.com]}
         Version: '2012-10-17'
       Path: /service-role/
       PermissionsBoundary: !ImportValue IAM-DevPermissions
@@ -45,10 +45,14 @@ Resources:
               - Effect: Allow
                 Action:
                   - s3:PutObject
+                  - s3:PutObjectAcl
                   - s3:GetObject
                   - s3:GetObjectVersion
                 Resource:
                   - !Sub arn:aws:s3:::${ArtifactStore}/*
+              - Effect: Allow
+                Action: codestar-connections:UseConnection
+                Resource: arn:aws:codestar-connections:us-east-1:165336972514:connection/40d49145-7aeb-412e-a46d-a5a6cab79662
 
 Outputs:
   JavabuilderCodeBuildArtifactBucket:

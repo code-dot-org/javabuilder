@@ -15,7 +15,12 @@ Parameters:
     Type: String
     Description: The branch that these resources test and deploy. Not necessarily `main`.
     Default: main
-    
+  GitHubBadgeEnabled:
+    Type: String
+    Description: Whether to report back to github the status of build projects
+    Default: true
+    AllowedValues: [true, false]
+
 Resources:
 
   # The Elastic Container Registry Repository will store our built docker
@@ -44,13 +49,13 @@ Resources:
               - "ecr:CompleteLayerUpload"
 
   # The CodeBuild Project is triggered by pull requests targeting $GitHubBranch
-  # It will perform any steps defined in the buildspec.yml file.
+  # It will perform any steps defined in the pr-buildspec.yml file.
   PullRequestBuildProject:
     Type: AWS::CodeBuild::Project
     Properties:
       Name: !Sub ${AWS::StackName}-${GitHubBranch}-pr-build
       ServiceRole: !ImportValue JavabuilderCodeBuildRoleArn
-      BadgeEnabled: true
+      BadgeEnabled: !Ref GitHubBadgeEnabled
       Environment:
         Type: LINUX_CONTAINER
         ComputeType: BUILD_GENERAL1_SMALL
@@ -69,7 +74,7 @@ Resources:
       Source:
         Type: GITHUB
         Location: !Sub https://github.com/${GitHubOwner}/${GitHubRepo}.git
-        BuildSpec: cicd/3-app/buildspec.yml
+        BuildSpec: cicd/3-app/pr-buildspec.yml
         ReportBuildStatus: true
       SourceVersion: !Ref GitHubBranch
       Artifacts:
@@ -82,6 +87,29 @@ Resources:
               Type: BASE_REF
             - Pattern: PULL_REQUEST_CREATED,PULL_REQUEST_UPDATED,PULL_REQUEST_REOPENED
               Type: EVENT
+  
+  # The CodeBuild Project is used in the CodePipeline pipeline to prepare for a release.
+  # It will perform any steps defined in the buildspec.yml file.
+  PipelineBuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Sub ${AWS::StackName}-pipeline-build
+      ServiceRole: !ImportValue JavabuilderCodeBuildRoleArn
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/amazonlinux2-x86_64-standard:3.0
+        PrivilegedMode: true
+        EnvironmentVariables:
+          - Name: ARTIFACT_STORE
+            Value: !ImportValue JavabuilderCodeBuildArtifactBucket
+          - Name: ECR_REPOSITORY
+            Value: !GetAtt EcrRepository.RepositoryUri
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: cicd/3-app/buildspec.yml
+      Artifacts:
+        Type: CODEPIPELINE
 
   # Grant the Javabuilder CodeBuild Role additional permissions for resources in
   # this template. This allows us to avoid granting permission to * resources.
@@ -94,6 +122,11 @@ Resources:
         Statement:
           - Effect: Allow
             Action:
+              - codebuild:*
+            Resource:
+              - !GetAtt PipelineBuildProject.Arn
+          - Effect: Allow
+            Action:
               - codebuild:CreateReportGroup
               - codebuild:CreateReport
               - codebuild:UpdateReport
@@ -103,3 +136,43 @@ Resources:
               - !Sub arn:aws:codebuild:us-east-1:165336972514:report-group/${AWS::StackName}-${GitHubBranch}-pr-build
       Roles:
         - !ImportValue JavabuilderCodeBuildRoleName
+
+  Pipeline:
+    Type: AWS::CodePipeline::Pipeline
+    Properties: 
+      Name: !Ref AWS::StackName
+      RoleArn: !ImportValue JavabuilderCodeBuildRoleArn
+      RestartExecutionOnUpdate: true
+      ArtifactStore: 
+        Type: S3 
+        Location: !ImportValue JavabuilderCodeBuildArtifactBucket
+      Stages: 
+        - Name: Source
+          Actions:
+          - Name: Source
+            ActionTypeId:
+              Category: Source
+              Provider: CodeStarSourceConnection
+              Owner: AWS
+              Version: 1
+            OutputArtifacts:
+              - Name: sourceCode
+            Configuration:
+              ConnectionArn: arn:aws:codestar-connections:us-east-1:165336972514:connection/40d49145-7aeb-412e-a46d-a5a6cab79662
+              FullRepositoryId: !Sub ${GitHubOwner}/${GitHubRepo}
+              BranchName: create-codepipeline
+              # OAuthToken: '{{resolve:secrets-manager:DeployCodeOrg-GitHub-OAuthToken}}'
+        - Name: Build
+          Actions:
+          - Name: Build
+            ActionTypeId:
+              Category: Build
+              Owner: AWS
+              Provider: CodeBuild
+              Version: 1
+            InputArtifacts:
+              - Name: sourceCode
+            Configuration:
+              ProjectName: !Ref PipelineBuildProject
+            OutputArtifacts:
+              - Name: buildResults
