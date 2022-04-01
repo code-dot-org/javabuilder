@@ -1,11 +1,14 @@
 package dev.javabuilder;
 
+import org.code.javabuilder.PerformanceTracker;
 import org.code.javabuilder.SystemExitHelper;
 
 public class LocalSystemExitHelper implements SystemExitHelper {
 
   @Override
   public void exit(int status) {
-    // Currently nothing to clean up; no-op
+    PerformanceTracker.getInstance().trackInstanceEnd();
+    PerformanceTracker.getInstance().logPerformance();
+    System.exit(status);
   }
 }
