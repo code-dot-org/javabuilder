@@ -165,7 +165,7 @@ class TokenValidator
   # TO DO: return actual error status instead of valid HTTP
   # when we actually want to throttle.
   def error_message
-    "TOKEN VALIDATION ERROR: #{@status} user_id: #{@user_id} verified_teachers: #{@verified_teachers} token_id: #{@token_id}"
+    puts "TOKEN VALIDATION ERROR: #{@status} user_id: #{@user_id} verified_teachers: #{@verified_teachers} token_id: #{@token_id}"
     TokenStatus::VALID_HTTP
   end
 
