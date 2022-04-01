@@ -10,7 +10,6 @@ Resources:
     Properties:
       CapacityProviders:
         - FARGATE
-        - FARGATE_SPOT
       ClusterName: !Sub "${AWS::StackName}-cluster"
       ClusterSettings:
         - Name: containerInsights
@@ -18,9 +17,6 @@ Resources:
       Configuration:
         ExecuteCommandConfiguration:
           Logging: DEFAULT
-      Tags:
-        - Key: "javabuilder-mode"
-          Value: "load-test"
   CloudwatchLogsGroup:
     Type: AWS::Logs::LogGroup
     Properties:
@@ -54,9 +50,6 @@ Resources:
       NetworkMode: awsvpc
       RuntimePlatform: 
         OperatingSystemFamily: LINUX
-      Tags: 
-        - Key: "javabuilder-mode"
-          Value: "load-test"
   ExecutionRole:
     Type: AWS::IAM::Role
     Properties:
@@ -82,6 +75,3 @@ Resources:
                 Action:
                   - 'secretsmanager:GetSecretValue'
                 Resource: 'arn:aws:secretsmanager:us-east-1:475661607190:secret:production/cdo/javabuilder_load_test_key_password-MFH2XA'
-      Tags: 
-        - Key: "javabuilder-mode"
-          Value: "load-test"
