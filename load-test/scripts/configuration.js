@@ -1,21 +1,21 @@
 export const basicTestOptions = {
   scenarios: {
     // ramp up to 5 VUs over 30 seconds
-    // rampUp: {
-    //   executor: "ramping-vus",
-    //   startVUs: 0,
-    //   stages: [
-    //     {duration: '30s', target: 5}
-    //   ]
-    // },
+    rampUp: {
+      executor: "ramping-vus",
+      startVUs: 0,
+      stages: [
+        {duration: '30s', target: 5}
+      ]
+    },
     // have 5 VUs do 3 iterations each, up to a max of 2 minutes. Start this after
     // the ramp up time.
     highLoad: {
       executor: "per-vu-iterations",
-      vus: 1,
-      iterations: 1,
+      vus: 5,
+      iterations: 3,
       maxDuration: "2m",
-      //startTime: '30s',
+      startTime: '30s',
     }
   },
   thresholds: {

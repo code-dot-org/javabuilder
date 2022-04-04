@@ -1,4 +1,4 @@
-FROM grafana/k6
+FROM loadimpact/k6
 ENV SCRIPT hello-world-load-test.js
 COPY ./scripts /scripts
 WORKDIR /scripts
