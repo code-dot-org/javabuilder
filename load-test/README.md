@@ -8,7 +8,8 @@ This folder contains scripts and helpers for load testing.
 ### Run Locally
 - Ensure docker is running. This usually entails opening Docker Desktop.
 - Generate a random password for your session. Copy this password to [configuration.js](scripts/configuration.js#L50)
-  and [jwt_helper.rb](../javabuilder-authorizer/jwt_helper.rb#L3). Also update [jwt_helper.rb](../javabuilder-authorizer/jwt_helper.rb#L2) with `IS_LOAD_TEST = true`. Do not commit or merge this password. If you do, immediately change your deploy of Javabuilder to no longer use it.
+  and [jwt_helper.rb](../javabuilder-authorizer/jwt_helper.rb#L3). Also update [jwt_helper.rb](../javabuilder-authorizer/jwt_helper.rb#L2) 
+  with `IS_LOAD_TEST = true`. Do not commit or merge this password. If you do, immediately change your deploy of Javabuilder to no longer use it.
 - Deploy an instance of Javabuilder with your changes.
 - From this folder, run `docker build -t load-testing .` (You can use any name you would like in place of `load-testing`)
 - Run `docker run load-testing`
