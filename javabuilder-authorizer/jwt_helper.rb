@@ -9,7 +9,7 @@ module JwtHelper
     begin
       if IS_LOAD_TEST
         puts "in load test"
-        # load tests use a simpler authentication scheme  
+        # load tests use a simpler authentication algorithm  
         return JWT.decode(
           token,
           LOAD_TEST_KEY,
