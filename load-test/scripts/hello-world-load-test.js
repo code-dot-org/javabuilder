@@ -29,7 +29,6 @@ const extraLongWebsocketSessions = new Counter("extra_long_websocket_sessions");
 
 export default function () {
   const authToken = generateToken("console");
-  console.log(authToken);
   const uploadResult = http.put(
     uploadUrl + authToken,
     helloWorld,

@@ -1,6 +1,6 @@
 module JwtHelper
   IS_LOAD_TEST = false
-  LOAD_TEST_KEY = "placeholder"
+  LOAD_TEST_KEY = nil
   # Verify the token with the appropriate public key (dependant on the
   # environment the request came from), and checks the token has not
   # expired and its issue time is not in the future.
