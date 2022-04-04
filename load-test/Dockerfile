@@ -1,5 +1,5 @@
 FROM loadimpact/k6
-ENV SCRIPT hello-world-load-test.js
+ENV SCRIPT loadTest.js
 COPY ./scripts /scripts
 WORKDIR /scripts
 # Override the entry point of the base k6 image
