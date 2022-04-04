@@ -92,7 +92,13 @@ public class JavaRunner {
         new UserClassLoader(
             classLoaderUrls, JavaRunner.class.getClassLoader(), classNames, permissionLevel);
 
-    boolean runResult = runner.run(urlClassLoader);
+    boolean runResult;
+    PerformanceTracker.getInstance().trackUserCodeStart();
+    try {
+      runResult = runner.run(urlClassLoader);
+    } finally {
+      PerformanceTracker.getInstance().trackUserCodeEnd();
+    }
 
     try {
       urlClassLoader.close();

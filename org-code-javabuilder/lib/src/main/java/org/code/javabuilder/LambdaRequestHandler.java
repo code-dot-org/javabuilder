@@ -19,6 +19,8 @@ import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.time.Clock;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -34,7 +36,9 @@ import org.json.JSONObject;
  * https://github.com/awsdocs/aws-lambda-developer-guide/tree/main/sample-apps/blank-java
  */
 public class LambdaRequestHandler implements RequestHandler<Map<String, String>, String> {
-
+  private static final Instant COLD_BOOT_START = Clock.systemUTC().instant();
+  private final Instant COLD_BOOT_END;
+  private static boolean coldBoot = true;
   private static final int CHECK_THREAD_INTERVAL_MS = 500;
   private static final int TIMEOUT_WARNING_MS = 20000;
   private static final int TIMEOUT_CLEANUP_BUFFER_MS = 5000;
@@ -61,6 +65,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     // This will only be called once in the initial creation of the lambda instance.
     // Documentation: https://docs.aws.amazon.com/lambda/latest/dg/java-handler.html
     CachedResources.create();
+    COLD_BOOT_END = Clock.systemUTC().instant();
   }
 
   /**
@@ -75,6 +80,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
    */
   @Override
   public String handleRequest(Map<String, String> lambdaInput, Context context) {
+    final Instant instanceStart = Clock.systemUTC().instant();
     // The lambda handler should have minimal application logic:
     // https://docs.aws.amazon.com/lambda/latest/dg/best-practices.html
     final String connectionId = lambdaInput.get("connectionId");
@@ -83,7 +89,6 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     final String levelId = lambdaInput.get("levelId");
     final String channelId =
         lambdaInput.get("channelId") == null ? "noneProvided" : lambdaInput.get("channelId");
-    final String miniAppType = lambdaInput.get("miniAppType");
     final ExecutionType executionType = ExecutionType.valueOf(lambdaInput.get("executionType"));
     final String dashboardHostname = lambdaInput.get("iss");
     final JSONObject options = new JSONObject(lambdaInput.get("options"));
@@ -98,11 +103,19 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
             connectionId,
             levelId,
             LambdaRequestHandler.LAMBDA_ID,
-            channelId,
-            miniAppType));
+            channelId));
     // turn off the default console logger
     logger.setUseParentHandlers(false);
     Properties.setConnectionId(connectionId);
+
+    PerformanceTracker.resetTracker();
+    if (coldBoot) {
+      PerformanceTracker.getInstance().trackColdBoot(COLD_BOOT_START, COLD_BOOT_END, instanceStart);
+      coldBoot = false;
+    } else {
+      PerformanceTracker.getInstance().trackInstanceStart(instanceStart);
+    }
+
     // Dashboard assets are only accessible if the dashboard domain is not localhost
     Properties.setCanAccessDashboardAssets(!dashboardHostname.equals(DASHBOARD_LOCALHOST_DOMAIN));
 
@@ -169,10 +182,12 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     } catch (Throwable e) {
       // All errors should be caught, but if for any reason we encounter an error here, make sure we
       // catch it, log, and always clean up resources
-      LoggerUtils.logException(e);
+      LoggerUtils.logSevereException(e);
     } finally {
       // Stop timeout listener and clean up
       timeoutNotifierThread.interrupt();
+      PerformanceTracker.getInstance().trackInstanceEnd();
+      PerformanceTracker.getInstance().logPerformance();
       cleanUpResources(connectionId, API_CLIENT);
       File f = Paths.get(System.getProperty("java.io.tmpdir")).toFile();
       if ((double) f.getUsableSpace() / f.getTotalSpace() < 0.5) {
@@ -192,11 +207,12 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
       OutputAdapter outputAdapter,
       String connectionId) {
     // Log the error
-    LoggerUtils.logError(error);
+    LoggerUtils.logSevereError(error);
 
     // This affected the user. Let's tell them about it.
     outputAdapter.sendMessage(error.getExceptionMessage());
-
+    PerformanceTracker.getInstance().trackInstanceEnd();
+    PerformanceTracker.getInstance().logPerformance();
     cleanUpResources(connectionId, API_CLIENT);
     return errorMessage;
   }
@@ -235,6 +251,10 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
         });
   }
 
+  /**
+   * Note: This can sometimes be called twice when a user's project times out. Make sure anything
+   * added here can be run more than once without negative effect.
+   */
   private void cleanUpResources(String connectionId, AmazonApiGatewayManagementApi api) {
     final DeleteConnectionRequest deleteConnectionRequest =
         new DeleteConnectionRequest().withConnectionId(connectionId);

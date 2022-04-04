@@ -19,6 +19,8 @@ public class AWSSystemExitHelper implements SystemExitHelper {
 
   @Override
   public void exit(int status) {
+    PerformanceTracker.getInstance().trackInstanceEnd();
+    PerformanceTracker.getInstance().logPerformance();
     this.cleanUpResources();
     System.exit(status);
   }
