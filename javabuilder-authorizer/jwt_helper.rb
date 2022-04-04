@@ -8,7 +8,6 @@ module JwtHelper
     return false unless token
     begin
       if IS_LOAD_TEST
-        puts "in load test"
         # load tests use a simpler authentication algorithm  
         return JWT.decode(
           token,
