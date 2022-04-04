@@ -18,6 +18,31 @@ Parameters:
     
 Resources:
 
+  # The Elastic Container Registry Repository will store our built docker
+  # images, for example, the load-test docker image.
+  EcrRepository:
+    Type: AWS::ECR::Repository
+    Properties: 
+      RepositoryName: !Sub javabuilder-${GitHubBranch}
+      RepositoryPolicyText:
+        Version: "2012-10-17"
+        Statement: 
+          - 
+            Sid: AllowDeveloperPushPull
+            Effect: Allow
+            Principal: 
+              AWS: 
+                - !ImportValue JavabuilderCodeBuildRoleArn
+                - "arn:aws:iam::475661607190:role/admin/Developer"
+            Action: 
+              - "ecr:GetDownloadUrlForLayer"
+              - "ecr:BatchGetImage"
+              - "ecr:BatchCheckLayerAvailability"
+              - "ecr:PutImage"
+              - "ecr:InitiateLayerUpload"
+              - "ecr:UploadLayerPart"
+              - "ecr:CompleteLayerUpload"
+
   # The CodeBuild Project is triggered by pull requests targeting $GitHubBranch
   # It will perform any steps defined in the buildspec.yml file.
   PullRequestBuildProject:
@@ -34,6 +59,8 @@ Resources:
         EnvironmentVariables:
           - Name: ARTIFACT_STORE
             Value: !ImportValue JavabuilderCodeBuildArtifactBucket
+          - Name: ECR_REPOSITORY
+            Value: !GetAtt EcrRepository.RepositoryUri
       Cache:
         Type: LOCAL
         Modes:
