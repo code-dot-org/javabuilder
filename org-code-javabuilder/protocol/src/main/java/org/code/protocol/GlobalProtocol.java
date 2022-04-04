@@ -1,7 +1,10 @@
 package org.code.protocol;
 
+import static org.code.protocol.LoggerNames.MAIN_LOGGER;
+
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Logger;
 
 /**
  * This sets up the protocols that are used across jars in Javabuilder. It allows the input and
@@ -37,9 +40,8 @@ public class GlobalProtocol {
       LifecycleNotifier lifecycleNotifier,
       ContentManager contentManager) {
     if (GlobalProtocol.protocolInstance != null) {
-      throw new InternalServerRuntimeError(
-          InternalErrorKey.INTERNAL_EXCEPTION,
-          new Exception("Tried to create GlobalProtocol instance when one already exists."));
+      Logger.getLogger(MAIN_LOGGER)
+          .warning("Tried to create GlobalProtocol instance when one already exists.");
     }
     GlobalProtocol.protocolInstance =
         new GlobalProtocol(
@@ -56,9 +58,8 @@ public class GlobalProtocol {
 
   public static void destroy() {
     if (GlobalProtocol.protocolInstance == null) {
-      throw new InternalServerRuntimeError(
-          InternalErrorKey.INTERNAL_EXCEPTION,
-          new Exception("Tried to destroy GlobalProtocol instance when one does not exist."));
+      Logger.getLogger(MAIN_LOGGER)
+          .warning("Tried to destroy GlobalProtocol instance when one does not exist.");
     }
 
     GlobalProtocol.protocolInstance = null;
