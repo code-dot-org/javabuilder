@@ -1,5 +1,7 @@
 package org.code.javabuilder;
 
+import static org.code.javabuilder.DashboardConstants.DASHBOARD_DOMAIN_SUFFIX;
+
 import com.amazonaws.AbortedException;
 import com.amazonaws.HttpMethod;
 import com.amazonaws.SdkClientException;
@@ -17,6 +19,7 @@ import java.util.Date;
 import org.code.protocol.ContentManager;
 import org.code.protocol.InternalErrorKey;
 import org.code.protocol.JavabuilderException;
+import org.code.protocol.Properties;
 import org.json.JSONException;
 
 public class AWSContentManager implements ContentManager {
@@ -35,6 +38,7 @@ public class AWSContentManager implements ContentManager {
   private final String contentBucketUrl;
   private final Context context;
   private final ProjectData projectData;
+  private final AssetFileStubber assetFileStubber;
   private int writes;
   private int uploads;
 
@@ -51,6 +55,7 @@ public class AWSContentManager implements ContentManager {
     this.contentBucketUrl = contentBucketUrl;
     this.context = context;
     this.projectData = this.loadProjectData();
+    this.assetFileStubber = new AssetFileStubber();
     this.writes = 0;
     this.uploads = 0;
   }
@@ -61,13 +66,15 @@ public class AWSContentManager implements ContentManager {
       String javabuilderSessionId,
       String contentBucketUrl,
       Context context,
-      ProjectData projectData) {
+      ProjectData projectData,
+      AssetFileStubber assetFileStubber) {
     this.bucketName = bucketName;
     this.s3Client = s3Client;
     this.javabuilderSessionId = javabuilderSessionId;
     this.contentBucketUrl = contentBucketUrl;
     this.context = context;
     this.projectData = projectData;
+    this.assetFileStubber = assetFileStubber;
     this.writes = 0;
     this.uploads = 0;
   }
@@ -78,7 +85,20 @@ public class AWSContentManager implements ContentManager {
 
   @Override
   public String getAssetUrl(String filename) {
-    return this.projectData.getAssetUrl(filename);
+    final String url = this.projectData.getAssetUrl(filename);
+    if (url == null) {
+      return null;
+    }
+
+    // If this asset file refers to a Dashboard URL, and Javabuilder cannot access Dashboard for
+    // assets or running an integration test, Javabuilder won't be able access this file. Use a
+    // stubbed file URL instead.
+    if (this.isUrlFromDashboard(url)
+        && (!Properties.canAccessDashboardAssets() || Properties.isIntegrationTest())) {
+      return this.assetFileStubber.getStubAssetUrl(filename);
+    }
+
+    return url;
   }
 
   @Override
@@ -150,6 +170,10 @@ public class AWSContentManager implements ContentManager {
    */
   private String generateKey(String filename) {
     return this.javabuilderSessionId + "/" + filename;
+  }
+
+  private boolean isUrlFromDashboard(String url) {
+    return url.contains(DASHBOARD_DOMAIN_SUFFIX);
   }
 
   private ProjectData loadProjectData() throws InternalServerError {

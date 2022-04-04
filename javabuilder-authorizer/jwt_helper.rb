@@ -33,8 +33,7 @@ module JwtHelper
     end
   end
 
-  def generate_allow(resource, decoded_token)
-    token_payload = decoded_token[0]
+  def generate_allow(resource, token_payload)
     user_id = token_payload['uid']
     issuer = token_payload['iss']
     principal_id = "#{issuer}/#{user_id}"
