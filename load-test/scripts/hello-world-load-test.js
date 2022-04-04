@@ -4,17 +4,18 @@ import { check, sleep } from "k6";
 import { Counter, Trend } from "k6/metrics";
 import { helloWorld } from "./sources.js";
 import {
-  basicTestOptions,
-  uploadParams,
-  uploadUrl,
-  websocketParams,
-  url,
   LONG_REQUEST_MS,
-  EXTRA_LONG_REQUEST_MS
+  EXTRA_LONG_REQUEST_MS,
+  BASIC_TEST_OPTIONS,
+  MiniAppType,
+  UPLOAD_URL,
+  UPLOAD_PARAMS,
+  WEBSOCKET_URL,
+  WEBSOCKET_PARAMS
 } from "./configuration.js";
 import generateToken from "./generateToken.js";
 
-export const options = basicTestOptions;
+export const options = BASIC_TEST_OPTIONS;
 
 const exceptionCounter = new Counter("exceptions");
 const errorCounter = new Counter("errors");
@@ -28,13 +29,13 @@ const longWebsocketSessions = new Counter("long_websocket_sessions");
 const extraLongWebsocketSessions = new Counter("extra_long_websocket_sessions");
 
 export default function () {
-  const authToken = generateToken("console");
+  const authToken = generateToken(MiniAppType.CONSOLE);
   const uploadResult = http.put(
-    uploadUrl + authToken,
+    UPLOAD_URL + authToken,
     helloWorld,
-    uploadParams
+    UPLOAD_PARAMS
   );
-  const res = ws.connect(url + authToken, websocketParams, (socket) =>
+  const res = ws.connect(WEBSOCKET_URL + authToken, WEBSOCKET_PARAMS, (socket) =>
     onSocketConnect(socket, Date.now())
   );
 

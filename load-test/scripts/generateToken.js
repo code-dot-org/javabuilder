@@ -22,8 +22,7 @@ export default function generateToken(miniAppType) {
     options: "{}",
     sid: uuidv4()
   };
-  let token = encode(payload);
-  return token;
+  return encodeAsJWT(payload);
 }
 
 // Generate a JWT using the HS256 algorithm, which relies on a shared secret
@@ -32,7 +31,7 @@ export default function generateToken(miniAppType) {
 // so we need to generate the token ourselves using k6's crypto package.
 // Logic is modified from: https://gist.github.com/robingustafsson/7dd6463d85efdddbb0e4bcd3ecc706e1
 // JWT details: https://jwt.io/introduction
-function encode(payload) {
+function encodeAsJWT(payload) {
     let algorithm = "HS256";
     let header = encoding.b64encode(JSON.stringify({ typ: "JWT", alg: algorithm }), "rawurl");
     let payloadEncoded = encoding.b64encode(JSON.stringify(payload), "rawurl");
