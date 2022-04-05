@@ -1,6 +1,6 @@
 // TODO: Update to a load testing instance of Javabuilder
-export const UPLOAD_URL = `https://javabuilder-molly-http.dev-code.org/seedsources/sources.json?Authorization=`;
-export const WEBSOCKET_URL = `wss://javabuilder-molly.dev-code.org?Authorization=`;
+export const UPLOAD_URL = `https://javabuilder-load-test-http.dev-code.org/seedsources/sources.json?Authorization=`;
+export const WEBSOCKET_URL = `wss://javabuilder-load-test.dev-code.org?Authorization=`;
 const origin = "load-test";
   
 export const WEBSOCKET_PARAMS = {
@@ -52,7 +52,7 @@ export function getTestOptions(maxUserGoal, rampUpTimeMinutes, highLoadTimeMinut
         vus: maxConcurrentUsers,
         iterations: 3 * highLoadTimeMinutes, // this is iterations per virtual user
         maxDuration: `${highLoadTimeMinutes + 1}m`,
-        startTime: `${rampUpTimeMinutes}m`,
+        startTime: `${rampUpTimeMinutes + 1}m`,
       }
     },
     thresholds: {
