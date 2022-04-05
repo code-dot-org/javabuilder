@@ -89,11 +89,34 @@ Resources:
               Type: EVENT
   
   # The CodeBuild Project is used in the CodePipeline pipeline to prepare for a release.
-  # It will perform any steps defined in the buildspec.yml file.
-  PipelineBuildProject:
+  # It will perform any steps defined in the referenced buildspec.yml file.
+  LoadTestBuildProject:
     Type: AWS::CodeBuild::Project
     Properties:
-      Name: !Sub ${AWS::StackName}-pipeline-build
+      Name: !Sub ${AWS::StackName}-load-test-build
+      ServiceRole: !ImportValue JavabuilderCodeBuildRoleArn
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/amazonlinux2-x86_64-standard:3.0
+        PrivilegedMode: true
+        EnvironmentVariables:
+          - Name: ARTIFACT_STORE
+            Value: !ImportValue JavabuilderCodeBuildArtifactBucket
+          - Name: ECR_REPOSITORY
+            Value: !GetAtt EcrRepository.RepositoryUri
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: cicd/3-app/load-test/load-test.buildspec.yml
+      Artifacts:
+        Type: CODEPIPELINE
+  
+  # The CodeBuild Project is used in the CodePipeline pipeline to prepare for a release.
+  # It will perform any steps defined in the referenced buildspec.yml file.
+  AppBuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Sub ${AWS::StackName}-load-test-build
       ServiceRole: !ImportValue JavabuilderCodeBuildRoleArn
       Environment:
         Type: LINUX_CONTAINER
@@ -149,30 +172,46 @@ Resources:
       Stages: 
         - Name: Source
           Actions:
-          - Name: Source
-            ActionTypeId:
-              Category: Source
-              Provider: CodeStarSourceConnection
-              Owner: AWS
-              Version: 1
-            OutputArtifacts:
-              - Name: sourceCode
-            Configuration:
-              ConnectionArn: arn:aws:codestar-connections:us-east-1:165336972514:connection/40d49145-7aeb-412e-a46d-a5a6cab79662
-              FullRepositoryId: !Sub ${GitHubOwner}/${GitHubRepo}
-              BranchName: create-codepipeline
-              # OAuthToken: '{{resolve:secrets-manager:DeployCodeOrg-GitHub-OAuthToken}}'
+            - Name: Source
+              ActionTypeId:
+                Category: Source
+                Provider: CodeStarSourceConnection
+                Owner: AWS
+                Version: 1
+              OutputArtifacts:
+                - Name: sourceCode
+              Configuration:
+                ConnectionArn: arn:aws:codestar-connections:us-east-1:165336972514:connection/40d49145-7aeb-412e-a46d-a5a6cab79662
+                FullRepositoryId: !Sub ${GitHubOwner}/${GitHubRepo}
+                BranchName: create-codepipeline
+                # OAuthToken: '{{resolve:secrets-manager:DeployCodeOrg-GitHub-OAuthToken}}'
         - Name: Build
           Actions:
-          - Name: Build
-            ActionTypeId:
-              Category: Build
-              Owner: AWS
-              Provider: CodeBuild
-              Version: 1
-            InputArtifacts:
-              - Name: sourceCode
-            Configuration:
-              ProjectName: !Ref PipelineBuildProject
-            OutputArtifacts:
-              - Name: buildResults
+            - Name: Load Test Build
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: 1
+              InputArtifacts:
+                - Name: sourceCode
+              Configuration:
+                ProjectName: !Ref LoadTestBuildProject
+              OutputArtifacts:
+                - Name: loadTestBuildResults
+            - Name: App Build
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: 1
+              InputArtifacts:
+                - Name: sourceCode
+              Configuration:
+                ProjectName: !Ref AppBuildProject
+              OutputArtifacts:
+                - Name: appBuildResults
+        # - Name: Deploy Test
+        #   Actions:
+        #     - Name: Deploy Load Test
+
