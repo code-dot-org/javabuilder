@@ -1,0 +1,18 @@
+version: 0.2
+phases:
+  install:
+    runtime-versions:
+      ruby: 2.7
+      java: corretto11
+      python: 3.8
+    commands:
+      - gem install bundler
+      - pip install cfn-lint
+  build:
+    commands:
+      - set -e
+      - pwd
+      - ls
+      - echo Hello from buildspec
+      - cfn-lint cicd/3-app/load-test/load-test.template.yml
+      - echo done with buildspec!
