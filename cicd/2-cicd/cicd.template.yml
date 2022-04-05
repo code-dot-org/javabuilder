@@ -147,7 +147,8 @@ Resources:
             Action:
               - codebuild:*
             Resource:
-              - !GetAtt PipelineBuildProject.Arn
+              - !GetAtt LoadTestBuildProject.Arn
+              - !GetAtt AppBuildProject.Arn
           - Effect: Allow
             Action:
               - codebuild:CreateReportGroup
