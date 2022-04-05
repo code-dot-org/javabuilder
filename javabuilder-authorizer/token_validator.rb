@@ -1,6 +1,8 @@
 require_relative 'token_status'
 
 class TokenValidator
+  include TokenStatus
+
   ONE_HOUR_SECONDS = 60 * 60
   ONE_DAY_SECONDS = 24 * 60 * 60
   TOKEN_RECORD_TTL_SECONDS = 120 # 2 minutes
@@ -18,6 +20,20 @@ class TokenValidator
     @client = Aws::DynamoDB::Client.new(region: region)
   end
 
+  def validate
+    return error(ALREADY_EXISTS) unless log_token
+    return error(USER_BLOCKED) if user_blocked?
+    return error(TEACHERS_BLOCKED) if teachers_blocked?
+    return error(USER_OVER_HOURLY_LIMIT) if user_over_hourly_limit?
+    return error(USER_OVER_DAILY_LIMIT) if user_over_daily_limit?
+    return error(TEACHERS_OVER_HOURLY_LIMIT) if teachers_over_hourly_limit?
+    log_requests
+    mark_token_as_vetted
+    VALID_HTTP
+  end
+
+  private
+
   def log_token
     begin
       ttl = Time.now.to_i + TOKEN_RECORD_TTL_SECONDS
@@ -30,7 +46,6 @@ class TokenValidator
         condition_expression: 'attribute_not_exists(token_id)'
       )
     rescue Aws::DynamoDB::Errors::ConditionalCheckFailedException
-      @status = TokenStatus::ALREADY_EXISTS
       return false
     end
 
@@ -43,9 +58,7 @@ class TokenValidator
       key: {user_id: blocked_users_user_id}
     )
 
-    blocked = !!response.item
-    @status = TokenStatus::USER_BLOCKED if blocked
-    blocked
+    !!response.item
   end
 
   def teachers_blocked?
@@ -64,7 +77,6 @@ class TokenValidator
       end
     end
 
-    @status = TokenStatus::TEACHERS_BLOCKED if blocked
     blocked
   end
 
@@ -72,7 +84,7 @@ class TokenValidator
     user_over_limit?(
       ONE_HOUR_SECONDS,
       ENV['limit_per_hour'].to_i,
-      TokenStatus::USER_OVER_HOURLY_LIMIT
+      USER_OVER_HOURLY_LIMIT
     )
   end
 
@@ -80,7 +92,7 @@ class TokenValidator
     user_over_limit?(
       ONE_DAY_SECONDS,
       ENV['limit_per_day'].to_i,
-      TokenStatus::USER_OVER_DAILY_LIMIT
+      USER_OVER_DAILY_LIMIT
     )
   end
 
@@ -110,7 +122,7 @@ class TokenValidator
             item: {
               user_id: blocked_users_section_owner_id(teacher_id),
               request_log: response.items.to_s,
-              reason: TokenStatus::TEACHERS_OVER_HOURLY_LIMIT
+              reason: TEACHERS_OVER_HOURLY_LIMIT
             },
             condition_expression: 'attribute_not_exists(user_id)'
           )
@@ -126,7 +138,6 @@ class TokenValidator
       end
     end
 
-    @status = TokenStatus::TEACHERS_OVER_HOURLY_LIMIT if over_limit
     over_limit
   end
 
@@ -159,17 +170,15 @@ class TokenValidator
       update_expression: 'SET vetted = :v',
       expression_attribute_values: {':v': true}
     )
-    @status = TokenStatus::VALID_HTTP
   end
 
   # TO DO: return actual error status instead of valid HTTP
   # when we actually want to throttle.
-  def error_message
-    puts "TOKEN VALIDATION ERROR: #{@status} user_id: #{@user_id} verified_teachers: #{@verified_teachers} token_id: #{@token_id}"
-    TokenStatus::VALID_HTTP
+  def error(status)
+    puts "TOKEN VALIDATION ERROR: #{status} user_id: #{@user_id} verified_teachers: #{@verified_teachers} token_id: #{@token_id}"
+    # status
+    VALID_HTTP
   end
-
-  private
 
   def user_over_limit?(time_range_seconds, limit, logging_message)
     response = @client.query(
@@ -213,7 +222,6 @@ class TokenValidator
       end
     end
 
-    @status = logging_message if over_limit
     over_limit
   end
 
