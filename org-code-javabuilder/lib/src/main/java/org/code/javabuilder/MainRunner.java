@@ -27,6 +27,15 @@ public class MainRunner implements CodeRunner {
    */
   public boolean run(URLClassLoader urlClassLoader) throws JavabuilderException {
     try {
+      // Preload error handling classes in case a user project uses up all resources
+      Class.forName(UserInitiatedExceptionKey.class.getName());
+      Class.forName(UserInitiatedException.class.getName());
+    } catch (ClassNotFoundException e) {
+      // This shouldn't be possible. If it happens, we should throw lots of errors.
+      throw new InternalServerError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e);
+    }
+
+    try {
       // load and run the main method of the class
       Method mainMethod = ProjectLoadUtils.findMainMethod(urlClassLoader, this.javaFiles);
       if (mainMethod == null) {

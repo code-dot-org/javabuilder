@@ -61,11 +61,14 @@ public class LoggerUtils {
     Logger.getLogger(MAIN_LOGGER).info(eventData.toString());
   }
 
-  public static void logError(JavabuilderException error) {
-    LoggerUtils.logError(error.getExceptionMessage(), error.getLoggingString(), error.getCause());
+  /** Errors logged in this way will trigger alarms that should be dealt with urgently. */
+  public static void logSevereError(JavabuilderException error) {
+    LoggerUtils.logSevereError(
+        error.getExceptionMessage(), error.getLoggingString(), error.getCause());
   }
 
-  public static void logError(
+  /** Errors logged in this way will trigger alarms that should be dealt with urgently. */
+  public static void logSevereError(
       JavabuilderThrowableMessage exceptionMessage, String loggingString, Throwable cause) {
     JSONObject eventData = new JSONObject();
     eventData.put(LoggerConstants.EXCEPTION_MESSAGE, exceptionMessage);
@@ -76,13 +79,27 @@ public class LoggerUtils {
     Logger.getLogger(MAIN_LOGGER).severe(eventData.toString());
   }
 
-  public static void logException(Throwable e) {
+  /** Exceptions logged in this way will trigger alarms that should be dealt with urgently. */
+  public static void logSevereException(Throwable e) {
     JSONObject eventData = new JSONObject();
     eventData.put(LoggerConstants.EXCEPTION_MESSAGE, e.getMessage());
     if (e.getCause() != null) {
       eventData.put(LoggerConstants.CAUSE, e.getCause());
     }
     Logger.getLogger(MAIN_LOGGER).severe(eventData.toString());
+  }
+
+  /**
+   * Exceptions logged in this way are intended to be informative, but should be removed after a
+   * period of time.
+   */
+  public static void logTrackingException(Throwable e) {
+    JSONObject eventData = new JSONObject();
+    eventData.put(LoggerConstants.EXCEPTION_MESSAGE, e.getMessage());
+    if (e.getCause() != null) {
+      eventData.put(LoggerConstants.CAUSE, e.getCause());
+    }
+    Logger.getLogger(MAIN_LOGGER).warning(eventData.toString());
   }
 
   private static void sendDiskSpaceLogs(String type) {

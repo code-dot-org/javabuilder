@@ -14,6 +14,8 @@ public class LoggerConstants {
   public static final String CHANNEL_ID = "channelId";
   public static final String MINI_APP_TYPE = "miniAppType";
   public static final String SESSION_METADATA = "sessionMetadata";
+
+  // Constants associated with disk space metrics
   public static final String DIRECTORY = "directory";
   public static final String USABLE_SPACE = "usableSpace";
   public static final String FREE_SPACE = "freeSpace";
