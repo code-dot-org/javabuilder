@@ -116,7 +116,7 @@ Resources:
   AppBuildProject:
     Type: AWS::CodeBuild::Project
     Properties:
-      Name: !Sub ${AWS::StackName}-load-test-build
+      Name: !Sub ${AWS::StackName}-app-build
       ServiceRole: !ImportValue JavabuilderCodeBuildRoleArn
       Environment:
         Type: LINUX_CONTAINER
