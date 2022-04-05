@@ -10,14 +10,11 @@ public class LocalLogHandler extends Handler {
   private final PrintStream logStream;
   private final String levelId;
   private final String channelId;
-  private final String miniAppType;
 
-  public LocalLogHandler(
-      PrintStream logStream, String levelId, String channelId, String miniAppType) {
+  public LocalLogHandler(PrintStream logStream, String levelId, String channelId) {
     this.logStream = logStream;
     this.levelId = levelId;
     this.channelId = channelId;
-    this.miniAppType = miniAppType;
   }
 
   @Override
@@ -25,7 +22,6 @@ public class LocalLogHandler extends Handler {
     JSONObject sessionMetadata = new JSONObject();
     sessionMetadata.put("levelId", this.levelId);
     sessionMetadata.put("channelId", this.channelId);
-    sessionMetadata.put("miniAppType", this.miniAppType);
 
     JSONObject logData = new JSONObject();
     logData.put("sessionMetadata", sessionMetadata);
