@@ -188,7 +188,7 @@ Resources:
                 # OAuthToken: '{{resolve:secrets-manager:DeployCodeOrg-GitHub-OAuthToken}}'
         - Name: Build
           Actions:
-            - Name: Load Test Build
+            - Name: load-test-build
               ActionTypeId:
                 Category: Build
                 Owner: AWS
@@ -200,7 +200,7 @@ Resources:
                 ProjectName: !Ref LoadTestBuildProject
               OutputArtifacts:
                 - Name: loadTestBuildResults
-            - Name: App Build
+            - Name: app-build
               ActionTypeId:
                 Category: Build
                 Owner: AWS
