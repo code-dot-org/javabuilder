@@ -17,8 +17,8 @@ import generateToken from "./generateToken.js";
 
 // Change these options to increase the user goal or time to run the test.
 export const options = getTestOptions(
-  /* User goal */ 150,
-  /* Ramp up time minutes */ 1,
+  /* User goal */ 100,
+  /* Ramp up time minutes */ 2,
   /* High load time minutes */ 5
 );
 
@@ -71,7 +71,10 @@ function onSocketConnect(socket, startTime) {
     if (time > EXTRA_LONG_REQUEST_MS) {
       extraLongWebsocketSessions.add(1);
     }
-    sleep(15);
+    const sleepTime = Math.floor(20 - (time / 1000));
+    if (sleepTime > 0) {
+      sleep(sleepTime);
+    }
   });
 
   socket.on("error", function (e) {
