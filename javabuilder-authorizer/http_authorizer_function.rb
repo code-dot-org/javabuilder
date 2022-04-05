@@ -34,15 +34,7 @@ end
 
 def get_token_status(token_payload, origin, region)
   validator = TokenValidator.new(token_payload, origin, region)
-
-  return validator.error_message unless validator.log_token
-  return validator.error_message if validator.user_blocked?
-  return validator.error_message if validator.teachers_blocked?
-  return validator.error_message if validator.user_over_hourly_limit?
-  return validator.error_message if validator.user_over_daily_limit?
-  return validator.error_message if validator.teachers_over_hourly_limit?
-  validator.log_requests
-  return validator.mark_token_as_vetted
+  validator.validate
 end
 
 # ARN is of the format arn:aws:lambda:{region}:{account_id}:function:{lambda_name}
