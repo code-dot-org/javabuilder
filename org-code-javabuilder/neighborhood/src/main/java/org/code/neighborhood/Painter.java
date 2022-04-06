@@ -193,6 +193,39 @@ public class Painter {
     return this.direction.isWest();
   }
 
+  /** @return the x coordinate of the painter's current position */
+  public int getX() {
+    return this.xLocation;
+  }
+
+  /** @return the y coordinate of the painter's current position */
+  public int getY() {
+    return this.yLocation;
+  }
+
+  /** @return the current direction the painter is facing */
+  public String getDirection() {
+    return this.direction.getDirectionString();
+  }
+
+  /**
+   * Sets the amount of paint in the painters bucket. Does nothing if paint is negative.
+   *
+   * @param paint the amount of paint that should be in the painter's bucket.
+   */
+  public void setPaint(int paint) {
+    if (paint < 0) {
+      System.out.println("Paint amount must not be a negative number.");
+      return;
+    }
+
+    if (this.hasInfinitePaint) {
+      return;
+    }
+
+    this.remainingPaint = paint;
+  }
+
   /**
    * Helper function to check if the painter can move in the specified direction.
    *
