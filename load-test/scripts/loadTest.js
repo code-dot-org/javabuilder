@@ -18,8 +18,8 @@ import generateToken from "./generateToken.js";
 // Change these options to increase the user goal or time to run the test.
 export const options = getTestOptions(
   /* User goal */ 100,
-  /* Ramp up time minutes */ 2,
-  /* High load time minutes */ 5
+  /* Ramp up time minutes */ 1,
+  /* High load time minutes */ 1
 );
 
 // Change this to test different code
@@ -36,6 +36,11 @@ const longWebsocketSessions = new Counter("long_websocket_sessions");
 // websocket sessions > EXTRA_LONG_REQUEST_MS
 const extraLongWebsocketSessions = new Counter("extra_long_websocket_sessions");
 
+
+function isResultSuccess(result) {
+  return result && result.status === 200;
+}
+
 export default function () {
   const authToken = generateToken(MiniAppType.CONSOLE);
   const uploadResult = http.put(
@@ -43,13 +48,16 @@ export default function () {
     sourceToTest,
     UPLOAD_PARAMS
   );
-  const res = ws.connect(WEBSOCKET_URL + authToken, WEBSOCKET_PARAMS, (socket) =>
-    onSocketConnect(socket, Date.now())
-  );
 
-  check(res, { "websocket status is 101": (r) => r && r.status === 101 });
+  check(uploadResult, { "upload status is 200": (r) => isResultSuccess(r)});
 
-  check(uploadResult, { "upload status is 200": (r) => r && r.status === 200 });
+  if (isResultSuccess(uploadResult)) {
+    const res = ws.connect(WEBSOCKET_URL + authToken, WEBSOCKET_PARAMS, (socket) =>
+      onSocketConnect(socket, Date.now())
+    );
+
+    check(res, { "websocket status is 101": (r) => r && r.status === 101 });
+  }
 }
 
 function onSocketConnect(socket, startTime) {
@@ -58,6 +66,7 @@ function onSocketConnect(socket, startTime) {
   socket.on("message", function (data) {
     const parsedData = JSON.parse(data);
     if (parsedData.type === "EXCEPTION") {
+      console.log("[EXCEPTION] " + parsedData.value);
       exceptionCounter.add(1);
     }
   });
@@ -78,6 +87,7 @@ function onSocketConnect(socket, startTime) {
   });
 
   socket.on("error", function (e) {
+    console.log("[ERROR] " + e.error());
     errorCounter.add(1);
   });
 }
