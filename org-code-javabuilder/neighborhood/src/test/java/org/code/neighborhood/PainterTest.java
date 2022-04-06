@@ -185,4 +185,74 @@ public class PainterTest {
     painter.paint("red");
     assertFalse(painter.hasPaint());
   }
+
+  @Test
+  void testGetXReturnsXPos() {
+    World w = new World(20);
+    World.setInstance(w);
+
+    final int xPos = 10;
+    Painter painter = new Painter(xPos, 0, "East", 1);
+    assertEquals(xPos, painter.getX());
+
+    // Move East 1 step
+    painter.move();
+    assertEquals(xPos + 1, painter.getX());
+  }
+
+  @Test
+  void testGetYReturnsYPos() {
+    World w = new World(20);
+    World.setInstance(w);
+
+    final int yPos = 5;
+    Painter painter = new Painter(0, yPos, "South", 1);
+    assertEquals(yPos, painter.getY());
+
+    // Move South 1 step
+    painter.move();
+    assertEquals(yPos + 1, painter.getY());
+  }
+
+  @Test
+  void testGetDirectionReturnsDirectionString() {
+    World w = new World(20);
+    World.setInstance(w);
+
+    final String direction = "North";
+    Painter painter = new Painter(0, 0, direction, 1);
+    assertEquals(Direction.fromString(direction).getDirectionString(), painter.getDirection());
+  }
+
+  @Test
+  void testSetPaintDoesNothingIfNegative() {
+    World w = new World(20);
+    World.setInstance(w);
+
+    final int originalPaint = 10;
+    Painter painter = new Painter(0, 0, "North", originalPaint);
+    painter.setPaint(-10);
+    assertEquals(originalPaint, painter.getMyPaint());
+  }
+
+  @Test
+  void testSetPaintDoesNothingIfHasInfinitePaint() {
+    World w = new World(20);
+    World.setInstance(w);
+
+    Painter painter = new Painter();
+    painter.setPaint(30);
+    assertEquals(0, painter.getMyPaint());
+  }
+
+  @Test
+  void testSetPaintUpdatesAmount() {
+    World w = new World(20);
+    World.setInstance(w);
+
+    final int newPaint = 20;
+    Painter painter = new Painter(0, 0, "North", 10);
+    painter.setPaint(newPaint);
+    assertEquals(newPaint, painter.getMyPaint());
+  }
 }
