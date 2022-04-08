@@ -7,6 +7,7 @@ import { getRandomId, generateToken } from "./tokenHelpers.js";
 import {
   LONG_REQUEST_MS,
   EXTRA_LONG_REQUEST_MS,
+  MAX_REQUEST_TIME_MS,
   MiniAppType,
   UPLOAD_URL,
   UPLOAD_PARAMS,
@@ -18,15 +19,11 @@ import {
 // Change these options to increase the user goal or time to run the test.
 export const options = getTestOptions(
   /* User goal */ 1000,
-  /* Ramp up time minutes */ 5,
   /* High load time minutes */ 10
 );
 
 // Change this to test different code
 const sourceToTest = helloWorld;
-// Timeout is we go greater than the max request time to ensure we stay
-// close to our concurrent user goal.
-const MAX_REQUEST_TIME_MS = 20000;
 
 const exceptionCounter = new Counter("exceptions");
 const errorCounter = new Counter("errors");
@@ -99,6 +96,8 @@ function onSocketConnect(socket, requestStartTime, websocketStartTime, sessionId
       timeoutCounter.add(1);
     }
     
+    // Sleep this VU if we are under the max request time. This is so we maintain
+    // a reasonable number of total requests across all virtual users.
     const sleepTime = Math.floor((MAX_REQUEST_TIME_MS - totalTime) / 1000);
     if (sleepTime > 0) {
       sleep(sleepTime);
