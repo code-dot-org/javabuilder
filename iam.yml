@@ -12,11 +12,120 @@ Parameters:
     Description: Name of existing S3 bucket for storing CloudFormation template artifacts
 
 Resources:
-  # TODO: Split this into separate roles:
-  # 1) Permissions for the long-running Lambda that compiles/runs student projects
-  # 2) Permissions for the synchronous Lambda that invokes the long-running Lambda and then relays web messages to it.
-  # 3) Permissions for the Lambda Authorizer
-  # 4) Permissions for CodePipeline Slack approval Lambda.
+  # TODO: Tighten up these roles
+  # - explicitly define invoke permissions and scope the target resources
+  # - better understand the api gateway invoke needs
+  # - tighten up sqs* permissions
+  BuildAndRunLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Path: /
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: ['sts:AssumeRole']
+            Effect: Allow
+            Principal: {Service: [lambda.amazonaws.com]}
+      Policies:
+        - PolicyName: BuildAndRunLambdaExecutionPolicy
+          PolicyDocument:
+            Statement:
+              # BuildAndRunJavaProject Lambda needs to put objects to the content bucket.
+              - Effect: Allow
+                Action:
+                  - 's3:PutObject'
+                Resource: 'arn:aws:s3:::cdo-*javabuilder*-content/*'
+              - Effect: Allow
+                Action:
+                  - "sqs:ReceiveMessage"
+                  - "sqs:DeleteMessage"
+                  - "sqs:GetQueueAttributes"
+                  - "sqs:GetQueueUrl"
+                  - "sqs:ListDeadLetterSourceQueues"
+                  - "sqs:ListQueues"
+                Resource: '*'
+  SessionManagerMessageRelayLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Path: /
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: ['sts:AssumeRole']
+            Effect: Allow
+            Principal: {Service: [lambda.amazonaws.com]}
+      Policies:
+        - PolicyName: SessionManagerMessageRelayLambdaRole
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "sqs:ReceiveMessage"
+                  - "sqs:DeleteMessage"
+                  - "sqs:GetQueueAttributes"
+                  # TODO: tighten this up!
+                  - "sqs:*"
+                Resource: '*'
+      ManagedPolicyArns:
+        # Invoke BuildAndRun Lambda.
+        - "arn:aws:iam::aws:policy/service-role/AWSLambdaRole"
+        - "arn:aws:iam::aws:policy/AmazonAPIGatewayInvokeFullAccess"
+  AuthorizerLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Path: /
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: ['sts:AssumeRole']
+            Effect: Allow
+            Principal: {Service: [lambda.amazonaws.com]}
+      Policies:
+        - PolicyName: AuthorizerLambdaExecutionPolicy
+          PolicyDocument:
+            Statement:
+              # Authorizer lambdas need to create, read, and update dynamodb records for throttling.
+              - Effect: Allow
+                Action:
+                  - 'dynamodb:GetItem'
+                  - 'dynamodb:PutItem'
+                  - 'dynamodb:UpdateItem'
+                  - 'dynamodb:Query'
+                Resource:
+                  - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/*_tokens"
+                  - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/*_user_requests"
+                  - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/*_teacher_associated_requests"
+                  - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/*_blocked_users"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AWSLambdaRole"
+        - "arn:aws:iam::aws:policy/AmazonAPIGatewayInvokeFullAccess"
+  JavabuilderLambdaLoggingPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: JavabuilderLambdaLoggingPolicy
+      Roles:
+        - !Ref BuildAndRunLambdaRole
+        - !Ref SessionManagerMessageRelayLambdaRole
+        - !Ref AuthorizerLambdaRole
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - "logs:CreateLogGroup"
+            Resource: '*'
+          - Effect: Allow
+            Action:
+              - "logs:CreateLogStream"
+              - "logs:PutLogEvents"
+            Resource:
+              - 'arn:aws:logs:::log-group:/aws/lambda/javabuilder*'
+          - Effect: Allow
+            Action:
+              - "xray:PutTraceSegments"
+              - "xray:PutTelemetryRecords"
+              - "xray:GetSamplingRules"
+              - "xray:GetSamplingTargets"
+              - "xray:GetSamplingStatisticSummaries"
+            Resource: '*'
+  # TODO: remove all usages and delete this role
   JavabuilderLambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:
@@ -157,6 +266,9 @@ Resources:
                   - "iam:PassRole"
                 Resource:
                   - !GetAtt JavabuilderLambdaExecutionRole.Arn
+                  - !GetAtt BuildAndRunLambdaRole.Arn
+                  - !GetAtt SessionManagerMessageRelayLambdaRole.Arn
+                  - !GetAtt AuthorizerLambdaRole.Arn
               # Grant CloudFormation permission to create CloudWatch Log Group for API Gateway.
               - Effect: Allow
                 Action:
@@ -214,6 +326,18 @@ Outputs:
     Description: Javabuilder Lambda Execution Role ARN
     Value: !GetAtt JavabuilderLambdaExecutionRole.Arn
     Export: {Name: JavabuilderLambdaExecutionRole}
+  BuildAndRunLambdaRole:
+    Description: Javabuilder BuildAndRun Lambda Execution Role ARN
+    Value: !GetAtt BuildAndRunLambdaRole.Arn
+    Export: {Name: BuildAndRunLambdaRole}
+  SessionManagerMessageRelayLambdaRole:
+    Description: Javabuilder BuildAndRun Lambda Execution Role ARN
+    Value: !GetAtt SessionManagerMessageRelayLambdaRole.Arn
+    Export: {Name: SessionManagerMessageRelayLambdaRole}
+  AuthorizerLambdaRole:
+    Description: Javabuilder BuildAndRun Lambda Execution Role ARN
+    Value: !GetAtt AuthorizerLambdaRole.Arn
+    Export: {Name: AuthorizerLambdaRole}
   JavabuilderAPIGatewayRole:
     Description: Javabuilder API Gateway Role ARN
     Value: !GetAtt JavabuilderAPIGatewayRole.Arn
