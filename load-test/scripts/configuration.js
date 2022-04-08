@@ -23,7 +23,10 @@ export const PRIVATE_KEY = null;
 // Long requests time: we don't want requests to go over this time in the p(95) case
 export const LONG_REQUEST_MS = 5000;
 // Extra long request time: we never want requests to go over this time.
-export const EXTRA_LONG_REQUEST_MS = 14000;
+export const EXTRA_LONG_REQUEST_MS = 10000;
+// Timeout if we go greater than the max request time to ensure we stay
+// close to our concurrent user goal.
+export const MAX_REQUEST_TIME_MS = 20000;
 
 // Mini-app types
 export const MiniAppType = {
@@ -32,28 +35,28 @@ export const MiniAppType = {
   THEATER: 'theater'
 };
 
-export function getTestOptions(maxUserGoal, rampUpTimeMinutes, highLoadTimeMinutes) {
+export function getTestOptions(maxUserGoal, highLoadTimeMinutes) {
   const maxConcurrentUsers =  Math.floor(maxUserGoal / 30);
   return  {
     scenarios: {
-      // ramp up to maxConcurrentUsers VUs over rampUpTimeMinutes
-      rampUp: {
-        executor: "ramping-vus",
-        startVUs: 0,
-        stages: [
-          {duration: `${rampUpTimeMinutes}m`, target: maxConcurrentUsers}
-        ]
+      halfConcurrency: {
+        executor: "constant-vus",
+        vus: Math.ceil(maxConcurrentUsers / 2),
+        duration: '1m',
       },
-      // have maxConcurrentUsers VUs do 3 iterations each minute, for a total of highLoadTimeMinutes * 3
-      // iterations per virutal user.
-      // Start this after the ramp up time.
-      highLoad: {
-        executor: "per-vu-iterations",
+      initialHighConcurrency: {
+        executor: "constant-vus",
         vus: maxConcurrentUsers,
-        iterations: 3 * highLoadTimeMinutes, // this is iterations per virtual user
-        // add a large buffer to max duration to ensure all requests can complete.
-        maxDuration: `${highLoadTimeMinutes + (Math.ceil(highLoadTimeMinutes * 0.5))}m`,
-        startTime: `${rampUpTimeMinutes}m`,
+        duration: '1m',
+        startTime: '1m'
+      },
+      // maintain maxConcurrentUsers VUs for highLoadTimeMinutes minutes. Start this after first two
+      // scenarios have completed.
+      highLoad: {
+        executor: "constant-vus",
+        vus: maxConcurrentUsers,
+        duration: `${highLoadTimeMinutes}m`,
+        startTime: '2m',
       }
     },
     thresholds: {
