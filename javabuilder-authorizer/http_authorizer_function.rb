@@ -3,6 +3,7 @@ require 'aws-sdk-dynamodb'
 require 'jwt'
 require_relative 'jwt_helper'
 require_relative 'token_status'
+require_relative 'token_validator'
 include JwtHelper
 include TokenStatus
 
@@ -19,45 +20,21 @@ def lambda_handler(event:, context:)
   jwt_token = event['queryStringParameters']['Authorization']
   route_arn = event['routeArn']
 
-  decoded_token = JwtHelper.decode_token(jwt_token, origin)
+  standardized_origin = JwtHelper.get_standardized_origin(origin)
+  decoded_token = JwtHelper.decode_token(jwt_token, standardized_origin)
   return JwtHelper.generate_deny(route_arn) unless decoded_token
 
   token_payload = decoded_token[0]
-  token_status = get_token_status(context, token_payload['sid'])
+  region = get_region(context)
+  token_status = get_token_status(token_payload, standardized_origin, region)
   return JwtHelper.generate_deny(route_arn) unless token_status == TokenStatus::VALID_HTTP
 
   JwtHelper.generate_allow(route_arn, token_payload)
 end
 
-def get_token_status(context, sid)
-  client = Aws::DynamoDB::Client.new(region: get_region(context))
-
-  begin
-    ttl = Time.now.to_i + TOKEN_RECORD_TTL_SECONDS
-    client.put_item(
-      table_name: ENV['token_status_table'],
-      item: {
-        token_id: sid,
-        ttl: ttl
-      },
-      condition_expression: 'attribute_not_exists(token_id)'
-    )
-  rescue Aws::DynamoDB::Errors::ConditionalCheckFailedException
-    puts "TOKEN VALIDATION ERROR: #{TokenStatus::ALREADY_EXISTS} token_id: #{sid}"
-    # return TokenStatus::ALREADY_EXISTS
-    return TokenStatus::VALID_HTTP
-  end
-
-  # Placeholder for when we'll actually vet each token
-  # to confirm that it should not be throttled.
-  client.update_item(
-    table_name: ENV['token_status_table'],
-    key: {token_id: sid},
-    update_expression: 'SET vetted = :v',
-    expression_attribute_values: {':v': true}
-  )
-
-  TokenStatus::VALID_HTTP
+def get_token_status(token_payload, origin, region)
+  validator = TokenValidator.new(token_payload, origin, region)
+  validator.validate
 end
 
 # ARN is of the format arn:aws:lambda:{region}:{account_id}:function:{lambda_name}
