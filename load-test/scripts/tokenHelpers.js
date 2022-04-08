@@ -7,22 +7,26 @@ import { PRIVATE_KEY } from "./configuration.js";
 
 // Generate a JWT token for the given mini app type, with random
 // user id, teacher id and session id. The token has a time to live of 1 minute.
-export default function generateToken(miniAppType) {
+export function generateToken(miniAppType, sessionId) {
   const issuedAtTime = (Date.now() / 1000) - 3;
   const expirationTime = issuedAtTime + 63;
   const payload = {
     iat: issuedAtTime,
     iss: "load-test",
     exp: expirationTime,
-    uid: uuidv4(),
+    uid: getRandomId(),
     level_id: "none",
     execution_type: "RUN",
     mini_app_type: miniAppType,
-    verified_teachers: uuidv4(),
+    verified_teachers: getRandomId(),
     options: "{}",
-    sid: uuidv4()
+    sid: sessionId
   };
   return encodeAsJWT(payload);
+}
+
+export function getRandomId() {
+  return uuidv4();
 }
 
 // Generate a JWT using the HS256 algorithm, which relies on a shared secret

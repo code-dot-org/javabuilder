@@ -37,9 +37,9 @@ Resources:
               awslogs-group:  !Ref CloudwatchLogsGroup
               awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix:  !Sub "${AWS::StackName}-task"
-      Cpu: 1024
+      Cpu: 2048
       ExecutionRoleArn: !Ref ExecutionRole
-      Memory: 2048
+      Memory: 4096
       NetworkMode: awsvpc
       RuntimePlatform: 
         OperatingSystemFamily: LINUX
