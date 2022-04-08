@@ -5,11 +5,12 @@ class TokenValidator
 
   ONE_HOUR_SECONDS = 60 * 60
   ONE_DAY_SECONDS = 24 * 60 * 60
-  TOKEN_RECORD_TTL_SECONDS = 120 # 2 minutes
-  USER_REQUEST_RECORD_TTL_SECONDS = ONE_DAY_SECONDS
-  # TO DO: update this value to two hours once we've evaluated a classroom-level
-  # throttling threshold.
-  TEACHER_ASSOCIATED_REQUEST_TTL_SECONDS = 14 * ONE_DAY_SECONDS
+  TOKEN_RECORD_TTL_SECONDS = 120 # Two minutes
+  USER_REQUEST_RECORD_TTL_SECONDS = 25 * ONE_HOUR_SECONDS
+  TEACHER_ASSOCIATED_REQUEST_TTL_SECONDS = 25 * ONE_HOUR_SECONDS
+  # TO DO: move this into env variable
+  # https://codedotorg.atlassian.net/browse/JAVA-536
+  TEACHER_HOURLY_LIMIT = 1000
 
   def initialize(payload, origin, region)
     @token_id = payload['sid']
@@ -113,9 +114,7 @@ class TokenValidator
         puts "teacher_associated_requests query has paginated responses. user_id #{@user_id} teacher_id #{teacher_id}"
       end
 
-      # TO DO: set actual limit value
-      # Setting arbitrary super high value temporarily.
-      if response.count > 1_000_000
+      if response.count > TEACHER_HOURLY_LIMIT
         begin
           @client.put_item(
             table_name: ENV['blocked_users_table'],
