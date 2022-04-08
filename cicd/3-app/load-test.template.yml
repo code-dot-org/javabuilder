@@ -33,11 +33,6 @@ Resources:
           Image: !Ref LoadTestImage
           Cpu: 0
           Memory: 512
-          Environment:
-            - Name: PRIVATE_KEY
-              Value: arn:aws:secretsmanager:us-east-1:475661607190:secret:production/cdo/javabuilder_load_test_key-O3hwTg
-            - Name: PRIVATE_KEY_PASSWORD
-              Value: arn:aws:secretsmanager:us-east-1:475661607190:secret:production/cdo/javabuilder_load_test_key_password-MFH2XA
           LogConfiguration:
             LogDriver: awslogs
             Options:
@@ -62,16 +57,3 @@ Resources:
       ManagedPolicyArns:
         # AWS-managed policy for executing an ECS task
         - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
-      Policies:
-        - PolicyName: JavabuilderLoadTestSecretPolicy
-          PolicyDocument:
-            Statement:
-              # secrets needed for creating JWT tokens for load testing
-              - Effect: Allow
-                Action:
-                  - 'secretsmanager:GetSecretValue'
-                Resource: 'arn:aws:secretsmanager:us-east-1:475661607190:secret:production/cdo/javabuilder_load_test_key-O3hwTg'
-              - Effect: Allow
-                Action:
-                  - 'secretsmanager:GetSecretValue'
-                Resource: 'arn:aws:secretsmanager:us-east-1:475661607190:secret:production/cdo/javabuilder_load_test_key_password-MFH2XA'

@@ -1,4 +1,4 @@
-export const basicTestOptions = {
+export const BASIC_TEST_OPTIONS = {
   scenarios: {
     // ramp up to 5 VUs over 30 seconds
     rampUp: {
@@ -29,28 +29,33 @@ export const basicTestOptions = {
 };
 
 // TODO: Update to a load testing instance of Javabuilder
-export const uploadUrl = `https://javabuilder-molly-http.dev-code.org/seedsources/sources.json?Authorization=`;
-export const url = `wss://javabuilder-molly.dev-code.org?Authorization=`;
-// TODO: update to 'load-test' once we have load test auth set up
-const origin = "http://localhost-studio.code.org:3000";
+export const UPLOAD_URL = `https://javabuilder-molly-http.dev-code.org/seedsources/sources.json?Authorization=`;
+export const WEBSOCKET_URL = `wss://javabuilder-molly.dev-code.org?Authorization=`;
+const origin = "load-test";
   
-export const websocketParams = {
+export const WEBSOCKET_PARAMS = {
   headers: {
     Origin: origin,
   },
 };
 
-export const uploadParams = {
+export const UPLOAD_PARAMS = {
   headers: {
     Origin: origin,
     "Content-Type": "application/json",
   },
 };
 
-// These will be used for generating the JWT token
-export const PRIVATE_KEY = __ENV.PRIVATE_KEY;
-export const PRIVATE_KEY_PASSWORD = __ENV.PRIVATE_KEY_PASSWORD;
+// This will be used for generating the JWT token
+export const PRIVATE_KEY = null;
 
 // Thresholds for metrics
 export const LONG_REQUEST_MS = 5000;
 export const EXTRA_LONG_REQUEST_MS = 10000;
+
+// Mini-app types
+export const MiniAppType = {
+  CONSOLE: 'console',
+  NEIGHBORHOOD: 'neighborhood',
+  THEATER: 'theater'
+};
