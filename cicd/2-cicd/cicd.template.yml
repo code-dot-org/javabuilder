@@ -212,7 +212,7 @@ Resources:
                 ProjectName: !Ref AppBuildProject
               OutputArtifacts:
                 - Name: appBuildResults
-        # - Name: Deploy Test
+        # - Name: Deploy_To_Test
         #   Actions:
-        #     - Name: Deploy Load Test
+        #     - Name: load-test-deploy
 
