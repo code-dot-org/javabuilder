@@ -34,9 +34,6 @@ export const MiniAppType = {
 
 export function getTestOptions(maxUserGoal, rampUpTimeMinutes, highLoadTimeMinutes) {
   const maxConcurrentUsers =  Math.floor(maxUserGoal / 30);
-  // set constant VUs to be slightly higher than max concurrent users to account for users taking slightly different
-  // amounts of time
-  const constantVUs =  Math.floor(maxUserGoal / 25);
   return  {
     scenarios: {
       // ramp up to maxConcurrentUsers VUs over rampUpTimeMinutes
@@ -47,24 +44,26 @@ export function getTestOptions(maxUserGoal, rampUpTimeMinutes, highLoadTimeMinut
           {duration: `${rampUpTimeMinutes}m`, target: maxConcurrentUsers}
         ]
       },
-      // have constantVUs VUs do 3 iterations each minute, for a total of highLoadTimeMinutes * 3
+      // have maxConcurrentUsers VUs do 3 iterations each minute, for a total of highLoadTimeMinutes * 3
       // iterations per virutal user.
-      // Start this after the ramp up time and allow for 1 extra minute in the max duration in case of issues.
+      // Start this after the ramp up time.
       highLoad: {
         executor: "per-vu-iterations",
-        vus: constantVUs,
+        vus: maxConcurrentUsers,
         iterations: 3 * highLoadTimeMinutes, // this is iterations per virtual user
         // add a large buffer to max duration to ensure all requests can complete.
-        maxDuration: `${highLoadTimeMinutes + (Math.floor(highLoadTimeMinutes * 0.5))}m`,
+        maxDuration: `${highLoadTimeMinutes + (Math.ceil(highLoadTimeMinutes * 0.5))}m`,
         startTime: `${rampUpTimeMinutes}m`,
       }
     },
     thresholds: {
       exceptions: ["count == 0"],
       errors: ["count == 0"],
-      websocket_session_duration_without_sleep: ["p(95) < 5000"],
+      timeouts: ["count == 0"],
+      total_request_time: ["p(95) < 5000"],
       long_websocket_sessions: [`count <= ${maxConcurrentUsers}`],
-      extra_long_websocket_sessions: ["count == 0"]
+      extra_long_websocket_sessions: ["count == 0"],
+      dropped_iterations: ["count == 0"]
     },
     summaryTrendStats: ["avg", "min", "med", "max", "p(90)", "p(95)", "p(98)", "p(99)"],
   };
