@@ -1,6 +1,6 @@
 // TODO: Update to a load testing instance of Javabuilder
-export const UPLOAD_URL = `https://javabuilder-load-test-http.dev-code.org/seedsources/sources.json?Authorization=`;
-export const WEBSOCKET_URL = `wss://javabuilder-load-test.dev-code.org?Authorization=`;
+export const UPLOAD_URL = `https://javabuilder-high-load-http.code.org/seedsources/sources.json?Authorization=`;
+export const WEBSOCKET_URL = `wss://javabuilder-high-load.code.org?Authorization=`;
 const origin = "load-test";
   
 export const WEBSOCKET_PARAMS = {
@@ -19,14 +19,11 @@ export const UPLOAD_PARAMS = {
 // This will be used for generating the JWT token
 export const PRIVATE_KEY = null;
 
-// Thresholds for metrics
-// Long requests time: we don't want requests to go over this time in the p(95) case
-export const LONG_REQUEST_MS = 5000;
-// Extra long request time: we never want requests to go over this time.
-export const EXTRA_LONG_REQUEST_MS = 10000;
-// Timeout if we go greater than the max request time to ensure we stay
-// close to our concurrent user goal.
-export const MAX_REQUEST_TIME_MS = 20000;
+// Time per request--if a request takes under this time, sleep until we have
+// reached this time. This is so we do not issue too many requests.
+export const REQUEST_TIME_MS = 20000;
+// Time after which to timeout a request
+export const TIMEOUT_MS = 40000;
 
 // Mini-app types
 export const MiniAppType = {
@@ -63,9 +60,7 @@ export function getTestOptions(maxUserGoal, highLoadTimeMinutes) {
       exceptions: ["count == 0"],
       errors: ["count == 0"],
       timeouts: ["count == 0"],
-      total_request_time: ["p(95) < 5000"],
-      long_websocket_sessions: [`count <= ${maxConcurrentUsers}`],
-      extra_long_websocket_sessions: ["count == 0"],
+      total_session_time: ["p(95) < 5000"],
       dropped_iterations: ["count == 0"]
     },
     summaryTrendStats: ["avg", "min", "med", "max", "p(90)", "p(95)", "p(98)", "p(99)"],
