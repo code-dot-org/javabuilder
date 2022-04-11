@@ -175,7 +175,11 @@ public class Scene {
    * @param rotation the amount to rotate the image in degrees
    */
   public final void drawImage(Image image, int x, int y, int size, double rotation) {
-    this.actions.add(new DrawImageAction(image, x, y, size, UNSPECIFIED, UNSPECIFIED, rotation));
+    // Copy the image to subsequent changes to this image object are not reflected
+    // in the image drawn here.
+    Image imageCopy = new Image(image);
+    this.actions.add(
+        new DrawImageAction(imageCopy, x, y, size, UNSPECIFIED, UNSPECIFIED, rotation));
   }
 
   /**
@@ -190,7 +194,10 @@ public class Scene {
    * @param rotation the amount to rotate the image in degrees
    */
   public final void drawImage(Image image, int x, int y, int width, int height, double rotation) {
-    this.actions.add(new DrawImageAction(image, x, y, UNSPECIFIED, width, height, rotation));
+    // Copy the image to subsequent changes to this image object are not reflected
+    // in the image drawn here.
+    Image imageCopy = new Image(image);
+    this.actions.add(new DrawImageAction(imageCopy, x, y, UNSPECIFIED, width, height, rotation));
   }
 
   /**
