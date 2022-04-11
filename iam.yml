@@ -32,7 +32,8 @@ Resources:
               # BuildAndRunJavaProject Lambda needs to put objects to the content bucket.
               - Effect: Allow
                 Action:
-                  - 's3:PutObject'
+                  # TODO: limit this
+                  - 's3:*'
                 Resource: 'arn:aws:s3:::cdo-*javabuilder*-content/*'
               # Read from Javabuilder SQS Queue
               - Effect: Allow
