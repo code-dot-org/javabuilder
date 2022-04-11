@@ -5,21 +5,20 @@ import { Counter, Trend } from "k6/metrics";
 import { helloWorld } from "./sources.js";
 import { getRandomId, generateToken } from "./tokenHelpers.js";
 import {
-  LONG_REQUEST_MS,
-  EXTRA_LONG_REQUEST_MS,
-  MAX_REQUEST_TIME_MS,
   MiniAppType,
   UPLOAD_URL,
   UPLOAD_PARAMS,
   WEBSOCKET_URL,
   WEBSOCKET_PARAMS,
-  getTestOptions
+  getTestOptions,
+  TIMEOUT_MS,
+  REQUEST_TIME_MS
 } from "./configuration.js";
 
 // Change these options to increase the user goal or time to run the test.
 export const options = getTestOptions(
   /* User goal */ 1000,
-  /* High load time minutes */ 10
+  /* High load time minutes */ 15
 );
 
 // Change this to test different code
@@ -28,11 +27,10 @@ const sourceToTest = helloWorld;
 const exceptionCounter = new Counter("exceptions");
 const errorCounter = new Counter("errors");
 const timeoutCounter = new Counter("timeouts");
-const totalRequestTime = new Trend("total_request_time", true);
-// websocket sessions > LONG_REQUEST_MS
-const longWebsocketSessions = new Counter("long_websocket_sessions");
-// websocket sessions > EXTRA_LONG_REQUEST_MS
-const extraLongWebsocketSessions = new Counter("extra_long_websocket_sessions");
+const totalSessionTime = new Trend("total_session_time", true);
+const sessionsOver10Seconds = new Counter("session_over_10_seconds");
+const sessionsOver15Seconds = new Counter("session_over_15_seconds");
+const sessionsOver20Seconds = new Counter("session_over_20_seconds");
 
 
 function isResultSuccess(result) {
@@ -65,9 +63,9 @@ export default function () {
 function onSocketConnect(socket, requestStartTime, websocketStartTime, sessionId) {
   socket.on("open", () => {
     socket.setTimeout(() => {
-      console.log(`Triggering TIMEOUT for session id ${sessionId}, request has gone longer than ${MAX_REQUEST_TIME_MS} ms.`);
+      console.log(`Triggering TIMEOUT for session id ${sessionId}, request has gone longer than ${TIMEOUT_MS} ms.`);
       socket.close();
-    }, MAX_REQUEST_TIME_MS);
+    }, TIMEOUT_MS);
   });
 
   socket.on("message", function (data) {
@@ -81,15 +79,18 @@ function onSocketConnect(socket, requestStartTime, websocketStartTime, sessionId
   socket.on("close", () => {
     const websocketTime = Date.now() - websocketStartTime;
     const totalTime = Date.now() - requestStartTime;
-    if (websocketTime < MAX_REQUEST_TIME_MS) {
+    if (websocketTime < TIMEOUT_MS) {
       // only log requests that didn't time out, as timeouts are a separate metric.
-      totalRequestTime.add(totalTime);
-      if (totalTime > EXTRA_LONG_REQUEST_MS) {
-        console.log(`EXTRA LONG REQUEST Session id ${sessionId} had a request time of ${totalTime} ms.`);
-        extraLongWebsocketSessions.add(1);
-      } else if (totalTime > LONG_REQUEST_MS) {
-        console.log(`LONG REQUEST Session id ${sessionId} had a request time of ${totalTime} ms.`);
-        longWebsocketSessions.add(1);
+      totalSessionTime.add(totalTime);
+      if (totalTime > 20000) {
+        console.log(`OVER 20 SECONDS Session id ${sessionId} had a request time of ${totalTime} ms.`);
+        sessionsOver20Seconds.add(1);
+      } else if (totalTime > 15000) {
+        console.log(`OVER 15 SECONDS Session id ${sessionId} had a request time of ${totalTime} ms.`);
+        sessionsOver15Seconds.add(1);
+      } else if (totalTime > 10000) {
+        console.log(`OVER 10 SECONDS Session id ${sessionId} had a request time of ${totalTime} ms.`);
+        sessionsOver10Seconds.add(1);
       }
     } else {
       console.log(`TIMEOUT detected for session id ${sessionId}`);
@@ -98,7 +99,7 @@ function onSocketConnect(socket, requestStartTime, websocketStartTime, sessionId
     
     // Sleep this VU if we are under the max request time. This is so we maintain
     // a reasonable number of total requests across all virtual users.
-    const sleepTime = Math.floor((MAX_REQUEST_TIME_MS - totalTime) / 1000);
+    const sleepTime = Math.floor((REQUEST_TIME_MS - totalTime) / 1000);
     if (sleepTime > 0) {
       sleep(sleepTime);
     }
