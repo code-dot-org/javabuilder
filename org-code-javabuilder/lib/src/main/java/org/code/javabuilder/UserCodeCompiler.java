@@ -36,9 +36,11 @@ public class UserCodeCompiler {
     this.outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.COMPILING));
     DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
 
+    PerformanceTracker.getInstance().trackCompileStart();
     CompilationTask task = getCompilationTask(diagnostics);
 
     boolean success = task.call();
+    PerformanceTracker.getInstance().trackCompileEnd();
 
     // diagnostics will include any compiler errors
     for (Diagnostic<? extends JavaFileObject> diagnostic : diagnostics.getDiagnostics()) {
@@ -195,7 +197,7 @@ public class UserCodeCompiler {
     } catch (IOException e) {
       // If we had an issue reading the code, log the error and return an empty String
       // so we still can get a somewhat useful compiler error.
-      LoggerUtils.logException(e);
+      LoggerUtils.logSevereException(e);
       return "";
     }
     String linePointer = "";
