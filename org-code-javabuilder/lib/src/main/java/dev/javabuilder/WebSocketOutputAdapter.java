@@ -22,7 +22,6 @@ public class WebSocketOutputAdapter implements OutputAdapter {
   public void sendMessage(ClientMessage message) {
     try {
       endpoint.sendText(message.getFormattedMessage());
-//      throw new RuntimeException("ERROR!!");
     } catch (IOException e) {
       e.printStackTrace();
     } catch (IllegalStateException e) {

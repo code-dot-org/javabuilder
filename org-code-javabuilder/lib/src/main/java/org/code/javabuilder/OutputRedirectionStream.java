@@ -64,6 +64,5 @@ public class OutputRedirectionStream extends OutputStream {
 
     outputAdapter.sendMessage(new SystemOutMessage(buffer.toString()));
     buffer.delete(0, buffer.length());
-    throw new RuntimeException("ERROR!!");
   }
 }
