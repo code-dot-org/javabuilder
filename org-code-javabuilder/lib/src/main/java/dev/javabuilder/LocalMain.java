@@ -17,7 +17,7 @@ public class LocalMain {
     final LocalOutputAdapter outputAdapter = new LocalOutputAdapter(System.out);
 
     Logger logger = Logger.getLogger(MAIN_LOGGER);
-    logger.addHandler(new LocalLogHandler(System.out, "levelId", "channelId", "miniAppType"));
+    logger.addHandler(new LocalLogHandler(System.out, "levelId", "channelId"));
     // turn off the default console logger
     logger.setUseParentHandlers(false);
 

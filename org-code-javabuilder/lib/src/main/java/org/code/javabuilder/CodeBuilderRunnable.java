@@ -67,7 +67,7 @@ public class CodeBuilderRunnable implements Runnable {
         return;
       }
       // The error was caused by us (essentially an HTTP 5xx error). Log it so we can fix it.
-      LoggerUtils.logError(e.getExceptionMessage(), e.getLoggingString(), e.getCause());
+      LoggerUtils.logSevereError(e.getExceptionMessage(), e.getLoggingString(), e.getCause());
 
       // The error affected the user. Tell them about it.
       outputAdapter.sendMessage(e.getExceptionMessage());
@@ -87,7 +87,7 @@ public class CodeBuilderRunnable implements Runnable {
 
       // Errors we didn't catch. These may have been caused by the JVM, our own setup, or many other
       // unknowns. Log them so we can fix them.
-      LoggerUtils.logError(error);
+      LoggerUtils.logSevereError(error);
 
       // Additionally, these may have affected the user. For now, let's tell them about it.
       outputAdapter.sendMessage(error.getExceptionMessage());
