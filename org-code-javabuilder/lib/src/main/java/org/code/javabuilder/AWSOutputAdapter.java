@@ -2,8 +2,11 @@ package org.code.javabuilder;
 
 import com.amazonaws.services.apigatewaymanagementapi.AmazonApiGatewayManagementApi;
 import com.amazonaws.services.apigatewaymanagementapi.model.GoneException;
+import com.amazonaws.services.apigatewaymanagementapi.model.PayloadTooLargeException;
 import com.amazonaws.services.apigatewaymanagementapi.model.PostToConnectionRequest;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
+
 import org.code.protocol.*;
 
 /** Sends messages to Amazon API Gateway from the user's program. */
@@ -23,9 +26,12 @@ public class AWSOutputAdapter implements OutputAdapter {
    */
   @Override
   public void sendMessage(ClientMessage message) {
+    System.out.println(message.getDetail());
     PostToConnectionRequest post = new PostToConnectionRequest();
     post.setConnectionId(connectionId);
-    post.setData(ByteBuffer.wrap((message.getFormattedMessage()).getBytes()));
+    byte[] bytes = message.getFormattedMessage().getBytes();
+    byte[] trimmedBytes = Arrays.copyOf(bytes, 5000);
+    post.setData(ByteBuffer.wrap(trimmedBytes));
     this.sendMessageHelper(post);
   }
 
@@ -42,6 +48,9 @@ public class AWSOutputAdapter implements OutputAdapter {
       this.api.postToConnection(post);
     } catch (GoneException e) {
       throw new InternalServerRuntimeError(InternalErrorKey.CONNECTION_TERMINATED, e);
+    } catch (PayloadTooLargeException e) {
+      // send a different message instead?
+      e.printStackTrace();
     }
   }
 }
