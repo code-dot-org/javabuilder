@@ -40,10 +40,11 @@ Resources:
                 Action:
                   - "sqs:ReceiveMessage"
                   - "sqs:DeleteMessage"
-                  - "sqs:GetQueueAttributes"
-                  - "sqs:GetQueueUrl"
-                  - "sqs:ListDeadLetterSourceQueues"
-                  - "sqs:ListQueues"
+                  # May need the following
+                  # - "sqs:GetQueueAttributes"
+                  # - "sqs:GetQueueUrl"
+                  # - "sqs:ListDeadLetterSourceQueues"
+                  # - "sqs:ListQueues"
                 Resource:
                   # TODO: limit this
                   - '*' 
@@ -67,11 +68,13 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
-                  - "sqs:ReceiveMessage"
-                  - "sqs:DeleteMessage"
-                  - "sqs:GetQueueAttributes"
-                  # TODO: limit this
-                  - "sqs:*"
+                  - "sqs:CreateQueue"
+                  - "sqs:DeleteQueue"
+                  - "sqs:SendMessage"
+                  # May need the following
+                  # - "sqs:ReceiveMessage"
+                  # - "sqs:DeleteMessage"
+                  # - "sqs:GetQueueAttributes"
                 Resource: '*'
               # Allow invoking of the Build & Run Lambda
               - Effect: Allow
@@ -80,6 +83,12 @@ Resources:
                 Resource:
                   # TODO: limit this
                   - "*"
+              # Allow posting to API Gateway
+              - Effect: Allow
+                Action:
+                  - "execute-api:Invoke"
+                  - "execute-api:ManageConnections"
+                Resource: !Sub "arn:aws:execute-api:*:${AWS::AccountId}:${JavabuilderApiId}/*/$connect"
   AuthorizerLambdaRole:
     Type: AWS::IAM::Role
     Properties:
@@ -98,20 +107,13 @@ Resources:
                 Action:
                   - 'dynamodb:GetItem'
                   - 'dynamodb:PutItem'
-                  - 'dynamodb:UpdateItem'
                   - 'dynamodb:Query'
+                  - 'dynamodb:UpdateItem'
                 Resource:
+                  - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/*_blocked_users"
+                  - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/*_teacher_associated_requests"
                   - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/*_tokens"
                   - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/*_user_requests"
-                  - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/*_teacher_associated_requests"
-                  - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/*_blocked_users"
-              # Allow invoking of the Build & Run Lambda
-              - Effect: Allow
-                Action:
-                  - "lambda:InvokeFunction"
-                Resource:
-                  # TODO: limit this
-                  - "*"
   JavabuilderLambdaLoggingPolicy:
     Type: AWS::IAM::Policy
     Properties:
