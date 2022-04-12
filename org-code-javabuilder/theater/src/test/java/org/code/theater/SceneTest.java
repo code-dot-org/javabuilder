@@ -31,7 +31,8 @@ class SceneTest {
   public void testPlaySound() {
     final double[] samples = {1.0, 0.0, 1.0, 0.0};
     unitUnderTest.playSound(samples);
-    assertEquals(samples, getLastAction(PlaySoundAction.class).getSamples());
+    assertNotSame(samples, getLastAction(PlaySoundAction.class).getSamples());
+    assertEquals(1.0, getLastAction(PlaySoundAction.class).getSamples()[0]);
   }
 
   @Test

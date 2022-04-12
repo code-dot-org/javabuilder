@@ -75,7 +75,8 @@ public class Scene {
    * @param sound an array of samples to play.
    */
   public final void playSound(double[] sound) {
-    this.actions.add(new PlaySoundAction(sound));
+    double[] soundCopy = sound.clone();
+    this.actions.add(new PlaySoundAction(soundCopy));
   }
 
   /**
