@@ -41,9 +41,9 @@ public class WebSocketServer {
 
   /**
    * This acts as the main function for the WebSocket server. Therefore, we do many of the same
-   * things here as we do for LocalMain or for the LambdaRequestHandler, such as setting up the
-   * input and output handlers. However, OnOpen needs to complete in order for the OnClose and
-   * OnMessage handlers to be triggered. This is why we invoke the CodeBuilder in its own thread.
+   * things here as we do for the LambdaRequestHandler, such as setting up the input and output
+   * handlers. However, OnOpen needs to complete in order for the OnClose and OnMessage handlers to
+   * be triggered. This is why we invoke the CodeBuilder in its own thread.
    *
    * @param session The individual WebSocket session.
    */
