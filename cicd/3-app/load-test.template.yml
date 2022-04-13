@@ -31,17 +31,15 @@ Resources:
       ContainerDefinitions: 
         - Name: javabuilder-load-test
           Image: !Ref LoadTestImage
-          Cpu: 0
-          Memory: 512
           LogConfiguration:
             LogDriver: awslogs
             Options:
               awslogs-group:  !Ref CloudwatchLogsGroup
               awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix:  !Sub "${AWS::StackName}-task"
-      Cpu: 256
+      Cpu: 2048
       ExecutionRoleArn: !Ref ExecutionRole
-      Memory: 512
+      Memory: 4096
       NetworkMode: awsvpc
       RuntimePlatform: 
         OperatingSystemFamily: LINUX

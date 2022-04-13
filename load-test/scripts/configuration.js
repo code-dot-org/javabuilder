@@ -1,36 +1,6 @@
-export const BASIC_TEST_OPTIONS = {
-  scenarios: {
-    // ramp up to 5 VUs over 30 seconds
-    rampUp: {
-      executor: "ramping-vus",
-      startVUs: 0,
-      stages: [
-        {duration: '30s', target: 5}
-      ]
-    },
-    // have 5 VUs do 3 iterations each, up to a max of 2 minutes. Start this after
-    // the ramp up time.
-    highLoad: {
-      executor: "per-vu-iterations",
-      vus: 5,
-      iterations: 3,
-      maxDuration: "2m",
-      startTime: '30s',
-    }
-  },
-  thresholds: {
-    exceptions: ["count == 0"],
-    errors: ["count == 0"],
-    websocket_session_duration_without_sleep: ["p(95) < 5000"],
-    long_websocket_sessions: ["count <= 1"],
-    extra_long_websocket_sessions: ["count == 0"]
-  },
-  summaryTrendStats: ["avg", "min", "med", "max", "p(90)", "p(95)", "p(98)", "p(99)"],
-};
-
 // TODO: Update to a load testing instance of Javabuilder
-export const UPLOAD_URL = `https://javabuilder-molly-http.dev-code.org/seedsources/sources.json?Authorization=`;
-export const WEBSOCKET_URL = `wss://javabuilder-molly.dev-code.org?Authorization=`;
+export const UPLOAD_URL = `https://javabuilder-high-load-http.code.org/seedsources/sources.json?Authorization=`;
+export const WEBSOCKET_URL = `wss://javabuilder-high-load.code.org?Authorization=`;
 const origin = "load-test";
   
 export const WEBSOCKET_PARAMS = {
@@ -49,9 +19,11 @@ export const UPLOAD_PARAMS = {
 // This will be used for generating the JWT token
 export const PRIVATE_KEY = null;
 
-// Thresholds for metrics
-export const LONG_REQUEST_MS = 5000;
-export const EXTRA_LONG_REQUEST_MS = 10000;
+// Time per request--if a request takes under this time, sleep until we have
+// reached this time. This is so we do not issue too many requests.
+export const REQUEST_TIME_MS = 20000;
+// Time after which to timeout a request
+export const TIMEOUT_MS = 40000;
 
 // Mini-app types
 export const MiniAppType = {
@@ -59,3 +31,38 @@ export const MiniAppType = {
   NEIGHBORHOOD: 'neighborhood',
   THEATER: 'theater'
 };
+
+export function getTestOptions(maxUserGoal, highLoadTimeMinutes) {
+  const maxConcurrentUsers =  Math.floor(maxUserGoal / 30);
+  return  {
+    scenarios: {
+      halfConcurrency: {
+        executor: "constant-vus",
+        vus: Math.ceil(maxConcurrentUsers / 2),
+        duration: '1m',
+      },
+      initialHighConcurrency: {
+        executor: "constant-vus",
+        vus: maxConcurrentUsers,
+        duration: '1m',
+        startTime: '1m'
+      },
+      // maintain maxConcurrentUsers VUs for highLoadTimeMinutes minutes. Start this after first two
+      // scenarios have completed.
+      highLoad: {
+        executor: "constant-vus",
+        vus: maxConcurrentUsers,
+        duration: `${highLoadTimeMinutes}m`,
+        startTime: '2m',
+      }
+    },
+    thresholds: {
+      exceptions: ["count == 0"],
+      errors: ["count == 0"],
+      timeouts: ["count == 0"],
+      total_session_time: ["p(95) < 5000"],
+      dropped_iterations: ["count == 0"]
+    },
+    summaryTrendStats: ["avg", "min", "med", "max", "p(90)", "p(95)", "p(98)", "p(99)"],
+  };
+}

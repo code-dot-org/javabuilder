@@ -4,7 +4,7 @@ module JwtHelper
   # Verify the token with the appropriate public key (dependant on the
   # environment the request came from), and checks the token has not
   # expired and its issue time is not in the future.
-  def decode_token(token, origin)
+  def decode_token(token, standardized_origin)
     return false unless token
     begin
       if IS_LOAD_TEST
@@ -21,7 +21,7 @@ module JwtHelper
           token,
           # Temporarily choose the key based on the client origin rather than the
           # resource until we have environment-specific Javabuilders set up.
-          get_public_key(origin),
+          get_public_key(standardized_origin),
           true,
           verify_iat: true, # verify issued at time is valid
           algorithm: 'RS256'
@@ -63,6 +63,10 @@ module JwtHelper
     auth_response
   end
 
+  def get_standardized_origin(origin)
+    origin.delete_prefix("https://").delete_prefix("http://").delete_suffix(":3000")
+  end
+
   private
 
   # Load the JWT public key from the appropriate environment variable
@@ -72,13 +76,12 @@ module JwtHelper
   # arn:aws:execute-api:region:account-id:api-id/stage-name/$connect
   # We only care about stage--that tells us the environment (development, staging, etc.)
   # def get_public_key(route_arn)
-  def get_public_key(origin)
+  def get_public_key(standardized_origin)
     # Temporarily choose the key based on the client origin rather than the
     # route_arn until we have environment-specific Javabuilders set up.
     # tmp = route_arn.split(':')
     # api_gateway_arn = tmp[5].split('/')
     # stage_name = api_gateway_arn[1]
-    standardized_origin = origin.delete_prefix("https://").delete_prefix("http://").delete_suffix(":3000")
     stage_name = ""
     if standardized_origin == "localhost-studio.code.org"
       stage_name = "development"

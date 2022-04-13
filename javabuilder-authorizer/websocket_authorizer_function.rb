@@ -20,7 +20,8 @@ def lambda_handler(event:, context:)
     return JwtHelper.generate_policy('connectivityTest', "Allow", method_arn, {connectivityTest: true})
   end
 
-  decoded_token = JwtHelper.decode_token(jwt_token, origin)
+  standardized_origin = JwtHelper.get_standardized_origin(origin)
+  decoded_token = JwtHelper.decode_token(jwt_token, standardized_origin)
   return JwtHelper.generate_deny(method_arn) unless decoded_token
 
   token_payload = decoded_token[0]
