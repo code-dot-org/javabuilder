@@ -3,7 +3,6 @@ package org.code.theater;
 import static org.code.theater.Scene.*;
 import static org.code.theater.support.DrawImageAction.UNSPECIFIED;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
 
 import org.code.media.Color;
 import org.code.media.Font;
@@ -32,7 +31,8 @@ class SceneTest {
   public void testPlaySound() {
     final double[] samples = {1.0, 0.0, 1.0, 0.0};
     unitUnderTest.playSound(samples);
-    assertEquals(samples, getLastAction(PlaySoundAction.class).getSamples());
+    assertNotSame(samples, getLastAction(PlaySoundAction.class).getSamples());
+    assertEquals(1.0, getLastAction(PlaySoundAction.class).getSamples()[0]);
   }
 
   @Test
@@ -65,7 +65,7 @@ class SceneTest {
 
   @Test
   public void testDrawImage() {
-    final Image image = mock(Image.class);
+    final Image image = new Image(1, 1);
     final int x = 100;
     final int y = 100;
     final int size = 200;
@@ -74,7 +74,10 @@ class SceneTest {
     final double rotation = 90.0;
 
     unitUnderTest.drawImage(image, x, y, size);
-    assertSame(image, getLastAction(DrawImageAction.class).getImage());
+    // Confirm we copy the image object when drawing it
+    assertNotSame(image, getLastAction(DrawImageAction.class).getImage());
+    assertEquals(1, getLastAction(DrawImageAction.class).getImage().getHeight());
+
     assertEquals(x, getLastAction(DrawImageAction.class).getX());
     assertEquals(y, getLastAction(DrawImageAction.class).getY());
     assertEquals(size, getLastAction(DrawImageAction.class).getSize());
