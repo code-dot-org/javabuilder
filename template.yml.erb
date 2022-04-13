@@ -38,6 +38,11 @@ Parameters:
     Type: String
     Description: The default stage name in the API Gateway APIs
     Default: Prod
+  SilenceAlerts:
+    Type: String
+    AllowedValues: [true, false]
+    Description: If alerts should be silenced on this instance
+    Default: false
 <%
 JAVALAB_APP_TYPES = %w(
   Theater
@@ -54,6 +59,7 @@ Globals:
     Tracing: Active
 Conditions:
   IsDevCondition: !Equals [!Ref BaseDomainName, "dev-code.org"]
+  SilenceAlertsCondition: !Or [Condition: IsDevCondition, !Equals [!Ref SilenceAlerts, "true"]]
 Resources:
 # Note: We can't update the name of a DomainName resource once it has been created because the
 # domain name itself has already been provisioned. When we change from javabuilderbeta to
@@ -586,7 +592,7 @@ Resources:
           Then post in #ap-csa-dev.
       ActionsEnabled: true
       AlarmActions:
-          - !If [IsDevCondition, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-dev-test", !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:CDO-Urgent"]
+          - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:CDO-Urgent"]
       EvaluationPeriods: 10
       DatapointsToAlarm: 10
       Threshold: 50
@@ -621,7 +627,7 @@ Resources:
           is an indication of an outage.
       ActionsEnabled: true
       AlarmActions:
-          - !If [IsDevCondition, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-dev-test", !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:Javabuilder-high-error-rate"]
+          - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:Javabuilder-high-error-rate"]
       EvaluationPeriods: 4
       DatapointsToAlarm: 4
       Threshold: 10
@@ -661,7 +667,7 @@ Resources:
           consecutive 5 minute periods.
       ActionsEnabled: true
       AlarmActions:
-          - !If [IsDevCondition, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-dev-test", !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-build-and-run-lambda-error-rate"]
+        - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-build-and-run-lambda-error-rate"]
       EvaluationPeriods: 4
       DatapointsToAlarm: 4
       Threshold: 25
