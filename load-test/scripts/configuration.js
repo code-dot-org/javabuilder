@@ -23,7 +23,7 @@ export const PRIVATE_KEY = null;
 // reached this time. This is so we do not issue too many requests.
 export const REQUEST_TIME_MS = 20000;
 // Time after which to timeout a request
-export const TIMEOUT_MS = 40000;
+export const TIMEOUT_MS = 60000;
 
 // Mini-app types
 export const MiniAppType = {
@@ -60,8 +60,7 @@ export function getTestOptions(maxUserGoal, highLoadTimeMinutes) {
       exceptions: ["count == 0"],
       errors: ["count == 0"],
       timeouts: ["count == 0"],
-      total_session_time: ["p(95) < 5000"],
-      dropped_iterations: ["count == 0"]
+      total_session_time: ["p(95) < 5000"]
     },
     summaryTrendStats: ["avg", "min", "med", "max", "p(90)", "p(95)", "p(98)", "p(99)"],
   };
