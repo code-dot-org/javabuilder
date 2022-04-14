@@ -5,8 +5,6 @@ import com.amazonaws.services.apigatewaymanagementapi.model.GoneException;
 import com.amazonaws.services.apigatewaymanagementapi.model.PayloadTooLargeException;
 import com.amazonaws.services.apigatewaymanagementapi.model.PostToConnectionRequest;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
-
 import org.code.protocol.*;
 
 /** Sends messages to Amazon API Gateway from the user's program. */
@@ -28,8 +26,16 @@ public class AWSOutputAdapter implements OutputAdapter {
   public void sendMessage(ClientMessage message) {
     PostToConnectionRequest post = new PostToConnectionRequest();
     post.setConnectionId(connectionId);
-    post.setData(ByteBuffer.wrap((message.getFormattedMessage()).getBytes()));
-    this.sendMessageHelper(post);
+
+    try {
+      String fullMessage = message.getFormattedMessage();
+      post.setData(ByteBuffer.wrap(fullMessage.getBytes()));
+      this.sendMessageHelper(post);
+    } catch (PayloadTooLargeException e) {
+      String shortenedMessage = message.getShortenedFormattedMessage();
+      post.setData(ByteBuffer.wrap(shortenedMessage.getBytes()));
+      this.sendMessageHelper(post);
+    }
   }
 
   public void sendDebuggingMessage(ClientMessage message) {
@@ -45,9 +51,6 @@ public class AWSOutputAdapter implements OutputAdapter {
       this.api.postToConnection(post);
     } catch (GoneException e) {
       throw new InternalServerRuntimeError(InternalErrorKey.CONNECTION_TERMINATED, e);
-    } catch (PayloadTooLargeException e) {
-      e.printStackTrace();
-      throw new InternalServerRuntimeError(InternalErrorKey.PAYLOAD_TOO_LARGE, e);
     }
   }
 }
