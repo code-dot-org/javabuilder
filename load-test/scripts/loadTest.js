@@ -23,6 +23,9 @@ export const options = getTestOptions(
 
 // Change this to test different code
 const sourceToTest = helloWorld;
+// Set this to true to space out requests every REQUEST_TIME_MS milliseconds. Set to
+// false to send as many requests as possible.
+const SHOULD_SLEEP = true;
 
 const exceptionCounter = new Counter("exceptions");
 const errorCounter = new Counter("errors");
@@ -50,10 +53,14 @@ export default function () {
   check(uploadResult, { "upload status is 200": (r) => isResultSuccess(r)});
 
   if (isResultSuccess(uploadResult)) {
-    const res = ws.connect(WEBSOCKET_URL + authToken, WEBSOCKET_PARAMS, (socket) =>
-      onSocketConnect(socket, requestStartTime, Date.now(), sessionId)
-    );
-
+    let res = null;
+    try {
+      res = ws.connect(WEBSOCKET_URL + authToken, WEBSOCKET_PARAMS, (socket) =>
+        onSocketConnect(socket, requestStartTime, Date.now(), sessionId)
+      );
+    } catch(error) {
+      console.log(`ERROR ${error} for session id ${sessionId}`);
+    }
     check(res, { "websocket status is 101": (r) => r && r.status === 101 });
   } else {
     console.log(`ERROR upload failed for session id ${sessionId}`);
@@ -99,9 +106,11 @@ function onSocketConnect(socket, requestStartTime, websocketStartTime, sessionId
     
     // Sleep this VU if we are under the max request time. This is so we maintain
     // a reasonable number of total requests across all virtual users.
-    const sleepTime = Math.floor((REQUEST_TIME_MS - totalTime) / 1000);
-    if (sleepTime > 0) {
-      sleep(sleepTime);
+    if (SHOULD_SLEEP) {
+      const sleepTime = Math.floor((REQUEST_TIME_MS - totalTime) / 1000);
+      if (sleepTime > 0) {
+        sleep(sleepTime);
+      }
     }
   });
 

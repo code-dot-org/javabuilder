@@ -33,7 +33,7 @@ export const MiniAppType = {
 };
 
 export function getTestOptions(maxUserGoal, highLoadTimeMinutes) {
-  const maxConcurrentUsers =  Math.floor(maxUserGoal / 30);
+  const maxConcurrentUsers =  Math.ceil(maxUserGoal / 30);
   return  {
     scenarios: {
       halfConcurrency: {
