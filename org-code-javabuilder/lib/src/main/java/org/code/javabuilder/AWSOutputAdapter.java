@@ -26,12 +26,9 @@ public class AWSOutputAdapter implements OutputAdapter {
    */
   @Override
   public void sendMessage(ClientMessage message) {
-    System.out.println(message.getDetail());
     PostToConnectionRequest post = new PostToConnectionRequest();
     post.setConnectionId(connectionId);
-    byte[] bytes = message.getFormattedMessage().getBytes();
-    byte[] trimmedBytes = Arrays.copyOf(bytes, 5000);
-    post.setData(ByteBuffer.wrap(trimmedBytes));
+    post.setData(ByteBuffer.wrap((message.getFormattedMessage()).getBytes()));
     this.sendMessageHelper(post);
   }
 
@@ -49,8 +46,8 @@ public class AWSOutputAdapter implements OutputAdapter {
     } catch (GoneException e) {
       throw new InternalServerRuntimeError(InternalErrorKey.CONNECTION_TERMINATED, e);
     } catch (PayloadTooLargeException e) {
-      // send a different message instead?
       e.printStackTrace();
+      throw new InternalServerRuntimeError(InternalErrorKey.PAYLOAD_TOO_LARGE, e);
     }
   }
 }

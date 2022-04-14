@@ -65,6 +65,10 @@ public class CodeBuilderRunnable implements Runnable {
         // since we can no longer send the EXITED message.
         Logger.getLogger(MAIN_LOGGER).warning(e.getLoggingString());
         return;
+      } else if (e.getMessage().equals(InternalErrorKey.PAYLOAD_TOO_LARGE.toString())) {
+        outputAdapter.sendMessage(e.getExceptionMessage());
+        Logger.getLogger(MAIN_LOGGER).warning(e.getLoggingString());
+        return;
       }
       // The error was caused by us (essentially an HTTP 5xx error). Log it so we can fix it.
       LoggerUtils.logSevereError(e.getExceptionMessage(), e.getLoggingString(), e.getCause());
