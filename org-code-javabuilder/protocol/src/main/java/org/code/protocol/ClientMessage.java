@@ -67,4 +67,15 @@ public abstract class ClientMessage {
     }
     return formattedMessage.toString();
   }
+
+  public String getShortenedFormattedMessage() {
+    JSONObject formattedMessage = new JSONObject();
+    formattedMessage.put("type", this.type);
+    formattedMessage.put("value", this.value);
+
+    JSONObject trimmedDetail = new JSONObject();
+    trimmedDetail.put("cause", this.detail.getString("cause").substring(0, 14000));
+    formattedMessage.put("detail", trimmedDetail);
+    return formattedMessage.toString();
+  }
 }
