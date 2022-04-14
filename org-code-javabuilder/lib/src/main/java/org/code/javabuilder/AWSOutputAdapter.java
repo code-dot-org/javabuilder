@@ -26,16 +26,8 @@ public class AWSOutputAdapter implements OutputAdapter {
   public void sendMessage(ClientMessage message) {
     PostToConnectionRequest post = new PostToConnectionRequest();
     post.setConnectionId(connectionId);
-
-    try {
-      String fullMessage = message.getFormattedMessage();
-      post.setData(ByteBuffer.wrap(fullMessage.getBytes()));
-      this.sendMessageHelper(post);
-    } catch (PayloadTooLargeException e) {
-      String shortenedMessage = message.getShortenedFormattedMessage();
-      post.setData(ByteBuffer.wrap(shortenedMessage.getBytes()));
-      this.sendMessageHelper(post);
-    }
+    post.setData(ByteBuffer.wrap((message.getFormattedMessage()).getBytes()));
+    this.sendMessageHelper(post);
   }
 
   public void sendDebuggingMessage(ClientMessage message) {
