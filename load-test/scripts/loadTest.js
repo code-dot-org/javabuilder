@@ -18,14 +18,14 @@ import {
 // Change these options to increase the user goal or time to run the test.
 export const options = getTestOptions(
   /* User goal */ 1000,
-  /* High load time minutes */ 15
+  /* High load time minutes */ 4
 );
 
 // Change this to test different code
-const sourceToTest = helloWorld;
+const SOURCE_TO_TEST = helloWorld;
 // Set this to true to space out requests every REQUEST_TIME_MS milliseconds. Set to
 // false to send as many requests as possible.
-const SHOULD_SLEEP = true;
+const SHOULD_SLEEP = false;
 
 const exceptionCounter = new Counter("exceptions");
 const errorCounter = new Counter("errors");
@@ -34,6 +34,7 @@ const totalSessionTime = new Trend("total_session_time", true);
 const sessionsOver10Seconds = new Counter("session_over_10_seconds");
 const sessionsOver15Seconds = new Counter("session_over_15_seconds");
 const sessionsOver20Seconds = new Counter("session_over_20_seconds");
+const retryCounters = [new Counter("sessions_with_0_retries"), new Counter("sessions_with_1_retry"), new Counter("sessions_with_2_retries")];
 
 
 function isResultSuccess(result) {
@@ -46,25 +47,50 @@ export default function () {
   const authToken = generateToken(MiniAppType.CONSOLE, sessionId);
   const uploadResult = http.put(
     UPLOAD_URL + authToken,
-    sourceToTest,
+    SOURCE_TO_TEST,
     UPLOAD_PARAMS
   );
 
   check(uploadResult, { "upload status is 200": (r) => isResultSuccess(r)});
 
   if (isResultSuccess(uploadResult)) {
-    let res = null;
-    try {
-      res = ws.connect(WEBSOCKET_URL + authToken, WEBSOCKET_PARAMS, (socket) =>
-        onSocketConnect(socket, requestStartTime, Date.now(), sessionId)
-      );
-    } catch(error) {
-      console.log(`ERROR ${error} for session id ${sessionId}`);
-    }
+    let res = connectToWebsocketWithRetry(authToken, sessionId, requestStartTime);
     check(res, { "websocket status is 101": (r) => r && r.status === 101 });
   } else {
     console.log(`ERROR upload failed for session id ${sessionId}`);
   }
+}
+
+function connectToWebsocketWithRetry(authToken, sessionId, requestStartTime) {
+  let res = null;
+  let tries = 0;
+  let shouldRetry = true;
+  while(tries < 3 && shouldRetry) {
+    if (tries > 0) {
+      // before the first retry sleep for 1 second, before the second retry sleep for 2 seconds.
+      console.log(`RETRY ${tries} for session id ${sessionId}`);
+      sleep(1 * tries);
+    }
+    res = connectToWebsocket(authToken, sessionId, requestStartTime);
+    if (res != null) {
+      shouldRetry = false;
+    } 
+    tries++;
+  }
+  retryCounters[tries - 1].add(1);
+  return res;
+}
+
+function connectToWebsocket(authToken, sessionId, requestStartTime) {
+  let res = null;
+  try {
+    res = ws.connect(WEBSOCKET_URL + authToken, WEBSOCKET_PARAMS, (socket) =>
+      onSocketConnect(socket, requestStartTime, Date.now(), sessionId)
+    );
+  } catch(error) {
+    console.log(`ERROR ${error} for session id ${sessionId}`);
+  }
+  return res;
 }
 
 function onSocketConnect(socket, requestStartTime, websocketStartTime, sessionId) {
