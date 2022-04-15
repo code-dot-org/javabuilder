@@ -35,9 +35,6 @@ const sessionsOver10Seconds = new Counter("session_over_10_seconds");
 const sessionsOver15Seconds = new Counter("session_over_15_seconds");
 const sessionsOver20Seconds = new Counter("session_over_20_seconds");
 const retryCounters = [new Counter("sessions_with_0_retries"), new Counter("sessions_with_1_retry"), new Counter("sessions_with_2_retries")];
-// const zeroRetries = new Counter("sessions_with_0_retries");
-// const oneRetry = new Counter("sessions_with_1_retry");
-// const twoRetries = new Counter("sessions_with_2_retries");
 
 
 function isResultSuccess(result) {
