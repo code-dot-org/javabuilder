@@ -4,6 +4,9 @@ require 'aws-sdk-lambda'
 require 'aws-sdk-apigatewaymanagementapi'
 require 'uri'
 
+MAX_SQS_RETRIES = 3
+INITIAL_RETRY_SLEEP_S = 0.5
+
 def lambda_handler(event:, context:)
   routeKey = event["requestContext"]["routeKey"]
   if routeKey == "$connect"
@@ -30,12 +33,10 @@ def on_connect(event, context)
   end
 
   # -- Create SQS for this session --
-  sqs_client = Aws::SQS::Client.new(region: region)
+  sqs_client = Aws::SQS::Client.new(region: region, retry_mode: "adaptive")
   queue_name = get_session_id(event) + '.fifo'
-  sqs_queue = sqs_client.create_queue(
-    queue_name: queue_name,
-    attributes: {"FifoQueue" => "true"}
-  )
+  # Create the queue with retries if we get throttled
+  sqs_queue = sqs_operation_with_retries(:create_queue, request_context, sqs_client, queue_name)
 
   # -- Create Lambda for this session --
   lambda_client = Aws::Lambda::Client.new(region: region)
@@ -76,25 +77,11 @@ def on_connect(event, context)
 end
 
 def on_disconnect(event, context)
-  sqs = Aws::SQS::Client.new(region: get_region(context))
+  sqs = Aws::SQS::Client.new(region: get_region(context), retry_mode: "adaptive")
+  request_context = event['requestContext']
 
-  # Handle if queue does not exist,
-  # such as in case of connectivity test.
-  # The NonExistentQueue error is not documented in the AWS SDK,
-  # but was observed in errors accumulated from our connectivity tests.
-  begin
-    sqs.delete_queue(queue_url: get_sqs_url(event, context))
-  rescue Aws::SQS::Errors::NonExistentQueue => e
-    request_context = event['requestContext']
-    authorizer = request_context['authorizer']
-
-    # This exception is expected during connectivity tests,
-    # so do not log in those cases.
-    unless is_connectivity_test(authorizer)
-      puts "DISCONNECT ERROR REQUEST CONTEXT: #{request_context}"
-      puts "DISCONNECT ERROR: #{e.message}"
-    end
-  end
+  # Delete the queue with retries if we get throttled
+  sqs_operation_with_retries(:delete_queue, request_context, sqs, event, context)
 
   { statusCode: 200, body: "success"}
 end
@@ -154,4 +141,47 @@ end
 
 def is_connectivity_test(authorizer)
   !!(authorizer && authorizer['connectivityTest'])
+end
+
+def sqs_operation_with_retries(sqs_operation, request_context, *operation_params)
+  retries = 0
+  sleep_time = INITIAL_RETRY_SLEEP_S
+  begin
+    method(sqs_operation).call(*operation_params)
+  rescue Aws::SQS::Errors::RequestThrottled => e
+    raise(e) if retries >= MAX_SQS_RETRIES
+    retries += 1
+    sleep(sleep_time)
+    puts "RETRY #{retries}, just slept for #{sleep_time} seconds. Request context: #{request_context}"
+    # double sleep time for next retry
+    sleep_time = sleep_time * 2
+    retry
+  end
+end
+
+def create_queue(sqs_client, queue_name)
+  sqs_queue = sqs_client.create_queue(
+    queue_name: queue_name,
+    attributes: {"FifoQueue" => "true"}
+  )
+end
+
+def delete_queue(sqs_client, event, context)
+  # Handle if queue does not exist,
+  # such as in case of connectivity test.
+  # The NonExistentQueue error is not documented in the AWS SDK,
+  # but was observed in errors accumulated from our connectivity tests.
+  begin
+    sqs_client.delete_queue(queue_url: get_sqs_url(event, context))
+  rescue Aws::SQS::Errors::NonExistentQueue => e
+    request_context = event['requestContext']
+    authorizer = request_context['authorizer']
+
+    # This exception is expected during connectivity tests,
+    # so do not log in those cases.
+    unless is_connectivity_test(authorizer)
+      puts "DISCONNECT ERROR REQUEST CONTEXT: #{request_context}"
+      puts "DISCONNECT ERROR: #{e.message}"
+    end
+  end
 end
