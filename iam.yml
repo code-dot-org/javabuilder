@@ -52,7 +52,8 @@ Resources:
                 Action:
                   - "execute-api:Invoke"
                   - "execute-api:ManageConnections"
-                Resource: !Sub "arn:aws:execute-api:*:${AWS::AccountId}:${JavabuilderApiId}/*/$connect"
+                Resource:
+                  - !Sub "arn:aws:execute-api:*:${AWS::AccountId}:${JavabuilderApiId}/*"
   SessionManagerMessageRelayLambdaRole:
     Type: AWS::IAM::Role
     Properties:
@@ -88,7 +89,7 @@ Resources:
                 Action:
                   - "execute-api:Invoke"
                   - "execute-api:ManageConnections"
-                Resource: !Sub "arn:aws:execute-api:*:${AWS::AccountId}:${JavabuilderApiId}/*/$connect"
+                Resource: !Sub "arn:aws:execute-api:*:${AWS::AccountId}:${JavabuilderApiId}/*"
   AuthorizerLambdaRole:
     Type: AWS::IAM::Role
     Properties:
