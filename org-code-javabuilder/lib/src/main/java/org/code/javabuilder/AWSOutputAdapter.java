@@ -2,7 +2,6 @@ package org.code.javabuilder;
 
 import com.amazonaws.services.apigatewaymanagementapi.AmazonApiGatewayManagementApi;
 import com.amazonaws.services.apigatewaymanagementapi.model.GoneException;
-import com.amazonaws.services.apigatewaymanagementapi.model.PayloadTooLargeException;
 import com.amazonaws.services.apigatewaymanagementapi.model.PostToConnectionRequest;
 import java.nio.ByteBuffer;
 import org.code.protocol.*;
