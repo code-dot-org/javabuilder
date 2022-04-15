@@ -13,7 +13,7 @@ public final class JavabuilderThrowableMessageUtils {
   // limit these to 50KB each, which should keep us well under 128KB payload size limit:
   // https://docs.aws.amazon.com/apigateway/latest/developerguide/limits.html
   private static final int MAX_DETAIL_SIZE_CHARS = 50000;
-  // CAUSE_MESSAGE is used in Javalab to access to get relatively short strings
+  // CAUSE_MESSAGE is used in Javalab to get relatively short strings
   // (eg, file names in FileNotFoundException, class names when using invalid classes)
   private static final int MAX_CAUSE_MESSAGE_DETAIL_SIZE_CHARS = 1000;
 
@@ -107,10 +107,7 @@ public final class JavabuilderThrowableMessageUtils {
   }
 
   private static String trimDetail(String detailMessage, int charLimit) {
-    String trimmedMessage = detailMessage;
-    if (detailMessage.length() > charLimit) {
-      trimmedMessage = trimmedMessage.substring(0, charLimit);
-    }
-    return trimmedMessage;
+    int trimmedLength = Math.min(charLimit, detailMessage.length());
+    return detailMessage.substring(0, trimmedLength);
   }
 }
