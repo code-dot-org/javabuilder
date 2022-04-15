@@ -22,7 +22,7 @@ export const options = getTestOptions(
 );
 
 // Change this to test different code
-const sourceToTest = helloWorld;
+const SOURCE_TO_TEST = helloWorld;
 // Set this to true to space out requests every REQUEST_TIME_MS milliseconds. Set to
 // false to send as many requests as possible.
 const SHOULD_SLEEP = false;
@@ -34,9 +34,10 @@ const totalSessionTime = new Trend("total_session_time", true);
 const sessionsOver10Seconds = new Counter("session_over_10_seconds");
 const sessionsOver15Seconds = new Counter("session_over_15_seconds");
 const sessionsOver20Seconds = new Counter("session_over_20_seconds");
-const zeroRetries = new Counter("sessions_with_0_retries");
-const oneRetry = new Counter("sessions_with_1_retry");
-const twoRetries = new Counter("sessions_with_2_retries");
+const retryCounters = [new Counter("sessions_with_0_retries"), new Counter("sessions_with_1_retry"), new Counter("sessions_with_2_retries")];
+// const zeroRetries = new Counter("sessions_with_0_retries");
+// const oneRetry = new Counter("sessions_with_1_retry");
+// const twoRetries = new Counter("sessions_with_2_retries");
 
 
 function isResultSuccess(result) {
@@ -49,7 +50,7 @@ export default function () {
   const authToken = generateToken(MiniAppType.CONSOLE, sessionId);
   const uploadResult = http.put(
     UPLOAD_URL + authToken,
-    sourceToTest,
+    SOURCE_TO_TEST,
     UPLOAD_PARAMS
   );
 
@@ -79,15 +80,7 @@ function connectToWebsocketWithRetry(authToken, sessionId, requestStartTime) {
     } 
     tries++;
   }
-  if (tries === 1) {
-    zeroRetries.add(1);
-  } else if (tries === 2) {
-    oneRetry.add(1);
-  } else if (tries === 3) {
-    twoRetries.add(1);
-  } else {
-    console.log(`Unexpected number of retries: ${tries}`);
-  }
+  retryCounters[tries - 1].add(1);
   return res;
 }
 
