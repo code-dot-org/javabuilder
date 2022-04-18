@@ -37,6 +37,10 @@ Resources:
               awslogs-group:  !Ref CloudwatchLogsGroup
               awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix:  !Sub "${AWS::StackName}-task"
+          Ulimits:
+            - HardLimit: 4096
+              Name: nofile
+              SoftLimit: 4096
       Cpu: 2048
       ExecutionRoleArn: !Ref ExecutionRole
       Memory: 4096
