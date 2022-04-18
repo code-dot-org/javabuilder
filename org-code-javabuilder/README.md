@@ -99,17 +99,3 @@ feature-rich.
 _Note: non-Java files used or created by the program (for example `grid.txt` in the
 Neighborhood) will be added to the root of the repo. In production, the runtime directory
 is changed to the tmp directory, so cleanup of these files is not necessary there._
-
-### Developing in isolation (DEPRECATED)
-
-Note: `LocalMain` will removed soon. Use the above method to develop Javabuilder.
-
-To run Javabuilder in isolation, run the `LocalMain` class from you Java IDE. This will
-exercise the compile and run logic in isolation. Javabuilder will execute the program in
-src/main/resources/main.json. You can update which file is used from 
-`LocalProjectFileManager`. Input and output will be directed to the terminal. Any 
-non-Java file used or created by the program (for example `grid.txt` in 
-`main_painter.json`) will be created in the `org-code-javabuilder` folder when running
-locally, so be aware you may want to do some cleanup after running code that relies on
-text files (in our Lambda runtime the code all runs from a temporary folder and handles
-this cleanup).
