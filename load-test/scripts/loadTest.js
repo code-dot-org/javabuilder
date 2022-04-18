@@ -2,7 +2,7 @@ import ws from "k6/ws";
 import http from "k6/http";
 import { check, sleep } from "k6";
 import { Counter, Trend } from "k6/metrics";
-import { helloWorld } from "./sources.js";
+import { scanner } from "./sources.js";
 import { getRandomId, generateToken } from "./tokenHelpers.js";
 import {
   MiniAppType,
@@ -17,12 +17,12 @@ import {
 
 // Change these options to increase the user goal or time to run the test.
 export const options = getTestOptions(
-  /* User goal */ 1000,
+  /* User goal */ 30000,
   /* High load time minutes */ 4
 );
 
 // Change this to test different code
-const SOURCE_TO_TEST = helloWorld;
+const SOURCE_TO_TEST = scanner;
 // Set this to true to space out requests every REQUEST_TIME_MS milliseconds. Set to
 // false to send as many requests as possible.
 const SHOULD_SLEEP = false;
@@ -35,6 +35,9 @@ const sessionsOver10Seconds = new Counter("session_over_10_seconds");
 const sessionsOver15Seconds = new Counter("session_over_15_seconds");
 const sessionsOver20Seconds = new Counter("session_over_20_seconds");
 const retryCounters = [new Counter("sessions_with_0_retries"), new Counter("sessions_with_1_retry"), new Counter("sessions_with_2_retries")];
+const responseTime = new Trend("response_time", true);
+const notSent = new Counter("not_sent");
+const noResponse = new Counter("no_response");
 
 
 function isResultSuccess(result) {
@@ -83,6 +86,7 @@ function connectToWebsocketWithRetry(authToken, sessionId, requestStartTime) {
 
 function connectToWebsocket(authToken, sessionId, requestStartTime) {
   let res = null;
+  let responseTime = null;
   try {
     res = ws.connect(WEBSOCKET_URL + authToken, WEBSOCKET_PARAMS, (socket) =>
       onSocketConnect(socket, requestStartTime, Date.now(), sessionId)
@@ -93,7 +97,15 @@ function connectToWebsocket(authToken, sessionId, requestStartTime) {
   return res;
 }
 
+
+// pass in onMessage
+// need to keep track, per socket, of:
+// {sendAt: date, respondedAt: date}
+// in a way that onClose can access
+// also contain k6 metrics?
 function onSocketConnect(socket, requestStartTime, websocketStartTime, sessionId) {
+  let sentAt, respondedAt;
+
   socket.on("open", () => {
     socket.setTimeout(() => {
       console.log(`Triggering TIMEOUT for session id ${sessionId}, request has gone longer than ${TIMEOUT_MS} ms.`);
@@ -106,6 +118,19 @@ function onSocketConnect(socket, requestStartTime, websocketStartTime, sessionId
     if (parsedData.type === "EXCEPTION") {
       console.log(`EXCEPTION for session id ${sessionId} ` + parsedData.value);
       exceptionCounter.add(1);
+    }
+
+    if (parsedData.type === "SYSTEM_OUT" && parsedData.value === "What's your name?") {
+      const message = JSON.stringify({
+        messageType: "SYSTEM_IN",
+        message: "Ben"
+      });
+      socket.send(message);
+      sentAt = Date.now();
+    }
+
+    if (parsedData.type === "SYSTEM_OUT" && parsedData.value === "Hello Ben!") {
+      respondedAt = Date.now();
     }
   });
 
@@ -124,6 +149,14 @@ function onSocketConnect(socket, requestStartTime, websocketStartTime, sessionId
       } else if (totalTime > 10000) {
         console.log(`OVER 10 SECONDS Session id ${sessionId} had a request time of ${totalTime} ms.`);
         sessionsOver10Seconds.add(1);
+      }
+
+      if (!sentAt) {
+        notSent.add(1);
+      } else if (!respondedAt) {
+        noResponse.add(1);
+      } else {
+        responseTime.add(respondedAt - sentAt);
       }
     } else {
       console.log(`TIMEOUT detected for session id ${sessionId}`);
