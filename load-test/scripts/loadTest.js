@@ -14,6 +14,9 @@ import {
   TIMEOUT_MS,
   REQUEST_TIME_MS
 } from "./configuration.js";
+// Custom metrics for particular load test.
+// Expects an object with onMessage and onClose event handler properties.
+import metricsReporter from './scannerLoadTestMetrics.js'
 
 // Change these options to increase the user goal or time to run the test.
 export const options = getTestOptions(
@@ -35,10 +38,6 @@ const sessionsOver10Seconds = new Counter("session_over_10_seconds");
 const sessionsOver15Seconds = new Counter("session_over_15_seconds");
 const sessionsOver20Seconds = new Counter("session_over_20_seconds");
 const retryCounters = [new Counter("sessions_with_0_retries"), new Counter("sessions_with_1_retry"), new Counter("sessions_with_2_retries")];
-const responseTime = new Trend("response_time", true);
-const notSent = new Counter("not_sent");
-const noResponse = new Counter("no_response");
-
 
 function isResultSuccess(result) {
   return result && result.status === 200;
@@ -119,19 +118,7 @@ function onSocketConnect(socket, requestStartTime, websocketStartTime, sessionId
       console.log(`EXCEPTION for session id ${sessionId} ` + parsedData.value);
       exceptionCounter.add(1);
     }
-
-    if (parsedData.type === "SYSTEM_OUT" && parsedData.value === "What's your name?") {
-      const message = JSON.stringify({
-        messageType: "SYSTEM_IN",
-        message: "Ben"
-      });
-      socket.send(message);
-      sentAt = Date.now();
-    }
-
-    if (parsedData.type === "SYSTEM_OUT" && parsedData.value === "Hello Ben!") {
-      respondedAt = Date.now();
-    }
+    metricsReporter.onMessage(socket, parsedData);
   });
 
   socket.on("close", () => {
@@ -150,14 +137,7 @@ function onSocketConnect(socket, requestStartTime, websocketStartTime, sessionId
         console.log(`OVER 10 SECONDS Session id ${sessionId} had a request time of ${totalTime} ms.`);
         sessionsOver10Seconds.add(1);
       }
-
-      if (!sentAt) {
-        notSent.add(1);
-      } else if (!respondedAt) {
-        noResponse.add(1);
-      } else {
-        responseTime.add(respondedAt - sentAt);
-      }
+      metricsReporter.onClose();
     } else {
       console.log(`TIMEOUT detected for session id ${sessionId}`);
       timeoutCounter.add(1);
