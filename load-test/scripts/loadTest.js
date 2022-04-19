@@ -14,13 +14,13 @@ import {
   TIMEOUT_MS,
   REQUEST_TIME_MS
 } from "./configuration.js";
-// Custom metrics for particular load test.
+// Custom metrics for scanner load test.
 // Expects an object with onMessage and onClose event handler properties.
 import metricsReporter from './scannerLoadTestMetrics.js'
 
 // Change these options to increase the user goal or time to run the test.
 export const options = getTestOptions(
-  /* User goal */ 30000,
+  /* User goal */ 1000,
   /* High load time minutes */ 4
 );
 
@@ -85,7 +85,6 @@ function connectToWebsocketWithRetry(authToken, sessionId, requestStartTime) {
 
 function connectToWebsocket(authToken, sessionId, requestStartTime) {
   let res = null;
-  let responseTime = null;
   try {
     res = ws.connect(WEBSOCKET_URL + authToken, WEBSOCKET_PARAMS, (socket) =>
       onSocketConnect(socket, requestStartTime, Date.now(), sessionId)
@@ -96,15 +95,7 @@ function connectToWebsocket(authToken, sessionId, requestStartTime) {
   return res;
 }
 
-
-// pass in onMessage
-// need to keep track, per socket, of:
-// {sendAt: date, respondedAt: date}
-// in a way that onClose can access
-// also contain k6 metrics?
 function onSocketConnect(socket, requestStartTime, websocketStartTime, sessionId) {
-  let sentAt, respondedAt;
-
   socket.on("open", () => {
     socket.setTimeout(() => {
       console.log(`Triggering TIMEOUT for session id ${sessionId}, request has gone longer than ${TIMEOUT_MS} ms.`);
