@@ -1,14 +1,9 @@
 import { Counter, Trend } from "k6/metrics";
 
-const metrics = {
-    responseTime: new Trend("response_time", true),
-    notSent: new Counter("not_sent"),
-    noResponse: new Counter("no_response")
-};
-const metricsData = {
-    sentAt: null,
-    respondedAt: null
-};
+const responseTime = new Trend("response_time", true);
+const notSent = new Counter("not_sent");
+const noResponse =  new Counter("no_response");
+let sentAt, respondedAt;
 
 function onMessage(socket, parsedData) {
     if (parsedData.type === "SYSTEM_OUT" && parsedData.value === "What's your name?") {
@@ -17,24 +12,21 @@ function onMessage(socket, parsedData) {
             message: "Ben"
         });
         socket.send(message);
-        metricData.sentAt = Date.now();
+        sentAt = Date.now();
     }
 
     if (parsedData.type === "SYSTEM_OUT" && parsedData.value === "Hello Ben!") {
-        metricData.respondedAt = Date.now();
+        respondedAt = Date.now();
     }
 }
 
 function onClose() {
-    const {responseTime, notSent, noResponse} = metrics;
-    const {sentAt, respondedAt} = metricData;
-
-    if (!metricData.sentAt) {
-        metrics.notSent.add(1);
-    } else if (!metricData.respondedAt) {
-        metrics.noResponse.add(1);
+    if (!sentAt) {
+        notSent.add(1);
+    } else if (!respondedAt) {
+        noResponse.add(1);
     } else {
-        metrics.responseTime.add(respondedAt - sentAt);
+        responseTime.add(respondedAt - sentAt);
     }
 }
 
