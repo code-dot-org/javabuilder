@@ -131,7 +131,7 @@ Resources:
       Description: Puts user sources into the S3 bucket
       CodeUri: api-gateway-routes/
       Handler: api_gateway_put_function.lambda_handler
-      Role: !ImportValue JavabuilderLambdaExecutionRole
+      Role: !ImportValue PutSourcesLambdaRole
       Environment:
         Variables:
           CONTENT_BUCKET_NAME: !Ref ContentBucket
