@@ -7,6 +7,16 @@ import java.util.HashMap;
 
 /* Helper for formatting exceptions that will be displayed to the user. */
 public final class JavabuilderThrowableMessageUtils {
+  // The detail payload can get extremely large (eg, in case of sending stack trace from stack
+  // overflow error).
+  // We include two potentially very long detail keys (CAUSE and FALLBACK_MESSAGE) --
+  // limit these to 50KB each, which should keep us well under 128KB payload size limit:
+  // https://docs.aws.amazon.com/apigateway/latest/developerguide/limits.html
+  private static final int MAX_DETAIL_SIZE_CHARS = 50000;
+  // CAUSE_MESSAGE is used in Javalab to get relatively short strings
+  // (eg, file names in FileNotFoundException, class names when using invalid classes)
+  private static final int MAX_CAUSE_MESSAGE_DETAIL_SIZE_CHARS = 1000;
+
   private JavabuilderThrowableMessageUtils() {
     throw new UnsupportedOperationException("Instantiation of utility class is not allowed.");
   }
@@ -31,15 +41,17 @@ public final class JavabuilderThrowableMessageUtils {
 
     String preferredFallbackMessage = null;
     if (cause != null) {
-      // To do: remove CAUSE key once we're using STACK_TRACE and EXCEPTION_TYPE
-      // in (partially) translated exception messages in Javalab.
+      // To do: remove CAUSE key and replace with stack trace and exception message individually
+      // to enable (partially) translated exception messages in Javalab.
       // https://codedotorg.atlassian.net/browse/JAVA-439
       preferredFallbackMessage = getDefaultFallbackMessageString(cause);
       detail.put(ClientMessageDetailKeys.CAUSE, preferredFallbackMessage);
-      detail.put(ClientMessageDetailKeys.STACK_TRACE, getUserFacingStackTraceString(cause));
-      detail.put(ClientMessageDetailKeys.EXCEPTION_MESSAGE, getExceptionMessageString(cause));
-      if (cause.getMessage() != null) {
-        detail.put(ClientMessageDetailKeys.CAUSE_MESSAGE, cause.getMessage());
+
+      String causeMessage = cause.getMessage();
+      if (causeMessage != null) {
+        detail.put(
+            ClientMessageDetailKeys.CAUSE_MESSAGE,
+            trimDetail(causeMessage, MAX_CAUSE_MESSAGE_DETAIL_SIZE_CHARS));
       }
     }
 
@@ -68,7 +80,7 @@ public final class JavabuilderThrowableMessageUtils {
   private static String getDefaultFallbackMessageString(Throwable cause) {
     String loggingString = "Exception message: " + getExceptionMessageString(cause) + "\n";
     loggingString += getUserFacingStackTraceString(cause);
-    return loggingString;
+    return trimDetail(loggingString, MAX_DETAIL_SIZE_CHARS);
   }
 
   /**
@@ -92,5 +104,10 @@ public final class JavabuilderThrowableMessageUtils {
 
   private static String getExceptionMessageString(Throwable cause) {
     return cause.toString();
+  }
+
+  private static String trimDetail(String detailMessage, int charLimit) {
+    int trimmedLength = Math.min(charLimit, detailMessage.length());
+    return detailMessage.substring(0, trimmedLength);
   }
 }
