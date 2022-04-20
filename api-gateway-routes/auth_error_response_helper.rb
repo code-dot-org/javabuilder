@@ -1,4 +1,5 @@
 module AuthErrorResponseHelper
+  AUTHORIZER_KEY = 'AUTHORIZER'.freeze
   AUTHORIZATION_ERROR_KEY = "authorization_error".freeze
   AUTHORIZATION_ERROR_CODE_KEY = "authorization_error_code".freeze
 
@@ -6,7 +7,7 @@ module AuthErrorResponseHelper
     return nil unless authorizer_payload[AUTHORIZATION_ERROR_KEY] && authorizer_payload[AUTHORIZATION_ERROR_CODE_KEY]
 
     body = {
-      type: AUTHORIZATION_ERROR_KEY,
+      type: AUTHORIZER_KEY,
       value: authorizer_payload[AUTHORIZATION_ERROR_KEY]
     }
     { statusCode: authorizer_payload[AUTHORIZATION_ERROR_CODE_KEY], body: body.to_s }

@@ -46,8 +46,8 @@ def get_token_status(context, sid)
   end
 
   if item['used']
-    puts "TOKEN VALIDATION ERROR: #{TokenStatus::USED} token_id: #{sid}"
-    return TokenStatus::USED
+    puts "TOKEN VALIDATION ERROR: #{TokenStatus::TOKEN_USED} token_id: #{sid}"
+    return TokenStatus::TOKEN_USED
   end
 
   unless item['vetted']

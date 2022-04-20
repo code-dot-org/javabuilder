@@ -22,7 +22,7 @@ class TokenValidator
   end
 
   def validate
-    return error(ALREADY_EXISTS) unless log_token
+    return error(TOKEN_USED) unless log_token
     return error(USER_BLOCKED) if user_blocked?
     return error(TEACHERS_BLOCKED) if teachers_blocked?
     return error(USER_OVER_HOURLY_LIMIT) if user_over_hourly_limit?
@@ -173,10 +173,10 @@ class TokenValidator
 
   # TO DO: return actual error status instead of valid HTTP
   # when we actually want to throttle. For now, only return error
-  # status if a token already exists.
+  # status if a token has already been used.
   def error(status)
     puts "TOKEN VALIDATION ERROR: #{status} user_id: #{@user_id} verified_teachers: #{@verified_teachers} token_id: #{@token_id}"
-    return status if status == ALREADY_EXISTS
+    return status if status == TOKEN_USED
     # status
     VALID_HTTP
   end
