@@ -39,6 +39,15 @@ module JwtHelper
     generate_policy(principal_id, 'Allow', resource, token_payload)
   end
 
+  # Generates a response that indicates that the request is well-formed, but should
+  # be rejected due to invalid reuse or throttling reasons
+  def generate_allow_with_error(resource, token_status)
+    error_payload = {}
+    error_payload['authorization_error'] = token_status
+    error_payload['authorization_error_code'] = 403
+    generate_policy(nil, 'Allow', resource, error_payload)
+  end
+
   def generate_deny(resource)
     generate_policy(nil, 'Deny', resource, nil)
   end
