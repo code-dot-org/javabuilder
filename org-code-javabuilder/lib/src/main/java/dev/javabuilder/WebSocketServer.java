@@ -4,6 +4,7 @@ import static org.code.protocol.LoggerNames.MAIN_LOGGER;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.time.Clock;
 import java.util.Base64;
 import java.util.List;
 import java.util.logging.Handler;
@@ -40,14 +41,16 @@ public class WebSocketServer {
 
   /**
    * This acts as the main function for the WebSocket server. Therefore, we do many of the same
-   * things here as we do for LocalMain or for the LambdaRequestHandler, such as setting up the
-   * input and output handlers. However, OnOpen needs to complete in order for the OnClose and
-   * OnMessage handlers to be triggered. This is why we invoke the CodeBuilder in its own thread.
+   * things here as we do for the LambdaRequestHandler, such as setting up the input and output
+   * handlers. However, OnOpen needs to complete in order for the OnClose and OnMessage handlers to
+   * be triggered. This is why we invoke the CodeBuilder in its own thread.
    *
    * @param session The individual WebSocket session.
    */
   @OnOpen
   public void onOpen(Session session) {
+    PerformanceTracker.resetTracker();
+    PerformanceTracker.getInstance().trackInstanceStart(Clock.systemUTC().instant());
     // Decode the authorization token
     String token = session.getRequestParameterMap().get("Authorization").get(0);
     Base64.Decoder decoder = Base64.getDecoder();
@@ -58,14 +61,13 @@ public class WebSocketServer {
     final String levelId = queryInput.getString("level_id");
     final String channelId =
         queryInput.has("channel_id") ? queryInput.getString("channel_id") : "noneProvided";
-    final String miniAppType = queryInput.getString("mini_app_type");
     final ExecutionType executionType =
         ExecutionType.valueOf(queryInput.getString("execution_type"));
     final JSONObject options = new JSONObject(queryInput.getString("options"));
     final List<String> compileList = JSONUtils.listFromJSONObjectMember(options, "compileList");
 
     this.logger = Logger.getLogger(MAIN_LOGGER);
-    this.logHandler = new LocalLogHandler(System.out, levelId, channelId, miniAppType);
+    this.logHandler = new LocalLogHandler(System.out, levelId, channelId);
     this.logger.addHandler(this.logHandler);
     // turn off the default console logger
     this.logger.setUseParentHandlers(false);
@@ -85,7 +87,7 @@ public class WebSocketServer {
       contentManager = new LocalContentManager();
     } catch (InternalServerError e) {
       // Log the error
-      LoggerUtils.logError(e);
+      LoggerUtils.logSevereError(e);
 
       // This affected the user. Let's tell them about it.
       outputAdapter.sendMessage(e.getExceptionMessage());
@@ -122,6 +124,7 @@ public class WebSocketServer {
   @OnClose
   public void myOnClose() {
     Logger.getLogger(MAIN_LOGGER).info("WebSocket closed.");
+    PerformanceTracker.getInstance().logPerformance();
   }
 
   /**
