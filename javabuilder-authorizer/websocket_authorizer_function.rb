@@ -26,7 +26,7 @@ def lambda_handler(event:, context:)
 
   token_payload = decoded_token[0]
   token_status = get_token_status(context, token_payload['sid'])
-  return JwtHelper.generate_deny(method_arn) unless token_status == TokenStatus::VALID_WEBSOCKET
+  return JwtHelper.generate_allow_with_error(method_arn, token_status) unless token_status == TokenStatus::VALID_WEBSOCKET
 
   JwtHelper.generate_allow(method_arn, token_payload)
 end
@@ -47,8 +47,7 @@ def get_token_status(context, sid)
 
   if item['used']
     puts "TOKEN VALIDATION ERROR: #{TokenStatus::USED} token_id: #{sid}"
-    # return TokenStatus::USED
-    return TokenStatus::VALID_WEBSOCKET
+    return TokenStatus::USED
   end
 
   unless item['vetted']

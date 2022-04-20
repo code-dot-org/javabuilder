@@ -172,9 +172,11 @@ class TokenValidator
   end
 
   # TO DO: return actual error status instead of valid HTTP
-  # when we actually want to throttle.
+  # when we actually want to throttle. For now, only return error
+  # status if a token already exists.
   def error(status)
     puts "TOKEN VALIDATION ERROR: #{status} user_id: #{@user_id} verified_teachers: #{@verified_teachers} token_id: #{@token_id}"
+    return status if status == ALREADY_EXISTS
     # status
     VALID_HTTP
   end
