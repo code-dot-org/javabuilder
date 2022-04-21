@@ -3,6 +3,8 @@ require 'aws-sdk-sqs'
 require 'aws-sdk-lambda'
 require 'aws-sdk-apigatewaymanagementapi'
 require 'uri'
+require_relative 'auth_error_response_helper'
+include AuthErrorResponseHelper
 
 MAX_SQS_RETRIES = 3
 INITIAL_RETRY_SLEEP_S = 0.5
@@ -23,6 +25,9 @@ def on_connect(event, context)
 
   request_context = event["requestContext"]
   authorizer = request_context['authorizer']
+
+  authorization_error_response = AuthErrorResponseHelper.get_response(authorizer)
+  return authorization_error_response unless authorization_error_response == nil
 
   # Add in some logging to make debugging easier
   puts "CONNECT REQUEST CONTEXT: #{request_context}"
