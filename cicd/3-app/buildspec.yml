@@ -14,3 +14,8 @@ phases:
       - pwd
       - ls
       - echo Hello from buildspec
+      - cd cicd/3-app
+      - erb -T - cicd/3-app/template.yml.erb > cicd/3-app/template.yml
+      - ls cicd/3-app
+      - ./javabuilder-authorizer/build.sh
+      - ./org-code-javabuilder/build.sh
