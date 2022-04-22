@@ -10,6 +10,6 @@ module AuthErrorResponseHelper
       type: AUTHORIZER_KEY,
       value: authorizer_payload[AUTHORIZATION_ERROR_KEY]
     }
-    { statusCode: authorizer_payload[AUTHORIZATION_ERROR_CODE_KEY], body: body.to_s }
+    { statusCode: authorizer_payload[AUTHORIZATION_ERROR_CODE_KEY], body: body.to_json }
   end
 end
