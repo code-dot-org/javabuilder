@@ -2,7 +2,7 @@ import ws from "k6/ws";
 import http from "k6/http";
 import { check, sleep } from "k6";
 import { Counter, Trend } from "k6/metrics";
-import { helloWorld } from "./sources.js";
+import * as sources from "./sources.js";
 import { getRandomId, generateToken } from "./tokenHelpers.js";
 import {
   MiniAppType,
@@ -22,7 +22,8 @@ export const options = getTestOptions(
 );
 
 // Change this to test different code
-const SOURCE_TO_TEST = helloWorld;
+const SOURCE_TO_TEST = sources.helloWorld;
+const MINI_APP_TYPE = MiniAppType.CONSOLE
 // Set this to true to space out requests every REQUEST_TIME_MS milliseconds. Set to
 // false to send as many requests as possible.
 const SHOULD_SLEEP = false;
@@ -44,7 +45,7 @@ function isResultSuccess(result) {
 export default function () {
   const requestStartTime = Date.now();
   const sessionId = getRandomId();
-  const authToken = generateToken(MiniAppType.CONSOLE, sessionId);
+  const authToken = generateToken(MINI_APP_TYPE, sessionId);
   const uploadResult = http.put(
     UPLOAD_URL + authToken,
     SOURCE_TO_TEST,
