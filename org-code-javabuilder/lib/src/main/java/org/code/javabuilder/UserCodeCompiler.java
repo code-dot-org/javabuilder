@@ -50,6 +50,8 @@ public class UserCodeCompiler {
 
     // diagnostics will include any compiler errors
     for (Diagnostic<? extends JavaFileObject> diagnostic : diagnostics.getDiagnostics()) {
+      // Students are sometimes taught deprecated methods (eg, integer constructor)
+      // for the AP exam. Do not show deprecation warnings to avoid confusion.
       if (diagnostic.getCode().startsWith(DIAGNOSTIC_CODE_DEPRECATED_WARNING_PREFIX)) {
         continue;
       }
