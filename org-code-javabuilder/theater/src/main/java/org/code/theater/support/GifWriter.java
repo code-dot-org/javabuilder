@@ -8,8 +8,8 @@ import javax.imageio.metadata.IIOInvalidTreeException;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
 import javax.imageio.stream.ImageOutputStream;
-import org.code.protocol.InternalErrorKey;
-import org.code.protocol.InternalServerRuntimeError;
+import org.code.protocol.InternalExceptionKey;
+import org.code.protocol.InternalServerRuntimeException;
 
 /**
  * Writer to generate a gif from a set of images. The gif will be stored in the given
@@ -37,8 +37,8 @@ public class GifWriter {
       IIOMetadata streamData = this.getMetadataForGif();
       this.writer.prepareWriteSequence(streamData);
     } catch (IOException e) {
-      throw new InternalServerRuntimeError(
-          InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e.getCause());
+      throw new InternalServerRuntimeException(
+          InternalExceptionKey.INTERNAL_RUNTIME_EXCEPTION, e.getCause());
     }
   }
 
@@ -57,8 +57,8 @@ public class GifWriter {
           new IIOImage(img, null, getMetadataForFrame(delay, img.getType())), this.params);
 
     } catch (IOException e) {
-      throw new InternalServerRuntimeError(
-          InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e.getCause());
+      throw new InternalServerRuntimeException(
+          InternalExceptionKey.INTERNAL_RUNTIME_EXCEPTION, e.getCause());
     }
   }
 
@@ -72,8 +72,8 @@ public class GifWriter {
       this.imageOutputStream.flush();
       this.imageOutputStream.close();
     } catch (IOException e) {
-      throw new InternalServerRuntimeError(
-          InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e.getCause());
+      throw new InternalServerRuntimeException(
+          InternalExceptionKey.INTERNAL_RUNTIME_EXCEPTION, e.getCause());
     }
   }
 
@@ -104,8 +104,8 @@ public class GifWriter {
     try {
       metadata.setFromTree(metaFormatName, root);
     } catch (IIOInvalidTreeException e) {
-      throw new InternalServerRuntimeError(
-          InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e.getCause());
+      throw new InternalServerRuntimeException(
+          InternalExceptionKey.INTERNAL_RUNTIME_EXCEPTION, e.getCause());
     }
     return metadata;
   }
@@ -144,8 +144,8 @@ public class GifWriter {
     try {
       streamData.setFromTree(metaFormatName, root);
     } catch (IIOInvalidTreeException e) {
-      throw new InternalServerRuntimeError(
-          InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e.getCause());
+      throw new InternalServerRuntimeException(
+          InternalExceptionKey.INTERNAL_RUNTIME_EXCEPTION, e.getCause());
     }
     return streamData;
   }

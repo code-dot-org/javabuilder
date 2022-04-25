@@ -3,7 +3,7 @@ package org.code.javabuilder;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
-import org.code.protocol.InternalErrorKey;
+import org.code.protocol.InternalExceptionKey;
 import org.code.protocol.OutputAdapter;
 import org.code.protocol.StatusMessage;
 import org.code.protocol.StatusMessageKey;
@@ -42,12 +42,12 @@ public class BaseTestRunner implements CodeRunner {
    * Finds and runs all tests in the given set of Java files using the given URLClassLoader
    *
    * @param urlClassLoader class loader to load compiled classes
-   * @throws InternalServerError if there is an error running tests
+   * @throws InternalServerException if there is an error running tests
    * @return true if there were tests to run, false if there were not.
    */
   @Override
   public boolean run(URLClassLoader urlClassLoader)
-      throws InternalServerError, UserInitiatedException {
+      throws InternalServerException, UserInitiatedException {
     if (outputAdapter instanceof UserTestOutputAdapter) {
       ((UserTestOutputAdapter) outputAdapter).setIsValidation(this.isValidation);
     }
@@ -79,7 +79,7 @@ public class BaseTestRunner implements CodeRunner {
         return true;
       }
     } catch (PreconditionViolationException | ClassNotFoundException e) {
-      throw new InternalServerError(InternalErrorKey.INTERNAL_EXCEPTION, e);
+      throw new InternalServerException(InternalExceptionKey.INTERNAL_EXCEPTION, e);
     }
   }
 }

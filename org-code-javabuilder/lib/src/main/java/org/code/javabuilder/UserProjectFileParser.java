@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.Map;
 import org.code.javabuilder.util.FileUtils;
-import org.code.protocol.InternalErrorKey;
+import org.code.protocol.InternalExceptionKey;
 
 public class UserProjectFileParser {
   private final ObjectMapper objectMapper;
@@ -18,11 +18,11 @@ public class UserProjectFileParser {
    *
    * @param json JSON String in UserSourceData format
    * @return UserProjectFiles: all files in the project
-   * @throws InternalServerError
+   * @throws InternalServerException
    * @throws UserInitiatedException
    */
   public UserProjectFiles parseFileJson(String json)
-      throws InternalServerError, UserInitiatedException {
+      throws InternalServerException, UserInitiatedException {
     try {
       UserProjectFiles userProjectFiles = new UserProjectFiles();
       UserSourceData sourceData = this.objectMapper.readValue(json, UserSourceData.class);
@@ -39,7 +39,7 @@ public class UserProjectFileParser {
       }
       return userProjectFiles;
     } catch (IOException io) {
-      throw new InternalServerError(InternalErrorKey.INTERNAL_EXCEPTION, io);
+      throw new InternalServerException(InternalExceptionKey.INTERNAL_EXCEPTION, io);
     }
   }
 }

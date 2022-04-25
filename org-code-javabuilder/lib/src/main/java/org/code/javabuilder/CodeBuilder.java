@@ -8,7 +8,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import org.code.protocol.GlobalProtocol;
-import org.code.protocol.InternalErrorKey;
+import org.code.protocol.InternalExceptionKey;
 import org.code.protocol.JavabuilderException;
 import org.code.protocol.OutputAdapter;
 
@@ -24,7 +24,7 @@ public class CodeBuilder {
       UserProjectFiles userProjectFiles,
       UserProjectFiles validationFiles,
       File tempFolder)
-      throws InternalServerError {
+      throws InternalServerException {
     this.outputAdapter = protocol.getOutputAdapter();
     this.userProjectFiles = userProjectFiles;
     this.validationFiles = validationFiles;
@@ -34,10 +34,10 @@ public class CodeBuilder {
   /**
    * Saves non-source code assets to storage and compiles the user's code.
    *
-   * @throws InternalServerError if the user's code contains a compiler error or if we are unable to
-   *     compile due to internal errors.
+   * @throws InternalServerException if the user's code contains a compiler error or if we are
+   *     unable to compile due to internal errors.
    */
-  public void buildAllUserCode() throws InternalServerError, UserInitiatedException {
+  public void buildAllUserCode() throws InternalServerException, UserInitiatedException {
     this.compileCode(this.userProjectFiles.getJavaFiles());
   }
 
@@ -45,12 +45,12 @@ public class CodeBuilder {
    * Saves non-source code assets to storage and compiles a subset of the user's code.
    *
    * @param compileList a list of file names to compile
-   * @throws InternalServerError if there is an internal error compiling or saving
+   * @throws InternalServerException if there is an internal error compiling or saving
    * @throws UserInitiatedException if no matching file names are found, or there is an issue
    *     compiling
    */
   public void buildUserCode(List<String> compileList)
-      throws InternalServerError, UserInitiatedException {
+      throws InternalServerException, UserInitiatedException {
     if (compileList == null) {
       throw new UserInitiatedException(UserInitiatedExceptionKey.NO_FILES_TO_COMPILE);
     }
@@ -64,17 +64,17 @@ public class CodeBuilder {
    * Saves non-source code assets to storage and compiles both the user's code and any validation
    * files provided.
    *
-   * @throws InternalServerError if the code contains a compiler error or if we are unable to
+   * @throws InternalServerException if the code contains a compiler error or if we are unable to
    *     compile due to internal errors.
    */
-  public void buildUserAndValidationFiles() throws InternalServerError, UserInitiatedException {
+  public void buildUserAndValidationFiles() throws InternalServerException, UserInitiatedException {
     List<JavaProjectFile> allFiles = new ArrayList<>(this.validationFiles.getJavaFiles());
     allFiles.addAll(this.userProjectFiles.getJavaFiles());
     this.compileCode(allFiles);
   }
 
   private void compileCode(List<JavaProjectFile> javaProjectFiles)
-      throws InternalServerError, UserInitiatedException {
+      throws InternalServerException, UserInitiatedException {
     if (javaProjectFiles.isEmpty()) {
       throw new UserInitiatedException(UserInitiatedExceptionKey.NO_FILES_TO_COMPILE);
     }
@@ -96,7 +96,7 @@ public class CodeBuilder {
   }
 
   /** Creates a runner for executing code */
-  private JavaRunner createJavaRunner() throws InternalServerError {
+  private JavaRunner createJavaRunner() throws InternalServerException {
     try {
       return new JavaRunner(
           this.tempFolder.toURI().toURL(),
@@ -104,12 +104,12 @@ public class CodeBuilder {
           this.validationFiles.getJavaFiles(),
           this.outputAdapter);
     } catch (MalformedURLException e) {
-      throw new InternalServerError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e);
+      throw new InternalServerException(InternalExceptionKey.INTERNAL_RUNTIME_EXCEPTION, e);
     }
   }
 
   /** Save any non-source code files to storage */
-  private void saveProjectAssets() throws InternalServerError, UserInitiatedException {
+  private void saveProjectAssets() throws InternalServerException, UserInitiatedException {
     // Save all text files to current folder.
     List<TextProjectFile> textProjectFiles = this.userProjectFiles.getTextFiles();
     for (TextProjectFile projectFile : textProjectFiles) {
@@ -121,7 +121,7 @@ public class CodeBuilder {
           // If the file name is empty, indicate to the user that the file name is invalid
           throw new UserInitiatedException(UserInitiatedExceptionKey.MISSING_PROJECT_FILE_NAME, e);
         }
-        throw new InternalServerError(InternalErrorKey.INTERNAL_COMPILER_EXCEPTION, e);
+        throw new InternalServerException(InternalExceptionKey.INTERNAL_COMPILER_EXCEPTION, e);
       }
     }
   }
