@@ -3,6 +3,7 @@ package org.code.neighborhood;
 import static org.code.protocol.ClientMessageDetailKeys.*;
 
 import java.util.HashMap;
+import org.code.neighborhood.support.*;
 import org.code.protocol.OutputAdapter;
 
 public class Painter {

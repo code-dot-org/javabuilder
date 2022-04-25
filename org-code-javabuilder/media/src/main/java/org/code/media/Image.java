@@ -6,6 +6,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
 import javax.imageio.ImageIO;
+import org.code.media.support.MediaRuntimeException;
+import org.code.media.support.MediaRuntimeExceptionKeys;
 import org.code.protocol.GlobalProtocol;
 
 public class Image {

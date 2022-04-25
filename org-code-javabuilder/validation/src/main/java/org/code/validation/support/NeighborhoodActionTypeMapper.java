@@ -1,6 +1,6 @@
 package org.code.validation.support;
 
-import org.code.neighborhood.NeighborhoodSignalKey;
+import org.code.neighborhood.support.NeighborhoodSignalKey;
 import org.code.validation.NeighborhoodActionType;
 
 /**
