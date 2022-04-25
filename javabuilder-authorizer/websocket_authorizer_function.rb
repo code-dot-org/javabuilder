@@ -17,7 +17,7 @@ def lambda_handler(event:, context:)
   method_arn = event['methodArn']
   # Return early if this is the user connectivity test
   if jwt_token == 'connectivityTest'
-    return JwtHelper.generate_policy('connectivityTest', "Allow", method_arn, {connectivityTest: true})
+    return JwtHelper.generate_policy('connectivityTest', 'Allow', method_arn, { connectivityTest: true })
   end
 
   standardized_origin = JwtHelper.get_standardized_origin(origin)
@@ -26,7 +26,10 @@ def lambda_handler(event:, context:)
 
   token_payload = decoded_token[0]
   token_status = get_token_status(context, token_payload['sid'])
-  return JwtHelper.generate_allow_with_error(method_arn, token_status) unless token_status == TokenStatus::VALID_WEBSOCKET
+  unless token_status == TokenStatus::VALID_WEBSOCKET
+    return JwtHelper.generate_allow_with_error(method_arn,
+                                               token_status)
+  end
 
   JwtHelper.generate_allow(method_arn, token_payload)
 end
@@ -35,7 +38,7 @@ def get_token_status(context, sid)
   client = Aws::DynamoDB::Client.new(region: get_region(context))
   response = client.get_item(
     table_name: ENV['token_status_table'],
-    key: {token_id: sid}
+    key: { token_id: sid }
   )
   item = response.item
 
@@ -58,9 +61,9 @@ def get_token_status(context, sid)
 
   client.update_item(
     table_name: ENV['token_status_table'],
-    key: {token_id: sid},
+    key: { token_id: sid },
     update_expression: 'SET used = :u',
-    expression_attribute_values: {':u': true}
+    expression_attribute_values: { ':u': true }
   )
 
   TokenStatus::VALID_WEBSOCKET

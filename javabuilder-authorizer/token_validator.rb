@@ -28,6 +28,7 @@ class TokenValidator
     return error(USER_OVER_HOURLY_LIMIT) if user_over_hourly_limit?
     return error(USER_OVER_DAILY_LIMIT) if user_over_daily_limit?
     return error(TEACHERS_OVER_HOURLY_LIMIT) if teachers_over_hourly_limit?
+
     log_requests
     mark_token_as_vetted
     VALID_HTTP
@@ -56,7 +57,7 @@ class TokenValidator
   def user_blocked?
     response = @client.get_item(
       table_name: ENV['blocked_users_table'],
-      key: {user_id: blocked_users_user_id}
+      key: { user_id: blocked_users_user_id }
     )
 
     !!response.item
@@ -67,7 +68,7 @@ class TokenValidator
     @verified_teachers.split(',').each do |teacher_id|
       response = @client.get_item(
         table_name: ENV['blocked_users_table'],
-        key: {user_id: blocked_users_section_owner_id(teacher_id)}
+        key: { user_id: blocked_users_section_owner_id(teacher_id) }
       )
 
       # As long as at least one teacher is not blocked,
@@ -103,10 +104,10 @@ class TokenValidator
     @verified_teachers.split(',').each do |teacher_id|
       response = @client.query(
         table_name: ENV['teacher_associated_requests_table'],
-        key_condition_expression: "section_owner_id = :teacher_id AND issued_at > :one_hour_ago",
+        key_condition_expression: 'section_owner_id = :teacher_id AND issued_at > :one_hour_ago',
         expression_attribute_values: {
-          ":teacher_id" => "#{@origin}##{teacher_id}",
-          ":one_hour_ago" => Time.now.to_i - ONE_HOUR_SECONDS
+          ':teacher_id' => "#{@origin}##{teacher_id}",
+          ':one_hour_ago' => Time.now.to_i - ONE_HOUR_SECONDS
         }
       )
       # See user_over_limit? method for notes on pagination
@@ -165,9 +166,9 @@ class TokenValidator
   def mark_token_as_vetted
     @client.update_item(
       table_name: ENV['token_status_table'],
-      key: {token_id: @token_id},
+      key: { token_id: @token_id },
       update_expression: 'SET vetted = :v',
-      expression_attribute_values: {':v': true}
+      expression_attribute_values: { ':v': true }
     )
   end
 
@@ -177,6 +178,7 @@ class TokenValidator
   def error(status)
     puts "TOKEN VALIDATION ERROR: #{status} user_id: #{@user_id} verified_teachers: #{@verified_teachers} token_id: #{@token_id}"
     return status if status == TOKEN_USED
+
     # status
     VALID_HTTP
   end
@@ -184,10 +186,10 @@ class TokenValidator
   def user_over_limit?(time_range_seconds, limit, logging_message)
     response = @client.query(
       table_name: ENV['user_requests_table'],
-      key_condition_expression: "user_id = :user_id AND issued_at > :past_time",
+      key_condition_expression: 'user_id = :user_id AND issued_at > :past_time',
       expression_attribute_values: {
-        ":user_id" => "#{@origin}##{@user_id}",
-        ":past_time" => Time.now.to_i - time_range_seconds
+        ':user_id' => "#{@origin}##{@user_id}",
+        ':past_time' => Time.now.to_i - time_range_seconds
       }
     )
     # DynamoDB query will only read through 1 MB of data before paginating.
@@ -199,9 +201,7 @@ class TokenValidator
     # TO DO: remove this, or handle paginated responses
     # https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#query-instance_method
     # https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/CapacityUnitCalculations.html
-    if response.last_evaluated_key
-      puts "user_requests query has paginated responses. user_id #{@user_id}"
-    end
+    puts "user_requests query has paginated responses. user_id #{@user_id}" if response.last_evaluated_key
 
     over_limit = response.count > limit
     if over_limit

@@ -6,10 +6,11 @@ module JwtHelper
   # expired and its issue time is not in the future.
   def decode_token(token, standardized_origin)
     return false unless token
+
     begin
       if IS_LOAD_TEST
-        # load tests use a simpler authentication algorithm  
-        return JWT.decode(
+        # load tests use a simpler authentication algorithm
+        JWT.decode(
           token,
           LOAD_TEST_KEY,
           true,
@@ -17,7 +18,7 @@ module JwtHelper
           algorithm: 'HS256'
         )
       else
-        return JWT.decode(
+        JWT.decode(
           token,
           # Temporarily choose the key based on the client origin rather than the
           # resource until we have environment-specific Javabuilders set up.
@@ -28,7 +29,7 @@ module JwtHelper
         )
       end
     rescue JWT::ExpiredSignature, JWT::InvalidIatError
-      return false
+      false
     end
   end
 
@@ -73,7 +74,7 @@ module JwtHelper
   end
 
   def get_standardized_origin(origin)
-    origin.delete_prefix("https://").delete_prefix("http://").delete_suffix(":3000")
+    origin.delete_prefix('https://').delete_prefix('http://').delete_suffix(':3000')
   end
 
   private
@@ -91,19 +92,19 @@ module JwtHelper
     # tmp = route_arn.split(':')
     # api_gateway_arn = tmp[5].split('/')
     # stage_name = api_gateway_arn[1]
-    stage_name = ""
-    if standardized_origin == "localhost-studio.code.org"
-      stage_name = "development"
-    elsif standardized_origin == "staging-studio.code.org"
-      stage_name = "staging"
-    elsif standardized_origin == "levelbuilder-studio.code.org"
-      stage_name = "levelbuilder"
-    elsif standardized_origin == "test-studio.code.org"
-      stage_name = "test"
-    elsif standardized_origin == "studio.code.org"
-      stage_name = "production"
-    elsif standardized_origin.start_with?("adhoc-") && standardized_origin.end_with?("-studio.cdn-code.org")
-      stage_name = "adhoc"
+    stage_name = ''
+    if standardized_origin == 'localhost-studio.code.org'
+      stage_name = 'development'
+    elsif standardized_origin == 'staging-studio.code.org'
+      stage_name = 'staging'
+    elsif standardized_origin == 'levelbuilder-studio.code.org'
+      stage_name = 'levelbuilder'
+    elsif standardized_origin == 'test-studio.code.org'
+      stage_name = 'test'
+    elsif standardized_origin == 'studio.code.org'
+      stage_name = 'production'
+    elsif standardized_origin.start_with?('adhoc-') && standardized_origin.end_with?('-studio.cdn-code.org')
+      stage_name = 'adhoc'
     end
     # End of temporary code
 
