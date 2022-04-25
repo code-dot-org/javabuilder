@@ -3,23 +3,12 @@ inherit_from:
   - .rubocop_todo.yml
 
 AllCops:
-  Exclude:
-    - 'apps/**/*'
-    - 'dashboard/db/schema.rb'
-    - 'pegasus/test/test_string.rb' # Parser does not support non-utf8 escape sequences
   DisplayCopNames: true
   TargetRubyVersion: 2.5
 
-Rails:
-  Enabled: true
-
 # BEGIN CODE.ORG OVERRIDES
 
-Rails/Delegate:
-  Include:
-    - dashboard/**/*
-
-Layout/AlignParameters:
+Layout/ParameterAlignment:
   EnforcedStyle: with_fixed_indentation
 
 Layout/DotPosition:
@@ -80,9 +69,6 @@ Style/AsciiComments:
   Enabled: false
 
 Style/BarePercentLiterals:
-  Enabled: false
-
-Style/BracesAroundHashParameters:
   Enabled: false
 
 Layout/ClosingParenthesisIndentation:
