@@ -20,6 +20,7 @@ import {
 // Custom metrics for load test (currently only implemented for scanner).
 // Expects an object with onMessage and onClose event handler properties.
 import metricsReporter from './scannerLoadTestMetrics.js';
+// Keep set to false unless you have configured a custom metrics reporter for your test.
 const CUSTOM_METRICS = false;
 
 // Change these options to increase the user goal or time to run the test.
@@ -35,10 +36,6 @@ const MINI_APP_TYPE = MiniAppType.CONSOLE
 // Set this to true to space out requests every REQUEST_TIME_MS milliseconds. Set to
 // false to send as many requests as possible.
 const SHOULD_SLEEP = false;
-
-// Custom metrics for scanner load test.
-// Expects an object with onMessage and onClose event handler properties.
-const USE_CUSTOM_METRICS = false;
 
 // ************** END SETTINGS **************************************************************************
 
