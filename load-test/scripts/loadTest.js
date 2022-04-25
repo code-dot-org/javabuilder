@@ -25,8 +25,8 @@ const USE_CUSTOM_METRICS = false;
 
 // Change these options to increase the user goal or time to run the test.
 getTestOptions(
-  /* User goal */ 1,
-  /* High load time minutes */ 1
+  /* User goal */ 1000,
+  /* High load time minutes */ 4
 );
 
 // Change this to test different code
