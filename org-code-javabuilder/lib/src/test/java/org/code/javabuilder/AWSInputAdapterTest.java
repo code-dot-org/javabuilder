@@ -11,8 +11,8 @@ import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 import com.amazonaws.services.sqs.model.ReceiveMessageResult;
 import java.util.ArrayList;
 import java.util.List;
-import org.code.protocol.InternalErrorKey;
-import org.code.protocol.InternalServerRuntimeError;
+import org.code.protocol.InternalExceptionKey;
+import org.code.protocol.InternalServerRuntimeException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -93,7 +93,7 @@ public class AWSInputAdapterTest {
   void throwsOnLostConnection() {
     this.mockLostConnection();
     Exception actual =
-        assertThrows(InternalServerRuntimeError.class, () -> inputAdapter.getNextMessage());
-    assertEquals(InternalErrorKey.CONNECTION_TERMINATED.toString(), actual.getMessage());
+        assertThrows(InternalServerRuntimeException.class, () -> inputAdapter.getNextMessage());
+    assertEquals(InternalExceptionKey.CONNECTION_TERMINATED.toString(), actual.getMessage());
   }
 }

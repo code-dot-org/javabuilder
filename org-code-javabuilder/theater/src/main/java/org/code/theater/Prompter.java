@@ -55,7 +55,7 @@ public class Prompter {
     try {
       uploadUrl = this.contentManager.generateAssetUploadUrl(prompterFileName);
     } catch (JavabuilderException e) {
-      throw new InternalServerRuntimeError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e);
+      throw new InternalServerRuntimeException(InternalExceptionKey.INTERNAL_RUNTIME_EXCEPTION, e);
     }
 
     HashMap<String, String> getImageDetails = new HashMap<>();
@@ -70,13 +70,14 @@ public class Prompter {
         return this.imageCreator.createImage(prompterFileName);
       } catch (FileNotFoundException e) {
         // If the image was uploaded successfully, a FileNotFoundException means an error on our end
-        throw new InternalServerRuntimeError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e);
+        throw new InternalServerRuntimeException(
+            InternalExceptionKey.INTERNAL_RUNTIME_EXCEPTION, e);
       }
     } else if (statusMessage.equals(UPLOAD_ERROR)) {
-      throw new InternalServerRuntimeError(
-          InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, new Exception(UPLOAD_ERROR));
+      throw new InternalServerRuntimeException(
+          InternalExceptionKey.INTERNAL_RUNTIME_EXCEPTION, new Exception(UPLOAD_ERROR));
     } else {
-      throw new InternalServerRuntimeError(InternalErrorKey.UNKNOWN_ERROR);
+      throw new InternalServerRuntimeException(InternalExceptionKey.UNKNOWN_ERROR);
     }
   }
 }

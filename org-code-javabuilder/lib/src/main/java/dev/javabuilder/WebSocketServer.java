@@ -85,7 +85,7 @@ public class WebSocketServer {
     final LocalContentManager contentManager;
     try {
       contentManager = new LocalContentManager();
-    } catch (InternalServerError e) {
+    } catch (InternalServerException e) {
       // Log the error
       LoggerUtils.logSevereError(e);
 

@@ -4,8 +4,8 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import org.code.javabuilder.InternalServerError;
-import org.code.protocol.InternalErrorKey;
+import org.code.javabuilder.InternalServerException;
+import org.code.protocol.InternalExceptionKey;
 
 public final class JarUtils {
   private JarUtils() {
@@ -38,14 +38,14 @@ public final class JarUtils {
   }
 
   /** @return a joined list of the paths of all user-facing api jars */
-  public static String getAllJarPaths() throws InternalServerError {
+  public static String getAllJarPaths() throws InternalServerException {
     ArrayList<String> allJarPaths = new ArrayList<>();
     try {
       for (String jarName : JAR_NAMES) {
         allJarPaths.add(Paths.get(JarUtils.getJarURL(jarName).toURI()).toString());
       }
     } catch (URISyntaxException e) {
-      throw new InternalServerError(InternalErrorKey.INTERNAL_COMPILER_EXCEPTION, e);
+      throw new InternalServerException(InternalExceptionKey.INTERNAL_COMPILER_EXCEPTION, e);
     }
 
     return String.join(System.getProperty("path.separator"), allJarPaths);
