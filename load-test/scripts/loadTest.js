@@ -21,12 +21,12 @@ import {
 // Expects an object with onMessage and onClose event handler properties.
 import metricsReporter from './scannerLoadTestMetrics.js';
 // Keep set to false unless you have configured a custom metrics reporter for your test.
-const CUSTOM_METRICS = false;
+const USE_CUSTOM_METRICS = false;
 
 // Change these options to increase the user goal or time to run the test.
-export const options = getTestOptions(
-  /* User goal */ 1000,
-  /* High load time minutes */ 4
+getTestOptions(
+  /* User goal */ 1,
+  /* High load time minutes */ 1
 );
 
 // Change this to test different code
@@ -37,7 +37,7 @@ const MINI_APP_TYPE = MiniAppType.CONSOLE
 // false to send as many requests as possible.
 const SHOULD_SLEEP = false;
 
-// ************** END SETTINGS **************************************************************************
+// ************** END SETTINGS **********************************************************************
 
 const exceptionCounter = new Counter("exceptions");
 const errorCounter = new Counter("errors");
@@ -119,7 +119,7 @@ function onSocketConnect(socket, requestStartTime, websocketStartTime, sessionId
       exceptionCounter.add(1);
     }
 
-    if (CUSTOM_METRICS) {
+    if (USE_CUSTOM_METRICS) {
       metricsReporter.onMessage(socket, parsedData);
     }
   });
@@ -141,7 +141,7 @@ function onSocketConnect(socket, requestStartTime, websocketStartTime, sessionId
         sessionsOver10Seconds.add(1);
       }
 
-      if (CUSTOM_METRICS) {
+      if (USE_CUSTOM_METRICS) {
         metricsReporter.onClose();
       }
     } else {
