@@ -14,9 +14,13 @@ import {
   TIMEOUT_MS,
   REQUEST_TIME_MS
 } from "./configuration.js";
-// Custom metrics for scanner load test.
+
+// ************** SETTINGS **************************************************************************
+
+// Custom metrics for load test (currently only implemented for scanner).
 // Expects an object with onMessage and onClose event handler properties.
-import metricsReporter from './scannerLoadTestMetrics.js'
+import metricsReporter from './scannerLoadTestMetrics.js';
+const CUSTOM_METRICS = false;
 
 // Change these options to increase the user goal or time to run the test.
 export const options = getTestOptions(
@@ -31,6 +35,12 @@ const MINI_APP_TYPE = MiniAppType.CONSOLE
 // Set this to true to space out requests every REQUEST_TIME_MS milliseconds. Set to
 // false to send as many requests as possible.
 const SHOULD_SLEEP = false;
+
+// Custom metrics for scanner load test.
+// Expects an object with onMessage and onClose event handler properties.
+const USE_CUSTOM_METRICS = false;
+
+// ************** END SETTINGS **************************************************************************
 
 const exceptionCounter = new Counter("exceptions");
 const errorCounter = new Counter("errors");
@@ -111,7 +121,10 @@ function onSocketConnect(socket, requestStartTime, websocketStartTime, sessionId
       console.log(`EXCEPTION for session id ${sessionId} ` + parsedData.value);
       exceptionCounter.add(1);
     }
-    metricsReporter.onMessage(socket, parsedData);
+
+    if (CUSTOM_METRICS) {
+      metricsReporter.onMessage(socket, parsedData);
+    }
   });
 
   socket.on("close", () => {
@@ -130,7 +143,10 @@ function onSocketConnect(socket, requestStartTime, websocketStartTime, sessionId
         console.log(`OVER 10 SECONDS Session id ${sessionId} had a request time of ${totalTime} ms.`);
         sessionsOver10Seconds.add(1);
       }
-      metricsReporter.onClose();
+
+      if (CUSTOM_METRICS) {
+        metricsReporter.onClose();
+      }
     } else {
       console.log(`TIMEOUT detected for session id ${sessionId}`);
       timeoutCounter.add(1);
