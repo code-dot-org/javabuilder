@@ -57,7 +57,7 @@ class TokenValidator
   def user_blocked?
     response = @client.get_item(
       table_name: ENV['blocked_users_table'],
-      key: { user_id: blocked_users_user_id }
+      key: {user_id: blocked_users_user_id}
     )
 
     !!response.item
@@ -68,7 +68,7 @@ class TokenValidator
     @verified_teachers.split(',').each do |teacher_id|
       response = @client.get_item(
         table_name: ENV['blocked_users_table'],
-        key: { user_id: blocked_users_section_owner_id(teacher_id) }
+        key: {user_id: blocked_users_section_owner_id(teacher_id)}
       )
 
       # As long as at least one teacher is not blocked,
@@ -166,9 +166,9 @@ class TokenValidator
   def mark_token_as_vetted
     @client.update_item(
       table_name: ENV['token_status_table'],
-      key: { token_id: @token_id },
+      key: {token_id: @token_id},
       update_expression: 'SET vetted = :v',
-      expression_attribute_values: { ':v': true }
+      expression_attribute_values: {':v': true}
     )
   end
 
