@@ -27,7 +27,15 @@ def on_connect(event, context)
   authorizer = request_context['authorizer']
 
   authorization_error_response = AuthErrorResponseHelper.get_response(authorizer)
-  return authorization_error_response unless authorization_error_response == nil
+  # If there is an authorization error, allow the websocket connection to open,
+  # but early return so we don't actually invoke the Build and Run lambda and try
+  # to create an SQS queue. We will send the auth error message via the websocket
+  # once the connection has been successfully made (in on_default).
+  if authorization_error_response
+    # Add some logging to make sure we know this is happening.
+    puts "AUTHORIZATION ERROR: #{authorization_error_response[:body]}"
+    return { statusCode: 200, body: authorization_error_response[:body] }
+  end
 
   # Add in some logging to make debugging easier
   puts "CONNECT REQUEST CONTEXT: #{request_context}"
@@ -82,6 +90,12 @@ def on_connect(event, context)
 end
 
 def on_disconnect(event, context)
+  authorizer = event["requestContext"]["authorizer"]
+  authorization_error_response = AuthErrorResponseHelper.get_response(authorizer)
+  # The return value is not actually interpreted by the client, but early return here so that
+  # we don't try to delete a queue that doesn't exist.
+  return authorization_error_response if authorization_error_response
+
   sqs = Aws::SQS::Client.new(region: get_region(context), retry_mode: "adaptive")
   request_context = event['requestContext']
 
@@ -92,16 +106,30 @@ def on_disconnect(event, context)
 end
 
 def on_default(event, context)
+  client = Aws::ApiGatewayManagementApi::Client.new(
+    region: get_region(context),
+    endpoint: get_api_endpoint(event, context)
+  )
+  connection_id = event["requestContext"]["connectionId"]
+
+  authorizer = event["requestContext"]["authorizer"]
+  authorization_error_response = AuthErrorResponseHelper.get_response(authorizer)
+  # If there is an authorization error, send the error message via the websocket
+  # and return early
+  if authorization_error_response
+    resp = client.post_to_connection({
+      data: authorization_error_response[:body],
+      connection_id: connection_id
+    })
+    return authorization_error_response
+  end
+
   message = event["body"]
   # Return early if this is the user connectivity test
   if message == 'connectivityTest'
-    client = Aws::ApiGatewayManagementApi::Client.new(
-      region: get_region(context),
-      endpoint: get_api_endpoint(event, context)
-    )
     resp = client.post_to_connection({
       data: "success",
-      connection_id: event["requestContext"]["connectionId"]
+      connection_id: connection_id
     })
     return { statusCode: 200, body: "success"}
   end
