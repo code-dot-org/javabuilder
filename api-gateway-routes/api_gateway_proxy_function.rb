@@ -8,6 +8,7 @@ include AuthErrorResponseHelper
 
 MAX_SQS_RETRIES = 3
 INITIAL_RETRY_SLEEP_S = 0.5
+CONNECTED_MESSAGE = 'CONNECTED'.freeze
 
 def lambda_handler(event:, context:)
   routeKey = event["requestContext"]["routeKey"]
@@ -31,6 +32,9 @@ def on_connect(event, context)
   # but early return so we don't actually invoke the Build and Run lambda and try
   # to create an SQS queue. We will send the auth error message via the websocket
   # once the connection has been successfully made (in on_default).
+  # This should only happen in the rare scenario that a request/token is valid
+  # for the HTTP authorizer and API, but somehow becomes invalid when the websocket
+  # connection is made.
   if authorization_error_response
     # Add some logging to make sure we know this is happening.
     puts "AUTHORIZATION ERROR: #{authorization_error_response[:body]}"
@@ -132,6 +136,11 @@ def on_default(event, context)
       connection_id: connection_id
     })
     return { statusCode: 200, body: "success"}
+  end
+
+  # Return early if this is the initial "CONNECTED" message
+  if message == CONNECTED_MESSAGE
+    return { statusCode: 200, body: "success" }
   end
 
   sqs = Aws::SQS::Client.new(region: get_region(context))
