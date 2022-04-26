@@ -1,0 +1,16 @@
+version: 0.2
+phases:
+  install:
+    runtime-versions:
+      ruby: 2.7
+      java: corretto11
+      python: 3.8
+    commands:
+      - gem install bundler
+      - pip install cfn-lint
+  build:
+    commands:
+      - erb -T - cicd/3-app/javabuilder/template.yml.erb > cicd/3-app/javabuilder/template.yml
+      - cfn-lint cicd/3-app/javabuilder/template.yml
+      - cicd/3-app/javabuilder/config/create-environment-config.sh
+      - ls cicd/3-app/javabuilder

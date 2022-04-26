@@ -213,22 +213,22 @@ Resources:
                 ProjectName: !Ref AppBuildProject
               OutputArtifacts:
                 - Name: appBuildResults
-        # - Name: Deploy_To_Test
-        #   Actions:
-        #     - Name: app-deploy
-        #       ActionTypeId: 
-        #         Category: Deploy 
-        #         Owner: AWS 
-        #         Version: 1 
-        #         Provider: CloudFormation
-        #       InputArtifacts:
-        #         - Name: appBuildResults
-        #       Configuration:
-        #         # StackName: !Sub javabuilder-${GitHubBranch}
-        #         StackName: javabuilder-create-codepipeline
-        #         ActionMode: CREATE_UPDATE
-        #         TemplatePath: appBuildResults::cicd/3-app/app.template.yml
-        #         TemplateConfiguration: appBuildResults::cicd/3-app/params/test.params.json
-        #         RoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/admin/CloudFormationService
-        #         # Capabilities:
+        - Name: Deploy_To_Test_Dev
+          Actions:
+            - Name: app-deploy
+              ActionTypeId: 
+                Category: Deploy 
+                Owner: AWS 
+                Version: 1 
+                Provider: CloudFormation
+              InputArtifacts:
+                - Name: appBuildResults
+              Configuration:
+                # StackName: !Sub javabuilder-${GitHubBranch}
+                StackName: javabuilder-create-codepipeline
+                ActionMode: CREATE_UPDATE
+                TemplatePath: appBuildResults::cicd/3-app/app.template.yml
+                TemplateConfiguration: appBuildResults::cicd/3-app/javabuilder/test-dev.config.json
+                RoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/admin/CloudFormationService
+                # Capabilities:
 
