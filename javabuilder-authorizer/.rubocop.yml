@@ -1,10 +1,46 @@
-inherit_from:
-  - .rubocop_hound.yml
-  - .rubocop_todo.yml
-
 AllCops:
   DisplayCopNames: true
+  NewCops: enable
   TargetRubyVersion: 2.7
+
+# CODE.ORG "TO DO"
+
+Style/MixinUsage:
+  Enabled: false
+
+Style/FrozenStringLiteralComment:
+  Enabled: false
+
+# HOUND CI
+
+Metrics/MethodLength:
+  Description: Avoid methods longer than 10 lines of code.
+  StyleGuide: https://github.com/bbatsov/ruby-style-guide#short-methods
+  Enabled: false
+  CountComments: false
+  Max: 10
+
+Metrics/ClassLength:
+  Description: Avoid classes longer than 100 lines of code.
+  Enabled: false
+  CountComments: false
+  Max: 100
+
+Style/Documentation:
+  Description: Document classes and non-namespace modules.
+  Enabled: false
+
+Metrics/CyclomaticComplexity:
+  Description: A complexity metric that is strongly correlated to the number of test
+    cases needed to validate a method.
+  Enabled: false
+  Max: 6
+
+Metrics/PerceivedComplexity:
+  Description: A complexity metric geared towards measuring complexity for a human
+    reader.
+  Enabled: false
+  Max: 7
 
 # BEGIN CODE.ORG OVERRIDES
 
