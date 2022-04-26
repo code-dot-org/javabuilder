@@ -16,9 +16,7 @@ def lambda_handler(event:, context:)
   jwt_token = event['queryStringParameters']['Authorization']
   method_arn = event['methodArn']
   # Return early if this is the user connectivity test
-  if jwt_token == 'connectivityTest'
-    return JwtHelper.generate_policy('connectivityTest', 'Allow', method_arn, {connectivityTest: true})
-  end
+  return JwtHelper.generate_policy('connectivityTest', 'Allow', method_arn, {connectivityTest: true}) if jwt_token == 'connectivityTest'
 
   standardized_origin = JwtHelper.get_standardized_origin(origin)
   decoded_token = JwtHelper.decode_token(jwt_token, standardized_origin)
@@ -38,7 +36,7 @@ end
 def get_token_status(context, sid)
   client = Aws::DynamoDB::Client.new(region: get_region(context))
   response = client.get_item(
-    table_name: ENV['token_status_table'],
+    table_name: ENV.fetch('token_status_table', nil),
     key: {token_id: sid}
   )
   item = response.item
@@ -61,7 +59,7 @@ def get_token_status(context, sid)
   end
 
   client.update_item(
-    table_name: ENV['token_status_table'],
+    table_name: ENV.fetch('token_status_table', nil),
     key: {token_id: sid},
     update_expression: 'SET used = :u',
     expression_attribute_values: {':u': true}

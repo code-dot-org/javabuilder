@@ -108,7 +108,7 @@ module JwtHelper
     end
     # End of temporary code
 
-    public_key = ENV["rsa_pub_#{stage_name}"]
+    public_key = ENV.fetch("rsa_pub_#{stage_name}", nil)
     # Environment variables can't contain newlines (if you copy over an environment variable with
     # newlines they are replaced with spaces) The public keys are saved in the configuration by
     # copying over the key with literal '\n' at the end of each line. Environment variable save

@@ -40,7 +40,7 @@ class TokenValidator
     begin
       ttl = Time.now.to_i + TOKEN_RECORD_TTL_SECONDS
       @client.put_item(
-        table_name: ENV['token_status_table'],
+        table_name: ENV.fetch('token_status_table', nil),
         item: {
           token_id: @token_id,
           ttl: ttl
@@ -56,7 +56,7 @@ class TokenValidator
 
   def user_blocked?
     response = @client.get_item(
-      table_name: ENV['blocked_users_table'],
+      table_name: ENV.fetch('blocked_users_table', nil),
       key: {user_id: blocked_users_user_id}
     )
 
@@ -67,7 +67,7 @@ class TokenValidator
     blocked = true
     @verified_teachers.split(',').each do |teacher_id|
       response = @client.get_item(
-        table_name: ENV['blocked_users_table'],
+        table_name: ENV.fetch('blocked_users_table', nil),
         key: {user_id: blocked_users_section_owner_id(teacher_id)}
       )
 
@@ -103,7 +103,7 @@ class TokenValidator
 
     @verified_teachers.split(',').each do |teacher_id|
       response = @client.query(
-        table_name: ENV['teacher_associated_requests_table'],
+        table_name: ENV.fetch('teacher_associated_requests_table', nil),
         key_condition_expression: 'section_owner_id = :teacher_id AND issued_at > :one_hour_ago',
         expression_attribute_values: {
           ':teacher_id' => "#{@origin}##{teacher_id}",
@@ -111,14 +111,12 @@ class TokenValidator
         }
       )
       # See user_over_limit? method for notes on pagination
-      if response.last_evaluated_key
-        puts "teacher_associated_requests query has paginated responses. user_id #{@user_id} teacher_id #{teacher_id}"
-      end
+      puts "teacher_associated_requests query has paginated responses. user_id #{@user_id} teacher_id #{teacher_id}" if response.last_evaluated_key
 
       if response.count > TEACHER_HOURLY_LIMIT
         begin
           @client.put_item(
-            table_name: ENV['blocked_users_table'],
+            table_name: ENV.fetch('blocked_users_table', nil),
             item: {
               user_id: blocked_users_section_owner_id(teacher_id),
               request_log: response.items.to_s,
@@ -143,7 +141,7 @@ class TokenValidator
 
   def log_requests
     @client.put_item(
-      table_name: ENV['user_requests_table'],
+      table_name: ENV.fetch('user_requests_table', nil),
       item: {
         user_id: "#{@origin}##{@user_id}",
         issued_at: Time.now.to_i,
@@ -153,7 +151,7 @@ class TokenValidator
 
     @verified_teachers.split(',').each do |teacher_id|
       @client.put_item(
-        table_name: ENV['teacher_associated_requests_table'],
+        table_name: ENV.fetch('teacher_associated_requests_table', nil),
         item: {
           section_owner_id: "#{@origin}##{teacher_id}",
           issued_at: Time.now.to_i,
@@ -165,7 +163,7 @@ class TokenValidator
 
   def mark_token_as_vetted
     @client.update_item(
-      table_name: ENV['token_status_table'],
+      table_name: ENV.fetch('token_status_table', nil),
       key: {token_id: @token_id},
       update_expression: 'SET vetted = :v',
       expression_attribute_values: {':v': true}
@@ -185,7 +183,7 @@ class TokenValidator
 
   def user_over_limit?(time_range_seconds, limit, logging_message)
     response = @client.query(
-      table_name: ENV['user_requests_table'],
+      table_name: ENV.fetch('user_requests_table', nil),
       key_condition_expression: 'user_id = :user_id AND issued_at > :past_time',
       expression_attribute_values: {
         ':user_id' => "#{@origin}##{@user_id}",
@@ -209,7 +207,7 @@ class TokenValidator
       # [{"ttl"=>0.1648766446e10, "user_id"=>"611", "issued_at"=>0.1648680046e10}, {...
       begin
         @client.put_item(
-          table_name: ENV['blocked_users_table'],
+          table_name: ENV.fetch('blocked_users_table', nil),
           item: {
             user_id: blocked_users_user_id,
             request_log: response.items.to_s,
