@@ -1,4 +1,4 @@
-package org.code.neighborhood;
+package org.code.neighborhood.support;
 
 import static org.junit.jupiter.api.Assertions.*;
 

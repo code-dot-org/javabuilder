@@ -8,6 +8,7 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import org.code.media.*;
+import org.code.media.util.AudioUtils;
 import org.code.theater.support.*;
 
 public class Scene {
