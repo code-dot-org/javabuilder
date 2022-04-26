@@ -1,4 +1,4 @@
-package org.code.neighborhood;
+package org.code.neighborhood.support;
 
 import java.util.Set;
 import java.util.regex.Matcher;

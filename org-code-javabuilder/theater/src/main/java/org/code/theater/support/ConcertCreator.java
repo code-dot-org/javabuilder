@@ -12,9 +12,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.List;
-import org.code.media.AudioWriter;
 import org.code.media.Color;
-import org.code.media.FontHelper;
+import org.code.media.support.AudioWriter;
+import org.code.media.support.FontHelper;
 import org.code.protocol.*;
 import org.code.theater.Instrument;
 

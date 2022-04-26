@@ -1,4 +1,4 @@
-package org.code.media;
+package org.code.media.support;
 
 public enum SoundExceptionKeys {
   INVALID_AUDIO_FILE_FORMAT,

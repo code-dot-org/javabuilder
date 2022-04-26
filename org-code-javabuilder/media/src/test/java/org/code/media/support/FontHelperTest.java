@@ -1,7 +1,9 @@
-package org.code.media;
+package org.code.media.support;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import org.code.media.Font;
+import org.code.media.FontStyle;
 import org.code.protocol.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

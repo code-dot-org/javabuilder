@@ -1,4 +1,4 @@
-package org.code.media;
+package org.code.media.support;
 
 public enum MediaRuntimeExceptionKeys {
   IMAGE_LOAD_ERROR

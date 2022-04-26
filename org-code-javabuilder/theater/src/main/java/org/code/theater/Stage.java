@@ -13,6 +13,8 @@ import org.code.media.*;
 import org.code.media.Color;
 import org.code.media.Font;
 import org.code.media.Image;
+import org.code.media.support.AudioWriter;
+import org.code.media.support.FontHelper;
 import org.code.protocol.*;
 import org.code.theater.support.*;
 
