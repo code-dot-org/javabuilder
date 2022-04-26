@@ -3,7 +3,10 @@ AllCops:
   NewCops: enable
   TargetRubyVersion: 2.7
 
-# CODE.ORG "TO DO"
+# Disabled rules from code-dot-org's (very old/unchanging) "to do" list
+# that we are violating.
+# Copied from here:
+# https://github.com/code-dot-org/code-dot-org/blob/a4da178625f23f7817027196eecf2971e2b83048/.rubocop_todo.yml
 
 Style/MixinUsage:
   Enabled: false
@@ -11,7 +14,10 @@ Style/MixinUsage:
 Style/FrozenStringLiteralComment:
   Enabled: false
 
-# HOUND CI
+# Disabled rules inherited from Hound CI (a legacy code-dot-org CI tool)
+# that we are violating.
+# Copied from here:
+# https://github.com/code-dot-org/code-dot-org/blob/a4da178625f23f7817027196eecf2971e2b83048/.rubocop_hound.yml
 
 Metrics/MethodLength:
   Description: Avoid methods longer than 10 lines of code.
@@ -42,7 +48,9 @@ Metrics/PerceivedComplexity:
   Enabled: false
   Max: 7
 
-# BEGIN CODE.ORG OVERRIDES
+# Copying code-dot-org style overrides that were explicitly chosen.
+# Copied from here:
+# https://github.com/code-dot-org/code-dot-org/blob/a4da178625f23f7817027196eecf2971e2b83048/.rubocop.yml
 
 Layout/ParameterAlignment:
   EnforcedStyle: with_fixed_indentation
@@ -139,5 +147,3 @@ Style/SymbolArray:
 
 Style/ClassAndModuleChildren:
   Enabled: false
-
-# END BLACKLIST
