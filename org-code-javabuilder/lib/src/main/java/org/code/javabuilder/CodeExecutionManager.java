@@ -150,6 +150,7 @@ public class CodeExecutionManager {
     // Create temp folder
     try {
       this.tempFolder = Files.createTempDirectory("tmpdir").toFile();
+      System.out.println("Execution temp folder: " + this.tempFolder.toPath());
     } catch (IOException e) {
       throw new InternalServerException(InternalExceptionKey.INTERNAL_EXCEPTION, e);
     }
