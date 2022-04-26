@@ -5,7 +5,7 @@ import static org.mockito.Mockito.*;
 
 import java.net.URLClassLoader;
 import java.util.List;
-import org.code.protocol.InternalErrorKey;
+import org.code.protocol.InternalExceptionKey;
 import org.code.protocol.OutputAdapter;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -86,7 +86,7 @@ public class BaseTestRunnerTest {
   @Test
   @SuppressWarnings("unchecked")
   public void testRunFindsAndRunsAllTests()
-      throws InternalServerError, ClassNotFoundException, UserInitiatedException {
+      throws InternalServerException, ClassNotFoundException, UserInitiatedException {
     when(urlClassLoader.loadClass(file1.getClassName())).thenReturn(javaClass1);
     when(urlClassLoader.loadClass(file2.getClassName())).thenReturn(javaClass2);
     discoverySelectors
@@ -127,9 +127,9 @@ public class BaseTestRunnerTest {
     when(urlClassLoader.loadClass(file1.getClassName())).thenThrow(cause);
 
     final Exception actual =
-        assertThrows(InternalServerError.class, () -> unitUnderTest.run(urlClassLoader));
+        assertThrows(InternalServerException.class, () -> unitUnderTest.run(urlClassLoader));
 
-    assertEquals(InternalErrorKey.INTERNAL_EXCEPTION.toString(), actual.getMessage());
+    assertEquals(InternalExceptionKey.INTERNAL_EXCEPTION.toString(), actual.getMessage());
     assertSame(cause, actual.getCause());
   }
 }

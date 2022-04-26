@@ -7,8 +7,8 @@ import javax.sound.sampled.*;
 import org.code.media.SoundException;
 import org.code.media.support.SoundExceptionKeys;
 import org.code.protocol.GlobalProtocol;
-import org.code.protocol.InternalErrorKey;
-import org.code.protocol.InternalServerRuntimeError;
+import org.code.protocol.InternalExceptionKey;
+import org.code.protocol.InternalServerRuntimeException;
 
 public final class AudioUtils {
   private AudioUtils() {
@@ -119,7 +119,7 @@ public final class AudioUtils {
     try {
       AudioSystem.write(audioInputStream, DEFAULT_AUDIO_FILE_FORMAT_TYPE, outputStream);
     } catch (IOException e) {
-      throw new InternalServerRuntimeError(InternalErrorKey.INTERNAL_EXCEPTION, e);
+      throw new InternalServerRuntimeException(InternalExceptionKey.INTERNAL_EXCEPTION, e);
     }
   }
 
@@ -218,7 +218,7 @@ public final class AudioUtils {
       bytes = audioInputStream.readAllBytes();
       audioInputStream.close();
     } catch (IOException e) {
-      throw new InternalServerRuntimeError(InternalErrorKey.INTERNAL_EXCEPTION, e);
+      throw new InternalServerRuntimeException(InternalExceptionKey.INTERNAL_EXCEPTION, e);
     }
 
     return AudioUtils.convertByteArrayToDoubleArray(

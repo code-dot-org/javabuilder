@@ -10,7 +10,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.code.javabuilder.*;
 import org.code.protocol.ContentManager;
-import org.code.protocol.InternalErrorKey;
+import org.code.protocol.InternalExceptionKey;
 import org.code.protocol.JavabuilderException;
 import org.json.JSONException;
 
@@ -19,7 +19,7 @@ public class LocalContentManager implements ContentManager {
 
   private final ProjectData projectData;
 
-  public LocalContentManager() throws InternalServerError {
+  public LocalContentManager() throws InternalServerException {
     this.projectData = this.loadProjectData();
   }
 
@@ -38,7 +38,7 @@ public class LocalContentManager implements ContentManager {
   }
 
   @Override
-  public String generateAssetUploadUrl(String filename) throws InternalServerError {
+  public String generateAssetUploadUrl(String filename) throws InternalServerException {
     final String uploadUrl = String.format(SERVER_URL_FORMAT, DIRECTORY, filename);
     // The URL to GET this asset once it is uploaded will be the same as the upload
     // URL since it points to the same location on the local file server. Add this
@@ -54,7 +54,7 @@ public class LocalContentManager implements ContentManager {
     try {
       Files.write(file.toPath(), inputBytes);
     } catch (IOException e) {
-      throw new InternalServerError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e);
+      throw new InternalServerException(InternalExceptionKey.INTERNAL_RUNTIME_EXCEPTION, e);
     }
     return String.format(SERVER_URL_FORMAT, DIRECTORY, filename);
   }
@@ -66,7 +66,7 @@ public class LocalContentManager implements ContentManager {
     }
   }
 
-  private ProjectData loadProjectData() throws InternalServerError {
+  private ProjectData loadProjectData() throws InternalServerException {
     final Path sourcesPath =
         Paths.get(
             System.getProperty("java.io.tmpdir"), DIRECTORY, ProjectData.PROJECT_DATA_FILE_NAME);
@@ -74,7 +74,7 @@ public class LocalContentManager implements ContentManager {
       return new ProjectData(Files.readString(sourcesPath));
     } catch (IOException | JSONException e) {
       // Error reading JSON file from local storage
-      throw new InternalServerError(InternalErrorKey.INTERNAL_EXCEPTION, e);
+      throw new InternalServerException(InternalExceptionKey.INTERNAL_EXCEPTION, e);
     }
   }
 }

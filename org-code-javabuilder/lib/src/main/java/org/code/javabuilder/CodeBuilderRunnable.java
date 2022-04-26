@@ -58,8 +58,8 @@ public class CodeBuilderRunnable implements Runnable {
           codeBuilder.runTests();
           break;
       }
-    } catch (InternalServerError | InternalServerRuntimeError e) {
-      if (e.getMessage().equals(InternalErrorKey.CONNECTION_TERMINATED.toString())) {
+    } catch (InternalServerException | InternalServerRuntimeException e) {
+      if (e.getMessage().equals(InternalExceptionKey.CONNECTION_TERMINATED.toString())) {
         // The connection was terminated while trying to send or receive a message. We no longer
         // have a connection to the user, so we need to log a warning internally and return early,
         // since we can no longer send the EXITED message.
@@ -83,7 +83,8 @@ public class CodeBuilderRunnable implements Runnable {
       // the errors and communicate the error state to the user before exiting the program.
 
       // Wrap this in our error type so we can log it and tell the user.
-      InternalServerError error = new InternalServerError(InternalErrorKey.UNKNOWN_ERROR, e);
+      InternalServerException error =
+          new InternalServerException(InternalExceptionKey.UNKNOWN_ERROR, e);
 
       // Errors we didn't catch. These may have been caused by the JVM, our own setup, or many other
       // unknowns. Log them so we can fix them.

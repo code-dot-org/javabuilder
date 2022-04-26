@@ -15,7 +15,7 @@ public class CachedResources {
   public static CachedResources getInstance() {
     if (CachedResources.cachedResourcesInstance == null) {
       Throwable cause = new IllegalStateException("Cached resources not found.");
-      throw new InternalServerRuntimeError(InternalErrorKey.INTERNAL_EXCEPTION, cause);
+      throw new InternalServerRuntimeException(InternalExceptionKey.INTERNAL_EXCEPTION, cause);
     }
     return CachedResources.cachedResourcesInstance;
   }

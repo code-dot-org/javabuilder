@@ -35,10 +35,10 @@ public class UserCodeCompiler {
   }
 
   /**
-   * @throws InternalServerError If the user's code has a compiler error or if we hit an internal
-   *     exception that interferes with compilation.
+   * @throws InternalServerException If the user's code has a compiler error or if we hit an
+   *     internal exception that interferes with compilation.
    */
-  public void compileProgram() throws InternalServerError, UserInitiatedException {
+  public void compileProgram() throws InternalServerException, UserInitiatedException {
     this.outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.COMPILING));
     DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
 
@@ -72,7 +72,7 @@ public class UserCodeCompiler {
   }
 
   private CompilationTask getCompilationTask(DiagnosticCollector<JavaFileObject> diagnostics)
-      throws InternalServerError, UserInitiatedException {
+      throws InternalServerException, UserInitiatedException {
     JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 
     // set output of compilation to be a temporary folder
@@ -83,7 +83,7 @@ public class UserCodeCompiler {
     } catch (IOException e) {
       e.printStackTrace();
       // if we can't set the file location we won't be able to run the class properly.
-      throw new InternalServerError(InternalErrorKey.INTERNAL_COMPILER_EXCEPTION, e);
+      throw new InternalServerException(InternalExceptionKey.INTERNAL_COMPILER_EXCEPTION, e);
     }
     // create file for user-provided code
     List<JavaFileObject> files = new ArrayList<>();
