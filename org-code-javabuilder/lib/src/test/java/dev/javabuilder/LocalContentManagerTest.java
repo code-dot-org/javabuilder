@@ -3,7 +3,7 @@ package dev.javabuilder;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import dev.javabuilder.util.TempDirectoryUtils;
+import dev.javabuilder.util.LocalStorageUtils;
 import java.io.FileNotFoundException;
 import org.code.javabuilder.InternalServerException;
 import org.code.javabuilder.ProjectData;
@@ -20,7 +20,7 @@ class LocalContentManagerTest {
 
   @BeforeEach
   public void setUp() {
-    TempDirectoryUtils.createTempDirectoryIfNeeded();
+    LocalStorageUtils.createLocalStorageIfNeeded();
     projectData = mock(ProjectData.class);
     projectFiles = mock(UserProjectFiles.class);
     unitUnderTest = new LocalContentManager(projectData);
