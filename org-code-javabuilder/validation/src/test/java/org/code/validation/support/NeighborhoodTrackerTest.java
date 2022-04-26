@@ -4,7 +4,10 @@ import static org.code.protocol.ClientMessageDetailKeys.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.HashMap;
-import org.code.neighborhood.*;
+import org.code.neighborhood.support.Direction;
+import org.code.neighborhood.support.NeighborhoodSignalKey;
+import org.code.neighborhood.support.NeighborhoodSignalMessage;
+import org.code.neighborhood.support.World;
 import org.code.protocol.ClientMessageType;
 import org.code.protocol.GlobalProtocolTestFactory;
 import org.code.validation.ClientMessageHelper;

@@ -1,13 +1,13 @@
-package org.code.neighborhood;
+package org.code.neighborhood.support;
 
 import org.code.protocol.JavabuilderRuntimeException;
 
 public class NeighborhoodRuntimeException extends JavabuilderRuntimeException {
-  protected NeighborhoodRuntimeException(ExceptionKeys key) {
+  public NeighborhoodRuntimeException(ExceptionKeys key) {
     super(key);
   }
 
-  protected NeighborhoodRuntimeException(ExceptionKeys key, Throwable cause) {
+  public NeighborhoodRuntimeException(ExceptionKeys key, Throwable cause) {
     super(key, cause);
   }
 }
