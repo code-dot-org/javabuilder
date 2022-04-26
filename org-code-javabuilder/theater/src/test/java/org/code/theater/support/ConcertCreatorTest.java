@@ -12,6 +12,7 @@ import java.awt.image.BufferedImage;
 import java.io.FileNotFoundException;
 import java.util.List;
 import org.code.media.*;
+import org.code.media.support.AudioWriter;
 import org.code.protocol.*;
 import org.code.theater.Instrument;
 import org.junit.jupiter.api.BeforeEach;
