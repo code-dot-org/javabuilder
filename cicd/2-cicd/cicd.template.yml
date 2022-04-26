@@ -74,7 +74,7 @@ Resources:
       Source:
         Type: GITHUB
         Location: !Sub https://github.com/${GitHubOwner}/${GitHubRepo}.git
-        BuildSpec: cicd/3-app/pr-buildspec.yml
+        BuildSpec: cicd/3-app/javabuilder/pr-buildspec.yml
         ReportBuildStatus: true
       SourceVersion: !Ref GitHubBranch
       Artifacts:
@@ -130,7 +130,7 @@ Resources:
             Value: !GetAtt EcrRepository.RepositoryUri
       Source:
         Type: CODEPIPELINE
-        BuildSpec: cicd/3-app/buildspec.yml
+        BuildSpec: cicd/3-app/javabuilder/buildspec.yml
       Artifacts:
         Type: CODEPIPELINE
 
