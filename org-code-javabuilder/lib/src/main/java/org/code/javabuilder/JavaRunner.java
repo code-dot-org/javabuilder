@@ -57,7 +57,7 @@ public class JavaRunner {
   /**
    * Run the compiled user code.
    *
-   * @throws InternalServerError When the user's code hits a runtime error or fails due to an
+   * @throws InternalServerException When the user's code hits a runtime error or fails due to an
    *     internal error.
    * @throws InternalFacingException When we hit an internal error after the user's code has
    *     finished executing.

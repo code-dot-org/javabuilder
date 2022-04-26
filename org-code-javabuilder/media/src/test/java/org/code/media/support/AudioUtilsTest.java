@@ -123,12 +123,12 @@ class AudioUtilsTest {
 
     Exception exception =
         assertThrows(
-            InternalServerRuntimeError.class,
+            InternalServerRuntimeException.class,
             () -> {
               AudioUtils.readSamplesFromAssetFile(TEST_FILE_NAME);
             });
 
-    assertEquals(InternalErrorKey.INTERNAL_EXCEPTION.toString(), exception.getMessage());
+    assertEquals(InternalExceptionKey.INTERNAL_EXCEPTION.toString(), exception.getMessage());
     verify(audioInputStream).readAllBytes();
   }
 
@@ -149,12 +149,12 @@ class AudioUtilsTest {
 
     Exception exception =
         assertThrows(
-            InternalServerRuntimeError.class,
+            InternalServerRuntimeException.class,
             () -> {
               AudioUtils.readSamplesFromAssetFile(TEST_FILE_NAME);
             });
 
-    assertEquals(InternalErrorKey.INTERNAL_EXCEPTION.toString(), exception.getMessage());
+    assertEquals(InternalExceptionKey.INTERNAL_EXCEPTION.toString(), exception.getMessage());
     verify(audioInputStream).readAllBytes();
     verify(audioInputStream).close();
   }

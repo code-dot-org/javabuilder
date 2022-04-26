@@ -36,7 +36,8 @@ public class InputHandler {
           nextMessageType = InputMessageType.valueOf(jsonMessage.getString(MESSAGE_TYPE_KEY));
           message = jsonMessage.getString(MESSAGE_KEY);
         } catch (JSONException | IllegalArgumentException e) {
-          throw new InternalServerRuntimeError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e);
+          throw new InternalServerRuntimeException(
+              InternalExceptionKey.INTERNAL_RUNTIME_EXCEPTION, e);
         }
 
         if (!inputQueues.containsKey(nextMessageType)) {

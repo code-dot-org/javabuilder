@@ -5,7 +5,7 @@ import static org.mockito.Mockito.*;
 
 import dev.javabuilder.util.TempDirectoryUtils;
 import java.io.FileNotFoundException;
-import org.code.javabuilder.InternalServerError;
+import org.code.javabuilder.InternalServerException;
 import org.code.javabuilder.ProjectData;
 import org.code.javabuilder.UserProjectFiles;
 import org.code.protocol.JavabuilderException;
@@ -35,7 +35,7 @@ class LocalContentManagerTest {
   }
 
   @Test
-  public void testGenerateUploadUrlCreatesUrlAndAddsToProjectData() throws InternalServerError {
+  public void testGenerateUploadUrlCreatesUrlAndAddsToProjectData() throws InternalServerException {
     final String filename = "file";
     final String url = unitUnderTest.generateAssetUploadUrl(filename);
     assertTrue(url.contains(filename));

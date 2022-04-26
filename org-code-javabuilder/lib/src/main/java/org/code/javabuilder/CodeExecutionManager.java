@@ -115,7 +115,7 @@ public class CodeExecutionManager {
         LoggerUtils.logSevereException(e);
       }
       this.onPostExecute();
-    } catch (InternalServerError e) {
+    } catch (InternalServerException e) {
       LoggerUtils.logSevereError(e);
     }
   }
@@ -133,7 +133,7 @@ public class CodeExecutionManager {
     }
     try {
       this.onPostExecute();
-    } catch (InternalServerError e) {
+    } catch (InternalServerException e) {
       LoggerUtils.logSevereError(e);
     }
   }
@@ -142,7 +142,7 @@ public class CodeExecutionManager {
    * Pre-execution steps: 1) Create GlobalProtocol, 2) create temporary folder, 3) Replace
    * System.in/out with custom in/out
    */
-  private void onPreExecute() throws InternalServerError {
+  private void onPreExecute() throws InternalServerException {
     // Create the Global Protocol instance
     GlobalProtocol.create(
         this.outputAdapter, this.inputAdapter, this.lifecycleNotifier, this.contentManager);
@@ -151,7 +151,7 @@ public class CodeExecutionManager {
     try {
       this.tempFolder = Files.createTempDirectory("tmpdir").toFile();
     } catch (IOException e) {
-      throw new InternalServerError(InternalErrorKey.INTERNAL_EXCEPTION, e);
+      throw new InternalServerException(InternalExceptionKey.INTERNAL_EXCEPTION, e);
     }
 
     // Save System in/out and replace with custom in/out
@@ -169,7 +169,7 @@ public class CodeExecutionManager {
    * folder, 4) close custom in/out streams, 5) Replace System.in/out with original in/out, 6)
    * Destroy Global Protocol
    */
-  private void onPostExecute() throws InternalServerError {
+  private void onPostExecute() throws InternalServerException {
     if (!this.executionInProgress) {
       Logger.getLogger(MAIN_LOGGER)
           .warning("onPostExecute() called while execution not in progress.");

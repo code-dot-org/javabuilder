@@ -5,8 +5,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import org.code.media.SoundException;
 import org.code.media.util.AudioUtils;
-import org.code.protocol.InternalErrorKey;
-import org.code.protocol.InternalServerRuntimeError;
+import org.code.protocol.InternalExceptionKey;
+import org.code.protocol.InternalServerRuntimeException;
 
 /**
  * Writer for concatenating audio data from multiple audio sources. The raw audio samples in bytes
@@ -89,7 +89,7 @@ public class AudioWriter {
     try {
       this.audioOutputStream.close();
     } catch (IOException e) {
-      throw new InternalServerRuntimeError(InternalErrorKey.INTERNAL_EXCEPTION, e);
+      throw new InternalServerRuntimeException(InternalExceptionKey.INTERNAL_EXCEPTION, e);
     }
   }
 }

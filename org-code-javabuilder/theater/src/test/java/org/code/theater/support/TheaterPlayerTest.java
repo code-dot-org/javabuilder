@@ -6,8 +6,8 @@ import static org.mockito.Mockito.*;
 import java.util.ArrayList;
 import java.util.List;
 import org.code.protocol.GlobalProtocolTestFactory;
-import org.code.protocol.InternalErrorKey;
-import org.code.protocol.InternalServerRuntimeError;
+import org.code.protocol.InternalExceptionKey;
+import org.code.protocol.InternalServerRuntimeException;
 import org.code.protocol.LifecycleNotifier;
 import org.code.theater.support.TheaterPlayer.ConcertCreatorFactory;
 import org.junit.jupiter.api.AfterEach;
@@ -61,12 +61,12 @@ class TheaterPlayerTest {
 
   @Test
   public void testCleansUpConcertCreatorIfExceptionThrown() {
-    doThrow(new InternalServerRuntimeError(InternalErrorKey.INTERNAL_EXCEPTION))
+    doThrow(new InternalServerRuntimeException(InternalExceptionKey.INTERNAL_EXCEPTION))
         .when(concertCreator)
         .publishConcert(actions);
     try {
       unitUnderTest.play(actions);
-    } catch (InternalServerRuntimeError e) {
+    } catch (InternalServerRuntimeException e) {
       // expected
       verify(concertCreator).close();
     }
