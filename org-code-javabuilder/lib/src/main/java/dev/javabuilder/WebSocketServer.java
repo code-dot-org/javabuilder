@@ -29,11 +29,14 @@ import org.json.JSONObject;
  */
 @ServerEndpoint("/javabuilder")
 public class WebSocketServer {
+  private static final String CONNECTED_MESSAGE = "CONNECTED";
   private WebSocketInputAdapter inputAdapter;
   private WebSocketOutputAdapter websocketOutputAdapter;
   private OutputAdapter outputAdapter;
   private Handler logHandler;
   private Logger logger;
+  private CodeExecutionManager codeExecutionManager;
+  private boolean finishedExecution;
 
   public WebSocketServer() {
     CachedResources.create();
@@ -49,6 +52,7 @@ public class WebSocketServer {
    */
   @OnOpen
   public void onOpen(Session session) {
+    this.finishedExecution = false;
     PerformanceTracker.resetTracker();
     PerformanceTracker.getInstance().trackInstanceStart(Clock.systemUTC().instant());
     // Decode the authorization token
@@ -97,7 +101,7 @@ public class WebSocketServer {
     Thread codeExecutor =
         new Thread(
             () -> {
-              final CodeExecutionManager executionManager =
+              codeExecutionManager =
                   new CodeExecutionManager(
                       contentManager.getProjectFileLoader(),
                       inputAdapter,
@@ -108,7 +112,8 @@ public class WebSocketServer {
                       contentManager,
                       lifecycleNotifier,
                       new LocalSystemExitHelper());
-              executionManager.execute();
+              codeExecutionManager.execute();
+              this.finishedExecution = true;
               // Clean up session
               try {
                 session.close();
@@ -125,6 +130,11 @@ public class WebSocketServer {
   public void myOnClose() {
     Logger.getLogger(MAIN_LOGGER).info("WebSocket closed.");
     PerformanceTracker.getInstance().logPerformance();
+    // If the websocket was closed before execution was finished, make sure we clean up.
+    if (!this.finishedExecution) {
+      this.codeExecutionManager.requestEarlyExit();
+      this.logger.removeHandler(this.logHandler);
+    }
   }
 
   /**
@@ -134,6 +144,10 @@ public class WebSocketServer {
    */
   @OnMessage
   public void textMessage(String message) {
+    // Ignore the initial "CONNECTED" message
+    if (message.equals(CONNECTED_MESSAGE)) {
+      return;
+    }
     inputAdapter.appendMessage(message);
   }
 
