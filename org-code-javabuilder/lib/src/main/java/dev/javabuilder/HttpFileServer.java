@@ -4,11 +4,10 @@ import static dev.javabuilder.LocalWebserverConstants.DIRECTORY;
 import static dev.javabuilder.LocalWebserverConstants.SEED_SOURCES_ENDPOINT;
 import static org.code.protocol.AllowedFileNames.PROMPTER_FILE_NAME_PREFIX;
 
-import dev.javabuilder.util.TempDirectoryUtils;
+import dev.javabuilder.util.LocalStorageUtils;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -39,7 +38,7 @@ public class HttpFileServer extends HttpServlet {
 
     final String fileName = this.getFileName(request);
     OutputStream out = response.getOutputStream();
-    Files.copy(Paths.get(System.getProperty("java.io.tmpdir"), DIRECTORY, fileName), out);
+    Files.copy(LocalStorageUtils.getLocalFilePath(fileName), out);
     out.flush();
   }
 
@@ -62,10 +61,10 @@ public class HttpFileServer extends HttpServlet {
       fileName = ProjectData.PROJECT_DATA_FILE_NAME;
     }
 
-    TempDirectoryUtils.createTempDirectoryIfNeeded();
+    LocalStorageUtils.createLocalStorageIfNeeded();
     Files.copy(
         request.getInputStream(),
-        Paths.get(System.getProperty("java.io.tmpdir"), DIRECTORY, fileName),
+        LocalStorageUtils.getLocalFilePath(fileName),
         StandardCopyOption.REPLACE_EXISTING);
   }
 
