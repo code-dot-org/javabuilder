@@ -38,16 +38,14 @@ def on_connect(event, context)
   if authorization_error_response
     # Add some logging to make sure we know this is happening.
     puts "AUTHORIZATION ERROR: #{authorization_error_response[:body]}"
-    return { statusCode: 200, body: authorization_error_response[:body] }
+    return {statusCode: 200, body: authorization_error_response[:body]}
   end
 
   # Add in some logging to make debugging easier
   puts "CONNECT REQUEST CONTEXT: #{request_context}"
 
   # Return early if this is the user connectivity test
-  if is_connectivity_test(authorizer)
-    return { statusCode: 200, body: "connection successful" }
-  end
+  return {statusCode: 200, body: "connection successful"} if is_connectivity_test(authorizer)
 
   # -- Create SQS for this session --
   sqs_client = Aws::SQS::Client.new(region: region, retry_mode: "adaptive")
@@ -58,16 +56,16 @@ def on_connect(event, context)
   # -- Create Lambda for this session --
   lambda_client = Aws::Lambda::Client.new(region: region)
   payload = {
-    :queueUrl => sqs_queue.queue_url,
-    :connectionId => request_context["connectionId"],
-    :levelId => authorizer["level_id"],
-    :options => authorizer["options"],
-    :iss => authorizer["iss"],
-    :channelId => authorizer["channel_id"],
-    :miniAppType => authorizer["mini_app_type"],
-    :javabuilderSessionId => authorizer['sid'],
-    :queueName => queue_name,
-    :executionType => authorizer['execution_type']
+    queueUrl: sqs_queue.queue_url,
+    connectionId: request_context["connectionId"],
+    levelId: authorizer["level_id"],
+    options: authorizer["options"],
+    iss: authorizer["iss"],
+    channelId: authorizer["channel_id"],
+    miniAppType: authorizer["mini_app_type"],
+    javabuilderSessionId: authorizer['sid'],
+    queueName: queue_name,
+    executionType: authorizer['execution_type']
   }
 
   response = nil
@@ -81,16 +79,17 @@ def on_connect(event, context)
   elsif authorizer['mini_app_type'] == 'playground'
     function_name = ENV['BUILD_AND_RUN_PLAYGROUND_PROJECT_LAMBDA_ARN']
   else
-    return { statusCode: 400, body: "invalid mini-app" }
+    return {statusCode: 400, body: "invalid mini-app"}
   end
 
   response = lambda_client.invoke({
-    function_name: function_name,
-    invocation_type: 'Event',
-    payload: JSON.generate(payload)
-  })
+                                    function_name: function_name,
+                                    invocation_type: 'Event',
+                                    payload: JSON.generate(payload)
+                                  }
+)
 
-  { statusCode: response['status_code'], body: "done" }
+  {statusCode: response['status_code'], body: "done"}
 end
 
 def on_disconnect(event, context)
@@ -106,7 +105,7 @@ def on_disconnect(event, context)
   # Delete the queue with retries if we get throttled
   sqs_operation_with_retries(:delete_queue, request_context, sqs, event, context)
 
-  { statusCode: 200, body: "success"}
+  {statusCode: 200, body: "success"}
 end
 
 def on_default(event, context)
@@ -122,9 +121,10 @@ def on_default(event, context)
   # and return early
   if authorization_error_response
     resp = client.post_to_connection({
-      data: authorization_error_response[:body],
-      connection_id: connection_id
-    })
+                                       data: authorization_error_response[:body],
+                                       connection_id: connection_id
+                                     }
+)
     return authorization_error_response
   end
 
@@ -132,26 +132,25 @@ def on_default(event, context)
   # Return early if this is the user connectivity test
   if message == 'connectivityTest'
     resp = client.post_to_connection({
-      data: "success",
-      connection_id: connection_id
-    })
-    return { statusCode: 200, body: "success"}
+                                       data: "success",
+                                       connection_id: connection_id
+                                     }
+)
+    return {statusCode: 200, body: "success"}
   end
 
   # Return early if this is the initial "CONNECTED" message
-  if message == CONNECTED_MESSAGE
-    return { statusCode: 200, body: "success" }
-  end
+  return {statusCode: 200, body: "success"} if message == CONNECTED_MESSAGE
 
   sqs = Aws::SQS::Client.new(region: get_region(context))
   sqs.send_message(
     queue_url: get_sqs_url(event, context),
     message_body: message,
     message_deduplication_id: SecureRandom.uuid.to_str.gsub("-", ""),
-    message_group_id: get_session_id(event),
+    message_group_id: get_session_id(event)
   )
 
-  { statusCode: 200, body: "success"}
+  {statusCode: 200, body: "success"}
 end
 
 def get_api_endpoint(event, context)
@@ -192,11 +191,12 @@ def sqs_operation_with_retries(sqs_operation, request_context, *operation_params
     method(sqs_operation).call(*operation_params)
   rescue Aws::SQS::Errors::RequestThrottled => e
     raise(e) if retries >= MAX_SQS_RETRIES
+
     retries += 1
     sleep(sleep_time)
     puts "RETRY #{retries}, just slept for #{sleep_time} seconds. Request context: #{request_context}"
     # double sleep time for next retry
-    sleep_time = sleep_time * 2
+    sleep_time *= 2
     retry
   end
 end
@@ -213,17 +213,16 @@ def delete_queue(sqs_client, event, context)
   # such as in case of connectivity test.
   # The NonExistentQueue error is not documented in the AWS SDK,
   # but was observed in errors accumulated from our connectivity tests.
-  begin
-    sqs_client.delete_queue(queue_url: get_sqs_url(event, context))
-  rescue Aws::SQS::Errors::NonExistentQueue => e
-    request_context = event['requestContext']
-    authorizer = request_context['authorizer']
 
-    # This exception is expected during connectivity tests,
-    # so do not log in those cases.
-    unless is_connectivity_test(authorizer)
-      puts "DISCONNECT ERROR REQUEST CONTEXT: #{request_context}"
-      puts "DISCONNECT ERROR: #{e.message}"
-    end
+  sqs_client.delete_queue(queue_url: get_sqs_url(event, context))
+rescue Aws::SQS::Errors::NonExistentQueue => e
+  request_context = event['requestContext']
+  authorizer = request_context['authorizer']
+
+  # This exception is expected during connectivity tests,
+  # so do not log in those cases.
+  unless is_connectivity_test(authorizer)
+    puts "DISCONNECT ERROR REQUEST CONTEXT: #{request_context}"
+    puts "DISCONNECT ERROR: #{e.message}"
   end
 end
