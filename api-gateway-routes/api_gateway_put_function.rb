@@ -12,6 +12,6 @@ def lambda_handler(event:, context:)
   client.put_object(
     body: event["body"],
     bucket: ENV["CONTENT_BUCKET_NAME"],
-    key: authorizer["sid"].to_s + "/sources.json"
+    key: "#{authorizer['sid']}/sources.json"
   )
 end

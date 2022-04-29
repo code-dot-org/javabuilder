@@ -11,10 +11,12 @@ INITIAL_RETRY_SLEEP_S = 0.5
 CONNECTED_MESSAGE = 'CONNECTED'.freeze
 
 def lambda_handler(event:, context:)
-  routeKey = event["requestContext"]["routeKey"]
-  if routeKey == "$connect"
+  route_key = event["requestContext"]["routeKey"]
+
+  case route_key
+  when "$connect"
     return on_connect(event, context)
-  elsif routeKey == "$disconnect"
+  when "$disconnect"
     return on_disconnect(event, context)
   else
     return on_default(event, context)
@@ -45,11 +47,11 @@ def on_connect(event, context)
   puts "CONNECT REQUEST CONTEXT: #{request_context}"
 
   # Return early if this is the user connectivity test
-  return {statusCode: 200, body: "connection successful"} if is_connectivity_test(authorizer)
+  return {statusCode: 200, body: "connection successful"} if connectivity_test?(authorizer)
 
   # -- Create SQS for this session --
   sqs_client = Aws::SQS::Client.new(region: region, retry_mode: "adaptive")
-  queue_name = get_session_id(event) + '.fifo'
+  queue_name = "#{get_session_id(event)}.fifo"
   # Create the queue with retries if we get throttled
   sqs_queue = sqs_operation_with_retries(:create_queue, request_context, sqs_client, queue_name)
 
@@ -68,15 +70,15 @@ def on_connect(event, context)
     executionType: authorizer['execution_type']
   }
 
-  response = nil
   function_name = nil
-  if authorizer['mini_app_type'] == 'neighborhood'
+  case authorizer['mini_app_type']
+  when 'neighborhood'
     function_name = ENV['BUILD_AND_RUN_NEIGHBORHOOD_PROJECT_LAMBDA_ARN']
-  elsif authorizer['mini_app_type'] == 'console'
+  when 'console'
     function_name = ENV['BUILD_AND_RUN_CONSOLE_PROJECT_LAMBDA_ARN']
-  elsif authorizer['mini_app_type'] == 'theater'
+  when 'theater'
     function_name = ENV['BUILD_AND_RUN_THEATER_PROJECT_LAMBDA_ARN']
-  elsif authorizer['mini_app_type'] == 'playground'
+  when 'playground'
     function_name = ENV['BUILD_AND_RUN_PLAYGROUND_PROJECT_LAMBDA_ARN']
   else
     return {statusCode: 400, body: "invalid mini-app"}
@@ -120,10 +122,10 @@ def on_default(event, context)
   # If there is an authorization error, send the error message via the websocket
   # and return early
   if authorization_error_response
-    resp = client.post_to_connection({
-                                       data: authorization_error_response[:body],
-                                       connection_id: connection_id
-                                     }
+    client.post_to_connection({
+                                data: authorization_error_response[:body],
+                                connection_id: connection_id
+                              }
 )
     return authorization_error_response
   end
@@ -131,10 +133,10 @@ def on_default(event, context)
   message = event["body"]
   # Return early if this is the user connectivity test
   if message == 'connectivityTest'
-    resp = client.post_to_connection({
-                                       data: "success",
-                                       connection_id: connection_id
-                                     }
+    client.post_to_connection({
+                                data: "success",
+                                connection_id: connection_id
+                              }
 )
     return {statusCode: 200, body: "success"}
   end
@@ -180,7 +182,7 @@ def get_sqs_url(event, context)
   "https://sqs.#{region}.amazonaws.com/#{account_id}/#{connection_id}.fifo"
 end
 
-def is_connectivity_test(authorizer)
+def connectivity_test?(authorizer)
   !!(authorizer && authorizer['connectivityTest'])
 end
 
@@ -202,7 +204,7 @@ def sqs_operation_with_retries(sqs_operation, request_context, *operation_params
 end
 
 def create_queue(sqs_client, queue_name)
-  sqs_queue = sqs_client.create_queue(
+  sqs_client.create_queue(
     queue_name: queue_name,
     attributes: {"FifoQueue" => "true"}
   )
@@ -221,7 +223,7 @@ rescue Aws::SQS::Errors::NonExistentQueue => e
 
   # This exception is expected during connectivity tests,
   # so do not log in those cases.
-  unless is_connectivity_test(authorizer)
+  unless connectivity_test?(authorizer)
     puts "DISCONNECT ERROR REQUEST CONTEXT: #{request_context}"
     puts "DISCONNECT ERROR: #{e.message}"
   end
