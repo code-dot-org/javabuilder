@@ -28,6 +28,7 @@ class TokenValidator
     return error(USER_OVER_HOURLY_LIMIT) if user_over_hourly_limit?
     return error(USER_OVER_DAILY_LIMIT) if user_over_daily_limit?
     return error(TEACHERS_OVER_HOURLY_LIMIT) if teachers_over_hourly_limit?
+
     log_requests
     mark_token_as_vetted
     VALID_HTTP
@@ -110,9 +111,7 @@ class TokenValidator
         }
       )
       # See user_over_limit? method for notes on pagination
-      if response.last_evaluated_key
-        puts "teacher_associated_requests query has paginated responses. user_id #{@user_id} teacher_id #{teacher_id}"
-      end
+      puts "teacher_associated_requests query has paginated responses. user_id #{@user_id} teacher_id #{teacher_id}" if response.last_evaluated_key
 
       if response.count > TEACHER_HOURLY_LIMIT
         begin
@@ -177,6 +176,7 @@ class TokenValidator
   def error(status)
     puts "TOKEN VALIDATION ERROR: #{status} user_id: #{@user_id} verified_teachers: #{@verified_teachers} token_id: #{@token_id}"
     return status if status == TOKEN_USED
+
     # status
     VALID_HTTP
   end
@@ -199,9 +199,7 @@ class TokenValidator
     # TO DO: remove this, or handle paginated responses
     # https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#query-instance_method
     # https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/CapacityUnitCalculations.html
-    if response.last_evaluated_key
-      puts "user_requests query has paginated responses. user_id #{@user_id}"
-    end
+    puts "user_requests query has paginated responses. user_id #{@user_id}" if response.last_evaluated_key
 
     over_limit = response.count > limit
     if over_limit

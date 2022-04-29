@@ -16,9 +16,7 @@ def lambda_handler(event:, context:)
   jwt_token = event['queryStringParameters']['Authorization']
   method_arn = event['methodArn']
   # Return early if this is the user connectivity test
-  if jwt_token == 'connectivityTest'
-    return JwtHelper.generate_policy('connectivityTest', "Allow", method_arn, {connectivityTest: true})
-  end
+  return JwtHelper.generate_policy('connectivityTest', "Allow", method_arn, {connectivityTest: true}) if jwt_token == 'connectivityTest'
 
   standardized_origin = JwtHelper.get_standardized_origin(origin)
   decoded_token = JwtHelper.decode_token(jwt_token, standardized_origin)

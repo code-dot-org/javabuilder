@@ -6,9 +6,10 @@ module JwtHelper
   # expired and its issue time is not in the future.
   def decode_token(token, standardized_origin)
     return false unless token
+
     begin
       if IS_LOAD_TEST
-        # load tests use a simpler authentication algorithm  
+        # load tests use a simpler authentication algorithm
         return JWT.decode(
           token,
           LOAD_TEST_KEY,
