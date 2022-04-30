@@ -1,0 +1,72 @@
+name: CI PR Verify
+
+on:
+  pull_request:
+    branches:
+      - main
+
+# TODO: can we run cloudformation package AFTER all of these?
+jobs:
+  # TODO: should we rename them?
+  # - javabuilder.cloudformation.yml
+  # - load-test.cloudformation.yml
+  # - security.cloudformation.yml
+  # - cicd.cloudformation.yml
+  verify-cicd:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Cloud Formation Linter
+        uses: scottbrenner/cfn-lint-action@v2
+
+      - name: verify cloudformation
+        run: |
+          cfn-lint --version
+          cfn-lint **.cloudformation.yml
+
+  verify-load-test:
+    runs-on: ubuntu-latest
+    path: load-test
+    steps:
+      - uses: actions/checkout@v2
+      - name: lint dockerfile
+        uses: hadolint/hadolint-action@v2.0.0
+        with:
+          dockerfile: Dockerfile
+      - name: build docker image
+        run: docker build .
+
+  # TODO: gonna need java/ruby/python
+  verify-javabuilder:
+    runs-on: ubuntu-latest
+    # TODO: can we set path here?
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: run javabuilder tests
+        run: gradlew test
+        with:
+          path: org-code-javabuilder
+
+      - name: build javabuilder
+        run: build.sh
+        with:
+          path: org-code-javabuilder
+
+  # TODO: gonna need java/ruby/python
+  verify-javabuilder-authorizer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: build javabuilder authorizer
+        run: build.sh
+        with:
+          path: javabuilder-authorizer
+  
+  # TODO: add tests
+  verify-api-gateway-routes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: snoop around
+        run: ls
