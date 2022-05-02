@@ -213,11 +213,7 @@ public class Scene {
    *     does not appear distorted.
    */
   public final void drawImage(String filename, int x, int y, int size) {
-    try {
-      this.drawImage(new Image(filename), x, y, size);
-    } catch (FileNotFoundException e) {
-      throw new TheaterRuntimeException(ExceptionKeys.FILE_NOT_FOUND, e);
-    }
+    this.drawImage(new Image(filename), x, y, size);
   }
 
   /**
@@ -231,11 +227,7 @@ public class Scene {
    * @param rotation the amount to rotate the image in degrees
    */
   public final void drawImage(String filename, int x, int y, int size, double rotation) {
-    try {
-      this.drawImage(new Image(filename), x, y, size, rotation);
-    } catch (FileNotFoundException e) {
-      throw new TheaterRuntimeException(ExceptionKeys.FILE_NOT_FOUND, e);
-    }
+    this.drawImage(new Image(filename), x, y, size, rotation);
   }
 
   /**
@@ -251,11 +243,7 @@ public class Scene {
    */
   public final void drawImage(
       String filename, int x, int y, int width, int height, double rotation) {
-    try {
-      this.drawImage(new Image(filename), x, y, width, height, rotation);
-    } catch (FileNotFoundException e) {
-      throw new TheaterRuntimeException(ExceptionKeys.FILE_NOT_FOUND, e);
-    }
+    this.drawImage(new Image(filename), x, y, width, height, rotation);
   }
 
   /**

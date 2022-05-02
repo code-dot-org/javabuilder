@@ -1,6 +1,7 @@
 package org.code.media;
 
 import java.io.FileNotFoundException;
+import org.code.media.support.SoundExceptionKeys;
 import org.code.media.util.AudioUtils;
 
 public class SoundLoader {
@@ -10,10 +11,13 @@ public class SoundLoader {
    * @param filename the name of the audio file
    * @return the array of samples, at 44.1 kilohertz. This means that 441000 samples are played per
    *     second.
-   * @throws SoundException if there is an error reading the file, or FileNotFoundException when the
-   *     file cannot be found
+   * @throws SoundException if there is an error reading the file
    */
-  public static double[] read(String filename) throws SoundException, FileNotFoundException {
-    return AudioUtils.readSamplesFromAssetFile(filename);
+  public static double[] read(String filename) throws SoundException {
+    try {
+      return AudioUtils.readSamplesFromAssetFile(filename);
+    } catch (FileNotFoundException e) {
+      throw new SoundException(SoundExceptionKeys.FILE_NOT_FOUND, e);
+    }
   }
 }
