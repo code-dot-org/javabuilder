@@ -16,10 +16,12 @@ phases:
       - ARTIFACT_PATH=branch/$BRANCH_NAME/$CODEBUILD_BUILD_NUMBER
       - cd ./javabuilder-authorizer
       - ./build.sh
+
       - cd $CODEBUILD_SRC_DIR
       - cd org-code-javabuilder
       - ./gradlew test
       - ./build.sh
+
       - cd $CODEBUILD_SRC_DIR
       - erb -T - template.yml.erb > template.yml
       - cat template.yml

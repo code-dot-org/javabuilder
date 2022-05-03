@@ -1,0 +1,10 @@
+configuration:
+  SubDomainName: javabuilder-test
+  BaseDomainName: code.org
+  BaseDomainNameHostedZonedID: $BASE_DOMAIN_HOSTED_ZONE_ID
+  ProvisionedConcurrentExecutions: 1
+  ReservedConcurrentExecutions: 3
+  LimitPerHour: 10
+  LimitPerDay: 40
+  SilenceAlerts: false
+  NewValueDemo: abcde
