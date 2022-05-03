@@ -21,11 +21,22 @@ Resources:
         Statement:
           - Action: ['sts:AssumeRole']
             Effect: Allow
-            Principal: {Service: [codebuild.amazonaws.com, codepipeline.amazonaws.com]}
+            Principal:
+              Service:
+                - codebuild.amazonaws.com
+                - codepipeline.amazonaws.com
         Version: '2012-10-17'
       Path: /service-role/
-      # PermissionsBoundary: !ImportValue IAM-DevPermissions
+      PermissionsBoundary: !ImportValue IAM-DevPermissions
       Policies:
+        - PolicyName: JavabuilderCodePipelinePolicy
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "cloudformation:DescribeStacks"
+                  - "cloudformation:CreateStack"
+                Resource: "*"
         - PolicyName: CodeBuildResourcesAccess
           PolicyDocument:
             Statement:
