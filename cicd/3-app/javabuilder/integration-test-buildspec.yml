@@ -1,0 +1,6 @@
+version: 0.2
+phases:
+  build:
+    commands:
+      - echo "This is where I would run tests... if I had any!"
+      - curl javabuilder-test.code.org
