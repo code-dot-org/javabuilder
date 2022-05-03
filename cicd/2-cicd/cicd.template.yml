@@ -230,7 +230,8 @@ Resources:
               OutputArtifacts:
                 - Name: sourceCode
               Configuration:
-                ConnectionArn: arn:aws:codestar-connections:us-east-1:165336972514:connection/40d49145-7aeb-412e-a46d-a5a6cab79662
+                ConnectionArn: arn:aws:codestar-connections:us-east-1:475661607190:connection/7df08bcf-9883-42e8-8f5e-d083419d4fe9
+                # ConnectionArn: arn:aws:codestar-connections:us-east-1:165336972514:connection/40d49145-7aeb-412e-a46d-a5a6cab79662
                 FullRepositoryId: !Sub ${GitHubOwner}/${GitHubRepo}
                 # BranchName: !Ref GitHubBranch
                 BranchName: create-codepipeline
@@ -261,7 +262,7 @@ Resources:
                 ProjectName: !Ref AppBuildProject
               OutputArtifacts:
                 - Name: appBuildResults
-        - Name: Deploy_To_Test_Dev
+        - Name: Deploy_To_Test
           Actions:
             - Name: app-deploy
               ActionTypeId: 
@@ -276,7 +277,7 @@ Resources:
                 StackName: javabuilder-create-codepipeline
                 ActionMode: CREATE_UPDATE
                 TemplatePath: appBuildResults::cicd/3-app/app.template.yml
-                TemplateConfiguration: appBuildResults::cicd/3-app/javabuilder/test-dev.config.json
+                TemplateConfiguration: appBuildResults::cicd/3-app/javabuilder/test.config.json
                 RoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/admin/CloudFormationService
                 # Capabilities:
 
