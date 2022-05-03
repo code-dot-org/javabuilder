@@ -1,5 +1,5 @@
 {
-  "configuration": {
+  "Parameters": {
     "SubDomainName": "javabuilder-test",
     "BaseDomainName": "code.org",
     "BaseDomainNameHostedZonedID": "$BASE_DOMAIN_HOSTED_ZONE_ID",
