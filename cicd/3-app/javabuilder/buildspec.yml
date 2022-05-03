@@ -9,9 +9,24 @@ phases:
       - gem install bundler
       - pip install cfn-lint
   build:
+    # This should be moved to a shell script if it gets more complicated.
     commands:
+      - set -e
+      - BRANCH_NAME=${CODEBUILD_WEBHOOK_HEAD_REF#"refs/heads/"}
+      - ARTIFACT_PATH=branch/$BRANCH_NAME/$CODEBUILD_BUILD_NUMBER
+      - cd ./javabuilder-authorizer
+      - ./build.sh
+
+      - cd $CODEBUILD_SRC_DIR
+      - cd org-code-javabuilder
+      - ./gradlew test
+      - ./build.sh
+
+      - cd $CODEBUILD_SRC_DIR
       - erb -T - cicd/3-app/javabuilder/template.yml.erb > cicd/3-app/javabuilder/template.yml
       - cfn-lint cicd/3-app/javabuilder/template.yml
+      - cat cicd/3-app/javabuilder/template.yml
+      
       - cicd/3-app/javabuilder/config/create-environment-config.sh
       - ls cicd/3-app/javabuilder
 artifacts:
