@@ -1,0 +1,12 @@
+{
+  "SubDomainName": "javabuilder-test",
+  "BaseDomainName": "dev-code.org",
+  "BaseDomainNameHostedZonedID": "Z07248463JGJ44FME5BZ5",
+  "ProvisionedConcurrentExecutions": 1,
+  "ReservedConcurrentExecutions": 3,
+  "LimitPerHour": 10,
+  "LimitPerDay": 40,
+  "SilenceAlerts": false,
+  "TransformDemo": 1650994944,
+  "NewValueDemo": "abcde"
+}

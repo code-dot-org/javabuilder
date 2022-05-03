@@ -48,6 +48,51 @@ Resources:
               - "ecr:UploadLayerPart"
               - "ecr:CompleteLayerUpload"
 
+  EncryptionKey:
+    Type: 'AWS::KMS::Key'
+    Properties:
+      Description: encryption key for javabuilder cicd artifacts
+      EnableKeyRotation: true
+      KeyPolicy:
+        Version: 2012-10-17
+        Statement:
+          - Sid: Ensure root user access
+            Effect: Allow
+            Principal:
+              AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
+            Action: 'kms:*'
+            Resource: '*'
+          - Sid: Allow administration of the key
+            Effect: Allow
+            Principal:
+              AWS: arn:aws:iam::165336972514:role/GoogleUser
+            Action:
+              - 'kms:Create*'
+              - 'kms:Describe*'
+              - 'kms:Enable*'
+              - 'kms:List*'
+              - 'kms:Put*'
+              - 'kms:Update*'
+              - 'kms:Revoke*'
+              - 'kms:Disable*'
+              - 'kms:Get*'
+              - 'kms:Delete*'
+              - 'kms:ScheduleKeyDeletion'
+              - 'kms:CancelKeyDeletion'
+            Resource: '*'
+          - Sid: Allow use of the key
+            Effect: Allow
+            Principal:
+              AWS: !ImportValue JavabuilderCodeBuildRoleArn
+            Action:
+              - 'kms:DescribeKey'
+              - 'kms:Encrypt'
+              - 'kms:Decrypt'
+              - 'kms:ReEncrypt*'
+              - 'kms:GenerateDataKey'
+              - 'kms:GenerateDataKeyWithoutPlaintext'
+            Resource: '*'
+
   # The CodeBuild Project is triggered by pull requests targeting $GitHubBranch
   # It will perform any steps defined in the pr-buildspec.yml file.
   PullRequestBuildProject:
@@ -170,6 +215,9 @@ Resources:
       ArtifactStore: 
         Type: S3 
         Location: !ImportValue JavabuilderCodeBuildArtifactBucket
+        EncryptionKey:
+          Id: !Ref EncryptionKey
+          Type: KMS
       Stages: 
         - Name: Source
           Actions:

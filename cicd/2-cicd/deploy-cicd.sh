@@ -18,12 +18,20 @@ aws cloudformation validate-template \
   --template-body file://${TEMPLATE_FILE} \
   | cat
 
-echo Updating cloudformation stack...
-aws cloudformation deploy \
-  --stack-name $STACK_NAME \
-  --template-file $TEMPLATE_FILE \
-  --parameter-overrides GitHubBranch=main GitHubBadgeEnabled=false \
-  --capabilities CAPABILITY_IAM \
-  "$@"
+ACCOUNT=$(aws sts get-caller-identity --query "Account" --output text)
 
-echo Complete!
+read -r -p "Would you like to deploy this template to AWS account $ACCOUNT? [y/N] " response
+if [[ "$response" =~ ^([yY][eE][sS]|[yY])$ ]]
+then
+  echo Updating cloudformation stack...
+  aws cloudformation deploy \
+    --stack-name $STACK_NAME \
+    --template-file $TEMPLATE_FILE \
+    --parameter-overrides GitHubBranch=main GitHubBadgeEnabled=false \
+    --capabilities CAPABILITY_IAM \
+    "$@"
+
+  echo Complete!
+else
+  echo Exiting...
+fi
