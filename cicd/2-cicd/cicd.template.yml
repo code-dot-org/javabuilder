@@ -22,7 +22,7 @@ Parameters:
     AllowedValues: [true, false]
   CodeStarConnectionResourceId:
     Type: String
-    Description: The Resource Id comopnent of the CodeStar connection ARN for the code-dot-org GitHub repository
+    Description: The Resource Id component of the CodeStar connection ARN for the code-dot-org GitHub repository
     Default: 7df08bcf-9883-42e8-8f5e-d083419d4fe9
 
 Resources:
@@ -69,7 +69,7 @@ Resources:
           - Sid: Allow administration of the key
             Effect: Allow
             Principal:
-              AWS: arn:aws:iam::165336972514:role/GoogleUser
+              AWS: !Sub arn:aws:iam::${AWS::AccountId}:role/admin/Developer
             Action:
               - 'kms:Create*'
               - 'kms:Describe*'
