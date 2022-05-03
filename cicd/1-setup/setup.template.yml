@@ -63,7 +63,8 @@ Resources:
                   - !Sub arn:aws:s3:::${ArtifactStore}/*
               - Effect: Allow
                 Action: codestar-connections:UseConnection
-                Resource: arn:aws:codestar-connections:us-east-1:165336972514:connection/40d49145-7aeb-412e-a46d-a5a6cab79662
+                Resource:
+                  - !Sub arn:aws:codestar-connections:us-east-1:${AWS::AccountId}:connection/*
 
 Outputs:
   JavabuilderCodeBuildArtifactBucket:
