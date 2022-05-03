@@ -179,6 +179,22 @@ Resources:
       Artifacts:
         Type: CODEPIPELINE
 
+  IntegrationTestBuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Sub ${AWS::StackName}-integration-test
+      ServiceRole: !ImportValue JavabuilderCodeBuildRoleArn
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/amazonlinux2-x86_64-standard:3.0
+        PrivilegedMode: true
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: cicd/3-app/javabuilder/integration-test-buildspec.yml
+      Artifacts:
+        Type: CODEPIPELINE
+
   # Grant the Javabuilder CodeBuild Role additional permissions for resources in
   # this template. This allows us to avoid granting permission to * resources.
   JavabuilderRolePolicy:
@@ -279,5 +295,18 @@ Resources:
                 TemplatePath: appBuildResults::cicd/3-app/app.template.yml
                 TemplateConfiguration: appBuildResults::cicd/3-app/javabuilder/test.config.json
                 RoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/admin/CloudFormationService
-                # Capabilities:
+        - Name: Integration_Test
+          Actions:
+            - Name: integration-test
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: 1
+              InputArtifacts:
+                - Name: sourceCode
+              Configuration:
+                ProjectName: !Ref IntegrationTestBuildProject
+              OutputArtifacts:
+                - Name: integrationTestResults
 
