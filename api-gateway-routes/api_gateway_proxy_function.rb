@@ -128,6 +128,16 @@ def on_default(event, context)
     return authorization_error_response
   end
 
+  authorization_warning_response = AuthResponseHelper.get_warning_response(authorizer)
+  # if there is a warning response, send the warning via the websocket and continue
+  if authorization_warning_response
+    puts "sending warning..."
+    resp = client.post_to_connection({
+      data: authorization_warning_response,
+      connection_id: connection_id
+    })
+  end
+
   message = event["body"]
   # Return early if this is the user connectivity test
   if message == 'connectivityTest'

@@ -26,10 +26,8 @@ def lambda_handler(event:, context:)
 
   token_payload = decoded_token[0]
   region = get_region(context)
-  validation_result = get_validation_result(token_payload, standardized_origin, region)
-  token_status = validation_result[:status]
+  token_status = get_validation_result(token_payload, standardized_origin, region)
   return JwtHelper.generate_allow_with_error(route_arn, token_status) if ERROR_STATES.include?(token_status)
-  return JwtHelper.generate_allow_with_warning(route_arn, token_status, validation_result[:metadata]) if WARNING_STATES.include?(token_status)
   JwtHelper.generate_allow(route_arn, token_payload)
 end
 
