@@ -310,7 +310,7 @@ Resources:
               Configuration:
                 ProjectName: !Ref IntegrationTestBuildProject
               OutputArtifacts:
-                - Name: integrationTestResults
+                - Name: integrationTestResultsPOC
         - Name: Integration_Test
           Actions:
             - Name: integration-test
