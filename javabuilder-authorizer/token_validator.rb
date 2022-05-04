@@ -31,12 +31,12 @@ class TokenValidator
     return error(USER_OVER_DAILY_LIMIT) if user_over_daily_limit?
     return error(TEACHERS_OVER_HOURLY_LIMIT) if teachers_over_hourly_limit?
 
-    near_limit_metadata =  user_near_hourly_limit?(hourly_usage_count)
-    return warn(NEAR_LIMIT, near_limit_metadata) if near_limit_metadata
+    near_limit_detail=  user_near_hourly_limit?(hourly_usage_count)
 
     log_requests
     mark_token_as_vetted
-    validation_result(VALID_HTTP)
+    add_token_warning(NEAR_LIMIT, near_limit_detail) if near_limit_detail
+    VALID_HTTP
   end
 
   private
@@ -186,26 +186,26 @@ class TokenValidator
     )
   end
 
+  def add_token_warning(key, detail)
+    @client.update_item(
+      table_name: ENV['token_status_table'],
+      key: {token_id: @token_id},
+      update_expression: 'SET warning = :w',
+      expression_attribute_values: {':w': {key: key, detail: detail}}
+    )
+  end
+
   # TO DO: return actual error status instead of valid HTTP
   # when we actually want to throttle. For now, only return error
   # status if a token has already been used.
   def error(status)
     puts "TOKEN VALIDATION ERROR: #{status} user_id: #{@user_id} verified_teachers: #{@verified_teachers} token_id: #{@token_id}"
     return status if status == TOKEN_USED
-    validation_result(VALID_HTTP, metadata)
+    VALID_HTTP
   end
-
-  def warn(status, metadata)
-    puts "TOKEN VALIDATION WARNING: #{status} user_id: #{@user_id} verified_teachers: #{@verified_teachers} token_id: #{@token_id}"
-    validation_result(status, metadata)
-  end
-
-  def validation_result(status, metadata=nil)
-    {status: status, metadata: metadata}
-  end
-
 
   def user_usage_count(time_range_seconds)
+    start_time = Time.now
     response = @client.query(
       table_name: ENV['user_requests_table'],
       key_condition_expression: "user_id = :user_id AND issued_at > :past_time",
@@ -214,6 +214,8 @@ class TokenValidator
         ":past_time" => Time.now.to_i - time_range_seconds
       }
     )
+    end_time = Time.now
+    puts "query time for user usage count for #{time_range_seconds} seconds was #{end_time - start_time} seconds"
     # DynamoDB query will only read through 1 MB of data before paginating.
     # Our records should be relatively small (roughly 100 bytes, based on AWS docs),
     # so I think we'd need 10K records to hit paginated responses.
