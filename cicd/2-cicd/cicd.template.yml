@@ -296,7 +296,7 @@ Resources:
                 StackName: javabuilder-create-codepipeline
                 ActionMode: CREATE_UPDATE
                 TemplatePath: appBuildResults::cicd/3-app/javabuilder/template.yml
-                # TemplateConfiguration: appBuildResults::cicd/3-app/javabuilder/test.config.json
+                TemplateConfiguration: appBuildResults::cicd/3-app/javabuilder/test.config.json
                 RoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/admin/CloudFormationService
         - Name: Integration_Test
           Actions:
