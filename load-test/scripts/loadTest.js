@@ -2,7 +2,7 @@ import ws from "k6/ws";
 import http from "k6/http";
 import { check, sleep } from "k6";
 import { Counter, Trend } from "k6/metrics";
-import { helloWorld } from "./sources.js";
+import * as sources from "./sources.js";
 import { getRandomId, generateToken } from "./tokenHelpers.js";
 import {
   MiniAppType,
@@ -15,17 +15,29 @@ import {
   REQUEST_TIME_MS
 } from "./configuration.js";
 
+// ************** SETTINGS **************************************************************************
+
+// Custom metrics for load test (currently only implemented for scanner).
+// Expects an object with onMessage and onClose event handler properties.
+import metricsReporter from './scannerLoadTestMetrics.js';
+// Keep set to false unless you have configured a custom metrics reporter for your test.
+const USE_CUSTOM_METRICS = false;
+
 // Change these options to increase the user goal or time to run the test.
-export const options = getTestOptions(
+getTestOptions(
   /* User goal */ 1000,
   /* High load time minutes */ 4
 );
 
 // Change this to test different code
-const SOURCE_TO_TEST = helloWorld;
+const SOURCE_TO_TEST = sources.helloWorld;
+const MINI_APP_TYPE = MiniAppType.CONSOLE
+
 // Set this to true to space out requests every REQUEST_TIME_MS milliseconds. Set to
 // false to send as many requests as possible.
 const SHOULD_SLEEP = false;
+
+// ************** END SETTINGS **********************************************************************
 
 const exceptionCounter = new Counter("exceptions");
 const errorCounter = new Counter("errors");
@@ -36,7 +48,6 @@ const sessionsOver15Seconds = new Counter("session_over_15_seconds");
 const sessionsOver20Seconds = new Counter("session_over_20_seconds");
 const retryCounters = [new Counter("sessions_with_0_retries"), new Counter("sessions_with_1_retry"), new Counter("sessions_with_2_retries")];
 
-
 function isResultSuccess(result) {
   return result && result.status === 200;
 }
@@ -44,7 +55,7 @@ function isResultSuccess(result) {
 export default function () {
   const requestStartTime = Date.now();
   const sessionId = getRandomId();
-  const authToken = generateToken(MiniAppType.CONSOLE, sessionId);
+  const authToken = generateToken(MINI_APP_TYPE, sessionId);
   const uploadResult = http.put(
     UPLOAD_URL + authToken,
     SOURCE_TO_TEST,
@@ -107,6 +118,10 @@ function onSocketConnect(socket, requestStartTime, websocketStartTime, sessionId
       console.log(`EXCEPTION for session id ${sessionId} ` + parsedData.value);
       exceptionCounter.add(1);
     }
+
+    if (USE_CUSTOM_METRICS) {
+      metricsReporter.onMessage(socket, parsedData);
+    }
   });
 
   socket.on("close", () => {
@@ -124,6 +139,10 @@ function onSocketConnect(socket, requestStartTime, websocketStartTime, sessionId
       } else if (totalTime > 10000) {
         console.log(`OVER 10 SECONDS Session id ${sessionId} had a request time of ${totalTime} ms.`);
         sessionsOver10Seconds.add(1);
+      }
+
+      if (USE_CUSTOM_METRICS) {
+        metricsReporter.onClose();
       }
     } else {
       console.log(`TIMEOUT detected for session id ${sessionId}`);

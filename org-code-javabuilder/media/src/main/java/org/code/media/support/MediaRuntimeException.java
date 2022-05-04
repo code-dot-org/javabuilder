@@ -1,13 +1,13 @@
-package org.code.media;
+package org.code.media.support;
 
 import org.code.protocol.JavabuilderRuntimeException;
 
 public class MediaRuntimeException extends JavabuilderRuntimeException {
-  protected MediaRuntimeException(MediaRuntimeExceptionKeys key) {
+  public MediaRuntimeException(MediaRuntimeExceptionKeys key) {
     super(key);
   }
 
-  protected MediaRuntimeException(MediaRuntimeExceptionKeys key, Throwable cause) {
+  public MediaRuntimeException(MediaRuntimeExceptionKeys key, Throwable cause) {
     super(key, cause);
   }
 }

@@ -2,7 +2,7 @@ package org.code.javabuilder;
 
 import static org.code.javabuilder.DashboardConstants.DASHBOARD_LOCALHOST_DOMAIN;
 import static org.code.javabuilder.LambdaErrorCodes.TEMP_DIRECTORY_CLEANUP_ERROR_CODE;
-import static org.code.protocol.InternalErrorKey.INTERNAL_EXCEPTION;
+import static org.code.protocol.InternalExceptionKey.INTERNAL_EXCEPTION;
 import static org.code.protocol.LoggerNames.MAIN_LOGGER;
 
 import com.amazonaws.client.builder.AwsClientBuilder;
@@ -136,7 +136,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
       contentManager =
           new AWSContentManager(
               S3_CLIENT, CONTENT_BUCKET_NAME, javabuilderSessionId, CONTENT_BUCKET_URL, context);
-    } catch (InternalServerError e) {
+    } catch (InternalServerException e) {
       return onInitializationError("error loading data", e, outputAdapter, connectionId);
     }
 
@@ -152,7 +152,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
       tempDirectoryManager.cleanUpTempDirectory(null);
     } catch (IOException e) {
       // Wrap this in our error type so we can log it and tell the user.
-      InternalServerError error = new InternalServerError(INTERNAL_EXCEPTION, e);
+      InternalServerException error = new InternalServerException(INTERNAL_EXCEPTION, e);
       onInitializationError("error clearing tmpdir", error, outputAdapter, connectionId);
       // If there was an issue clearing the temp directory, this may be because too many files are
       // open. Force the JVM to quit in order to release the resources for the next use of the
@@ -203,7 +203,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
   /** Handles logging and cleanup in the case of an initialization error. */
   private String onInitializationError(
       String errorMessage,
-      InternalServerError error,
+      InternalServerException error,
       OutputAdapter outputAdapter,
       String connectionId) {
     // Log the error

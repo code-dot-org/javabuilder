@@ -1,4 +1,4 @@
-package org.code.neighborhood;
+package org.code.neighborhood.support;
 
 import java.io.IOException;
 import org.code.protocol.*;
@@ -29,7 +29,7 @@ public class World {
     try {
       this.grid = gridFactory.createGridFromString(s);
     } catch (IOException e) {
-      throw new InternalServerRuntimeError(InternalErrorKey.INTERNAL_EXCEPTION, e);
+      throw new InternalServerRuntimeException(InternalExceptionKey.INTERNAL_EXCEPTION, e);
     }
   }
 
@@ -40,7 +40,7 @@ public class World {
     try {
       this.grid = gridFactory.createGridFromJSON("grid.txt");
     } catch (IOException e) {
-      throw new InternalServerRuntimeError(InternalErrorKey.INTERNAL_EXCEPTION, e);
+      throw new InternalServerRuntimeException(InternalExceptionKey.INTERNAL_EXCEPTION, e);
     }
   }
 

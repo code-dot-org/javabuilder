@@ -13,8 +13,8 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import org.code.media.Color;
 import org.code.media.Font;
-import org.code.media.FontHelper;
 import org.code.media.FontStyle;
+import org.code.media.support.FontHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

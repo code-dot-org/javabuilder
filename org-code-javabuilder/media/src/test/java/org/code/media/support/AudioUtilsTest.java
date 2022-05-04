@@ -1,4 +1,4 @@
-package org.code.media;
+package org.code.media.support;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -11,6 +11,8 @@ import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.UnsupportedAudioFileException;
+import org.code.media.SoundException;
+import org.code.media.util.AudioUtils;
 import org.code.protocol.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -121,12 +123,12 @@ class AudioUtilsTest {
 
     Exception exception =
         assertThrows(
-            InternalServerRuntimeError.class,
+            InternalServerRuntimeException.class,
             () -> {
               AudioUtils.readSamplesFromAssetFile(TEST_FILE_NAME);
             });
 
-    assertEquals(InternalErrorKey.INTERNAL_EXCEPTION.toString(), exception.getMessage());
+    assertEquals(InternalExceptionKey.INTERNAL_EXCEPTION.toString(), exception.getMessage());
     verify(audioInputStream).readAllBytes();
   }
 
@@ -147,12 +149,12 @@ class AudioUtilsTest {
 
     Exception exception =
         assertThrows(
-            InternalServerRuntimeError.class,
+            InternalServerRuntimeException.class,
             () -> {
               AudioUtils.readSamplesFromAssetFile(TEST_FILE_NAME);
             });
 
-    assertEquals(InternalErrorKey.INTERNAL_EXCEPTION.toString(), exception.getMessage());
+    assertEquals(InternalExceptionKey.INTERNAL_EXCEPTION.toString(), exception.getMessage());
     verify(audioInputStream).readAllBytes();
     verify(audioInputStream).close();
   }

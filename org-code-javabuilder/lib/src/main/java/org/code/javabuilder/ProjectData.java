@@ -1,7 +1,7 @@
 package org.code.javabuilder;
 
 import java.util.Map;
-import org.code.protocol.InternalErrorKey;
+import org.code.protocol.InternalExceptionKey;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -42,11 +42,11 @@ public class ProjectData implements ProjectFileLoader {
   }
 
   @Override
-  public UserProjectFiles loadFiles() throws InternalServerError, UserInitiatedException {
+  public UserProjectFiles loadFiles() throws InternalServerException, UserInitiatedException {
     if (!this.jsonData.has(SOURCES_KEY)
         || !this.jsonData.getJSONObject(SOURCES_KEY).has(MAIN_JSON_KEY)) {
-      throw new InternalServerError(
-          InternalErrorKey.INTERNAL_EXCEPTION, new Exception("Code sources missing"));
+      throw new InternalServerException(
+          InternalExceptionKey.INTERNAL_EXCEPTION, new Exception("Code sources missing"));
     }
     final JSONObject sources = this.jsonData.getJSONObject(SOURCES_KEY);
     final UserProjectFiles projectFiles =
@@ -60,7 +60,7 @@ public class ProjectData implements ProjectFileLoader {
   }
 
   @Override
-  public UserProjectFiles getValidation() throws UserInitiatedException, InternalServerError {
+  public UserProjectFiles getValidation() throws UserInitiatedException, InternalServerException {
     if (!this.jsonData.has(VALIDATION_KEY)) {
       // return empty file list if there is no validation, as no validation is expected behavior
       return new UserProjectFiles();

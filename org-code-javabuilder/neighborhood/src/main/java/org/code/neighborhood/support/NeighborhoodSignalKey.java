@@ -1,4 +1,4 @@
-package org.code.neighborhood;
+package org.code.neighborhood.support;
 
 public enum NeighborhoodSignalKey {
   // Initialize a new painter

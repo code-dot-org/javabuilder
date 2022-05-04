@@ -59,9 +59,9 @@ class InputHandlerTest {
     when(inputAdapter.getNextMessage()).thenReturn(testMessage);
     Exception e =
         assertThrows(
-            InternalServerRuntimeError.class,
+            InternalServerRuntimeException.class,
             () -> unitUnderTest.getNextMessageForType(InputMessageType.SYSTEM_IN));
-    assertEquals(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION.name(), e.getMessage());
+    assertEquals(InternalExceptionKey.INTERNAL_RUNTIME_EXCEPTION.name(), e.getMessage());
   }
 
   @Test
@@ -70,9 +70,9 @@ class InputHandlerTest {
     when(inputAdapter.getNextMessage()).thenReturn(testMessage);
     Exception e =
         assertThrows(
-            InternalServerRuntimeError.class,
+            InternalServerRuntimeException.class,
             () -> unitUnderTest.getNextMessageForType(InputMessageType.SYSTEM_IN));
-    assertEquals(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION.name(), e.getMessage());
+    assertEquals(InternalExceptionKey.INTERNAL_RUNTIME_EXCEPTION.name(), e.getMessage());
   }
 
   @Test
@@ -82,9 +82,9 @@ class InputHandlerTest {
     when(inputAdapter.getNextMessage()).thenReturn(testMessage);
     Exception e =
         assertThrows(
-            InternalServerRuntimeError.class,
+            InternalServerRuntimeException.class,
             () -> unitUnderTest.getNextMessageForType(InputMessageType.SYSTEM_IN));
-    assertEquals(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION.name(), e.getMessage());
+    assertEquals(InternalExceptionKey.INTERNAL_RUNTIME_EXCEPTION.name(), e.getMessage());
   }
 
   private String createJsonMessage(String messageType, String message) {

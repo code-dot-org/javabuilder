@@ -1,7 +1,7 @@
 package org.code.protocol;
 
 /** These keys map to client-side strings that are translatable. */
-public enum InternalErrorKey {
+public enum InternalExceptionKey {
   // We caused an error while executing the user's program.
   INTERNAL_RUNTIME_EXCEPTION,
   // We caused an error while compiling the user's program.

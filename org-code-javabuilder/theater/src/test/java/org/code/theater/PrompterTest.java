@@ -78,9 +78,9 @@ public class PrompterTest {
     when(inputHandler.getNextMessageForType(InputMessageType.THEATER)).thenReturn(UPLOAD_ERROR);
 
     final Exception actual =
-        assertThrows(InternalServerRuntimeError.class, () -> unitUnderTest.getImage("prompt"));
+        assertThrows(InternalServerRuntimeException.class, () -> unitUnderTest.getImage("prompt"));
 
-    assertEquals(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION.toString(), actual.getMessage());
+    assertEquals(InternalExceptionKey.INTERNAL_RUNTIME_EXCEPTION.toString(), actual.getMessage());
   }
 
   @Test
@@ -89,8 +89,8 @@ public class PrompterTest {
     when(inputHandler.getNextMessageForType(InputMessageType.THEATER)).thenReturn("other message");
 
     final Exception actual =
-        assertThrows(InternalServerRuntimeError.class, () -> unitUnderTest.getImage("prompt"));
+        assertThrows(InternalServerRuntimeException.class, () -> unitUnderTest.getImage("prompt"));
 
-    assertEquals(InternalErrorKey.UNKNOWN_ERROR.toString(), actual.getMessage());
+    assertEquals(InternalExceptionKey.UNKNOWN_ERROR.toString(), actual.getMessage());
   }
 }
