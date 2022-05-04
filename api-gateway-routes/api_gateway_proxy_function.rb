@@ -3,8 +3,8 @@ require 'aws-sdk-sqs'
 require 'aws-sdk-lambda'
 require 'aws-sdk-apigatewaymanagementapi'
 require 'uri'
-require_relative 'auth_error_response_helper'
-include AuthErrorResponseHelper
+require_relative 'auth_response_helper'
+include AuthResponseHelper
 
 MAX_SQS_RETRIES = 3
 INITIAL_RETRY_SLEEP_S = 0.5
@@ -27,7 +27,7 @@ def on_connect(event, context)
   request_context = event["requestContext"]
   authorizer = request_context['authorizer']
 
-  authorization_error_response = AuthErrorResponseHelper.get_response(authorizer)
+  authorization_error_response = AuthResponseHelper.get_error_response(authorizer)
   # If there is an authorization error, allow the websocket connection to open,
   # but early return so we don't actually invoke the Build and Run lambda and try
   # to create an SQS queue. We will send the auth error message via the websocket
@@ -95,7 +95,7 @@ end
 
 def on_disconnect(event, context)
   authorizer = event["requestContext"]["authorizer"]
-  authorization_error_response = AuthErrorResponseHelper.get_response(authorizer)
+  authorization_error_response = AuthResponseHelper.get_error_response(authorizer)
   # The return value is not actually interpreted by the client, but early return here so that
   # we don't try to delete a queue that doesn't exist.
   return authorization_error_response if authorization_error_response
@@ -117,7 +117,7 @@ def on_default(event, context)
   connection_id = event["requestContext"]["connectionId"]
 
   authorizer = event["requestContext"]["authorizer"]
-  authorization_error_response = AuthErrorResponseHelper.get_response(authorizer)
+  authorization_error_response = AuthResponseHelper.get_error_response(authorizer)
   # If there is an authorization error, send the error message via the websocket
   # and return early
   if authorization_error_response

@@ -1,9 +1,10 @@
-module AuthErrorResponseHelper
+module AuthResponseHelper
   AUTHORIZER_KEY = 'AUTHORIZER'.freeze
   AUTHORIZATION_ERROR_KEY = "authorization_error".freeze
   AUTHORIZATION_ERROR_CODE_KEY = "authorization_error_code".freeze
+  AUTHORIZATION_WARNING_KEY = "authorization_warning".freeze
 
-  def get_response(authorizer_payload)
+  def get_error_response(authorizer_payload)
     return nil unless authorizer_payload[AUTHORIZATION_ERROR_KEY] && authorizer_payload[AUTHORIZATION_ERROR_CODE_KEY]
 
     body = {
@@ -11,5 +12,8 @@ module AuthErrorResponseHelper
       value: authorizer_payload[AUTHORIZATION_ERROR_KEY]
     }
     { statusCode: authorizer_payload[AUTHORIZATION_ERROR_CODE_KEY], body: body.to_json }
+  end
+
+  def get_warning_response(authorizer_payload)
   end
 end

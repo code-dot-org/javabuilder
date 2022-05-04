@@ -48,6 +48,14 @@ module JwtHelper
     generate_policy(nil, 'Allow', resource, error_payload)
   end
 
+  # Generates a response that indicates that the request is well-formed, but should
+  # send back a warning due to throttling reasons
+  def generate_allow_with_warning(resource, token_status)
+    warn_payload = {}
+    warn_payload['authorization_warning'] = token_status
+    generate_policy(nil, 'Allow', resource, warn_payload)
+  end
+
   def generate_deny(resource)
     generate_policy(nil, 'Deny', resource, nil)
   end
