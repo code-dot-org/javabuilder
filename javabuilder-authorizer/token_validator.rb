@@ -11,6 +11,7 @@ class TokenValidator
   # TO DO: move this into env variable
   # https://codedotorg.atlassian.net/browse/JAVA-536
   TEACHER_HOURLY_LIMIT = 1000
+  NEAR_LIMIT_BUFFER = 10
 
   def initialize(payload, origin, region)
     @token_id = payload['sid']
@@ -25,12 +26,17 @@ class TokenValidator
     return error(TOKEN_USED) unless log_token
     return error(USER_BLOCKED) if user_blocked?
     return error(TEACHERS_BLOCKED) if teachers_blocked?
-    return error(USER_OVER_HOURLY_LIMIT) if user_over_hourly_limit?
+    hourly_usage_count = user_hourly_usage_count
+    return error(USER_OVER_HOURLY_LIMIT) if user_over_hourly_limit?(hourly_usage_count)
     return error(USER_OVER_DAILY_LIMIT) if user_over_daily_limit?
     return error(TEACHERS_OVER_HOURLY_LIMIT) if teachers_over_hourly_limit?
+
+    near_limit_metadata =  user_near_hourly_limit?(hourly_usage_count)
+    return warn(NEAR_LIMIT, near_limit_metadata) if near_limit_metadata
+
     log_requests
     mark_token_as_vetted
-    VALID_HTTP
+    validation_result(VALID_HTTP)
   end
 
   private
@@ -81,17 +87,26 @@ class TokenValidator
     blocked
   end
 
-  def user_over_hourly_limit?
+  def user_hourly_usage_count
+    user_usage_count(ONE_HOUR_SECONDS)
+  end
+
+  def user_over_hourly_limit?(hourly_usage_count)
     user_over_limit?(
-      ONE_HOUR_SECONDS,
+      hourly_usage_count,
       ENV['limit_per_hour'].to_i,
       USER_OVER_HOURLY_LIMIT
     )
   end
 
+  def user_near_hourly_limit?(hourly_usage_count)
+    user_near_limit?(hourly_usage_count, ENV['limit_per_hour'].to_i)
+  end
+
   def user_over_daily_limit?
+    usage_count = user_usage_count(ONE_DAY_SECONDS)
     user_over_limit?(
-      ONE_DAY_SECONDS,
+      usage_count,
       ENV['limit_per_day'].to_i,
       USER_OVER_DAILY_LIMIT
     )
@@ -177,11 +192,20 @@ class TokenValidator
   def error(status)
     puts "TOKEN VALIDATION ERROR: #{status} user_id: #{@user_id} verified_teachers: #{@verified_teachers} token_id: #{@token_id}"
     return status if status == TOKEN_USED
-    # status
-    VALID_HTTP
+    validation_result(VALID_HTTP, metadata)
   end
 
-  def user_over_limit?(time_range_seconds, limit, logging_message)
+  def warn(status, metadata)
+    puts "TOKEN VALIDATION WARNING: #{status} user_id: #{@user_id} verified_teachers: #{@verified_teachers} token_id: #{@token_id}"
+    validation_result(status, metadata)
+  end
+
+  def validation_result(status, metadata=nil)
+    {status: status, metadata: metadata}
+  end
+
+
+  def user_usage_count(time_range_seconds)
     response = @client.query(
       table_name: ENV['user_requests_table'],
       key_condition_expression: "user_id = :user_id AND issued_at > :past_time",
@@ -202,8 +226,19 @@ class TokenValidator
     if response.last_evaluated_key
       puts "user_requests query has paginated responses. user_id #{@user_id}"
     end
+    response.count
+  end
 
-    over_limit = response.count > limit
+  def user_near_limit?(count, limit)
+    if count <= limit && count >= (limit - NEAR_LIMIT_BUFFER)
+      return {remaining: limit - count}
+    else
+      return false
+    end
+  end
+
+  def user_over_limit?(count, limit, logging_message)
+    over_limit = count > limit
     if over_limit
       # logging could be improved,
       # [{"ttl"=>0.1648766446e10, "user_id"=>"611", "issued_at"=>0.1648680046e10}, {...
