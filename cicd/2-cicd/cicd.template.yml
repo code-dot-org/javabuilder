@@ -254,6 +254,7 @@ Resources:
                 FullRepositoryId: !Sub ${GitHubOwner}/${GitHubRepo}
                 # BranchName: !Ref GitHubBranch
                 BranchName: create-codepipeline
+                DetectChanges: true
                 # OAuthToken: '{{resolve:secrets-manager:DeployCodeOrg-GitHub-OAuthToken}}'
         - Name: Build
           Actions:
