@@ -7,7 +7,6 @@
     "ReservedConcurrentExecutions": 3,
     "LimitPerHour": 10,
     "LimitPerDay": 40,
-    "SilenceAlerts": false,
-    "NewValueDemo": "replace me"
+    "SilenceAlerts": false
   }
 }
