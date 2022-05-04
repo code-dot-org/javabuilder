@@ -67,8 +67,13 @@ def get_token_info(context, sid)
 
   if item['warning']
     puts "TOKEN VALIDATION WARNING"
-    puts item['warning']
-    return {status: item['warning']['key'], detail: item['warning']['detail']}
+    warning = item['warning']
+    # remaining is the number of requests remaining before throttling. Dynamodb
+    # returns this in scientific format (ex. 0.1e2 for 10). Convert this decimal format.
+    if warning['detail']['remaining']
+      warning['detail']['remaining'] = warning['detail']['remaining'].to_i
+    end
+    return {status: warning['key'], detail: warning['detail']}
   end
 
   return {status: TokenStatus::VALID_WEBSOCKET}

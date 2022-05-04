@@ -21,7 +21,7 @@ module AuthResponseHelper
     return {
       type: AUTHORIZER_KEY,
       value: authorizer_payload[AUTHORIZATION_WARNING_KEY],
-      detail: authorizer_payload[AUTHORIZATION_WARNING_DETAIL_KEY]
+      detail: JSON.parse(authorizer_payload[AUTHORIZATION_WARNING_DETAIL_KEY])
   }.to_json
   end
 end
