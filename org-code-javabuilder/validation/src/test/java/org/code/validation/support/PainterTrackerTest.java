@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;
 import java.util.Map;
-import org.code.neighborhood.Direction;
+import org.code.neighborhood.support.Direction;
 import org.code.validation.NeighborhoodActionType;
 import org.code.validation.PainterEvent;
 import org.code.validation.PainterLog;

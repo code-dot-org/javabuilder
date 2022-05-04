@@ -1,13 +1,14 @@
 package org.code.media;
 
+import org.code.media.support.SoundExceptionKeys;
 import org.code.protocol.JavabuilderRuntimeException;
 
 public class SoundException extends JavabuilderRuntimeException {
-  protected SoundException(SoundExceptionKeys key) {
+  public SoundException(SoundExceptionKeys key) {
     super(key);
   }
 
-  protected SoundException(SoundExceptionKeys key, Throwable cause) {
+  public SoundException(SoundExceptionKeys key, Throwable cause) {
     super(key, cause);
   }
 }

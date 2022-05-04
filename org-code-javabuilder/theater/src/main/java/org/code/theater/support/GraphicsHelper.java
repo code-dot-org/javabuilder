@@ -8,8 +8,8 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import org.code.media.Color;
 import org.code.media.Font;
-import org.code.media.FontHelper;
 import org.code.media.FontStyle;
+import org.code.media.support.FontHelper;
 
 /**
  * Helper class for various {@link Graphics2D} operations (drawing images, lines, shapes, text, etc)

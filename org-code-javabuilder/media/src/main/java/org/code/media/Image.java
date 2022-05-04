@@ -6,6 +6,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
 import javax.imageio.ImageIO;
+import org.code.media.support.MediaRuntimeException;
+import org.code.media.support.MediaRuntimeExceptionKeys;
 import org.code.protocol.GlobalProtocol;
 
 public class Image {
@@ -22,10 +24,13 @@ public class Image {
    * manager.
    *
    * @param filename the name of the image loaded into the asset manager for the project
-   * @throws FileNotFoundException if the file doesn't exist in the asset manager.
    */
-  public Image(String filename) throws FileNotFoundException {
-    this.bufferedImage = Image.getImageAssetFromFile(filename);
+  public Image(String filename) {
+    try {
+      this.bufferedImage = Image.getImageAssetFromFile(filename);
+    } catch (FileNotFoundException e) {
+      throw new MediaRuntimeException(MediaRuntimeExceptionKeys.FILE_NOT_FOUND, e);
+    }
     this.width = bufferedImage.getWidth();
     this.height = bufferedImage.getHeight();
     // don't create pixel array until we need it

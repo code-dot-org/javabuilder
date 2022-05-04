@@ -1,4 +1,4 @@
-package org.code.media;
+package org.code.media.support;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

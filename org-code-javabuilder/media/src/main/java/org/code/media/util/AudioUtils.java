@@ -1,14 +1,20 @@
-package org.code.media;
+package org.code.media.util;
 
 import java.io.*;
 import java.net.URL;
 import java.util.Arrays;
 import javax.sound.sampled.*;
+import org.code.media.SoundException;
+import org.code.media.support.SoundExceptionKeys;
 import org.code.protocol.GlobalProtocol;
-import org.code.protocol.InternalErrorKey;
-import org.code.protocol.InternalServerRuntimeError;
+import org.code.protocol.InternalExceptionKey;
+import org.code.protocol.InternalServerRuntimeException;
 
-public class AudioUtils {
+public final class AudioUtils {
+  private AudioUtils() {
+    throw new UnsupportedOperationException("Instantiation of utility class is not allowed.");
+  }
+
   private static final int MONO_CHANNELS = 1;
   private static final int STEREO_CHANNELS = 2;
   private static final double MAX_16_BIT_VALUE = 32768; // Max signed 16-bit value
@@ -113,7 +119,7 @@ public class AudioUtils {
     try {
       AudioSystem.write(audioInputStream, DEFAULT_AUDIO_FILE_FORMAT_TYPE, outputStream);
     } catch (IOException e) {
-      throw new InternalServerRuntimeError(InternalErrorKey.INTERNAL_EXCEPTION, e);
+      throw new InternalServerRuntimeException(InternalExceptionKey.INTERNAL_EXCEPTION, e);
     }
   }
 
@@ -194,7 +200,7 @@ public class AudioUtils {
    * @return samples
    * @throws FileNotFoundException
    */
-  static double[] readSamplesFromLocalFile(String filepath) throws FileNotFoundException {
+  public static double[] readSamplesFromLocalFile(String filepath) throws FileNotFoundException {
     try {
       return AudioUtils.readSamplesFromInputStream(
           AudioUtils.convertStreamToDefaultAudioFormat(
@@ -212,7 +218,7 @@ public class AudioUtils {
       bytes = audioInputStream.readAllBytes();
       audioInputStream.close();
     } catch (IOException e) {
-      throw new InternalServerRuntimeError(InternalErrorKey.INTERNAL_EXCEPTION, e);
+      throw new InternalServerRuntimeException(InternalExceptionKey.INTERNAL_EXCEPTION, e);
     }
 
     return AudioUtils.convertByteArrayToDoubleArray(
