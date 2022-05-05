@@ -4,6 +4,7 @@ phases:
     runtime-versions:
       nodejs: 12
     commands:
+      - cd ./integration-tests
       - npm install
   build:
     commands:
