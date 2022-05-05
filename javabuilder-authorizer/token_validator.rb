@@ -8,9 +8,6 @@ class TokenValidator
   TOKEN_RECORD_TTL_SECONDS = 120 # Two minutes
   USER_REQUEST_RECORD_TTL_SECONDS = 25 * ONE_HOUR_SECONDS
   TEACHER_ASSOCIATED_REQUEST_TTL_SECONDS = 25 * ONE_HOUR_SECONDS
-  # TO DO: move this into env variable
-  # https://codedotorg.atlassian.net/browse/JAVA-536
-  TEACHER_HOURLY_LIMIT = 1000
   NEAR_LIMIT_BUFFER = 10
 
   def initialize(payload, origin, region)
@@ -32,7 +29,7 @@ class TokenValidator
     # return error(USER_BLOCKED) if user_over_daily_limit?
     return error(CLASSROOM_BLOCKED) if teachers_over_hourly_limit?
 
-    near_limit_detail = user_near_hourly_limit?(hourly_usage_response.count)
+    near_limit_detail = get_user_near_hourly_limit_detail(hourly_usage_response.count)
     log_requests
     mark_token_as_vetted
     set_token_warning(NEAR_LIMIT, near_limit_detail) if near_limit_detail
@@ -125,7 +122,7 @@ class TokenValidator
         puts "teacher_associated_requests query has paginated responses. user_id #{@user_id} teacher_id #{teacher_id}"
       end
 
-      if response.count > TEACHER_HOURLY_LIMIT
+      if response.count > ENV['teacher_limit_per_hour'].to_i
         begin
           @client.put_item(
             table_name: ENV['blocked_users_table'],

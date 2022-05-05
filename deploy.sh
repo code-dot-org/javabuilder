@@ -31,6 +31,8 @@ SILENCE_ALERTS=${SILENCE_ALERTS-'false'}
 # Default per-user limits to prevent javabuilder abuse.
 LIMIT_PER_HOUR=${LIMIT_PER_HOUR-'50'}
 LIMIT_PER_DAY=${LIMIT_PER_DAY-'150'}
+# Default per-classroom hourly limit
+TEACHER_LIMIT_PER_HOUR=${TEACHER_LIMIT_PER_HOUR-'1000'}
 
 erb -T - template.yml.erb > template.yml
 TEMPLATE=template.yml
@@ -56,6 +58,6 @@ aws cloudformation deploy \
   --template-file ${OUTPUT_TEMPLATE} \
   --parameter-overrides SubDomainName=$SUB_DOMAIN BaseDomainName=$BASE_DOMAIN BaseDomainNameHostedZonedID=$BASE_DOMAIN_HOSTED_ZONE_ID \
     ProvisionedConcurrentExecutions=$PROVISIONED_CONCURRENT_EXECUTIONS ReservedConcurrentExecutions=$RESERVED_CONCURRENT_EXECUTIONS \
-    LimitPerHour=$LIMIT_PER_HOUR LimitPerDay=$LIMIT_PER_DAY SilenceAlerts=$SILENCE_ALERTS \
+    LimitPerHour=$LIMIT_PER_HOUR LimitPerDay=$LIMIT_PER_DAY TeacherLimitPerHour=$TEACHER_LIMIT_PER_HOUR SilenceAlerts=$SILENCE_ALERTS \
   --stack-name ${STACK} \
   "$@"
