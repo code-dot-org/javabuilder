@@ -1,17 +1,19 @@
 #!/bin/bash
 
-# WIP: Currently this is just a copy of the commands run in cicd/3-app/integration-test-buildspec.yml. 
-# This should eventually be used to run the tests in standalone mode.
+# Runs integration tests in standalone mode locally. The commands here are mostly the same as those executed in the integration testing step
+# in the Javabuilder code pipeline.
+#
+# NOTE: This script assumes you have command line access to the production Code.org AWS account. Check the README for details.
 
 set -e
-# cd ./integration-tests
 
+. standalone.config
+
+npm install
+
+# TODO: Use integration tests specific private key and password once those have been added.
 private_key=$(aws secretsmanager get-secret-value --secret-id arn:aws:secretsmanager:us-east-1:475661607190:secret:development/cdo/javabuilder_private_key-gZE3SO)
 password=$(aws secretsmanager get-secret-value --secret-id arn:aws:secretsmanager:us-east-1:475661607190:secret:development/cdo/javabuilder_key_password-J1RILi)
-
-# TODO: Make these configurable
-sub_domain=javabuilder-test
-base_domain=code.org
 
 JAVABUILDER_PRIVATE_KEY=$private_key \
 JAVABUILDER_PASSWORD=$password \
