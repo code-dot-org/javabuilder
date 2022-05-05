@@ -1,10 +1,10 @@
 require 'aws-sdk-s3'
-require_relative 'auth_error_response_helper'
-include AuthErrorResponseHelper
+require_relative 'auth_response_helper'
+include AuthResponseHelper
 
 def lambda_handler(event:, context:)
   authorizer = event["requestContext"]["authorizer"]["lambda"]
-  authorization_error_response = AuthErrorResponseHelper.get_response(authorizer)
+  authorization_error_response = AuthResponseHelper.get_error_response(authorizer)
   return authorization_error_response unless authorization_error_response == nil
 
   region = context.invoked_function_arn.split(':')[3]

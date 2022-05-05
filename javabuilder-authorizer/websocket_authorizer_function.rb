@@ -25,13 +25,15 @@ def lambda_handler(event:, context:)
   return JwtHelper.generate_deny(method_arn) unless decoded_token
 
   token_payload = decoded_token[0]
-  token_status = get_token_status(context, token_payload['sid'])
-  return JwtHelper.generate_allow_with_error(method_arn, token_status) unless token_status == TokenStatus::VALID_WEBSOCKET
+  token_info = get_token_info(context, token_payload['sid'])
+  token_status = token_info[:status]
+  return JwtHelper.generate_allow_with_error(method_arn, token_status) if TokenStatus::ERROR_STATES.include?(token_status)
+  return JwtHelper.generate_allow_with_warning(method_arn, token_payload, token_status, token_info[:detail]) if TokenStatus::WARNING_STATES.include?(token_status)
 
   JwtHelper.generate_allow(method_arn, token_payload)
 end
 
-def get_token_status(context, sid)
+def get_token_info(context, sid)
   client = Aws::DynamoDB::Client.new(region: get_region(context))
   response = client.get_item(
     table_name: ENV['token_status_table'],
@@ -41,19 +43,19 @@ def get_token_status(context, sid)
 
   unless item
     puts "TOKEN VALIDATION ERROR: #{TokenStatus::UNKNOWN_ID} token_id: #{sid}"
-    # return TokenStatus::UNKNOWN_ID
-    return TokenStatus::VALID_WEBSOCKET
+    # return {status: TokenStatus::UNKNOWN_ID}
+    return {status: TokenStatus::VALID_WEBSOCKET}
   end
 
   if item['used']
     puts "TOKEN VALIDATION ERROR: #{TokenStatus::TOKEN_USED} token_id: #{sid}"
-    return TokenStatus::TOKEN_USED
+    return {status: TokenStatus::TOKEN_USED}
   end
 
   unless item['vetted']
     puts "TOKEN VALIDATION ERROR: #{TokenStatus::NOT_VETTED} token_id: #{sid}"
-    # return TokenStatus::NOT_VETTED
-    return TokenStatus::VALID_WEBSOCKET
+    # return {status: TokenStatus::NOT_VETTED}
+    return {status: TokenStatus::VALID_WEBSOCKET}
   end
 
   client.update_item(
@@ -63,7 +65,20 @@ def get_token_status(context, sid)
     expression_attribute_values: {':u': true}
   )
 
-  TokenStatus::VALID_WEBSOCKET
+  if item['warning']
+    warning = item['warning']
+    # remaining is the number of requests remaining before throttling. Dynamodb
+    # returns this in scientific format (ex. 0.1e2 for 10). Convert this decimal format.
+    if warning['detail']['remaining']
+      warning['detail']['remaining'] = warning['detail']['remaining'].to_i
+    end
+    puts "TOKEN VALIDATION WARNING: #{warning['key']} detail: #{warning['detail']} token_id: #{sid}"
+    # TODO: return warning when we turn on throttling
+    # return {status: warning['key'], detail: warning['detail']}
+    return {status: TokenStatus::VALID_WEBSOCKET}
+  end
+
+  return {status: TokenStatus::VALID_WEBSOCKET}
 end
 
 # ARN is of the format arn:aws:lambda:{region}:{account_id}:function:{lambda_name}
