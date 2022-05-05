@@ -1,5 +1,10 @@
 version: 0.2
 phases:
+  install:
+    runtime-versions:
+      node: 12
+    commands:
+      - npm install
   build:
     commands:
       - set -e

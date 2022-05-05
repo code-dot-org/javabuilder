@@ -312,18 +312,18 @@ Resources:
                 ProjectName: !Ref IntegrationTestBuildProject
               OutputArtifacts:
                 - Name: integrationTestResultsPOC
-        - Name: Integration_Test
-          Actions:
-            - Name: integration-test
-              ActionTypeId:
-                Category: Build
-                Owner: AWS
-                Provider: CodeBuild
-                Version: 1
-              InputArtifacts:
-                - Name: sourceCode
-              Configuration:
-                ProjectName: !Ref IntegrationTestBuildProject
-              OutputArtifacts:
-                - Name: integrationTestResults
+        # - Name: Integration_Test
+        #   Actions:
+        #     - Name: integration-test
+        #       ActionTypeId:
+        #         Category: Build
+        #         Owner: AWS
+        #         Provider: CodeBuild
+        #         Version: 1
+        #       InputArtifacts:
+        #         - Name: sourceCode
+        #       Configuration:
+        #         ProjectName: !Ref IntegrationTestBuildProject
+        #       OutputArtifacts:
+        #         - Name: integrationTestResults
 
