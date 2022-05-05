@@ -26,16 +26,15 @@ class TokenValidator
     return error(TOKEN_USED) unless log_token
     return error(USER_BLOCKED) if user_blocked?
     return error(TEACHERS_BLOCKED) if teachers_blocked?
-    hourly_usage_count = user_hourly_usage_count
-    return error(USER_OVER_HOURLY_LIMIT) if user_over_hourly_limit?(hourly_usage_count)
+    hourly_usage_response = user_hourly_usage
+    return error(USER_OVER_HOURLY_LIMIT) if user_over_hourly_limit?(hourly_usage_response)
     return error(USER_OVER_DAILY_LIMIT) if user_over_daily_limit?
     return error(TEACHERS_OVER_HOURLY_LIMIT) if teachers_over_hourly_limit?
-
-    near_limit_detail=  user_near_hourly_limit?(hourly_usage_count)
+    near_limit_detail = user_near_hourly_limit?(hourly_usage_response.count)
 
     log_requests
     mark_token_as_vetted
-    add_token_warning(NEAR_LIMIT, near_limit_detail) if near_limit_detail
+    set_token_warning(NEAR_LIMIT, near_limit_detail) if near_limit_detail
     VALID_HTTP
   end
 
@@ -87,13 +86,13 @@ class TokenValidator
     blocked
   end
 
-  def user_hourly_usage_count
-    user_usage_count(ONE_HOUR_SECONDS)
+  def user_hourly_usage
+    user_usage(ONE_HOUR_SECONDS)
   end
 
-  def user_over_hourly_limit?(hourly_usage_count)
+  def user_over_hourly_limit?(hourly_usage_response)
     user_over_limit?(
-      hourly_usage_count,
+      hourly_usage_response,
       ENV['limit_per_hour'].to_i,
       USER_OVER_HOURLY_LIMIT
     )
@@ -104,9 +103,9 @@ class TokenValidator
   end
 
   def user_over_daily_limit?
-    usage_count = user_usage_count(ONE_DAY_SECONDS)
+    usage_response = user_usage(ONE_DAY_SECONDS)
     user_over_limit?(
-      usage_count,
+      usage_response,
       ENV['limit_per_day'].to_i,
       USER_OVER_DAILY_LIMIT
     )
@@ -186,7 +185,7 @@ class TokenValidator
     )
   end
 
-  def add_token_warning(key, detail)
+  def set_token_warning(key, detail)
     @client.update_item(
       table_name: ENV['token_status_table'],
       key: {token_id: @token_id},
@@ -201,11 +200,11 @@ class TokenValidator
   def error(status)
     puts "TOKEN VALIDATION ERROR: #{status} user_id: #{@user_id} verified_teachers: #{@verified_teachers} token_id: #{@token_id}"
     return status if status == TOKEN_USED
+    # status
     VALID_HTTP
   end
 
-  def user_usage_count(time_range_seconds)
-    start_time = Time.now
+  def user_usage(time_range_seconds)
     response = @client.query(
       table_name: ENV['user_requests_table'],
       key_condition_expression: "user_id = :user_id AND issued_at > :past_time",
@@ -214,8 +213,6 @@ class TokenValidator
         ":past_time" => Time.now.to_i - time_range_seconds
       }
     )
-    end_time = Time.now
-    puts "query time for user usage count for #{time_range_seconds} seconds was #{end_time - start_time} seconds"
     # DynamoDB query will only read through 1 MB of data before paginating.
     # Our records should be relatively small (roughly 100 bytes, based on AWS docs),
     # so I think we'd need 10K records to hit paginated responses.
@@ -228,7 +225,7 @@ class TokenValidator
     if response.last_evaluated_key
       puts "user_requests query has paginated responses. user_id #{@user_id}"
     end
-    response.count
+    response
   end
 
   def user_near_limit?(count, limit)
@@ -239,8 +236,8 @@ class TokenValidator
     end
   end
 
-  def user_over_limit?(count, limit, logging_message)
-    over_limit = count > limit
+  def user_over_limit?(query_response, limit, logging_message)
+    over_limit = query_response.count > limit
     if over_limit
       # logging could be improved,
       # [{"ttl"=>0.1648766446e10, "user_id"=>"611", "issued_at"=>0.1648680046e10}, {...
@@ -249,7 +246,7 @@ class TokenValidator
           table_name: ENV['blocked_users_table'],
           item: {
             user_id: blocked_users_user_id,
-            request_log: response.items.to_s,
+            request_log: query_response.items.to_s,
             reason: logging_message
           },
           condition_expression: 'attribute_not_exists(user_id)'

@@ -131,7 +131,6 @@ def on_default(event, context)
   authorization_warning_response = AuthResponseHelper.get_warning_response(authorizer)
   # if there is a warning response, send the warning via the websocket and continue
   if authorization_warning_response
-    puts "sending warning..."
     resp = client.post_to_connection({
       data: authorization_warning_response,
       connection_id: connection_id
