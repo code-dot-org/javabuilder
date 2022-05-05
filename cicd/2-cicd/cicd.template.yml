@@ -214,6 +214,7 @@ Resources:
             Resource:
               - !GetAtt LoadTestBuildProject.Arn
               - !GetAtt AppBuildProject.Arn
+              - !GetAtt IntegrationTestBuildProject.Arn
           - Effect: Allow
             Action:
               - codebuild:CreateReportGroup
