@@ -26,7 +26,7 @@ class TokenValidator
     return error(TOKEN_USED) unless log_token
     return error(USER_BLOCKED) if user_blocked?
     return error(TEACHERS_BLOCKED) if teachers_blocked?
-    hourly_usage_response = user_hourly_usage
+    hourly_usage_response = user_usage(ONE_HOUR_SECONDS)
     return error(USER_OVER_HOURLY_LIMIT) if user_over_hourly_limit?(hourly_usage_response)
     return error(USER_OVER_DAILY_LIMIT) if user_over_daily_limit?
     return error(TEACHERS_OVER_HOURLY_LIMIT) if teachers_over_hourly_limit?
@@ -84,10 +84,6 @@ class TokenValidator
     end
 
     blocked
-  end
-
-  def user_hourly_usage
-    user_usage(ONE_HOUR_SECONDS)
   end
 
   def user_over_hourly_limit?(hourly_usage_response)

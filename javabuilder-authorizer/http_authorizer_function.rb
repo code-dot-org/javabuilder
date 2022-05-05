@@ -28,6 +28,7 @@ def lambda_handler(event:, context:)
   region = get_region(context)
   token_status = get_token_status(token_payload, standardized_origin, region)
   return JwtHelper.generate_allow_with_error(route_arn, token_status) unless token_status == TokenStatus::VALID_HTTP
+
   JwtHelper.generate_allow(route_arn, token_payload)
 end
 
