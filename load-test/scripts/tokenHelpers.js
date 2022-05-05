@@ -7,12 +7,13 @@ import { PRIVATE_KEY } from "./configuration.js";
 
 // Generate a JWT token for the given mini app type, with random
 // user id, teacher id and session id. The token has a time to live of 1 minute.
+// Note: iss of localhost is a hack to force javabuilder to use stubbed assets
 export function generateToken(miniAppType, sessionId) {
   const issuedAtTime = (Date.now() / 1000) - 3;
   const expirationTime = issuedAtTime + 63;
   const payload = {
     iat: issuedAtTime,
-    iss: "load-test",
+    iss: "localhost-studio.code.org",
     exp: expirationTime,
     uid: getRandomId(),
     level_id: "none",
