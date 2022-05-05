@@ -43,7 +43,7 @@ def get_token_info(context, sid)
 
   unless item
     puts "TOKEN VALIDATION ERROR: #{TokenStatus::UNKNOWN_ID} token_id: #{sid}"
-    # return TokenStatus::UNKNOWN_ID
+    # return {status: TokenStatus::UNKNOWN_ID}
     return {status: TokenStatus::VALID_WEBSOCKET}
   end
 
@@ -54,7 +54,7 @@ def get_token_info(context, sid)
 
   unless item['vetted']
     puts "TOKEN VALIDATION ERROR: #{TokenStatus::NOT_VETTED} token_id: #{sid}"
-    # return TokenStatus::NOT_VETTED
+    # return {status: TokenStatus::NOT_VETTED}
     return {status: TokenStatus::VALID_WEBSOCKET}
   end
 
@@ -66,13 +66,13 @@ def get_token_info(context, sid)
   )
 
   if item['warning']
-    puts "TOKEN VALIDATION WARNING"
     warning = item['warning']
     # remaining is the number of requests remaining before throttling. Dynamodb
     # returns this in scientific format (ex. 0.1e2 for 10). Convert this decimal format.
     if warning['detail']['remaining']
       warning['detail']['remaining'] = warning['detail']['remaining'].to_i
     end
+    puts "TOKEN VALIDATION WARNING: #{warning['key']} detail: #{warning['detail']} token_id: #{sid}"
     return {status: warning['key'], detail: warning['detail']}
   end
 
