@@ -24,14 +24,14 @@ import metricsReporter from './scannerLoadTestMetrics.js';
 const USE_CUSTOM_METRICS = false;
 
 // Change these options to increase the user goal or time to run the test.
-getTestOptions(
+export const options = getTestOptions(
   /* User goal */ 1000,
   /* High load time minutes */ 4
 );
 
 // Change this to test different code
 const SOURCE_TO_TEST = sources.helloWorld;
-const MINI_APP_TYPE = MiniAppType.CONSOLE
+const MINI_APP_TYPE = MiniAppType.CONSOLE;
 
 // Set this to true to space out requests every REQUEST_TIME_MS milliseconds. Set to
 // false to send as many requests as possible.
