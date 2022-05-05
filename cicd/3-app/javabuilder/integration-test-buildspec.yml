@@ -6,7 +6,6 @@ phases:
     commands:
       - cd ./integration-tests
       - npm install
-      - npm install -g mocha
   build:
     commands:
       - set -e
