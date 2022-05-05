@@ -10,9 +10,13 @@ import {
   PRIVATE_KEY,
 } from "./environment.js";
 
+// TODO: use integration test specific origin once the key pair has been setup.
 const INTEGRATION_TESTS_ORIGIN = "localhost-studio.code.org";
 const INTEGRATION_TESTS_SESSION_ID_PREFIX = "integrationTests-";
 
+/**
+ * Helper class for facilitating a connection to a Javabuilder instance
+ */
 class JavabuilderConnectionHelper {
   async connect(sourcesJson, miniAppType, onOpen, onMessage, onError, onClose) {
     const sessionId = INTEGRATION_TESTS_SESSION_ID_PREFIX + this.getRandomId();
