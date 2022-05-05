@@ -73,7 +73,9 @@ def get_token_info(context, sid)
       warning['detail']['remaining'] = warning['detail']['remaining'].to_i
     end
     puts "TOKEN VALIDATION WARNING: #{warning['key']} detail: #{warning['detail']} token_id: #{sid}"
-    return {status: warning['key'], detail: warning['detail']}
+    # TODO: return warning when we turn on throttling
+    # return {status: warning['key'], detail: warning['detail']}
+    return {status: TokenStatus::VALID_WEBSOCKET}
   end
 
   return {status: TokenStatus::VALID_WEBSOCKET}
