@@ -28,11 +28,20 @@ class TokenValidator
     return error(USER_BLOCKED) if user_blocked?
     # return error(CLASSROOM_BLOCKED) if teachers_blocked?
     hourly_usage_response = user_usage(ONE_HOUR_SECONDS)
+<<<<<<< HEAD
     return error(USER_BLOCKED) if user_over_hourly_limit?(hourly_usage_response)
     # return error(USER_BLOCKED) if user_over_daily_limit?
     # return error(CLASSROOM_BLOCKED) if teachers_over_hourly_limit?
     near_limit_detail = user_near_hourly_limit?(hourly_usage_response.count)
 
+=======
+    return error(USER_OVER_HOURLY_LIMIT) if user_over_hourly_limit?(hourly_usage_response)
+    return error(USER_OVER_DAILY_LIMIT) if user_over_daily_limit?
+    return error(TEACHERS_OVER_HOURLY_LIMIT) if teachers_over_hourly_limit?
+    near_limit_detail = get_user_near_hourly_limit_detail(hourly_usage_response.count)
+    puts "hourly usage count: #{hourly_usage_response.count}"
+    puts near_limit_detail
+>>>>>>> origin/main
     log_requests
     mark_token_as_vetted
     set_token_warning(NEAR_LIMIT, near_limit_detail) if near_limit_detail
@@ -95,8 +104,8 @@ class TokenValidator
     )
   end
 
-  def user_near_hourly_limit?(hourly_usage_count)
-    user_near_limit?(hourly_usage_count, ENV['limit_per_hour'].to_i)
+  def get_user_near_hourly_limit_detail(hourly_usage_count)
+    get_user_near_limit_detail(hourly_usage_count, ENV['limit_per_hour'].to_i)
   end
 
   def user_over_daily_limit?
@@ -221,11 +230,11 @@ class TokenValidator
     response
   end
 
-  def user_near_limit?(count, limit)
+  def get_user_near_limit_detail(count, limit)
     if count <= limit && count >= (limit - NEAR_LIMIT_BUFFER)
       return {remaining: limit - count}
     else
-      return false
+      return nil
     end
   end
 

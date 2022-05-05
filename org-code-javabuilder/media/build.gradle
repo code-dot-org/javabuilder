@@ -11,8 +11,8 @@ java {
 }
 
 repositories {
-    // Use JCenter for resolving dependencies.
-    jcenter()
+    // Use Maven Central for resolving dependencies.
+    mavenCentral()
 }
 
 dependencies {
