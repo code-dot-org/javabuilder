@@ -29,8 +29,8 @@ RESERVED_CONCURRENT_EXECUTIONS=${RESERVED_CONCURRENT_EXECUTIONS-'3'}
 SILENCE_ALERTS=${SILENCE_ALERTS-'false'}
 
 # Default per-user limits to prevent javabuilder abuse.
-LIMIT_PER_HOUR=${LIMIT_PER_HOUR-'10'}
-LIMIT_PER_DAY=${LIMIT_PER_DAY-'40'}
+LIMIT_PER_HOUR=${LIMIT_PER_HOUR-'50'}
+LIMIT_PER_DAY=${LIMIT_PER_DAY-'150'}
 
 erb -T - template.yml.erb > template.yml
 TEMPLATE=template.yml
