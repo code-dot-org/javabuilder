@@ -3,6 +3,7 @@ phases:
   install:
     runtime-versions:
       nodejs: 14
+  pre-build:
     commands:
       - cd ./integration-tests
       - npm install
