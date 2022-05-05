@@ -25,13 +25,13 @@ const USE_CUSTOM_METRICS = false;
 
 // Change these options to increase the user goal or time to run the test.
 export const options = getTestOptions(
-  /* User goal */ 15000,
+  /* User goal */ 1000,
   /* High load time minutes */ 4
 );
 
 // Change this to test different code
-const SOURCE_TO_TEST = sources.theaterImageFilter;
-const MINI_APP_TYPE = MiniAppType.THEATER;
+const SOURCE_TO_TEST = sources.helloWorld;
+const MINI_APP_TYPE = MiniAppType.CONSOLE;
 
 // Set this to true to space out requests every REQUEST_TIME_MS milliseconds. Set to
 // false to send as many requests as possible.
