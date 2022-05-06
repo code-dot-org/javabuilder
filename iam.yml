@@ -16,6 +16,7 @@ Parameters:
     Default: "*"
 
 Resources:
+  # Permissions for the long-running lambda that compiles/runs student projects
   BuildAndRunLambdaRole:
     Type: AWS::IAM::Role
     Properties:
@@ -54,6 +55,9 @@ Resources:
                   - "execute-api:ManageConnections"
                 Resource:
                   - !Sub "arn:aws:execute-api:*:${AWS::AccountId}:${JavabuilderApiId}/*"
+  
+  # Permissions for the synchronous Lambda that invokes the long-running Lambda
+  # and then relays web messages to it
   SessionManagerMessageRelayLambdaRole:
     Type: AWS::IAM::Role
     Properties:
@@ -90,6 +94,8 @@ Resources:
                   - "execute-api:Invoke"
                   - "execute-api:ManageConnections"
                 Resource: !Sub "arn:aws:execute-api:*:${AWS::AccountId}:${JavabuilderApiId}/*"
+  
+  # Permissions for the Lambda Authorizer
   AuthorizerLambdaRole:
     Type: AWS::IAM::Role
     Properties:
@@ -115,6 +121,8 @@ Resources:
                   - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/*_teacher_associated_requests"
                   - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/*_tokens"
                   - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/*_user_requests"
+
+  # Permissions for the lambda that uploads student code to S3
   PutSourcesLambdaRole:
     Type: AWS::IAM::Role
     Properties:
@@ -133,6 +141,8 @@ Resources:
                 Action:
                   - 's3:putObject'
                 Resource: 'arn:aws:s3:::cdo-*javabuilder*-content/*'
+
+  # Shared permissions that several lambdas need
   JavabuilderLambdaLoggingPolicy:
     Type: AWS::IAM::Policy
     Properties:
@@ -141,6 +151,7 @@ Resources:
         - !Ref BuildAndRunLambdaRole
         - !Ref SessionManagerMessageRelayLambdaRole
         - !Ref AuthorizerLambdaRole
+        - !Ref PutSourcesLambdaRole
       PolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -162,6 +173,8 @@ Resources:
               - "xray:GetSamplingTargets"
               - "xray:GetSamplingStatisticSummaries"
             Resource: '*'
+
+  # Original shared lambda execution role, replaced by the roles above
   # TODO: remove all usages and delete this role
   JavabuilderLambdaExecutionRole:
     Type: AWS::IAM::Role
@@ -232,6 +245,7 @@ Resources:
         # TODO: Restrict SQS permissions to minimum required.
         - "arn:aws:iam::aws:policy/service-role/AWSLambdaSQSQueueExecutionRole"
         - "arn:aws:iam::aws:policy/AmazonAPIGatewayInvokeFullAccess"
+
   JavabuilderAPIGatewayRole:
     Type: AWS::IAM::Role
     Properties:
@@ -265,6 +279,7 @@ Resources:
                   # TODO: Restrict to just Javabuilder log-groups and log-streams.
                   - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:*"
                   - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:*:log-stream:*"
+
   JavabuilderCloudFormationRole:
     Type: AWS::IAM::Role
     Properties:
@@ -321,6 +336,7 @@ Resources:
                   - 'dynamodb:CreateTable'
                 Resource:
                   - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/*"
+
   JavabuilderCodeBuildRole:
     Type: AWS::IAM::Role
     Properties:
@@ -358,6 +374,7 @@ Resources:
                 Action:
                   - "route53:ListHostedZonesByName"
                 Resource: '*'
+
 Outputs:
   JavabuilderLambdaExecutionRole:
     Description: Javabuilder Lambda Execution Role ARN
