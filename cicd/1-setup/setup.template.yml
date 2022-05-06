@@ -29,6 +29,12 @@ Resources:
       Path: /service-role/
       PermissionsBoundary: !ImportValue IAM-DevPermissions
       Policies:
+        - PolicyName: JavabuilderPassRole
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action: iam:PassRole
+                Resource: !Sub arn:aws:iam::${AWS::Account}:role/admin/CloudFormationService
         - PolicyName: JavabuilderCodePipelinePolicy
           PolicyDocument:
             Statement:
