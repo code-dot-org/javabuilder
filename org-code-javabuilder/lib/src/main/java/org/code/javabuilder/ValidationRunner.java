@@ -35,11 +35,11 @@ public class ValidationRunner extends BaseTestRunner {
    * Finds and runs all tests in the given set of Java files using the given URLClassLoader
    *
    * @param urlClassLoader class loader to load compiled classes
-   * @throws InternalServerError if there is an error running tests
+   * @throws InternalServerException if there is an error running tests
    */
   @Override
   public boolean run(URLClassLoader urlClassLoader)
-      throws InternalServerError, UserInitiatedException {
+      throws InternalServerException, UserInitiatedException {
     this.setUpForValidation(urlClassLoader);
     return super.run(urlClassLoader);
   }

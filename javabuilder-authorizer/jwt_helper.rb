@@ -33,10 +33,28 @@ module JwtHelper
   end
 
   def generate_allow(resource, token_payload)
-    user_id = token_payload['uid']
-    issuer = token_payload['iss']
-    principal_id = "#{issuer}/#{user_id}"
+    principal_id = get_principal_id(token_payload)
     generate_policy(principal_id, 'Allow', resource, token_payload)
+  end
+
+  # Generates a response that indicates that the request is well-formed, but should
+  # be rejected due to invalid reuse or throttling reasons
+  def generate_allow_with_error(resource, token_status)
+    error_payload = {}
+    error_payload['authorization_error'] = token_status
+    error_payload['authorization_error_code'] = 403
+    generate_policy(nil, 'Allow', resource, error_payload)
+  end
+
+  # Generates a response that indicates that the request is well-formed, but should
+  # send a warning to the user
+  def generate_allow_with_warning(resource, token_payload, token_status, detail)
+    warn_payload = token_payload
+    warn_payload['authorization_warning'] = token_status
+    # detail is a json object, we must convert to a string for the policy
+    warn_payload['authorization_warning_detail'] = detail.to_json
+    principal_id = get_principal_id(token_payload)
+    generate_policy(principal_id, 'Allow', resource, warn_payload)
   end
 
   def generate_deny(resource)
@@ -106,5 +124,11 @@ module JwtHelper
     # the key generation to work.
     public_key = public_key.gsub('\n ', "\n")
     OpenSSL::PKey::RSA.new(public_key)
+  end
+
+  def get_principal_id(token_payload)
+    user_id = token_payload['uid']
+    issuer = token_payload['iss']
+    "#{issuer}/#{user_id}"
   end
 end

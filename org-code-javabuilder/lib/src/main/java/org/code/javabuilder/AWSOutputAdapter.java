@@ -41,7 +41,7 @@ public class AWSOutputAdapter implements OutputAdapter {
     try {
       this.api.postToConnection(post);
     } catch (GoneException e) {
-      throw new InternalServerRuntimeError(InternalErrorKey.CONNECTION_TERMINATED, e);
+      throw new InternalServerRuntimeException(InternalExceptionKey.CONNECTION_TERMINATED, e);
     }
   }
 }

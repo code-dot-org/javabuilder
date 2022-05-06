@@ -32,7 +32,7 @@ public class MainRunner implements CodeRunner {
       Class.forName(UserInitiatedException.class.getName());
     } catch (ClassNotFoundException e) {
       // This shouldn't be possible. If it happens, we should throw lots of errors.
-      throw new InternalServerError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e);
+      throw new InternalServerException(InternalExceptionKey.INTERNAL_RUNTIME_EXCEPTION, e);
     }
 
     try {

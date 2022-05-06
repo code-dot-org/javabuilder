@@ -4,10 +4,10 @@ import static org.code.protocol.AllowedFileNames.PROMPTER_FILE_NAME_PREFIX;
 import static org.code.protocol.InputMessages.UPLOAD_ERROR;
 import static org.code.protocol.InputMessages.UPLOAD_SUCCESS;
 
-import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.code.media.Image;
+import org.code.media.support.MediaRuntimeException;
 import org.code.protocol.*;
 import org.code.theater.support.TheaterMessage;
 import org.code.theater.support.TheaterSignalKey;
@@ -17,7 +17,7 @@ public class Prompter {
 
   // Convenience class just for unit testing
   static class ImageCreator {
-    public Image createImage(String filename) throws FileNotFoundException {
+    public Image createImage(String filename) {
       return new Image(filename);
     }
   }
@@ -55,7 +55,7 @@ public class Prompter {
     try {
       uploadUrl = this.contentManager.generateAssetUploadUrl(prompterFileName);
     } catch (JavabuilderException e) {
-      throw new InternalServerRuntimeError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e);
+      throw new InternalServerRuntimeException(InternalExceptionKey.INTERNAL_RUNTIME_EXCEPTION, e);
     }
 
     HashMap<String, String> getImageDetails = new HashMap<>();
@@ -68,15 +68,16 @@ public class Prompter {
     if (statusMessage.equals(UPLOAD_SUCCESS)) {
       try {
         return this.imageCreator.createImage(prompterFileName);
-      } catch (FileNotFoundException e) {
-        // If the image was uploaded successfully, a FileNotFoundException means an error on our end
-        throw new InternalServerRuntimeError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e);
+      } catch (MediaRuntimeException e) {
+        // If the image was uploaded successfully, a MediaRuntimeException means an error on our end
+        throw new InternalServerRuntimeException(
+            InternalExceptionKey.INTERNAL_RUNTIME_EXCEPTION, e);
       }
     } else if (statusMessage.equals(UPLOAD_ERROR)) {
-      throw new InternalServerRuntimeError(
-          InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, new Exception(UPLOAD_ERROR));
+      throw new InternalServerRuntimeException(
+          InternalExceptionKey.INTERNAL_RUNTIME_EXCEPTION, new Exception(UPLOAD_ERROR));
     } else {
-      throw new InternalServerRuntimeError(InternalErrorKey.UNKNOWN_ERROR);
+      throw new InternalServerRuntimeException(InternalExceptionKey.UNKNOWN_ERROR);
     }
   }
 }

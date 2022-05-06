@@ -1,29 +1,35 @@
 module TokenStatus
   ### Token statuses used in HTTP authorizer (first step in token validation)
   # Token was validated by HTTP authorizer
-  VALID_HTTP = 'valid_http'.freeze
-  # Token provided to HTTP authorizer has already been used
-  ALREADY_EXISTS = 'already_exists'.freeze
+  VALID_HTTP = 'VALID_HTTP'.freeze
   # User has been blocked for violating hourly or daily throttle limits
-  USER_BLOCKED = 'user_blocked'.freeze
+  USER_BLOCKED = 'USER_BLOCKED'.freeze
   # All of a user's teachers (or the teacher themselves, if the user is a teacher)
   # has been blocked for violating hourly throttle limits
-  TEACHERS_BLOCKED = 'teachers_blocked'.freeze
+  TEACHERS_BLOCKED = 'TEACHERS_BLOCKED'.freeze
   # User has reached the hourly limit for Javabuilder requests.
-  USER_OVER_HOURLY_LIMIT = 'user_over_hourly_limit'.freeze
+  USER_OVER_HOURLY_LIMIT = 'USER_OVER_HOURLY_LIMIT'.freeze
   # User has reached the daily limit for Javabuilder requests.
-  USER_OVER_DAILY_LIMIT = 'user_over_daily_limit'.freeze
+  USER_OVER_DAILY_LIMIT = 'USER_OVER_DAILY_LIMIT'.freeze
   # All of a user's teachers (or the teacher themselves, if the user is a teacher)
   # has reached the hourly limit for Javabuilder requests for a classroom.
-  TEACHERS_OVER_HOURLY_LIMIT = 'teachers_over_hourly_limit'.freeze
+  TEACHERS_OVER_HOURLY_LIMIT = 'TEACHERS_OVER_HOURLY_LIMIT'.freeze
+  # A user is near their throttling limit. Token is valid but a warning should be sent.
+  NEAR_LIMIT = 'NEAR_LIMIT'.freeze
 
   ### Token statuses used in websocket authorizer (second step in token validation)
   # Token was validated by websocket authorizer
-  VALID_WEBSOCKET = 'valid_websocket'.freeze
+  VALID_WEBSOCKET = 'VALID_WEBSOCKET'.freeze
   # Token provided did not pass through HTTP authorizer first (required)
-  UNKNOWN_ID = 'unknown_id'.freeze
+  UNKNOWN_ID = 'UNKNOWN_ID'.freeze
   # Token provided was not vetted by hTTP authorizer
-  NOT_VETTED = 'not_vetted'.freeze
-  # Token has already been used
-  USED = 'used'.freeze
+  NOT_VETTED = 'NOT_VETTED'.freeze
+
+  ### Token status used by both authorizers
+  # Token provided to the authorizer has already been used
+  TOKEN_USED = 'TOKEN_USED'.freeze
+
+  ERROR_STATES = [USER_BLOCKED, TEACHERS_BLOCKED, USER_OVER_DAILY_LIMIT, USER_OVER_HOURLY_LIMIT, TEACHERS_OVER_HOURLY_LIMIT, UNKNOWN_ID, NOT_VETTED, TOKEN_USED]
+  WARNING_STATES = [NEAR_LIMIT]
+  VALID_STATES = [VALID_HTTP, VALID_WEBSOCKET]
 end

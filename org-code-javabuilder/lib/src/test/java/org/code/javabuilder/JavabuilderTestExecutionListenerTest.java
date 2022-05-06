@@ -135,7 +135,7 @@ public class JavabuilderTestExecutionListenerTest {
       new StackTraceElement(className, "method", fileName, lineNumber)
     };
     final Throwable error =
-        new InternalServerRuntimeError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION);
+        new InternalServerRuntimeException(InternalExceptionKey.INTERNAL_RUNTIME_EXCEPTION);
     error.setStackTrace(stackTrace);
 
     when(testIdentifier.getSource()).thenReturn(Optional.of(methodSource));
@@ -158,7 +158,7 @@ public class JavabuilderTestExecutionListenerTest {
     assertTrue(
         messageDetail
             .getString(ClientMessageDetailKeys.TYPE)
-            .equals(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION.toString()));
+            .equals(InternalExceptionKey.INTERNAL_RUNTIME_EXCEPTION.toString()));
     assertTrue(messageDetail.getString(ClientMessageDetailKeys.FILE_NAME).equals(fileName));
     assertTrue(
         messageDetail

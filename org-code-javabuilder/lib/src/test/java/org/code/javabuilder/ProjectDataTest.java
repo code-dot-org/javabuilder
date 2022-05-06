@@ -3,7 +3,7 @@ package org.code.javabuilder;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import org.code.protocol.InternalErrorKey;
+import org.code.protocol.InternalExceptionKey;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -40,17 +40,17 @@ class ProjectDataTest {
   @Test
   public void testGetSourcesThrowsExceptionIfSourcesOrMainJsonMissing() {
     unitUnderTest = new ProjectData("{}", projectFileParser);
-    Exception actual = assertThrows(InternalServerError.class, () -> unitUnderTest.loadFiles());
-    assertEquals(InternalErrorKey.INTERNAL_EXCEPTION.toString(), actual.getMessage());
+    Exception actual = assertThrows(InternalServerException.class, () -> unitUnderTest.loadFiles());
+    assertEquals(InternalExceptionKey.INTERNAL_EXCEPTION.toString(), actual.getMessage());
 
     unitUnderTest = new ProjectData("{ 'sources': {} }", projectFileParser);
-    actual = assertThrows(InternalServerError.class, () -> unitUnderTest.loadFiles());
-    assertEquals(InternalErrorKey.INTERNAL_EXCEPTION.toString(), actual.getMessage());
+    actual = assertThrows(InternalServerException.class, () -> unitUnderTest.loadFiles());
+    assertEquals(InternalExceptionKey.INTERNAL_EXCEPTION.toString(), actual.getMessage());
   }
 
   @Test
   public void testGetSourcesParsesAndReturnsSourceFiles()
-      throws UserInitiatedException, InternalServerError {
+      throws UserInitiatedException, InternalServerException {
     when(projectFileParser.parseFileJson(MAIN_JSON_CONTENT)).thenReturn(projectFiles);
     doNothing().when(projectFiles).addTextFile(textProjectFileCaptor.capture());
 

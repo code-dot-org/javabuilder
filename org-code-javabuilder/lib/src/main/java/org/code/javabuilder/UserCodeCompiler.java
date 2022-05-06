@@ -21,6 +21,12 @@ public class UserCodeCompiler {
   private final File tempFolder;
   private final OutputAdapter outputAdapter;
 
+  private static final String SYSTEM_PACKAGE_OVERRIDE_NAME = "org.code.lang.System";
+  private static final String DIAGNOSTIC_CODE_SINGLE_IMPORT_ERROR =
+      "compiler.err.already.defined.single.import";
+  private static final String DIAGNOSTIC_CODE_DEPRECATED_WARNING_PREFIX =
+      "compiler.note.deprecated";
+
   public UserCodeCompiler(
       List<JavaProjectFile> javaFiles, File tempFolder, OutputAdapter outputAdapter) {
     this.javaFiles = javaFiles;
@@ -29,10 +35,10 @@ public class UserCodeCompiler {
   }
 
   /**
-   * @throws InternalServerError If the user's code has a compiler error or if we hit an internal
-   *     exception that interferes with compilation.
+   * @throws InternalServerException If the user's code has a compiler error or if we hit an
+   *     internal exception that interferes with compilation.
    */
-  public void compileProgram() throws InternalServerError, UserInitiatedException {
+  public void compileProgram() throws InternalServerException, UserInitiatedException {
     this.outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.COMPILING));
     DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
 
@@ -44,6 +50,12 @@ public class UserCodeCompiler {
 
     // diagnostics will include any compiler errors
     for (Diagnostic<? extends JavaFileObject> diagnostic : diagnostics.getDiagnostics()) {
+      // Students are sometimes taught deprecated methods (eg, integer constructor)
+      // for the AP exam. Do not show deprecation warnings to avoid confusion.
+      if (diagnostic.getCode().startsWith(DIAGNOSTIC_CODE_DEPRECATED_WARNING_PREFIX)) {
+        continue;
+      }
+
       String customMessage = this.getCustomCompilerError(diagnostic);
       if (customMessage != null) {
         // If we got a custom message, just send it and stop sending any more diagnostics to avoid
@@ -60,7 +72,7 @@ public class UserCodeCompiler {
   }
 
   private CompilationTask getCompilationTask(DiagnosticCollector<JavaFileObject> diagnostics)
-      throws InternalServerError, UserInitiatedException {
+      throws InternalServerException, UserInitiatedException {
     JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 
     // set output of compilation to be a temporary folder
@@ -71,7 +83,7 @@ public class UserCodeCompiler {
     } catch (IOException e) {
       e.printStackTrace();
       // if we can't set the file location we won't be able to run the class properly.
-      throw new InternalServerError(InternalErrorKey.INTERNAL_COMPILER_EXCEPTION, e);
+      throw new InternalServerException(InternalExceptionKey.INTERNAL_COMPILER_EXCEPTION, e);
     }
     // create file for user-provided code
     List<JavaFileObject> files = new ArrayList<>();
@@ -108,8 +120,8 @@ public class UserCodeCompiler {
   private String getCustomCompilerError(Diagnostic<? extends JavaFileObject> diagnostic) {
     // Check if the compiler error is due to the student importing java.lang.System
     // directly and give a more helpful message.
-    if (diagnostic.getCode().equals("compiler.err.already.defined.single.import")
-        && diagnostic.getMessage(Locale.US).contains("org.code.lang.System")) {
+    if (diagnostic.getCode().equals(DIAGNOSTIC_CODE_SINGLE_IMPORT_ERROR)
+        && diagnostic.getMessage(Locale.US).contains(SYSTEM_PACKAGE_OVERRIDE_NAME)) {
       return "Import of java.lang.System is not supported.";
     }
     return null;

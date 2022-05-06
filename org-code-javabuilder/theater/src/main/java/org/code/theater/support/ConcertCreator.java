@@ -12,9 +12,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.List;
-import org.code.media.AudioWriter;
 import org.code.media.Color;
-import org.code.media.FontHelper;
+import org.code.media.support.AudioWriter;
+import org.code.media.support.FontHelper;
 import org.code.protocol.*;
 import org.code.theater.Instrument;
 
@@ -242,7 +242,7 @@ public class ConcertCreator implements AutoCloseable {
       // we should not hit this (caused by too many file writes)
       // in normal execution as it is only called via play,
       // and play can only be called once.
-      throw new InternalServerRuntimeError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e);
+      throw new InternalServerRuntimeException(InternalExceptionKey.INTERNAL_RUNTIME_EXCEPTION, e);
     }
   }
 

@@ -1,5 +1,6 @@
 package dev.javabuilder;
 
+import dev.javabuilder.util.LocalStorageUtils;
 import java.io.File;
 import java.io.IOException;
 import org.code.javabuilder.util.FileUtils;
@@ -16,5 +17,7 @@ public class LocalTempDirectoryManager implements TempDirectoryManager {
     // clearing the entire directory would clear the personal /tmp/ directory
     // in the user's local filesystem.
     FileUtils.recursivelyClearDirectory(tempFolder.toPath());
+    // Also, clear the local storage directory where project sources and output is stored
+    FileUtils.recursivelyClearDirectory(LocalStorageUtils.getLocalStoragePath());
   }
 }
