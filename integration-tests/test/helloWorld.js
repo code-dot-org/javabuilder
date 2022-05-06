@@ -1,6 +1,6 @@
 import { helloWorld } from "./lib/sources.js";
 import { NEIGHBORHOOD } from "./lib/MiniAppType.js";
-import { verifyMessagesRecevied } from "./helpers/TestHelpers.js";
+import { verifyMessagesRecevied } from "./helpers/testHelpers.js";
 
 describe("Hello World", () => {
   it("Runs Hello World project", (done) => {
