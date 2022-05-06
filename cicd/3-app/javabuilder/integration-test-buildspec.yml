@@ -11,6 +11,8 @@ phases:
     commands:
       - set -e
 
+      - ls
+
       - # TODO: Make the ARN and/or secret names configurable too?
       - private_key=$(aws secretsmanager get-secret-value --secret-id arn:aws:secretsmanager:us-east-1:475661607190:secret:development/cdo/javabuilder_private_key-gZE3SO)
       - password=$(aws secretsmanager get-secret-value --secret-id arn:aws:secretsmanager:us-east-1:475661607190:secret:development/cdo/javabuilder_key_password-J1RILi)
