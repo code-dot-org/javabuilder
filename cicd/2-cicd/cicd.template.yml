@@ -283,6 +283,7 @@ Resources:
                 ProjectName: !Ref AppBuildProject
               OutputArtifacts:
                 - Name: appBuildResults
+            # TODO: move this to it's own stage after deploy-to-test
             - Name: integration-test
               ActionTypeId:
                 Category: Build
