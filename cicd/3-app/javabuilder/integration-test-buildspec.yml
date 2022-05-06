@@ -12,6 +12,9 @@ phases:
       - set -e
 
       - ls
+      - ls test
+      - node -v
+      - npm -v
 
       - # TODO: Make the ARN and/or secret names configurable too?
       - private_key=$(aws secretsmanager get-secret-value --secret-id arn:aws:secretsmanager:us-east-1:475661607190:secret:development/cdo/javabuilder_private_key-gZE3SO)
