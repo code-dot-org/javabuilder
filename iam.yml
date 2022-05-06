@@ -383,19 +383,19 @@ Outputs:
   BuildAndRunLambdaRole:
     Description: Javabuilder BuildAndRun Lambda Execution Role ARN
     Value: !GetAtt BuildAndRunLambdaRole.Arn
-    Export: {Name: BuildAndRunLambdaRole}
+    Export: {Name: JavabuilderBuildAndRunLambdaRole}
   SessionManagerMessageRelayLambdaRole:
     Description: Javabuilder BuildAndRun Lambda Execution Role ARN
     Value: !GetAtt SessionManagerMessageRelayLambdaRole.Arn
-    Export: {Name: SessionManagerMessageRelayLambdaRole}
+    Export: {Name: JavabuilderSessionManagerMessageRelayLambdaRole}
   AuthorizerLambdaRole:
     Description: Javabuilder BuildAndRun Lambda Execution Role ARN
     Value: !GetAtt AuthorizerLambdaRole.Arn
-    Export: {Name: AuthorizerLambdaRole}
+    Export: {Name: JavabuilderAuthorizerLambdaRole}
   PutSourcesLambdaRole:
     Description: Javabuilder PutSources Lambda Execution Role ARN
     Value: !GetAtt PutSourcesLambdaRole.Arn
-    Export: {Name: PutSourcesLambdaRole}
+    Export: {Name: JavabuilderPutSourcesLambdaRole}
   JavabuilderAPIGatewayRole:
     Description: Javabuilder API Gateway Role ARN
     Value: !GetAtt JavabuilderAPIGatewayRole.Arn
