@@ -43,8 +43,7 @@ def get_token_info(context, sid)
 
   unless item
     puts "TOKEN VALIDATION ERROR: #{TokenStatus::UNKNOWN_ID} token_id: #{sid}"
-    # return {status: TokenStatus::UNKNOWN_ID}
-    return {status: TokenStatus::VALID_WEBSOCKET}
+    return {status: TokenStatus::UNKNOWN_ID}
   end
 
   if item['used']
@@ -54,8 +53,7 @@ def get_token_info(context, sid)
 
   unless item['vetted']
     puts "TOKEN VALIDATION ERROR: #{TokenStatus::NOT_VETTED} token_id: #{sid}"
-    # return {status: TokenStatus::NOT_VETTED}
-    return {status: TokenStatus::VALID_WEBSOCKET}
+    return {status: TokenStatus::NOT_VETTED}
   end
 
   client.update_item(
@@ -73,9 +71,7 @@ def get_token_info(context, sid)
       warning['detail']['remaining'] = warning['detail']['remaining'].to_i
     end
     puts "TOKEN VALIDATION WARNING: #{warning['key']} detail: #{warning['detail']} token_id: #{sid}"
-    # TODO: return warning when we turn on throttling
-    # return {status: warning['key'], detail: warning['detail']}
-    return {status: TokenStatus::VALID_WEBSOCKET}
+    return {status: warning['key'], detail: warning['detail']}
   end
 
   return {status: TokenStatus::VALID_WEBSOCKET}

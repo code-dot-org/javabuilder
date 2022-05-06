@@ -6,7 +6,7 @@ module TokenStatus
   USER_BLOCKED = 'USER_BLOCKED'.freeze
   # All of a user's teachers (or the teacher themselves, if the user is a teacher)
   # has been blocked for violating hourly throttle limits
-  TEACHERS_BLOCKED = 'TEACHERS_BLOCKED'.freeze
+  CLASSROOM_BLOCKED = 'CLASSROOM_BLOCKED'.freeze
   # User has reached the hourly limit for Javabuilder requests.
   USER_OVER_HOURLY_LIMIT = 'USER_OVER_HOURLY_LIMIT'.freeze
   # User has reached the daily limit for Javabuilder requests.
@@ -29,7 +29,7 @@ module TokenStatus
   # Token provided to the authorizer has already been used
   TOKEN_USED = 'TOKEN_USED'.freeze
 
-  ERROR_STATES = [USER_BLOCKED, TEACHERS_BLOCKED, USER_OVER_DAILY_LIMIT, USER_OVER_HOURLY_LIMIT, TEACHERS_OVER_HOURLY_LIMIT, UNKNOWN_ID, NOT_VETTED, TOKEN_USED]
+  ERROR_STATES = [USER_BLOCKED, CLASSROOM_BLOCKED, USER_OVER_DAILY_LIMIT, USER_OVER_HOURLY_LIMIT, TEACHERS_OVER_HOURLY_LIMIT, UNKNOWN_ID, NOT_VETTED, TOKEN_USED]
   WARNING_STATES = [NEAR_LIMIT]
   VALID_STATES = [VALID_HTTP, VALID_WEBSOCKET]
 end
