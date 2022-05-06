@@ -17,7 +17,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import org.code.protocol.ContentManager;
-import org.code.protocol.InternalErrorKey;
+import org.code.protocol.InternalExceptionKey;
 import org.code.protocol.JavabuilderException;
 import org.code.protocol.Properties;
 import org.json.JSONException;
@@ -48,7 +48,7 @@ public class AWSContentManager implements ContentManager {
       String javabuilderSessionId,
       String contentBucketUrl,
       Context context)
-      throws InternalServerError {
+      throws InternalServerException {
     this.bucketName = bucketName;
     this.s3Client = s3Client;
     this.javabuilderSessionId = javabuilderSessionId;
@@ -125,7 +125,7 @@ public class AWSContentManager implements ContentManager {
       // this is most likely because the end user interrupted program execution. We can safely
       // ignore this.
     } catch (SdkClientException e) {
-      throw new InternalServerError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e);
+      throw new InternalServerException(InternalExceptionKey.INTERNAL_RUNTIME_EXCEPTION, e);
     }
 
     return null;
@@ -150,7 +150,7 @@ public class AWSContentManager implements ContentManager {
       // ignore this.
     } catch (SdkClientException e) {
       // We couldn't write to S3, send a message to the user and fail. The S3 SDK includes retries.
-      throw new InternalServerError(InternalErrorKey.INTERNAL_RUNTIME_EXCEPTION, e);
+      throw new InternalServerException(InternalExceptionKey.INTERNAL_RUNTIME_EXCEPTION, e);
     }
 
     this.writes++;
@@ -176,14 +176,14 @@ public class AWSContentManager implements ContentManager {
     return url.contains(DASHBOARD_DOMAIN_SUFFIX);
   }
 
-  private ProjectData loadProjectData() throws InternalServerError {
+  private ProjectData loadProjectData() throws InternalServerException {
     final String key = this.generateKey(ProjectData.PROJECT_DATA_FILE_NAME);
     final S3Object sourcesS3Object;
 
     try {
       sourcesS3Object = this.s3Client.getObject(this.bucketName, key);
     } catch (SdkClientException e) {
-      throw new InternalServerError(InternalErrorKey.INTERNAL_EXCEPTION, e);
+      throw new InternalServerException(InternalExceptionKey.INTERNAL_EXCEPTION, e);
     }
 
     try (final S3ObjectInputStream inputStream = sourcesS3Object.getObjectContent()) {
@@ -191,7 +191,7 @@ public class AWSContentManager implements ContentManager {
       return new ProjectData(jsonString);
     } catch (JSONException | IOException e) {
       // Error reading JSON file from S3
-      throw new InternalServerError(InternalErrorKey.INTERNAL_EXCEPTION, e);
+      throw new InternalServerException(InternalExceptionKey.INTERNAL_EXCEPTION, e);
     }
   }
 }

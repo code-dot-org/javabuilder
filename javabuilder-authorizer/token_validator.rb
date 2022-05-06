@@ -11,6 +11,7 @@ class TokenValidator
   # TO DO: move this into env variable
   # https://codedotorg.atlassian.net/browse/JAVA-536
   TEACHER_HOURLY_LIMIT = 1000
+  NEAR_LIMIT_BUFFER = 10
 
   def initialize(payload, origin, region)
     @token_id = payload['sid']
@@ -22,14 +23,19 @@ class TokenValidator
   end
 
   def validate
-    return error(ALREADY_EXISTS) unless log_token
+    return error(TOKEN_USED) unless log_token
     return error(USER_BLOCKED) if user_blocked?
     return error(TEACHERS_BLOCKED) if teachers_blocked?
-    return error(USER_OVER_HOURLY_LIMIT) if user_over_hourly_limit?
+    hourly_usage_response = user_usage(ONE_HOUR_SECONDS)
+    return error(USER_OVER_HOURLY_LIMIT) if user_over_hourly_limit?(hourly_usage_response)
     return error(USER_OVER_DAILY_LIMIT) if user_over_daily_limit?
     return error(TEACHERS_OVER_HOURLY_LIMIT) if teachers_over_hourly_limit?
+    near_limit_detail = get_user_near_hourly_limit_detail(hourly_usage_response.count)
+    puts "hourly usage count: #{hourly_usage_response.count}"
+    puts near_limit_detail
     log_requests
     mark_token_as_vetted
+    set_token_warning(NEAR_LIMIT, near_limit_detail) if near_limit_detail
     VALID_HTTP
   end
 
@@ -81,17 +87,22 @@ class TokenValidator
     blocked
   end
 
-  def user_over_hourly_limit?
+  def user_over_hourly_limit?(hourly_usage_response)
     user_over_limit?(
-      ONE_HOUR_SECONDS,
+      hourly_usage_response,
       ENV['limit_per_hour'].to_i,
       USER_OVER_HOURLY_LIMIT
     )
   end
 
+  def get_user_near_hourly_limit_detail(hourly_usage_count)
+    get_user_near_limit_detail(hourly_usage_count, ENV['limit_per_hour'].to_i)
+  end
+
   def user_over_daily_limit?
+    usage_response = user_usage(ONE_DAY_SECONDS)
     user_over_limit?(
-      ONE_DAY_SECONDS,
+      usage_response,
       ENV['limit_per_day'].to_i,
       USER_OVER_DAILY_LIMIT
     )
@@ -171,15 +182,26 @@ class TokenValidator
     )
   end
 
+  def set_token_warning(key, detail)
+    @client.update_item(
+      table_name: ENV['token_status_table'],
+      key: {token_id: @token_id},
+      update_expression: 'SET warning = :w',
+      expression_attribute_values: {':w': {key: key, detail: detail}}
+    )
+  end
+
   # TO DO: return actual error status instead of valid HTTP
-  # when we actually want to throttle.
+  # when we actually want to throttle. For now, only return error
+  # status if a token has already been used.
   def error(status)
     puts "TOKEN VALIDATION ERROR: #{status} user_id: #{@user_id} verified_teachers: #{@verified_teachers} token_id: #{@token_id}"
+    return status if status == TOKEN_USED
     # status
     VALID_HTTP
   end
 
-  def user_over_limit?(time_range_seconds, limit, logging_message)
+  def user_usage(time_range_seconds)
     response = @client.query(
       table_name: ENV['user_requests_table'],
       key_condition_expression: "user_id = :user_id AND issued_at > :past_time",
@@ -200,8 +222,19 @@ class TokenValidator
     if response.last_evaluated_key
       puts "user_requests query has paginated responses. user_id #{@user_id}"
     end
+    response
+  end
 
-    over_limit = response.count > limit
+  def get_user_near_limit_detail(count, limit)
+    if count <= limit && count >= (limit - NEAR_LIMIT_BUFFER)
+      return {remaining: limit - count}
+    else
+      return nil
+    end
+  end
+
+  def user_over_limit?(query_response, limit, logging_message)
+    over_limit = query_response.count > limit
     if over_limit
       # logging could be improved,
       # [{"ttl"=>0.1648766446e10, "user_id"=>"611", "issued_at"=>0.1648680046e10}, {...
@@ -210,7 +243,7 @@ class TokenValidator
           table_name: ENV['blocked_users_table'],
           item: {
             user_id: blocked_users_user_id,
-            request_log: response.items.to_s,
+            request_log: query_response.items.to_s,
             reason: logging_message
           },
           condition_expression: 'attribute_not_exists(user_id)'

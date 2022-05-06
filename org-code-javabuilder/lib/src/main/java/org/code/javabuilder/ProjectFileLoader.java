@@ -1,7 +1,7 @@
 package org.code.javabuilder;
 
 public interface ProjectFileLoader {
-  UserProjectFiles loadFiles() throws InternalServerError, UserInitiatedException;
+  UserProjectFiles loadFiles() throws InternalServerException, UserInitiatedException;
 
-  UserProjectFiles getValidation() throws InternalServerError, UserInitiatedException;
+  UserProjectFiles getValidation() throws InternalServerException, UserInitiatedException;
 }

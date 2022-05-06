@@ -4,7 +4,7 @@ import static org.code.protocol.ClientMessageDetailKeys.DIRECTION;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.code.neighborhood.Direction;
+import org.code.neighborhood.support.Direction;
 import org.code.validation.PainterEvent;
 import org.code.validation.PainterLog;
 import org.code.validation.Position;
