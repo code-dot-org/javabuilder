@@ -6,6 +6,8 @@ phases:
   pre_build:
     commands:
       - cd ./integration-tests
+      - ls
+      - rm -rf node_modules
       - npm install
   build:
     commands:
