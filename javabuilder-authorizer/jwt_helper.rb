@@ -87,7 +87,7 @@ module JwtHelper
 
   private
 
-  # Load the JWT public key from the appropriate environment variable
+  # Load the JWT public key from the appropriate file
   # based on the environment the request was sent from.
   #
   # route_arn is in format
@@ -113,17 +113,12 @@ module JwtHelper
       stage_name = "production"
     elsif standardized_origin.start_with?("adhoc-") && standardized_origin.end_with?("-studio.cdn-code.org")
       stage_name = "adhoc"
+    elsif standardized_origin == "integration-tests"
+      stage_name = "integration_tests"
     end
     # End of temporary code
 
-    public_key = ENV["rsa_pub_#{stage_name}"]
-    # Environment variables can't contain newlines (if you copy over an environment variable with
-    # newlines they are replaced with spaces) The public keys are saved in the configuration by
-    # copying over the key with literal '\n' at the end of each line. Environment variable save
-    # then escapes '\n' and adds a space. We need to replace '\\n<space>' with a real '\n' for
-    # the key generation to work.
-    public_key = public_key.gsub('\n ', "\n")
-    OpenSSL::PKey::RSA.new(public_key)
+    OpenSSL::PKey::RSA.new(File.read("public_keys/#{stage_name}.pub"))
   end
 
   def get_principal_id(token_payload)
