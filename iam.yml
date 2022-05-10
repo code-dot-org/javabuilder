@@ -321,7 +321,7 @@ Resources:
                   - !GetAtt BuildAndRunLambdaRole.Arn
                   - !GetAtt SessionManagerMessageRelayLambdaRole.Arn
                   - !GetAtt AuthorizerLambdaRole.Arn
-                  - !GetAtt PurSourcesLambdaRole.Arn
+                  - !GetAtt PutSourcesLambdaRole.Arn
               # Grant CloudFormation permission to create CloudWatch Log Group for API Gateway.
               - Effect: Allow
                 Action:
