@@ -10,8 +10,7 @@ import {
   PRIVATE_KEY,
 } from "./environment.js";
 
-// TODO: use integration test specific origin once the key pair has been setup.
-const INTEGRATION_TESTS_ORIGIN = "localhost-studio.code.org";
+const INTEGRATION_TESTS_ORIGIN = "integration-tests";
 const INTEGRATION_TESTS_SESSION_ID_PREFIX = "integrationTests-";
 
 /**
