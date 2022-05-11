@@ -67,7 +67,8 @@ def on_connect(event, context)
     :miniAppType => authorizer["mini_app_type"],
     :javabuilderSessionId => authorizer['sid'],
     :queueName => queue_name,
-    :executionType => authorizer['execution_type']
+    :executionType => authorizer['execution_type'],
+    :canAccessDashboardAssets => authorizer['can_access_dashboard_assets']
   }
 
   response = nil
