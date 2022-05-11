@@ -12,8 +12,8 @@ set -e
 npm install
 
 # TODO: Use integration tests specific private key and password once those have been added.
-private_key=$(aws secretsmanager get-secret-value --secret-id arn:aws:secretsmanager:us-east-1:475661607190:secret:development/cdo/javabuilder_private_key-gZE3SO)
-password=$(aws secretsmanager get-secret-value --secret-id arn:aws:secretsmanager:us-east-1:475661607190:secret:development/cdo/javabuilder_key_password-J1RILi)
+private_key=$(aws secretsmanager get-secret-value --secret-id arn:aws:secretsmanager:us-east-1:475661607190:secret:development/cdo/javabuilder_integration_tests_key-b4BQG2)
+password=$(aws secretsmanager get-secret-value --secret-id arn:aws:secretsmanager:us-east-1:475661607190:secret:development/cdo/javabuilder_integration_tests_key_password-sWpRnW)
 
 JAVABUILDER_PRIVATE_KEY=$private_key \
 JAVABUILDER_PASSWORD=$password \
