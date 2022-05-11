@@ -1,6 +1,5 @@
 package org.code.javabuilder;
 
-import static org.code.javabuilder.DashboardConstants.DASHBOARD_LOCALHOST_DOMAIN;
 import static org.code.javabuilder.LambdaErrorCodes.TEMP_DIRECTORY_CLEANUP_ERROR_CODE;
 import static org.code.protocol.InternalExceptionKey.INTERNAL_EXCEPTION;
 import static org.code.protocol.LoggerNames.MAIN_LOGGER;
@@ -90,11 +89,11 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     final String channelId =
         lambdaInput.get("channelId") == null ? "noneProvided" : lambdaInput.get("channelId");
     final ExecutionType executionType = ExecutionType.valueOf(lambdaInput.get("executionType"));
-    final String dashboardHostname = lambdaInput.get("iss");
     final JSONObject options = new JSONObject(lambdaInput.get("options"));
     final String javabuilderSessionId = lambdaInput.get("javabuilderSessionId");
     final List<String> compileList = JSONUtils.listFromJSONObjectMember(options, "compileList");
-
+    final boolean canUseDashboardAssets =
+        Boolean.parseBoolean(lambdaInput.get("canAccessDashboardAssets"));
     Logger logger = Logger.getLogger(MAIN_LOGGER);
     logger.addHandler(
         new LambdaLogHandler(
@@ -116,8 +115,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
       PerformanceTracker.getInstance().trackInstanceStart(instanceStart);
     }
 
-    // Dashboard assets are only accessible if the dashboard domain is not localhost
-    Properties.setCanAccessDashboardAssets(!dashboardHostname.equals(DASHBOARD_LOCALHOST_DOMAIN));
+    Properties.setCanAccessDashboardAssets(canUseDashboardAssets);
 
     // Create user-program output handlers
     final AWSOutputAdapter awsOutputAdapter = new AWSOutputAdapter(connectionId, API_CLIENT);
