@@ -26,6 +26,8 @@ Resources:
           - Action: ['sts:AssumeRole']
             Effect: Allow
             Principal: {Service: [lambda.amazonaws.com]}
+      ManagedPolicyArns:
+        - !Ref JavabuilderLoggingPolicy
       Policies:
         - PolicyName: BuildAndRunLambdaExecutionPolicy
           PolicyDocument:
@@ -67,6 +69,8 @@ Resources:
           - Action: ['sts:AssumeRole']
             Effect: Allow
             Principal: {Service: [lambda.amazonaws.com]}
+      ManagedPolicyArns:
+        - !Ref JavabuilderLoggingPolicy
       Policies:
         - PolicyName: SessionManagerMessageRelayLambdaRole
           PolicyDocument:
@@ -105,6 +109,8 @@ Resources:
           - Action: ['sts:AssumeRole']
             Effect: Allow
             Principal: {Service: [lambda.amazonaws.com]}
+      ManagedPolicyArns:
+        - !Ref JavabuilderLoggingPolicy
       Policies:
         - PolicyName: AuthorizerLambdaExecutionPolicy
           PolicyDocument:
@@ -132,6 +138,8 @@ Resources:
           - Action: ['sts:AssumeRole']
             Effect: Allow
             Principal: {Service: [lambda.amazonaws.com]}
+      ManagedPolicyArns:
+        - !Ref JavabuilderLoggingPolicy
       Policies:
         - PolicyName: named
           PolicyDocument:
@@ -143,28 +151,23 @@ Resources:
                 Resource: 'arn:aws:s3:::cdo-*javabuilder*-content/*'
 
   # Shared permissions that several lambdas need
-  JavabuilderLambdaLoggingPolicy:
-    Type: AWS::IAM::Policy
+  JavabuilderLoggingPolicy:
+    Type: AWS::IAM::ManagedPolicy
     Properties:
-      PolicyName: JavabuilderLambdaLoggingPolicy
-      Roles:
-        - !Ref BuildAndRunLambdaRole
-        - !Ref SessionManagerMessageRelayLambdaRole
-        - !Ref AuthorizerLambdaRole
-        - !Ref PutSourcesLambdaRole
+      ManagedPolicyName: JavabuilderLoggingPolicy
       PolicyDocument:
         Version: 2012-10-17
         Statement:
           - Effect: Allow
             Action:
               - "logs:CreateLogGroup"
-            Resource: '*'
+            Resource: !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*
           - Effect: Allow
             Action:
               - "logs:CreateLogStream"
               - "logs:PutLogEvents"
             Resource:
-              - 'arn:aws:logs:::log-group:/aws/lambda/javabuilder*'
+              - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/javabuilder*
           - Effect: Allow
             Action:
               - "xray:PutTraceSegments"
