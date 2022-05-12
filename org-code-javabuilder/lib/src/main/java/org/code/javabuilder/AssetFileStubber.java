@@ -7,7 +7,7 @@ import java.util.logging.Logger;
 /**
  * Generates URLs for local, static asset files that can be used to stub asset file requests when
  * URLs cannot be accessed, notably in the cases where asset URLs point to Dashboard running on
- * localhost, or during an integration test.
+ * localhost or during an automated test.
  */
 public class AssetFileStubber {
   private static final String[] IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif"};
