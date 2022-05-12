@@ -92,7 +92,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     final JSONObject options = new JSONObject(lambdaInput.get("options"));
     final String javabuilderSessionId = lambdaInput.get("javabuilderSessionId");
     final List<String> compileList = JSONUtils.listFromJSONObjectMember(options, "compileList");
-    final boolean canUseDashboardAssets =
+    final boolean canAccessDashboardAssets =
         Boolean.parseBoolean(lambdaInput.get("canAccessDashboardAssets"));
     Logger logger = Logger.getLogger(MAIN_LOGGER);
     logger.addHandler(
@@ -115,7 +115,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
       PerformanceTracker.getInstance().trackInstanceStart(instanceStart);
     }
 
-    Properties.setCanAccessDashboardAssets(canUseDashboardAssets);
+    Properties.setCanAccessDashboardAssets(canAccessDashboardAssets);
 
     // Create user-program output handlers
     final AWSOutputAdapter awsOutputAdapter = new AWSOutputAdapter(connectionId, API_CLIENT);
