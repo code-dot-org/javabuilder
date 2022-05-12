@@ -77,6 +77,7 @@ class JavabuilderConnectionHelper {
       verified_teachers: this.getRandomId(),
       options: "{}",
       sid: sessionId,
+      can_access_dashboard_assets: false
     };
 
     const key = crypto.createPrivateKey({
