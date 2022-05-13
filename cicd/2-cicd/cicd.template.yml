@@ -299,7 +299,7 @@ Resources:
                 # StackName: !Sub javabuilder-${GitHubBranch}
                 StackName: javabuilder-test
                 ActionMode: CREATE_UPDATE
-                TemplatePath: appBuildResults::cicd/3-app/javabuilder/template.yml
+                TemplatePath: appBuildResults::cicd/3-app/javabuilder/packaged-template.yml
                 TemplateConfiguration: appBuildResults::cicd/3-app/javabuilder/test.config.json
                 Capabilities: CAPABILITY_AUTO_EXPAND
                 RoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/admin/CloudFormationService
