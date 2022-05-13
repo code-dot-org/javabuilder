@@ -28,7 +28,7 @@ phases:
       
       - cicd/3-app/javabuilder/config/create-environment-config.sh
       
-      - sam package --template-file app-template.yml --s3-bucket $ARTIFACT_STORE --output-template-file packaged-app-template.yml
+      - aws cloudformation package --template-file app-template.yml --s3-bucket $ARTIFACT_STORE --output-template-file packaged-app-template.yml
       
       - ls cicd/3-app/javabuilder
 artifacts:
