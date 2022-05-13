@@ -13,7 +13,6 @@ phases:
     commands:
       - set -e
       - BRANCH_NAME=${CODEBUILD_WEBHOOK_HEAD_REF#"refs/heads/"}
-      - ARTIFACT_PATH=branch/$BRANCH_NAME/$CODEBUILD_BUILD_NUMBER
       - cd ./javabuilder-authorizer
       - ./build.sh
 
@@ -29,5 +28,9 @@ phases:
       
       - cicd/3-app/javabuilder/config/create-environment-config.sh
       - ls cicd/3-app/javabuilder
+  package:
+    build:
+    commands:
+      - sam package --template-file cicd/3-app/javabuilder/template.yml --s3-bucket $ARTIFACT_STORE --output-template-file cicd/3-app/javabuilder/packaged-template.yml
 artifacts:
   files: '**/*'
