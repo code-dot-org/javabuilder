@@ -34,7 +34,7 @@ Resources:
             Statement:
               - Effect: Allow
                 Action: iam:PassRole
-                Resource: !Sub arn:aws:iam::${AWS::Account}:role/admin/CloudFormationService
+                Resource: !Sub arn:aws:iam::${AWS::AccountId}:role/admin/CloudFormationService
         - PolicyName: JavabuilderCodePipelinePolicy
           PolicyDocument:
             Statement:
@@ -42,6 +42,7 @@ Resources:
                 Action:
                   - "cloudformation:DescribeStacks"
                   - "cloudformation:CreateStack"
+                  - "cloudformation:UpdateStack"
                 Resource: "*"
         - PolicyName: CodeBuildResourcesAccess
           PolicyDocument:
