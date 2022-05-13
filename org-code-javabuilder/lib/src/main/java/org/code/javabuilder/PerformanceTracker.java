@@ -6,6 +6,8 @@ import java.time.Clock;
 import java.time.Instant;
 import java.util.logging.Logger;
 import org.code.protocol.LoggerConstants;
+import org.code.protocol.MetricClient;
+import org.code.protocol.MetricClientManager;
 import org.json.JSONObject;
 
 /**
@@ -91,20 +93,29 @@ public class PerformanceTracker {
 
   public void logPerformance() {
     logs.put(LoggerConstants.TYPE, TYPE);
+    MetricClient metricClient = MetricClientManager.getInstance().getMetricClient();
     if (!logs.isNull(COLD_BOOT_START) && !logs.isNull(COLD_BOOT_END)) {
-      logs.put(COLD_BOOT_TIME, logs.getLong(COLD_BOOT_END) - logs.getLong(COLD_BOOT_START));
+      long coldBootTime = logs.getLong(COLD_BOOT_END) - logs.getLong(COLD_BOOT_START);
+      logs.put(COLD_BOOT_TIME, coldBootTime);
+      metricClient.publishColdBootTime(coldBootTime);
     }
 
     if (!logs.isNull(COMPILE_START) && !logs.isNull(INSTANCE_START)) {
-      logs.put(INITIALIZATION_TIME, logs.getLong(COMPILE_START) - logs.getLong(INSTANCE_START));
+      long initializationTime = logs.getLong(COMPILE_START) - logs.getLong(INSTANCE_START);
+      logs.put(INITIALIZATION_TIME, initializationTime);
+      metricClient.publishInitializationTime(initializationTime);
     }
 
     if (!logs.isNull(COMPILE_END) && !logs.isNull(USER_CODE_START)) {
-      logs.put(TRANSITION_TIME, logs.getLong(USER_CODE_START) - logs.getLong(COMPILE_END));
+      long transitionTime = logs.getLong(USER_CODE_START) - logs.getLong(COMPILE_END);
+      logs.put(TRANSITION_TIME, transitionTime);
+      metricClient.publishTransitionTime(transitionTime);
     }
 
     if (!logs.isNull(USER_CODE_END) && !logs.isNull(INSTANCE_END)) {
-      logs.put(CLEANUP_TIME, logs.getLong(INSTANCE_END) - logs.getLong(USER_CODE_END));
+      long cleanupTime = logs.getLong(INSTANCE_END) - logs.getLong(USER_CODE_END);
+      logs.put(CLEANUP_TIME, cleanupTime);
+      metricClient.publishCleanupTime(cleanupTime);
     }
 
     Logger.getLogger(MAIN_LOGGER).info(logs.toString());
