@@ -1,11 +1,13 @@
 package org.code.protocol;
 
-import java.time.Instant;
-
 public interface MetricClient {
   void publishSevereError();
 
-  void publishColdBootTime(Instant coldBootTime);
+  void publishColdBootTime(long coldBootTime);
 
-  void publishInitializationTime(Instant initializationTime);
+  void publishInitializationTime(long initializationTime);
+
+  void publishTransitionTime(long transitionTime);
+
+  void publishCleanupTime(long cleanupTime);
 }
