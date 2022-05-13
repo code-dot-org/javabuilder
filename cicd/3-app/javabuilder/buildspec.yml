@@ -27,10 +27,9 @@ phases:
       - cat cicd/3-app/javabuilder/template.yml
       
       - cicd/3-app/javabuilder/config/create-environment-config.sh
-      - ls cicd/3-app/javabuilder
-  package:
-    build:
-    commands:
+      
       - sam package --template-file cicd/3-app/javabuilder/template.yml --s3-bucket $ARTIFACT_STORE --output-template-file cicd/3-app/javabuilder/packaged-template.yml
+      
+      - ls cicd/3-app/javabuilder
 artifacts:
   files: '**/*'
