@@ -6,7 +6,7 @@ module TokenStatus
   USER_BLOCKED = 'USER_BLOCKED'.freeze
   # All of a user's teachers (or the teacher themselves, if the user is a teacher)
   # has been blocked for violating hourly throttle limits
-  TEACHERS_BLOCKED = 'TEACHERS_BLOCKED'.freeze
+  CLASSROOM_BLOCKED = 'CLASSROOM_BLOCKED'.freeze
   # User has reached the hourly limit for Javabuilder requests.
   USER_OVER_HOURLY_LIMIT = 'USER_OVER_HOURLY_LIMIT'.freeze
   # User has reached the daily limit for Javabuilder requests.
@@ -14,6 +14,8 @@ module TokenStatus
   # All of a user's teachers (or the teacher themselves, if the user is a teacher)
   # has reached the hourly limit for Javabuilder requests for a classroom.
   TEACHERS_OVER_HOURLY_LIMIT = 'TEACHERS_OVER_HOURLY_LIMIT'.freeze
+  # A user is near their throttling limit. Token is valid but a warning should be sent.
+  NEAR_LIMIT = 'NEAR_LIMIT'.freeze
 
   ### Token statuses used in websocket authorizer (second step in token validation)
   # Token was validated by websocket authorizer
@@ -26,4 +28,8 @@ module TokenStatus
   ### Token status used by both authorizers
   # Token provided to the authorizer has already been used
   TOKEN_USED = 'TOKEN_USED'.freeze
+
+  ERROR_STATES = [USER_BLOCKED, CLASSROOM_BLOCKED, USER_OVER_DAILY_LIMIT, USER_OVER_HOURLY_LIMIT, TEACHERS_OVER_HOURLY_LIMIT, UNKNOWN_ID, NOT_VETTED, TOKEN_USED]
+  WARNING_STATES = [NEAR_LIMIT]
+  VALID_STATES = [VALID_HTTP, VALID_WEBSOCKET]
 end

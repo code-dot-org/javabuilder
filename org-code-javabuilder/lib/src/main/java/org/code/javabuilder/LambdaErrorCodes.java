@@ -6,4 +6,5 @@ public final class LambdaErrorCodes {
   }
 
   public static final int TEMP_DIRECTORY_CLEANUP_ERROR_CODE = 10;
+  public static final int LOW_DISK_SPACE_ERROR_CODE = 50;
 }
