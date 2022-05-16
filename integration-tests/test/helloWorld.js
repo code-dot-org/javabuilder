@@ -1,6 +1,7 @@
 import { helloWorld } from "./lib/sources.js";
 import { NEIGHBORHOOD } from "./lib/MiniAppType.js";
-import { verifyMessagesRecevied } from "./helpers/testHelpers.js";
+import { verifyMessagesReceived } from "./helpers/testHelpers.js";
+import { expect } from "chai";
 
 describe("Hello World", () => {
   it("Runs Hello World project", (done) => {
@@ -12,7 +13,8 @@ describe("Hello World", () => {
       { type: "SYSTEM_OUT", value: "\n" },
       { type: "STATUS", value: "EXITED" },
     ];
+    const assertOnMessagesReceived = receivedMessages => expect(expectedMessages).to.deep.equal(receivedMessages);
 
-    verifyMessagesRecevied(helloWorld, NEIGHBORHOOD, expectedMessages, done);
+    verifyMessagesReceived(helloWorld, NEIGHBORHOOD, assertOnMessagesReceived, done);
   }).timeout(20000);
 });
