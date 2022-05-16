@@ -1,5 +1,6 @@
 package org.code.protocol;
 
+// Interface for logging metrics for use in monitoring and alerting.
 public interface MetricClient {
   void publishSevereError();
 
