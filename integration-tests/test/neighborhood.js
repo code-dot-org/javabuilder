@@ -43,8 +43,12 @@ describe("Neighborhood", () => {
           expect(receivedMessage.type).to.equal(expectedMessage.type);
           expect(receivedMessage.value).to.equal(expectedMessage.value);
 
+          // Verify details object is as expected.
+          // The painter ID varies across executions,
+          // so assert that the intialized painter ID
+          // persists in other painter messages.
           const detail = receivedMessage.detail;
-          Object.keys(detail).forEach((key) => {
+          Object.keys(detail).forEach(key => {
             if (key === 'id') {
               if (receivedMessage.value === "INITIALIZE_PAINTER") {
                 expectedPainterId = detail.id;
