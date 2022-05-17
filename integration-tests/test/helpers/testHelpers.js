@@ -36,3 +36,22 @@ export const verifyMessagesReceived = (
       doneCallback(err);
     });
 };
+
+export const assertOnInitialStatusMessages = receivedInitialStatusMessages => {
+  const expectedInitialStatusMessages = [
+    {type: "STATUS", value: "COMPILING"},
+    {type: "STATUS", value: "COMPILATION_SUCCESSFUL"},
+    {type: "STATUS", value: "RUNNING"}
+  ];
+
+  assertMessagesEqual(receivedInitialStatusMessages, expectedInitialStatusMessages);
+}
+
+export const assertOnExitStatusMessage = receivedExitStatusMessage => {
+  const expectedExitStatusMessage = {type: "STATUS", value: "EXITED"};
+  expect(receivedExitStatusMessage).to.deep.equal(expectedExitStatusMessage);
+}
+
+export const assertMessagesEqual = (receivedMessages, expectedMessages) => {
+  expect(receivedMessages).to.deep.equal(expectedMessages);
+}
