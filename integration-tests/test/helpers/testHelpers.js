@@ -7,7 +7,7 @@ import {expect} from "chai";
  *
  * @param {*} sourcesJson sources (see sources.js)
  * @param {*} miniAppType mini-app type (see MiniAppType.js)
- * @param {*} expectedMessages a list of expected messages from Javabuilder
+ * @param {*} assertOnMessagesReceived a verification callback to be called once all messages have been received
  * @param {*} doneCallback Mocha's 'done' callback
  */
 export const verifyMessagesReceived = (
@@ -37,21 +37,23 @@ export const verifyMessagesReceived = (
     });
 };
 
-export const assertOnInitialStatusMessages = receivedInitialStatusMessages => {
-  const expectedInitialStatusMessages = [
-    {type: "STATUS", value: "COMPILING"},
-    {type: "STATUS", value: "COMPILATION_SUCCESSFUL"},
-    {type: "STATUS", value: "RUNNING"}
-  ];
+export const assertMessagesEqual = (receivedMessages, expectedMessages, verifyDetailKey) => {
+  expect(receivedMessages.length).to.equal(expectedMessages.length);
+  expectedMessages.forEach((expectedMessage, index) => {
+    const receivedMessage = receivedMessages[index];
+    expect(receivedMessage.type).to.equal(expectedMessage.type);
+    expect(receivedMessage.value).to.equal(expectedMessage.value);
 
-  assertMessagesEqual(receivedInitialStatusMessages, expectedInitialStatusMessages);
+    if (verifyDetailKey && expectedMessage.detail) {
+      Object.keys(expectedMessage.detail).forEach(key => verifyDetailKey(key, receivedMessage, expectedMessage));
+    }
+  });
 }
 
-export const assertOnExitStatusMessage = receivedExitStatusMessage => {
-  const expectedExitStatusMessage = {type: "STATUS", value: "EXITED"};
-  expect(receivedExitStatusMessage).to.deep.equal(expectedExitStatusMessage);
-}
+export const INITIAL_STATUS_MESSAGES = [
+  {type: "STATUS", value: "COMPILING"},
+  {type: "STATUS", value: "COMPILATION_SUCCESSFUL"},
+  {type: "STATUS", value: "RUNNING"}
+];
 
-export const assertMessagesEqual = (receivedMessages, expectedMessages) => {
-  expect(receivedMessages).to.deep.equal(expectedMessages);
-}
+export const EXIT_STATUS_MESSAGE = {type: "STATUS", value: "EXITED"};

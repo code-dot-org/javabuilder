@@ -1,15 +1,17 @@
 import {neighborhood} from "./lib/sources.js";
 import {NEIGHBORHOOD} from "./lib/MiniAppType.js";
 import {
-  assertOnExitStatusMessage,
-  assertOnInitialStatusMessages,
+  INITIAL_STATUS_MESSAGES,
+  EXIT_STATUS_MESSAGE,
+  assertMessagesEqual,
   verifyMessagesReceived
 } from "./helpers/testHelpers.js";
 import {expect} from "chai";
 
 describe("Neighborhood", () => {
   it("Paints single square", (done) => {
-    const expectedRuntimeMessages = [
+    const expectedMessages = [
+      ...INITIAL_STATUS_MESSAGES,
       {
         type: "NEIGHBORHOOD",
         value: "INITIALIZE_PAINTER",
@@ -28,45 +30,25 @@ describe("Neighborhood", () => {
           color: "blue",
           id: "painter-1"
         }
-      }
+      },
+      EXIT_STATUS_MESSAGE
     ];
 
     const assertOnMessagesReceived = receivedMessages => {
-      expect(receivedMessages.length).to.equal(6);
-
-      const initialStatusMessages = receivedMessages.slice(0,3);
-      const runtimeMessages = receivedMessages.slice(3,5);
-      const exitStatusMessage = receivedMessages[5];
-
-      assertOnInitialStatusMessages(initialStatusMessages);
-
       let expectedPainterId;
-      runtimeMessages.forEach((receivedMessage, index) => {
-        const expectedMessage = expectedRuntimeMessages[index];
-
-        const messageType = receivedMessage.type;
-        expect(receivedMessage.type).to.equal(expectedMessage.type);
-        expect(receivedMessage.value).to.equal(expectedMessage.value);
-
-        // Verify details object is as expected.
-        // The painter ID varies across executions,
-        // so assert that the intialized painter ID
-        // persists in other painter messages.
-        const detail = receivedMessage.detail;
-        Object.keys(detail).forEach(key => {
-          if (key === 'id') {
-            if (receivedMessage.value === "INITIALIZE_PAINTER") {
-              expectedPainterId = detail.id;
-            } else {
-              expect(detail.id).to.equal(expectedPainterId);
-            }
+      const verifyDetailKey = (key, receivedMessage, expectedMessage) => {
+        if (key === 'id') {
+          if (receivedMessage.value === "INITIALIZE_PAINTER") {
+            expectedPainterId = receivedMessage.detail.id;
           } else {
-            expect(receivedMessage.detail[key]).to.equal(expectedMessage.detail[key]);
+            expect(receivedMessage.detail.id).to.equal(expectedPainterId);
           }
-        })
-      });
+        } else {
+          expect(receivedMessage.detail[key]).to.equal(expectedMessage.detail[key]);
+        }
+      }
 
-      assertOnExitStatusMessage(exitStatusMessage);
+      assertMessagesEqual(receivedMessages, expectedMessages, verifyDetailKey);
     };
 
     verifyMessagesReceived(neighborhood, NEIGHBORHOOD, assertOnMessagesReceived, done);
