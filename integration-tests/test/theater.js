@@ -6,6 +6,7 @@ import {
   assertMessagesEqual,
   verifyMessagesReceived
 } from "./helpers/testHelpers.js";
+import {JAVABUILDER_BASE_DOMAIN, JAVABUILDER_SUB_DOMAIN} from "./lib/environment.js";
 import { expect } from "chai";
 
 describe("Theater", () => {
@@ -41,9 +42,9 @@ describe("Theater", () => {
 });
 
 const verifyMediaURL = (url, filename) => {
-  expect(url.includes("content.code.org")).to.be.true;
-
   const splitURL = url.split('/');
+
+  expect(splitURL[0]).to.equal('https:');
+  expect(splitURL[2]).to.equal(`${JAVABUILDER_SUB_DOMAIN}-content.${JAVABUILDER_BASE_DOMAIN}`);
   expect(splitURL[splitURL.length - 1]).to.equal(filename);
 };
-
