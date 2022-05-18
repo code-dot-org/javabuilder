@@ -7,14 +7,14 @@ import {expect} from "chai";
  *
  * @param {*} sourcesJson sources (see sources.js)
  * @param {*} miniAppType mini-app type (see MiniAppType.js)
- * @param {*} assertOnMessagesReceived a verification callback to be called once all messages have been received
+ * @param {*} assertOnMessagesObserved a verification callback to be called once all messages have been sent/received
  * @param {*} doneCallback Mocha's 'done' callback
  * @param {*} onMessageCallback a callback executed after each received message that can be used to respond to messages
  */
 export const verifyMessages = (
   sourcesJson,
   miniAppType,
-  assertOnMessagesReceived,
+  assertOnMessagesObserved,
   doneCallback,
   onMessageCallback
 ) => {
@@ -34,7 +34,7 @@ export const verifyMessages = (
   };
   const onClose = (event) => {
     expect(event.wasClean).to.be.true;
-    assertOnMessagesReceived(allMessages);
+    assertOnMessagesObserved(allMessages);
     doneCallback();
   };
 
@@ -45,15 +45,15 @@ export const verifyMessages = (
     });
 };
 
-export const assertMessagesEqual = (receivedMessages, expectedMessages, verifyDetailKey) => {
-  expect(receivedMessages.length).to.equal(expectedMessages.length);
+export const assertMessagesEqual = (observedMessages, expectedMessages, verifyDetailKey) => {
+  expect(observedMessages.length).to.equal(expectedMessages.length);
   expectedMessages.forEach((expectedMessage, index) => {
-    const receivedMessage = receivedMessages[index];
-    expect(receivedMessage.type).to.equal(expectedMessage.type);
-    expect(receivedMessage.value).to.equal(expectedMessage.value);
+    const observedMessage = observedMessages[index];
+    expect(observedMessage.type).to.equal(expectedMessage.type);
+    expect(observedMessage.value).to.equal(expectedMessage.value);
 
     if (verifyDetailKey && expectedMessage.detail) {
-      Object.keys(expectedMessage.detail).forEach(key => verifyDetailKey(key, receivedMessage, expectedMessage));
+      Object.keys(expectedMessage.detail).forEach(key => verifyDetailKey(key, observedMessage, expectedMessage));
     }
   });
 };

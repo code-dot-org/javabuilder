@@ -18,7 +18,7 @@ describe("Console", () => {
       {type: "SYSTEM_OUT", value: "\n"},
       EXIT_STATUS_MESSAGE
     ];
-    const assertOnMessagesReceived = receivedMessages => assertMessagesEqual(receivedMessages, expectedMessages);
+    const assertOnMessagesObserved = observedMessages => assertMessagesEqual(observedMessages, expectedMessages);
 
     let hasReceivedMessage, hasReceivedNewLineAfterMessage;
     const onMessageCallback = (parsedData, socket, allMessages) => {
@@ -42,6 +42,6 @@ describe("Console", () => {
       }
     };
 
-    verifyMessages(scanner, CONSOLE, assertOnMessagesReceived, done, onMessageCallback);
+    verifyMessages(scanner, CONSOLE, assertOnMessagesObserved, done, onMessageCallback);
   }).timeout(20000);
 });
