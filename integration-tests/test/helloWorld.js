@@ -2,7 +2,7 @@ import { helloWorld } from "./lib/sources.js";
 import { NEIGHBORHOOD } from "./lib/MiniAppType.js";
 import {
   assertMessagesEqual,
-  verifyMessagesReceived,
+  verifyMessages,
   INITIAL_STATUS_MESSAGES,
   EXIT_STATUS_MESSAGE,
 } from "./helpers/testHelpers.js";
@@ -17,6 +17,6 @@ describe("Hello World", () => {
     ];
     const assertOnMessagesReceived = receivedMessages => assertMessagesEqual(receivedMessages, expectedMessages);
 
-    verifyMessagesReceived(helloWorld, NEIGHBORHOOD, assertOnMessagesReceived, done);
+    verifyMessages(helloWorld, NEIGHBORHOOD, assertOnMessagesReceived, done);
   }).timeout(20000);
 });

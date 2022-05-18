@@ -9,24 +9,32 @@ import {expect} from "chai";
  * @param {*} miniAppType mini-app type (see MiniAppType.js)
  * @param {*} assertOnMessagesReceived a verification callback to be called once all messages have been received
  * @param {*} doneCallback Mocha's 'done' callback
+ * @param {*} onMessageCallback a callback executed after each received message that can be used to respond to messages
  */
-export const verifyMessagesReceived = (
+export const verifyMessages = (
   sourcesJson,
   miniAppType,
   assertOnMessagesReceived,
-  doneCallback
+  doneCallback,
+  onMessageCallback
 ) => {
-  const receivedMessages = [];
+  const allMessages = [];
 
-  const onMessage = (event) => {
-    receivedMessages.push(JSON.parse(event.data));
-  };
+  const onMessage = (event, socket) => {
+    const parsedData = JSON.parse(event.data);
+    allMessages.push(parsedData);
+
+    if (onMessageCallback) {
+      onMessageCallback(parsedData, socket, allMessages);
+    }
+  }
+
   const onError = (error) => {
     doneCallback(new Error(error.message));
   };
   const onClose = (event) => {
     expect(event.wasClean).to.be.true;
-    assertOnMessagesReceived(receivedMessages);
+    assertOnMessagesReceived(allMessages);
     doneCallback();
   };
 
