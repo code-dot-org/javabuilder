@@ -211,7 +211,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     LoggerUtils.logSevereError(error);
 
     // This affected the user. Let's tell them about it.
-    outputAdapter.sendMessage(error.getExceptionMessage());
+    this.sendOutputMessage(outputAdapter, error.getExceptionMessage());
     PerformanceTracker.getInstance().trackInstanceEnd();
     PerformanceTracker.getInstance().logPerformance();
     cleanUpResources(connectionId, API_CLIENT);
@@ -233,12 +233,13 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
               Thread.sleep(CHECK_THREAD_INTERVAL_MS);
               if ((context.getRemainingTimeInMillis() < TIMEOUT_WARNING_MS)
                   && !timeoutWarningSent) {
-                outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.TIMEOUT_WARNING));
+                this.sendOutputMessage(
+                    outputAdapter, new StatusMessage(StatusMessageKey.TIMEOUT_WARNING));
                 timeoutWarningSent = true;
               }
 
               if (context.getRemainingTimeInMillis() < TIMEOUT_CLEANUP_BUFFER_MS) {
-                outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.TIMEOUT));
+                this.sendOutputMessage(outputAdapter, new StatusMessage(StatusMessageKey.TIMEOUT));
                 // Tell the execution manager to clean up early
                 codeExecutionManager.requestEarlyExit();
                 // Clean up AWS resources
@@ -272,6 +273,20 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     Handler[] allHandlers = Logger.getLogger(MAIN_LOGGER).getHandlers();
     for (int i = 0; i < allHandlers.length; i++) {
       Logger.getLogger(MAIN_LOGGER).removeHandler(allHandlers[i]);
+    }
+  }
+
+  /**
+   * Sends a message via the OutputAdapter and handles any exceptions if they are thrown. This
+   * allows us to safely try and send messages from the handler without unintentionally raising
+   * uncaught exceptions.
+   */
+  private void sendOutputMessage(OutputAdapter outputAdapter, ClientMessage message) {
+    try {
+      outputAdapter.sendMessage(message);
+    } catch (Exception e) {
+      // This likely means the connection has been lost. Log a warning.
+      Logger.getLogger(MAIN_LOGGER).warning(e.getMessage());
     }
   }
 }
