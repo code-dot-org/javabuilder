@@ -18,12 +18,11 @@ describe("Console", () => {
       {type: "SYSTEM_OUT", value: "\n"},
       EXIT_STATUS_MESSAGE
     ];
-    const assertOnMessagesReceived = receivedMessages => {console.log(receivedMessages); assertMessagesEqual(receivedMessages, expectedMessages);}
+    const assertOnMessagesReceived = receivedMessages => assertMessagesEqual(receivedMessages, expectedMessages);
 
     let hasReceivedMessage, hasReceivedNewLineAfterMessage;
     const onMessageCallback = (parsedData, socket, allMessages) => {
-      // Confirm receipt of "What's your name" and new line messages back to back
-      // This logic is tightly coupled to the scanner sources.
+      // Confirm receipt of "What's your name" and new line messages back to back.
       if (parsedData.type === "SYSTEM_OUT" && parsedData.value === "What's your name?") {
         hasReceivedMessage = true;
       } else if (hasReceivedMessage && (parsedData.type === "SYSTEM_OUT" && parsedData.value === "\n")) {

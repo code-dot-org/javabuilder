@@ -2,7 +2,7 @@ import connectionHelper from "../lib/JavabuilderConnectionHelper.js";
 import {expect} from "chai";
 
 /**
- * Helper for verifying the basic case that set of messages was received
+ * Helper for verifying that a set of messages was received (and possibly sent)
  * from Javabuilder. Fails if there are any errors connecting.
  *
  * @param {*} sourcesJson sources (see sources.js)
