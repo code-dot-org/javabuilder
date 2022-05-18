@@ -9,12 +9,12 @@ import {
 import { expect } from "chai";
 
 describe("Theater", () => {
-  it("Runs Theater project", (done) => {
+  it("Runs Theater project with image, text, and sound", (done) => {
     const expectedMessages = [
       ...INITIAL_STATUS_MESSAGES,
       {type: "STATUS", value: "SENDING_VIDEO", detail: {totalTime: "0"}},
       {type: "THEATER", value: "VISUAL_URL", detail: {url: "https://javabuilder-content.code.org/abc-123/theaterImage.gif"}},
-      {type: "THEATER", value:"AUDIO_URL", detail: {url: "https://javabuilder-content.code.org/abc-123/theaterAudio.wav"}},
+      {type: "THEATER", value: "AUDIO_URL", detail: {url: "https://javabuilder-content.code.org/abc-123/theaterAudio.wav"}},
       EXIT_STATUS_MESSAGE
     ];
 

@@ -48,7 +48,7 @@ export const assertMessagesEqual = (receivedMessages, expectedMessages, verifyDe
       Object.keys(expectedMessage.detail).forEach(key => verifyDetailKey(key, receivedMessage, expectedMessage));
     }
   });
-}
+};
 
 export const INITIAL_STATUS_MESSAGES = [
   {type: "STATUS", value: "COMPILING"},
