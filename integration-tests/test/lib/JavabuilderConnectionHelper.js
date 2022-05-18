@@ -57,8 +57,10 @@ class JavabuilderConnectionHelper {
       onOpen();
     };
 
+    const onMessageWrapper = event => onMessage(event, socket);
+
     socket.onopen = logOnOpen;
-    socket.onmessage = onMessage;
+    socket.onmessage = onMessageWrapper;
     socket.onclose = onClose;
     socket.onerror = onError;
   }
