@@ -284,8 +284,11 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
   private void sendOutputMessage(OutputAdapter outputAdapter, ClientMessage message) {
     try {
       outputAdapter.sendMessage(message);
-    } catch (Exception e) {
+    } catch (InternalServerRuntimeException e) {
       // This likely means the connection has been lost. Log a warning.
+      Logger.getLogger(MAIN_LOGGER).warning(e.getLoggingString());
+    } catch (Exception e) {
+      // Catch any other exceptions here to prevent them from propogating.
       Logger.getLogger(MAIN_LOGGER).warning(e.getMessage());
     }
   }
