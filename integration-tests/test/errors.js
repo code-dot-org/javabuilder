@@ -61,8 +61,7 @@ describe("Errors", () => {
     verifyMessages(blockedClassError, CONSOLE, assertOnMessagesReceived, done);
   }).timeout(20000);
 
-  it("Does not have valid token", async () => {
-    // We don't appear to get any more detail than a 500 response when an invalid token is provided.
+  it("Does not accept malformed token", async () => {
     const httpResponse = await uploadSources(blankProject, 'aBadToken');
     expect(httpResponse.status).to.equal(500);
   }).timeout(2000);

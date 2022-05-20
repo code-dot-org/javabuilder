@@ -18,8 +18,8 @@ const INTEGRATION_TESTS_SESSION_ID_PREFIX = "integrationTests-";
  */
 class JavabuilderConnectionHelper {
   async connect(sourcesJson, miniAppType, onOpen, onMessage, onError, onClose) {
-    const sessionId = INTEGRATION_TESTS_SESSION_ID_PREFIX + getRandomId();
-    const token = generateToken(miniAppType, sessionId);
+    const sessionId = INTEGRATION_TESTS_SESSION_ID_PREFIX + this.getRandomId();
+    const token = this.generateToken(miniAppType, sessionId);
     console.info(
       `
       Connecting to Javabuilder...
@@ -53,35 +53,37 @@ class JavabuilderConnectionHelper {
     socket.onclose = onClose;
     socket.onerror = onError;
   }
-}
 
-const getRandomId = () => uuidv4();
+  generateToken(miniAppType, sessionId) {
+    const issuedAtTime = Date.now() / 1000 - 3;
+    const expirationTime = issuedAtTime + 63;
+    const payload = {
+      iat: issuedAtTime,
+      iss: "integration-tests",
+      exp: expirationTime,
+      uid: this.getRandomId(),
+      level_id: "none",
+      execution_type: "RUN",
+      mini_app_type: miniAppType,
+      verified_teachers: this.getRandomId(),
+      options: "{}",
+      sid: sessionId,
+      can_access_dashboard_assets: false
+    };
 
-function generateToken(miniAppType, sessionId) {
-  const issuedAtTime = Date.now() / 1000 - 3;
-  const expirationTime = issuedAtTime + 63;
-  const payload = {
-    iat: issuedAtTime,
-    iss: "integration-tests",
-    exp: expirationTime,
-    uid: getRandomId(),
-    level_id: "none",
-    execution_type: "RUN",
-    mini_app_type: miniAppType,
-    verified_teachers: getRandomId(),
-    options: "{}",
-    sid: sessionId,
-    can_access_dashboard_assets: false
-  };
+    const key = crypto.createPrivateKey({
+      key: PRIVATE_KEY,
+      passphrase: PASSWORD,
+    });
 
-  const key = crypto.createPrivateKey({
-    key: PRIVATE_KEY,
-    passphrase: PASSWORD,
-  });
+    return jwt.sign(payload, key, {
+      algorithm: "RS256",
+    });
+  }
 
-  return jwt.sign(payload, key, {
-    algorithm: "RS256",
-  });
+  getRandomId() {
+    return uuidv4();
+  }
 }
 
 export function uploadSources(sourcesJson, token) {
