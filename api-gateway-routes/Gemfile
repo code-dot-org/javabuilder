@@ -5,3 +5,4 @@ ruby '~> 2.7'
 
 gem 'aws-sdk-lambda', '1.39.0'
 gem 'aws-sdk-sqs', '1.38.0'
+gem 'minitest', '~> 5.5'
