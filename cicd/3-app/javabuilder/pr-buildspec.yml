@@ -21,6 +21,9 @@ phases:
       - cd org-code-javabuilder
       - ./gradlew test
       - ./build.sh
+      - cd $CODEBUILD_SRC_DIR
+      - cd api-gateway-routes
+      - rake test
 
       - cd $CODEBUILD_SRC_DIR
       - erb -T - template.yml.erb > template.yml
