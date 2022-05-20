@@ -671,6 +671,39 @@ Resources:
                           Value: !Ref BuildAndRunJava<%=name%>ProjectFunction
                 Period: 300
                 Stat: Sum
+
+  <%=name%>SlowCleanupTimeAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${SubDomainName}_<%=name.downcase%>_slow_cleanup_time"
+      ActionsEnabled: true
+      OKActions: []
+      AlarmActions:
+        - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-slow-performance"]
+      InsufficientDataActions: []
+      Dimensions: []
+      EvaluationPeriods: 20
+      DatapointsToAlarm: 15
+      ComparisonOperator: GreaterThanUpperThreshold
+      TreatMissingData: notBreaching
+      Metrics:
+          - Id: m1
+            ReturnData: true
+            MetricStat:
+                Metric:
+                    Namespace: Javabuilder
+                    MetricName: CleanupTime
+                    Dimensions:
+                        - Name: functionName
+                          Value: !Ref BuildAndRunJava<%=name%>ProjectFunction
+                Period: 60
+                Stat: Average
+          - Id: ad1
+            Label: CleanupTime (expected)
+            ReturnData: true
+            Expression: ANOMALY_DETECTION_BAND(m1, 5)
+      ThresholdMetricId: ad1
+
 <%end -%>
 
 # We use shortened versions of names for partition keys (eg, user_id),
