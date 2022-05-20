@@ -19,4 +19,6 @@ JAVABUILDER_PRIVATE_KEY=$private_key \
 JAVABUILDER_PASSWORD=$password \
 JAVABUILDER_HTTP_URL=https://"$sub_domain"-http."$base_domain"/seedsources/sources.json \
 JAVABUILDER_WEBSOCKET_URL=wss://"$sub_domain"."$base_domain" \
+JAVABUILDER_BASE_DOMAIN=$base_domain \
+JAVABUILDER_SUB_DOMAIN=$sub_domain \
 npm test

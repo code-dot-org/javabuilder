@@ -1,14 +1,17 @@
 import {neighborhood} from "./lib/sources.js";
 import {NEIGHBORHOOD} from "./lib/MiniAppType.js";
-import {verifyMessagesReceived} from "./helpers/testHelpers.js";
+import {
+  INITIAL_STATUS_MESSAGES,
+  EXIT_STATUS_MESSAGE,
+  assertMessagesEqual,
+  verifyMessages
+} from "./helpers/testHelpers.js";
 import {expect} from "chai";
 
 describe("Neighborhood", () => {
   it("Paints single square", (done) => {
     const expectedMessages = [
-      {type: "STATUS", value: "COMPILING"},
-      {type: "STATUS", value: "COMPILATION_SUCCESSFUL"},
-      {type: "STATUS", value: "RUNNING"},
+      ...INITIAL_STATUS_MESSAGES,
       {
         type: "NEIGHBORHOOD",
         value: "INITIALIZE_PAINTER",
@@ -16,55 +19,38 @@ describe("Neighborhood", () => {
           x: "0",
           y: "0",
           paint: "1",
-          direction: "east"
+          direction: "east",
+          id: "painter-1"
         }
       },
       {
         type: "NEIGHBORHOOD",
         value: "PAINT",
         detail: {
-          color: "blue"
+          color: "blue",
+          id: "painter-1"
         }
       },
-      {type: "STATUS", value: "EXITED"}
+      EXIT_STATUS_MESSAGE
     ];
 
     const assertOnMessagesReceived = receivedMessages => {
-      expect(receivedMessages.length).to.equal(expectedMessages.length);
-
       let expectedPainterId;
-      receivedMessages.forEach((receivedMessage, index) => {
-        const expectedMessage = expectedMessages[index];
-
-        const messageType = receivedMessage.type;
-        if (messageType === "STATUS") {
-          expect(receivedMessage).to.deep.equal(expectedMessage);
-        } else if (messageType === "NEIGHBORHOOD") {
-          expect(receivedMessage.type).to.equal(expectedMessage.type);
-          expect(receivedMessage.value).to.equal(expectedMessage.value);
-
-          // Verify details object is as expected.
-          // The painter ID varies across executions,
-          // so assert that the intialized painter ID
-          // persists in other painter messages.
-          const detail = receivedMessage.detail;
-          Object.keys(detail).forEach(key => {
-            if (key === 'id') {
-              if (receivedMessage.value === "INITIALIZE_PAINTER") {
-                expectedPainterId = detail.id;
-              } else {
-                expect(detail.id).to.equal(expectedPainterId);
-              }
-            } else {
-              expect(receivedMessage.detail[key]).to.equal(expectedMessage.detail[key]);
-            }
-          })
+      const verifyDetailKey = (key, receivedMessage, expectedMessage) => {
+        if (key === 'id') {
+          if (receivedMessage.value === "INITIALIZE_PAINTER") {
+            expectedPainterId = receivedMessage.detail.id;
+          } else {
+            expect(receivedMessage.detail.id).to.equal(expectedPainterId);
+          }
         } else {
-          throw new Error(`Unexpected message type received: ${messageType}`);
+          expect(receivedMessage.detail[key]).to.equal(expectedMessage.detail[key]);
         }
-      });
+      }
+
+      assertMessagesEqual(receivedMessages, expectedMessages, verifyDetailKey);
     };
 
-    verifyMessagesReceived(neighborhood, NEIGHBORHOOD, assertOnMessagesReceived, done);
+    verifyMessages(neighborhood, NEIGHBORHOOD, assertOnMessagesReceived, done);
   }).timeout(20000);
 });
