@@ -17,9 +17,9 @@ const INTEGRATION_TESTS_SESSION_ID_PREFIX = "integrationTests-";
  * Helper class for facilitating a connection to a Javabuilder instance
  */
 class JavabuilderConnectionHelper {
-  async connect(sourcesJson, miniAppType, onOpen, onMessage, onError, onClose) {
-    const sessionId = INTEGRATION_TESTS_SESSION_ID_PREFIX + this.getRandomId();
-    const token = this.generateToken(miniAppType, sessionId);
+  async connect(sourcesJson, miniAppType, onOpen, onMessage, onError, onClose, generateToken = generateJavabuilderToken, httpErrorOverride) {
+    const sessionId = INTEGRATION_TESTS_SESSION_ID_PREFIX + getRandomId();
+    const token = generateToken(miniAppType, sessionId);
     console.info(
       `
       Connecting to Javabuilder...
@@ -42,7 +42,11 @@ class JavabuilderConnectionHelper {
     );
 
     if (!httpResponse.ok) {
-      throw new Error(`HTTP API error: ${httpResponse.statusText}`);
+      if (httpErrorOverride) {
+        httpErrorOverride(httpResponse);
+      } else {
+        throw new Error(`HTTP API error: ${httpResponse.statusText}`);
+      }
     }
 
     const socket = new WebSocket(
@@ -64,37 +68,35 @@ class JavabuilderConnectionHelper {
     socket.onclose = onClose;
     socket.onerror = onError;
   }
+}
 
-  generateToken(miniAppType, sessionId) {
-    const issuedAtTime = Date.now() / 1000 - 3;
-    const expirationTime = issuedAtTime + 63;
-    const payload = {
-      iat: issuedAtTime,
-      iss: "integration-tests",
-      exp: expirationTime,
-      uid: this.getRandomId(),
-      level_id: "none",
-      execution_type: "RUN",
-      mini_app_type: miniAppType,
-      verified_teachers: this.getRandomId(),
-      options: "{}",
-      sid: sessionId,
-      can_access_dashboard_assets: false
-    };
+const getRandomId = () => uuidv4();
 
-    const key = crypto.createPrivateKey({
-      key: PRIVATE_KEY,
-      passphrase: PASSWORD,
-    });
+function generateJavabuilderToken(miniAppType, sessionId) {
+  const issuedAtTime = Date.now() / 1000 - 3;
+  const expirationTime = issuedAtTime + 63;
+  const payload = {
+    iat: issuedAtTime,
+    iss: "integration-tests",
+    exp: expirationTime,
+    uid: getRandomId(),
+    level_id: "none",
+    execution_type: "RUN",
+    mini_app_type: miniAppType,
+    verified_teachers: getRandomId(),
+    options: "{}",
+    sid: sessionId,
+    can_access_dashboard_assets: false
+  };
 
-    return jwt.sign(payload, key, {
-      algorithm: "RS256",
-    });
-  }
+  const key = crypto.createPrivateKey({
+    key: PRIVATE_KEY,
+    passphrase: PASSWORD,
+  });
 
-  getRandomId() {
-    return uuidv4();
-  }
+  return jwt.sign(payload, key, {
+    algorithm: "RS256",
+  });
 }
 
 const connectionHelper = new JavabuilderConnectionHelper();
