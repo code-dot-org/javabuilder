@@ -1,5 +1,5 @@
 import connectionHelper from "../lib/JavabuilderConnectionHelper.js";
-import { expect } from "chai";
+import {expect} from "chai";
 
 /**
  * Helper for verifying the basic case that set of messages was received
@@ -10,10 +10,10 @@ import { expect } from "chai";
  * @param {*} expectedMessages a list of expected messages from Javabuilder
  * @param {*} doneCallback Mocha's 'done' callback
  */
-export const verifyMessagesRecevied = (
+export const verifyMessagesReceived = (
   sourcesJson,
   miniAppType,
-  expectedMessages,
+  assertOnMessagesReceived,
   doneCallback
 ) => {
   const receivedMessages = [];
@@ -26,7 +26,7 @@ export const verifyMessagesRecevied = (
   };
   const onClose = (event) => {
     expect(event.wasClean).to.be.true;
-    expect(expectedMessages).to.deep.equal(receivedMessages);
+    assertOnMessagesReceived(receivedMessages);
     doneCallback();
   };
 
