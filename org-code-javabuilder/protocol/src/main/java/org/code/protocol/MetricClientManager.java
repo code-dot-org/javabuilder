@@ -22,10 +22,6 @@ public class MetricClientManager {
     return MetricClientManager.clientManagerInstance;
   }
 
-  public static void destroy() {
-    MetricClientManager.clientManagerInstance = null;
-  }
-
   public MetricClient getMetricClient() {
     return this.metricClient;
   }
