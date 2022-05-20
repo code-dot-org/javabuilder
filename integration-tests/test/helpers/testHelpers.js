@@ -40,9 +40,7 @@ export const verifyMessages = (
 
   connectionHelper
     .connect(sourcesJson, miniAppType, () => {}, onMessage, onError, onClose)
-    .catch((err) => {
-      doneCallback(err);
-    });
+    .catch(doneCallback);
 };
 
 export const assertMessagesEqual = (observedMessages, expectedMessages, verifyDetailKey) => {
@@ -58,8 +56,10 @@ export const assertMessagesEqual = (observedMessages, expectedMessages, verifyDe
   });
 };
 
+export const COMPILING_STATUS_MESSAGE = {type: "STATUS", value: "COMPILING"};
+
 export const INITIAL_STATUS_MESSAGES = [
-  {type: "STATUS", value: "COMPILING"},
+  COMPILING_STATUS_MESSAGE,
   {type: "STATUS", value: "COMPILATION_SUCCESSFUL"},
   {type: "STATUS", value: "RUNNING"}
 ];
