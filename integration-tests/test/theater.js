@@ -4,7 +4,7 @@ import {
   INITIAL_STATUS_MESSAGES,
   EXIT_STATUS_MESSAGE,
   assertMessagesEqual,
-  verifyMessagesReceived
+  verifyMessages
 } from "./helpers/testHelpers.js";
 import {JAVABUILDER_BASE_DOMAIN, JAVABUILDER_SUB_DOMAIN} from "./lib/environment.js";
 import { expect } from "chai";
@@ -37,7 +37,7 @@ describe("Theater", () => {
       assertMessagesEqual(receivedMessages, expectedMessages, verifyDetailKey);
     }
 
-    verifyMessagesReceived(theaterImageAndText, THEATER, assertOnMessagesReceived, done);
+    verifyMessages(theaterImageAndText, THEATER, assertOnMessagesReceived, done);
   }).timeout(20000);
 });
 

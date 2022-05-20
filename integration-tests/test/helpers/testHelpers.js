@@ -2,31 +2,39 @@ import connectionHelper from "../lib/JavabuilderConnectionHelper.js";
 import {expect} from "chai";
 
 /**
- * Helper for verifying the basic case that set of messages was received
+ * Helper for verifying that a set of messages was received (and possibly sent)
  * from Javabuilder. Fails if there are any errors connecting.
  *
  * @param {*} sourcesJson sources (see sources.js)
  * @param {*} miniAppType mini-app type (see MiniAppType.js)
- * @param {*} assertOnMessagesReceived a verification callback to be called once all messages have been received
+ * @param {*} assertOnMessagesObserved a verification callback to be called once all messages have been sent/received
  * @param {*} doneCallback Mocha's 'done' callback
+ * @param {*} onMessageCallback a callback executed after each received message that can be used to respond to messages
  */
-export const verifyMessagesReceived = (
+export const verifyMessages = (
   sourcesJson,
   miniAppType,
-  assertOnMessagesReceived,
-  doneCallback
+  assertOnMessagesObserved,
+  doneCallback,
+  onMessageCallback
 ) => {
-  const receivedMessages = [];
+  const allMessages = [];
 
-  const onMessage = (event) => {
-    receivedMessages.push(JSON.parse(event.data));
-  };
+  const onMessage = (event, socket) => {
+    const parsedData = JSON.parse(event.data);
+    allMessages.push(parsedData);
+
+    if (onMessageCallback) {
+      onMessageCallback(parsedData, socket, allMessages);
+    }
+  }
+
   const onError = (error) => {
     doneCallback(new Error(error.message));
   };
   const onClose = (event) => {
     expect(event.wasClean).to.be.true;
-    assertOnMessagesReceived(receivedMessages);
+    assertOnMessagesObserved(allMessages);
     doneCallback();
   };
 
@@ -37,15 +45,15 @@ export const verifyMessagesReceived = (
     });
 };
 
-export const assertMessagesEqual = (receivedMessages, expectedMessages, verifyDetailKey) => {
-  expect(receivedMessages.length).to.equal(expectedMessages.length);
+export const assertMessagesEqual = (observedMessages, expectedMessages, verifyDetailKey) => {
+  expect(observedMessages.length).to.equal(expectedMessages.length);
   expectedMessages.forEach((expectedMessage, index) => {
-    const receivedMessage = receivedMessages[index];
-    expect(receivedMessage.type).to.equal(expectedMessage.type);
-    expect(receivedMessage.value).to.equal(expectedMessage.value);
+    const observedMessage = observedMessages[index];
+    expect(observedMessage.type).to.equal(expectedMessage.type);
+    expect(observedMessage.value).to.equal(expectedMessage.value);
 
     if (verifyDetailKey && expectedMessage.detail) {
-      Object.keys(expectedMessage.detail).forEach(key => verifyDetailKey(key, receivedMessage, expectedMessage));
+      Object.keys(expectedMessage.detail).forEach(key => verifyDetailKey(key, observedMessage, expectedMessage));
     }
   });
 };
