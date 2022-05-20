@@ -17,7 +17,7 @@ const INTEGRATION_TESTS_SESSION_ID_PREFIX = "integrationTests-";
  * Helper class for facilitating a connection to a Javabuilder instance
  */
 class JavabuilderConnectionHelper {
-  async connect(sourcesJson, miniAppType, onOpen, onMessage, onError, onClose, generateToken = generateJavabuilderToken, httpErrorOverride) {
+  async connect(sourcesJson, miniAppType, onOpen, onMessage, onError, onClose) {
     const sessionId = INTEGRATION_TESTS_SESSION_ID_PREFIX + getRandomId();
     const token = generateToken(miniAppType, sessionId);
     console.info(
@@ -29,24 +29,9 @@ class JavabuilderConnectionHelper {
       `
     );
 
-    const httpResponse = await fetch(
-      `${JAVABUILDER_HTTP_URL}?Authorization=${token}`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Origin: INTEGRATION_TESTS_ORIGIN,
-        },
-        body: sourcesJson,
-      }
-    );
-
+    const httpResponse = await uploadSources(sourcesJson, token);
     if (!httpResponse.ok) {
-      if (httpErrorOverride) {
-        httpErrorOverride(httpResponse);
-      } else {
-        throw new Error(`HTTP API error: ${httpResponse.statusText}`);
-      }
+      throw new Error(`HTTP API error: ${httpResponse.statusText}`);
     }
 
     const socket = new WebSocket(
@@ -72,7 +57,7 @@ class JavabuilderConnectionHelper {
 
 const getRandomId = () => uuidv4();
 
-function generateJavabuilderToken(miniAppType, sessionId) {
+function generateToken(miniAppType, sessionId) {
   const issuedAtTime = Date.now() / 1000 - 3;
   const expirationTime = issuedAtTime + 63;
   const payload = {
@@ -97,6 +82,20 @@ function generateJavabuilderToken(miniAppType, sessionId) {
   return jwt.sign(payload, key, {
     algorithm: "RS256",
   });
+}
+
+export function uploadSources(sourcesJson, token) {
+  return fetch(
+    `${JAVABUILDER_HTTP_URL}?Authorization=${token}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Origin: INTEGRATION_TESTS_ORIGIN,
+      },
+      body: sourcesJson
+    }
+  );
 }
 
 const connectionHelper = new JavabuilderConnectionHelper();
