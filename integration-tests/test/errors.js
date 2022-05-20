@@ -8,7 +8,7 @@ import {
   EXIT_STATUS_MESSAGE,
 } from "./helpers/testHelpers.js";
 import {expect} from "chai";
-import connectionHelper from "./lib/JavabuilderConnectionHelper.js";
+import {uploadSources} from "./lib/JavabuilderConnectionHelper.js";
 
 describe("Errors", () => {
   it("Compilation Error", (done) => {
@@ -61,13 +61,11 @@ describe("Errors", () => {
     verifyMessages(blockedClassError, CONSOLE, assertOnMessagesReceived, done);
   }).timeout(20000);
 
-  it("Does not have valid token", (done) => {
+  it("Does not have valid token", async () => {
     // We don't appear to get any more detail than a 500 response when an invalid token is provided.
-    const confirmErrorResponse = httpResponse => expect(httpResponse.status).to.equal(500);
-    connectionHelper
-      .connect(blankProject, CONSOLE, () => {}, () => {}, () => {}, () => {}, () => 'fakeToken', confirmErrorResponse)
-      .finally(done)
-  }).timeout(20000);
+    const httpResponse = await uploadSources(blankProject, 'aBadToken');
+    expect(httpResponse.status).to.equal(500);
+  }).timeout(2000);
 });
 
 const validateExceptionDetailKey = (key, receivedMessage, expectedMessage) => {
