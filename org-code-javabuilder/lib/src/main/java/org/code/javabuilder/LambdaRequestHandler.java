@@ -258,8 +258,6 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
    * added here can be run more than once without negative effect.
    */
   private void cleanUpResources(String connectionId, AmazonApiGatewayManagementApi api) {
-    // delete the metric client manager if it exists
-    MetricClientManager.destroy();
     final DeleteConnectionRequest deleteConnectionRequest =
         new DeleteConnectionRequest().withConnectionId(connectionId);
     // Deleting the API Gateway connection should always be the last thing executed because the
