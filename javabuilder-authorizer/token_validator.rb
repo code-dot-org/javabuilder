@@ -1,3 +1,5 @@
+require 'aws-sdk-cloudwatch'
+require 'aws-sdk-dynamodb'
 require_relative 'token_status'
 
 class TokenValidator
@@ -16,7 +18,26 @@ class TokenValidator
     @verified_teachers = payload['verified_teachers']
 
     @origin = origin
-    @client = Aws::DynamoDB::Client.new(region: region)
+    @dynamodb_client = Aws::DynamoDB::Client.new(region: region)
+    @cloudwatch_client = Aws::CloudWatch::Client.new(region: region)
+
+    # Get authorizer type passed in?
+    data = {
+      metric_name: "RequestBlocked",
+      dimensions: [
+        {
+          name: "TokenStatus",
+          value: "Hello"
+        },
+        {
+          name: "AuthorizerType",
+          value: "HTTP"
+        }
+      ],
+      unit: "Count",
+      value: 1
+    }
+    @cloudwatch_client.put_metric_data({namespace: "Javabuilder", metric_data: [data]})
   end
 
   def validate
@@ -41,7 +62,7 @@ class TokenValidator
   def log_token
     begin
       ttl = Time.now.to_i + TOKEN_RECORD_TTL_SECONDS
-      @client.put_item(
+      @dynamodb_client.put_item(
         table_name: ENV['token_status_table'],
         item: {
           token_id: @token_id,
@@ -57,7 +78,7 @@ class TokenValidator
   end
 
   def user_blocked?
-    response = @client.get_item(
+    response = @dynamodb_client.get_item(
       table_name: ENV['blocked_users_table'],
       key: {user_id: blocked_users_user_id}
     )
@@ -68,7 +89,7 @@ class TokenValidator
   def teachers_blocked?
     blocked = true
     @verified_teachers.split(',').each do |teacher_id|
-      response = @client.get_item(
+      response = @dynamodb_client.get_item(
         table_name: ENV['blocked_users_table'],
         key: {user_id: blocked_users_section_owner_id(teacher_id)}
       )
@@ -109,7 +130,7 @@ class TokenValidator
     over_limit = true
 
     @verified_teachers.split(',').each do |teacher_id|
-      response = @client.query(
+      response = @dynamodb_client.query(
         table_name: ENV['teacher_associated_requests_table'],
         key_condition_expression: "section_owner_id = :teacher_id AND issued_at > :one_hour_ago",
         expression_attribute_values: {
@@ -124,7 +145,7 @@ class TokenValidator
 
       if response.count > ENV['teacher_limit_per_hour'].to_i
         begin
-          @client.put_item(
+          @dynamodb_client.put_item(
             table_name: ENV['blocked_users_table'],
             item: {
               user_id: blocked_users_section_owner_id(teacher_id),
@@ -149,7 +170,7 @@ class TokenValidator
   end
 
   def log_requests
-    @client.put_item(
+    @dynamodb_client.put_item(
       table_name: ENV['user_requests_table'],
       item: {
         user_id: "#{@origin}##{@user_id}",
@@ -159,7 +180,7 @@ class TokenValidator
     )
 
     @verified_teachers.split(',').each do |teacher_id|
-      @client.put_item(
+      @dynamodb_client.put_item(
         table_name: ENV['teacher_associated_requests_table'],
         item: {
           section_owner_id: "#{@origin}##{teacher_id}",
@@ -171,7 +192,7 @@ class TokenValidator
   end
 
   def mark_token_as_vetted
-    @client.update_item(
+    @dynamodb_client.update_item(
       table_name: ENV['token_status_table'],
       key: {token_id: @token_id},
       update_expression: 'SET vetted = :v',
@@ -180,7 +201,7 @@ class TokenValidator
   end
 
   def set_token_warning(key, detail)
-    @client.update_item(
+    @dynamodb_client.update_item(
       table_name: ENV['token_status_table'],
       key: {token_id: @token_id},
       update_expression: 'SET warning = :w',
@@ -195,7 +216,7 @@ class TokenValidator
   end
 
   def user_usage(time_range_seconds)
-    response = @client.query(
+    response = @dynamodb_client.query(
       table_name: ENV['user_requests_table'],
       key_condition_expression: "user_id = :user_id AND issued_at > :past_time",
       expression_attribute_values: {
@@ -232,7 +253,7 @@ class TokenValidator
       # logging could be improved,
       # [{"ttl"=>0.1648766446e10, "user_id"=>"611", "issued_at"=>0.1648680046e10}, {...
       begin
-        @client.put_item(
+        @dynamodb_client.put_item(
           table_name: ENV['blocked_users_table'],
           item: {
             user_id: blocked_users_user_id,

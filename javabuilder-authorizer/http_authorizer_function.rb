@@ -1,5 +1,4 @@
 require 'aws-sdk-lambda'
-require 'aws-sdk-dynamodb'
 require 'jwt'
 require_relative 'jwt_helper'
 require_relative 'token_status'
