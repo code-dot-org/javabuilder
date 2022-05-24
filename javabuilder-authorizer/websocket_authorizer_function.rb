@@ -46,17 +46,17 @@ def get_token_info(context, sid)
   item = response.item
 
   unless item
-    log_to_cloudwatch(cloudwatch_client, TokenStatus::UNKNOWN_ID, function_name)
+    log(cloudwatch_client, TokenStatus::UNKNOWN_ID, function_name, sid)
     return {status: TokenStatus::UNKNOWN_ID}
   end
 
   if item['used']
-    log_to_cloudwatch(cloudwatch_client, TokenStatus::TOKEN_USED, function_name)
+    log(cloudwatch_client, TokenStatus::TOKEN_USED, function_name, sid)
     return {status: TokenStatus::TOKEN_USED}
   end
 
   unless item['vetted']
-    log_to_cloudwatch(cloudwatch_client, TokenStatus::NOT_VETTED, function_name)
+    log(cloudwatch_client, TokenStatus::NOT_VETTED, function_name, sid)
     return {status: TokenStatus::NOT_VETTED}
   end
 
@@ -86,7 +86,8 @@ def get_region(context)
   context.invoked_function_arn.split(':')[3]
 end
 
-def log_to_cloudwatch(client, status, function_name)
+def log(client, status, function_name, sid)
+  puts "TOKEN VALIDATION ERROR: #{status} token_id: #{sid}"
   metric_data = {
     metric_name: status,
     dimensions: [
