@@ -57,6 +57,12 @@ Resources:
                   - "execute-api:ManageConnections"
                 Resource:
                   - !Sub "arn:aws:execute-api:*:${AWS::AccountId}:${JavabuilderApiId}/*"
+              # Build and Run Lambdas need to be able to write metrics to CloudWatch
+              - Effect: Allow
+                Action:
+                  - 'cloudwatch:PutMetricData'
+                Resource:
+                  - '*'
   
   # Permissions for the synchronous Lambda that invokes the long-running Lambda
   # and then relays web messages to it

@@ -76,6 +76,9 @@ public class WebSocketServer {
     // turn off the default console logger
     this.logger.setUseParentHandlers(false);
 
+    MetricClient metricClient = new LocalMetricClient();
+    MetricClientManager.create(metricClient);
+
     Properties.setConnectionId(connectionId);
 
     websocketOutputAdapter = new WebSocketOutputAdapter(session);

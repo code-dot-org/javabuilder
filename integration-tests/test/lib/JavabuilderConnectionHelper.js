@@ -29,18 +29,7 @@ class JavabuilderConnectionHelper {
       `
     );
 
-    const httpResponse = await fetch(
-      `${JAVABUILDER_HTTP_URL}?Authorization=${token}`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Origin: INTEGRATION_TESTS_ORIGIN,
-        },
-        body: sourcesJson,
-      }
-    );
-
+    const httpResponse = await uploadSources(sourcesJson, token);
     if (!httpResponse.ok) {
       throw new Error(`HTTP API error: ${httpResponse.statusText}`);
     }
@@ -57,8 +46,10 @@ class JavabuilderConnectionHelper {
       onOpen();
     };
 
+    const onMessageWrapper = event => onMessage(event, socket);
+
     socket.onopen = logOnOpen;
-    socket.onmessage = onMessage;
+    socket.onmessage = onMessageWrapper;
     socket.onclose = onClose;
     socket.onerror = onError;
   }
@@ -77,6 +68,7 @@ class JavabuilderConnectionHelper {
       verified_teachers: this.getRandomId(),
       options: "{}",
       sid: sessionId,
+      can_access_dashboard_assets: false
     };
 
     const key = crypto.createPrivateKey({
@@ -92,6 +84,20 @@ class JavabuilderConnectionHelper {
   getRandomId() {
     return uuidv4();
   }
+}
+
+export function uploadSources(sourcesJson, token) {
+  return fetch(
+    `${JAVABUILDER_HTTP_URL}?Authorization=${token}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Origin: INTEGRATION_TESTS_ORIGIN,
+      },
+      body: sourcesJson
+    }
+  );
 }
 
 const connectionHelper = new JavabuilderConnectionHelper();
