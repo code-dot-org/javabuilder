@@ -38,7 +38,7 @@ public class PainterTest {
   void defaultConstructorMakesPainterWithNoPaintFacingEast() {
     Painter p = new Painter();
     assertEquals(p.getMyPaint(), 0);
-    assertTrue(p.facingEast());
+    assertTrue(p.isFacingEast());
   }
 
   @Test
