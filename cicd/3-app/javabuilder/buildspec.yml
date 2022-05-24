@@ -13,6 +13,7 @@ phases:
     commands:
       - set -e
       - BRANCH_NAME=${CODEBUILD_WEBHOOK_HEAD_REF#"refs/heads/"}
+
       - cd ./javabuilder-authorizer
       - ./build.sh
 
@@ -20,6 +21,10 @@ phases:
       - cd org-code-javabuilder
       - ./gradlew test
       - ./build.sh
+
+      - cd $CODEBUILD_SRC_DIR
+      - cd api-gateway-routes
+      - rake test
 
       - cd $CODEBUILD_SRC_DIR
       - erb -T - cicd/3-app/javabuilder/template.yml.erb > app-template.yml
