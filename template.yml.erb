@@ -671,6 +671,139 @@ Resources:
                           Value: !Ref BuildAndRunJava<%=name%>ProjectFunction
                 Period: 300
                 Stat: Sum
+
+  <%=name%>SlowCleanupTimeAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${SubDomainName}_<%=name.downcase%>_slow_cleanup_time"
+      AlarmDescription: p(95) cleanup time in Javabuilder's <%=name%> build and run lambda exceeded
+        the normal cleanup time for 15 minutes. Investigate if there has been a performance regression.
+      ActionsEnabled: true
+      OKActions: []
+      AlarmActions:
+        - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-slow-performance"]
+      InsufficientDataActions: []
+      EvaluationPeriods: 15
+      DatapointsToAlarm: 15
+      ComparisonOperator: GreaterThanUpperThreshold
+      TreatMissingData: ignore
+      Metrics:
+          - Id: m1
+            ReturnData: true
+            MetricStat:
+                Metric:
+                    Namespace: Javabuilder
+                    MetricName: CleanupTime
+                    Dimensions:
+                        - Name: functionName
+                          Value: !Ref BuildAndRunJava<%=name%>ProjectFunction
+                Period: 60
+                Stat: p95
+          - Id: ad1
+            Label: CleanupTime (expected)
+            ReturnData: true
+            Expression: ANOMALY_DETECTION_BAND(m1, 5)
+      ThresholdMetricId: ad1
+  
+  <%=name%>SlowColdBootTimeAlarm:    
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${SubDomainName}_<%=name.downcase%>_slow_cold_boot_time"
+      AlarmDescription: p(95) cold boot time in Javabuilder's <%=name%> build and run lambda exceeded
+        the normal cleanup time for 15 minutes. Investigate if there has been a performance regression.
+      ActionsEnabled: true
+      OKActions: []
+      AlarmActions:
+        - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-slow-performance"]
+      InsufficientDataActions: []
+      EvaluationPeriods: 15
+      DatapointsToAlarm: 15
+      ComparisonOperator: GreaterThanUpperThreshold
+      TreatMissingData: ignore
+      Metrics:
+          - Id: m1
+            ReturnData: true
+            MetricStat:
+                Metric:
+                    Namespace: Javabuilder
+                    MetricName: ColdBootTime
+                    Dimensions:
+                        - Name: functionName
+                          Value: !Ref BuildAndRunJava<%=name%>ProjectFunction
+                Period: 60
+                Stat: p95
+          - Id: ad1
+            Label: ColdBootTime (expected)
+            ReturnData: true
+            Expression: ANOMALY_DETECTION_BAND(m1, 2)
+      ThresholdMetricId: ad1
+
+  <%=name%>SlowInitializationTimeAlarm:    
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${SubDomainName}_<%=name.downcase%>_slow_initialization_time"
+      AlarmDescription: p(95) initialization time in Javabuilder's <%=name%> build and run lambda exceeded
+        the normal cleanup time for 15 minutes. Investigate if there has been a performance regression.
+      ActionsEnabled: true
+      OKActions: []
+      AlarmActions:
+        - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-slow-performance"]
+      InsufficientDataActions: []
+      EvaluationPeriods: 15
+      DatapointsToAlarm: 15
+      ComparisonOperator: GreaterThanUpperThreshold
+      TreatMissingData: ignore
+      Metrics:
+          - Id: m1
+            ReturnData: true
+            MetricStat:
+                Metric:
+                    Namespace: Javabuilder
+                    MetricName: InitializationTime
+                    Dimensions:
+                        - Name: functionName
+                          Value: !Ref BuildAndRunJava<%=name%>ProjectFunction
+                Period: 60
+                Stat: p95
+          - Id: ad1
+            Label: InitializationTime (expected)
+            ReturnData: true
+            Expression: ANOMALY_DETECTION_BAND(m1, 5)
+      ThresholdMetricId: ad1
+  
+  <%=name%>SlowTransitionTimeAlarm:    
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+        AlarmName: !Sub "${SubDomainName}_<%=name.downcase%>_slow_transition_time"
+        AlarmDescription: p(95) transition time in Javabuilder's <%=name%> build and run lambda exceeded
+          the normal cleanup time for 15 minutes. Investigate if there has been a performance regression.
+        ActionsEnabled: true
+        OKActions: []
+        AlarmActions:
+          - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-slow-performance"]
+        InsufficientDataActions: []
+        EvaluationPeriods: 15
+        DatapointsToAlarm: 15
+        ComparisonOperator: GreaterThanUpperThreshold
+        TreatMissingData: missing
+        Metrics:
+            - Id: m1
+              ReturnData: true
+              MetricStat:
+                  Metric:
+                      Namespace: Javabuilder
+                      MetricName: TransitionTime
+                      Dimensions:
+                          - Name: functionName
+                            Value: !Ref BuildAndRunJava<%=name%>ProjectFunction
+                  Period: 60
+                  Stat: p95
+            - Id: ad1
+              Label: TransitionTime (expected)
+              ReturnData: true
+              Expression: ANOMALY_DETECTION_BAND(m1, 3)
+        ThresholdMetricId: ad1
+
 <%end -%>
 
 # We use shortened versions of names for partition keys (eg, user_id),
