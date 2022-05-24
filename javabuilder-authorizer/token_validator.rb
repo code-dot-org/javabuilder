@@ -191,6 +191,7 @@ class TokenValidator
   end
 
   def error(status)
+    puts "TOKEN VALIDATION ERROR: #{status} user_id: #{@user_id} verified_teachers: #{@verified_teachers} token_id: #{@token_id}"
     metric_data = {
       metric_name: status,
       dimensions: [
