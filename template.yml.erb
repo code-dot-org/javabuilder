@@ -683,7 +683,6 @@ Resources:
       AlarmActions:
         - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-slow-performance"]
       InsufficientDataActions: []
-      Dimensions: []
       EvaluationPeriods: 15
       DatapointsToAlarm: 15
       ComparisonOperator: GreaterThanUpperThreshold
@@ -717,7 +716,6 @@ Resources:
       AlarmActions:
         - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-slow-performance"]
       InsufficientDataActions: []
-      Dimensions: []
       EvaluationPeriods: 15
       DatapointsToAlarm: 15
       ComparisonOperator: GreaterThanUpperThreshold
@@ -751,7 +749,6 @@ Resources:
       AlarmActions:
         - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-slow-performance"]
       InsufficientDataActions: []
-      Dimensions: []
       EvaluationPeriods: 15
       DatapointsToAlarm: 15
       ComparisonOperator: GreaterThanUpperThreshold
@@ -785,7 +782,6 @@ Resources:
         AlarmActions:
           - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-slow-performance"]
         InsufficientDataActions: []
-        Dimensions: []
         EvaluationPeriods: 15
         DatapointsToAlarm: 15
         ComparisonOperator: GreaterThanUpperThreshold
