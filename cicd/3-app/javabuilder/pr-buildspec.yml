@@ -14,6 +14,10 @@ phases:
       - set -e
       - BRANCH_NAME=${CODEBUILD_WEBHOOK_HEAD_REF#"refs/heads/"}
       - ARTIFACT_PATH=branch/$BRANCH_NAME/$CODEBUILD_BUILD_NUMBER
+
+      - cfn-lint cicd/1-setup/*.template.yml
+      - cfn-lint cicd/2-cicd/*.template.yml
+
       - cd ./javabuilder-authorizer
       - ./build.sh
 
@@ -21,6 +25,7 @@ phases:
       - cd org-code-javabuilder
       - ./gradlew test
       - ./build.sh
+
       - cd $CODEBUILD_SRC_DIR
       - cd api-gateway-routes
       - rake test

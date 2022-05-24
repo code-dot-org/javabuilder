@@ -2,9 +2,9 @@
 
 echo Deploying Javabuilder CICD Dependencies
 
-# Create/Update the Javabuilder setup/dependencies stack. This is manually created and maintained, and requires elevated permissions. 
+# Create/Update the Javabuilder setup/dependencies stack. This is manually created and maintained, and does not require elevated permissions
 
-TEMPLATE_FILE=cicd/1-setup/setup.template.yml
+TEMPLATE_FILE=cicd/1-setup/cicd-dependencies.template.yml
 
 echo Validating cloudformation template...
 aws cloudformation validate-template \

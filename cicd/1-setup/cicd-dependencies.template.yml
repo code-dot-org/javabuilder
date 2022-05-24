@@ -13,7 +13,7 @@ Resources:
   # This role will be used by CodeBuild to execute the CI build. Here we have
   # the common policy rules required. Since we may want to create multiple
   # codebuild projects for different branches, we can append policies when those
-  # stack resources are created (in "2-cicd")
+  # stack resources are created (in "2-cicd/cicd.template.yml")
   JavabuilderCodeBuildRole:
     Type: AWS::IAM::Role
     Properties:
