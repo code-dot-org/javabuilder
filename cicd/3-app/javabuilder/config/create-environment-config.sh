@@ -24,5 +24,3 @@ for i in $(ls "${dir}/config" | egrep -i '.*\.config\.json' ); do
 
   echo "${contents}" > "${dir}/${i}"
 done
-
-
