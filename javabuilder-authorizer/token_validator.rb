@@ -1,5 +1,3 @@
-require 'aws-sdk-cloudwatch'
-require 'aws-sdk-dynamodb'
 require_relative 'token_status'
 
 class TokenValidator
@@ -12,32 +10,15 @@ class TokenValidator
   TEACHER_ASSOCIATED_REQUEST_TTL_SECONDS = 25 * ONE_HOUR_SECONDS
   NEAR_LIMIT_BUFFER = 10
 
-  def initialize(payload, origin, region)
+  def initialize(payload, origin, region, function_name)
     @token_id = payload['sid']
     @user_id = payload['uid']
     @verified_teachers = payload['verified_teachers']
 
     @origin = origin
+    @function_name = function_name
     @dynamodb_client = Aws::DynamoDB::Client.new(region: region)
     @cloudwatch_client = Aws::CloudWatch::Client.new(region: region)
-
-    # Get authorizer type passed in?
-    data = {
-      metric_name: "RequestBlocked",
-      dimensions: [
-        {
-          name: "TokenStatus",
-          value: "Hello"
-        },
-        {
-          name: "AuthorizerType",
-          value: "HTTP"
-        }
-      ],
-      unit: "Count",
-      value: 1
-    }
-    @cloudwatch_client.put_metric_data({namespace: "Javabuilder", metric_data: [data]})
   end
 
   def validate
@@ -209,9 +190,20 @@ class TokenValidator
     )
   end
 
-  # Log the error and return it
   def error(status)
-    puts "TOKEN VALIDATION ERROR: #{status} user_id: #{@user_id} verified_teachers: #{@verified_teachers} token_id: #{@token_id}"
+    metric_data = {
+      metric_name: status,
+      dimensions: [
+        {
+          name: "functionName",
+          value: @function_name
+        }
+      ],
+      unit: "Count",
+      value: 1
+    }
+    @cloudwatch_client.put_metric_data({namespace: "Javabuilder", metric_data: [metric_data]})
+
     status
   end
 

@@ -1,5 +1,6 @@
 require 'aws-sdk-lambda'
 require 'aws-sdk-dynamodb'
+require 'aws-sdk-cloudwatch'
 require 'jwt'
 require_relative 'jwt_helper'
 require_relative 'token_status'
@@ -34,29 +35,32 @@ def lambda_handler(event:, context:)
 end
 
 def get_token_info(context, sid)
-  client = Aws::DynamoDB::Client.new(region: get_region(context))
-  response = client.get_item(
+  region = get_region(context)
+  function_name = context.function_name
+  dynamodb_client = Aws::DynamoDB::Client.new(region: region)
+  cloudwatch_client = Aws::CloudWatch::Client.new(region: region)
+  response = dynamodb_client.get_item(
     table_name: ENV['token_status_table'],
     key: {token_id: sid}
   )
   item = response.item
 
   unless item
-    puts "TOKEN VALIDATION ERROR: #{TokenStatus::UNKNOWN_ID} token_id: #{sid}"
+    log_to_cloudwatch(cloudwatch_client, TokenStatus::UNKNOWN_ID, function_name)
     return {status: TokenStatus::UNKNOWN_ID}
   end
 
   if item['used']
-    puts "TOKEN VALIDATION ERROR: #{TokenStatus::TOKEN_USED} token_id: #{sid}"
+    log_to_cloudwatch(cloudwatch_client, TokenStatus::TOKEN_USED, function_name)
     return {status: TokenStatus::TOKEN_USED}
   end
 
   unless item['vetted']
-    puts "TOKEN VALIDATION ERROR: #{TokenStatus::NOT_VETTED} token_id: #{sid}"
+    log_to_cloudwatch(cloudwatch_client, TokenStatus::NOT_VETTED, function_name)
     return {status: TokenStatus::NOT_VETTED}
   end
 
-  client.update_item(
+  dynamodb_client.update_item(
     table_name: ENV['token_status_table'],
     key: {token_id: sid},
     update_expression: 'SET used = :u',
@@ -80,4 +84,19 @@ end
 # ARN is of the format arn:aws:lambda:{region}:{account_id}:function:{lambda_name}
 def get_region(context)
   context.invoked_function_arn.split(':')[3]
+end
+
+def log_to_cloudwatch(client, status, function_name)
+  metric_data = {
+    metric_name: status,
+    dimensions: [
+      {
+        name: "functionName",
+        value: function_name
+      }
+    ],
+    unit: "Count",
+    value: 1
+  }
+  client.put_metric_data({namespace: "Javabuilder", metric_data: [metric_data]})
 end
