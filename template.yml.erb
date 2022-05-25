@@ -587,6 +587,37 @@ Resources:
               Period: 60
               Stat: Maximum
 <%end -%>
+
+  HighWebsocketConnectionsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${SubDomainName}_high_websocket_connections"
+      AlarmDescription: Significantly higher websocket connections than normal detected. Investigate if there is a DDOS.
+      ActionsEnabled: false
+      EvaluationPeriods: 20
+      DatapointsToAlarm: 20
+      ComparisonOperator: GreaterThanUpperThreshold
+      TreatMissingData: notBreaching
+      Metrics:
+          - Id: m1
+            ReturnData: true
+            MetricStat:
+                Metric:
+                    Namespace: AWS/ApiGateway
+                    MetricName: ConnectCount
+                    Dimensions:
+                        - Name: Stage
+                          Value: !Sub "${StageName}"
+                        - Name: ApiId
+                          Value: !Ref WebSocketAPI
+                Period: 60
+                Stat: Sum
+          - Id: ad1
+            Label: ConnectCount (expected)
+            ReturnData: true
+            Expression: ANOMALY_DETECTION_BAND(m1, 8)
+      ThresholdMetricId: ad1
+
 <%JAVALAB_APP_TYPES.each do | name | -%>
 
   <%=name%>HighSevereErrorRateAlarm:
