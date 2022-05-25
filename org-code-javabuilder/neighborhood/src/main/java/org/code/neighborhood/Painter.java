@@ -175,23 +175,55 @@ public class Painter {
   }
 
   /** @return True if facing North */
-  public boolean facingNorth() {
+  public boolean isFacingNorth() {
     return this.direction.isNorth();
   }
 
   /** @return True if facing East */
-  public boolean facingEast() {
+  public boolean isFacingEast() {
     return this.direction.isEast();
   }
 
   /** @return True if facing South */
-  public boolean facingSouth() {
+  public boolean isFacingSouth() {
     return this.direction.isSouth();
   }
 
   /** @return True if facing West */
-  public boolean facingWest() {
+  public boolean isFacingWest() {
     return this.direction.isWest();
+  }
+
+  /**
+   * @deprecated use {@link Painter#isFacingNorth()}
+   * @return True if facing North
+   */
+  public boolean facingNorth() {
+    return this.isFacingNorth();
+  }
+
+  /**
+   * @deprecated use {@link Painter#isFacingEast()}
+   * @return True if facing East
+   */
+  public boolean facingEast() {
+    return this.isFacingEast();
+  }
+
+  /**
+   * @deprecated use {@link Painter#isFacingSouth()}
+   * @return True if facing South
+   */
+  public boolean facingSouth() {
+    return this.isFacingSouth();
+  }
+
+  /**
+   * @deprecated use {@link Painter#isFacingWest()}
+   * @return True if facing West
+   */
+  public boolean facingWest() {
+    return this.isFacingWest();
   }
 
   /** @return the x coordinate of the painter's current position */
