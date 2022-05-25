@@ -78,7 +78,7 @@ end
 def error(client, status, function_name, sid)
   puts "TOKEN VALIDATION ERROR: #{status} token_id: #{sid}"
   metric_data = {
-    metric_name: status,
+    metric_name: TokenStatus::TOKEN_STATUS_METRIC_NAMES[status],
     dimensions: [
       {
         name: "functionName",
