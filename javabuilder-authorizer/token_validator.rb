@@ -1,3 +1,5 @@
+require 'aws-sdk-dynamodb'
+require 'aws-sdk-cloudwatch'
 require_relative 'token_status'
 
 class TokenValidator
