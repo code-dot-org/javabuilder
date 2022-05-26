@@ -25,18 +25,13 @@ def lambda_handler(event:, context:)
 
   token_payload = decoded_token[0]
   region = get_region(context)
-  token_status = get_token_status(token_payload, standardized_origin, region, context.function_name)
+  token_status = get_token_status(token_payload, standardized_origin, context)
   return JwtHelper.generate_allow_with_error(route_arn, token_status) unless token_status == TokenStatus::VALID_HTTP
 
   JwtHelper.generate_allow(route_arn, token_payload)
 end
 
-def get_token_status(token_payload, origin, region, function_name)
-  validator = TokenValidator.new(token_payload, origin, region, function_name)
+def get_token_status(token_payload, origin, context)
+  validator = TokenValidator.new(token_payload, origin, context)
   validator.validate
-end
-
-# ARN is of the format arn:aws:lambda:{region}:{account_id}:function:{lambda_name}
-def get_region(context)
-  context.invoked_function_arn.split(':')[3]
 end

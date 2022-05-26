@@ -1,4 +1,5 @@
 require 'aws-sdk-cloudwatch'
+require_relative 'token_status'
 
 class MetricsReporter
   include TokenStatus
@@ -8,7 +9,7 @@ class MetricsReporter
     @client = Aws::CloudWatch::Client.new(region: region)
   end
 
-  def log_error(status, error_message)
+  def log_token_error(status, error_message)
     puts error_message
     metric_data = {
       metric_name: TOKEN_STATUS_METRIC_NAMES[status],
