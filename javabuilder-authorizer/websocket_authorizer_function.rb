@@ -1,8 +1,10 @@
 require 'aws-sdk-lambda'
 require 'aws-sdk-dynamodb'
+require 'aws-sdk-cloudwatch'
 require 'jwt'
 require_relative 'jwt_helper'
 require_relative 'token_status'
+require_relative 'metrics_reporter'
 include JwtHelper
 include TokenStatus
 
@@ -34,29 +36,19 @@ def lambda_handler(event:, context:)
 end
 
 def get_token_info(context, sid)
-  client = Aws::DynamoDB::Client.new(region: get_region(context))
-  response = client.get_item(
+  dynamodb_client = Aws::DynamoDB::Client.new(region: get_region(context))
+  metrics_reporter = MetricsReporter.new(context)
+  response = dynamodb_client.get_item(
     table_name: ENV['token_status_table'],
     key: {token_id: sid}
   )
   item = response.item
 
-  unless item
-    puts "TOKEN VALIDATION ERROR: #{TokenStatus::UNKNOWN_ID} token_id: #{sid}"
-    return {status: TokenStatus::UNKNOWN_ID}
-  end
+  return error(metrics_reporter, TokenStatus::UNKNOWN_ID, sid) unless item
+  return error(metrics_reporter, TokenStatus::TOKEN_USED, sid) if item['used']
+  return error(metrics_reporter, TokenStatus::NOT_VETTED, sid) unless item['vetted']
 
-  if item['used']
-    puts "TOKEN VALIDATION ERROR: #{TokenStatus::TOKEN_USED} token_id: #{sid}"
-    return {status: TokenStatus::TOKEN_USED}
-  end
-
-  unless item['vetted']
-    puts "TOKEN VALIDATION ERROR: #{TokenStatus::NOT_VETTED} token_id: #{sid}"
-    return {status: TokenStatus::NOT_VETTED}
-  end
-
-  client.update_item(
+  dynamodb_client.update_item(
     table_name: ENV['token_status_table'],
     key: {token_id: sid},
     update_expression: 'SET used = :u',
@@ -75,6 +67,13 @@ def get_token_info(context, sid)
   end
 
   return {status: TokenStatus::VALID_WEBSOCKET}
+end
+
+def error(metrics_reporter, status, sid)
+  error_message = "TOKEN VALIDATION ERROR: #{status} token_id: #{sid}"
+  metrics_reporter.log_token_error(status, error_message)
+
+  {status: status}
 end
 
 # ARN is of the format arn:aws:lambda:{region}:{account_id}:function:{lambda_name}
