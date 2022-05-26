@@ -35,19 +35,17 @@ def lambda_handler(event:, context:)
 end
 
 def get_token_info(context, sid)
-  region = get_region(context)
-  function_name = context.function_name
-  dynamodb_client = Aws::DynamoDB::Client.new(region: region)
-  cloudwatch_client = Aws::CloudWatch::Client.new(region: region)
+  dynamodb_client = Aws::DynamoDB::Client.new(region: get_region(context))
+  metrics_reporter = MetricsReporter.new(context)
   response = dynamodb_client.get_item(
     table_name: ENV['token_status_table'],
     key: {token_id: sid}
   )
   item = response.item
 
-  return error(cloudwatch_client, TokenStatus::UNKNOWN_ID, function_name, sid) unless item
-  return error(cloudwatch_client, TokenStatus::TOKEN_USED, function_name, sid) if item['used']
-  return error(cloudwatch_client, TokenStatus::NOT_VETTED, function_name, sid) unless item['vetted']
+  return error(metrics_reporter, TokenStatus::UNKNOWN_ID, sid) unless item
+  return error(metrics_reporter, TokenStatus::TOKEN_USED, sid) if item['used']
+  return error(metrics_reporter, TokenStatus::NOT_VETTED, sid) unless item['vetted']
 
   dynamodb_client.update_item(
     table_name: ENV['token_status_table'],
@@ -70,26 +68,14 @@ def get_token_info(context, sid)
   return {status: TokenStatus::VALID_WEBSOCKET}
 end
 
+def error(metrics_reporter, status, sid)
+  error_message = "TOKEN VALIDATION ERROR: #{status} token_id: #{sid}"
+  metrics_reporter.log_error(status, error_message)
+
+  {status: status}
+end
+
 # ARN is of the format arn:aws:lambda:{region}:{account_id}:function:{lambda_name}
 def get_region(context)
   context.invoked_function_arn.split(':')[3]
-end
-
-def error(client, status, function_name, sid)
-  puts "TOKEN VALIDATION ERROR: #{status} token_id: #{sid}"
-  metric_data = {
-    metric_name: TokenStatus::TOKEN_STATUS_METRIC_NAMES[status],
-    dimensions: [
-      {
-        name: "functionName",
-        value: function_name
-      }
-    ],
-    unit: "Count",
-    value: 1
-  }
-
-  client.put_metric_data({namespace: "Javabuilder", metric_data: [metric_data]})
-
-  {status: status}
 end
