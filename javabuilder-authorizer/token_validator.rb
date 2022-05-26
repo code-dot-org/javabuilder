@@ -1,6 +1,6 @@
 require 'aws-sdk-dynamodb'
-require 'aws-sdk-cloudwatch'
 require_relative 'token_status'
+require_relative 'metrics_reporter'
 
 class TokenValidator
   include TokenStatus
@@ -12,15 +12,14 @@ class TokenValidator
   TEACHER_ASSOCIATED_REQUEST_TTL_SECONDS = 25 * ONE_HOUR_SECONDS
   NEAR_LIMIT_BUFFER = 10
 
-  def initialize(payload, origin, region, function_name)
+  def initialize(payload, origin, context)
     @token_id = payload['sid']
     @user_id = payload['uid']
     @verified_teachers = payload['verified_teachers']
 
     @origin = origin
-    @function_name = function_name
-    @dynamodb_client = Aws::DynamoDB::Client.new(region: region)
-    @cloudwatch_client = Aws::CloudWatch::Client.new(region: region)
+    @dynamodb_client = Aws::DynamoDB::Client.new(region: get_region(context))
+    @metrics_reporter = MetricsReporter.new(context)
   end
 
   def validate
@@ -193,20 +192,8 @@ class TokenValidator
   end
 
   def error(status)
-    puts "TOKEN VALIDATION ERROR: #{status} user_id: #{@user_id} verified_teachers: #{@verified_teachers} token_id: #{@token_id}"
-    metric_data = {
-      metric_name: TOKEN_STATUS_METRIC_NAMES[status],
-      dimensions: [
-        {
-          name: "functionName",
-          value: @function_name
-        }
-      ],
-      unit: "Count",
-      value: 1
-    }
-    @cloudwatch_client.put_metric_data({namespace: "Javabuilder", metric_data: [metric_data]})
-
+    error_message = "TOKEN VALIDATION ERROR: #{status} user_id: #{@user_id} verified_teachers: #{@verified_teachers} token_id: #{@token_id}"
+    @metrics_reporter.log_token_error(status, error_message)
     status
   end
 
@@ -272,5 +259,10 @@ class TokenValidator
 
   def blocked_users_user_id
     "#{@origin}#userId##{@user_id}"
+  end
+
+  # ARN is of the format arn:aws:lambda:{region}:{account_id}:function:{lambda_name}
+  def get_region(context)
+    context.invoked_function_arn.split(':')[3]
   end
 end

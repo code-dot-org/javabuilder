@@ -4,6 +4,7 @@ require 'aws-sdk-cloudwatch'
 require 'jwt'
 require_relative 'jwt_helper'
 require_relative 'token_status'
+require_relative 'metrics_reporter'
 include JwtHelper
 include TokenStatus
 
@@ -70,7 +71,7 @@ end
 
 def error(metrics_reporter, status, sid)
   error_message = "TOKEN VALIDATION ERROR: #{status} token_id: #{sid}"
-  metrics_reporter.log_error(status, error_message)
+  metrics_reporter.log_token_error(status, error_message)
 
   {status: status}
 end
