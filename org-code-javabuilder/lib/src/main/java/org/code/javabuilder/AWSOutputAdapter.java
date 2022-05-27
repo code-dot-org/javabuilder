@@ -1,5 +1,7 @@
 package org.code.javabuilder;
 
+import static org.code.javabuilder.InternalFacingExceptionTypes.CONNECTION_TERMINATED;
+
 import com.amazonaws.services.apigatewaymanagementapi.AmazonApiGatewayManagementApi;
 import com.amazonaws.services.apigatewaymanagementapi.model.GoneException;
 import com.amazonaws.services.apigatewaymanagementapi.model.PostToConnectionRequest;
@@ -41,7 +43,7 @@ public class AWSOutputAdapter implements OutputAdapter {
     try {
       this.api.postToConnection(post);
     } catch (GoneException e) {
-      throw new InternalServerRuntimeException(InternalExceptionKey.CONNECTION_TERMINATED, e);
+      throw new InternalFacingRuntimeException(CONNECTION_TERMINATED, e);
     }
   }
 }
