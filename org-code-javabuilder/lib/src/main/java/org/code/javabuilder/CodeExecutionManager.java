@@ -1,5 +1,6 @@
 package org.code.javabuilder;
 
+import static org.code.javabuilder.InternalFacingExceptionTypes.CONNECTION_TERMINATED;
 import static org.code.javabuilder.LambdaErrorCodes.TEMP_DIRECTORY_CLEANUP_ERROR_CODE;
 import static org.code.protocol.LoggerNames.MAIN_LOGGER;
 
@@ -13,9 +14,9 @@ import java.util.logging.Logger;
 import org.code.protocol.*;
 
 /**
- * Manages the execution of code in a project. When started, it performs the necessary pre-execution
- * setup and starts code execution. When complete, or when asked to exit early, it ensures the
- * necessary post-execution cleanup steps are performed.
+ * Manages the execution of code in a project. When asked to execute, it performs the necessary
+ * pre-execution setup and starts code execution. When asked to shut down it ensures the necessary
+ * post-execution cleanup steps are performed.
  */
 public class CodeExecutionManager {
   private final ProjectFileLoader fileLoader;
@@ -34,17 +35,15 @@ public class CodeExecutionManager {
   private OutputPrintStream overrideOutputStream;
   private InputStream systemInputStream;
   private PrintStream systemOutputStream;
-  private boolean executionInProgress;
+  private boolean isInitialized;
 
   static class CodeBuilderRunnableFactory {
     public CodeBuilderRunnable createCodeBuilderRunnable(
         ProjectFileLoader fileLoader,
-        OutputAdapter outputAdapter,
         File tempFolder,
         ExecutionType executionType,
         List<String> compileList) {
-      return new CodeBuilderRunnable(
-          fileLoader, outputAdapter, tempFolder, executionType, compileList);
+      return new CodeBuilderRunnable(fileLoader, tempFolder, executionType, compileList);
     }
   }
 
@@ -92,50 +91,34 @@ public class CodeExecutionManager {
     this.contentManager = contentManager;
     this.systemExitHelper = systemExitHelper;
     this.codeBuilderRunnableFactory = codeBuilderRunnableFactory;
-    this.executionInProgress = false;
-  }
-
-  /** Executes code synchronously, ensuring that pre- and post-execution steps are performed. */
-  public void execute() {
-    try {
-      this.onPreExecute();
-      try {
-        // Run code builder
-        this.executionInProgress = true;
-        final CodeBuilderRunnable runnable =
-            this.codeBuilderRunnableFactory.createCodeBuilderRunnable(
-                this.fileLoader,
-                this.outputAdapter,
-                this.tempFolder,
-                this.executionType,
-                this.compileList);
-        runnable.run();
-      } catch (Throwable e) {
-        // Catch any throwable here to ensure that onPostExecute() is always called
-        LoggerUtils.logSevereException(e);
-      }
-      this.onPostExecute();
-    } catch (InternalServerException e) {
-      LoggerUtils.logSevereError(e);
-    }
   }
 
   /**
-   * Request the code execution to cleanup early (e.g. in the case of an impending timeout). Code
-   * execution may still run, but this allows for post execution steps to still occur before the
-   * environment is shut down.
+   * Performs pre-execution steps to initialize the execution environment and executes code
+   * synchronously. Callers should expect that this method will throw if there are any exceptions
+   * encountered during initialization or execution and handle them accordingly.
+   *
+   * @throws JavabuilderException or InternalFacingException if there is an exception during
+   *     initialization or execution. Note that other runtime exceptions may also be thrown if
+   *     encountered during execution.
    */
-  public void requestEarlyExit() {
-    if (!this.executionInProgress) {
-      Logger.getLogger(MAIN_LOGGER)
-          .warning("Early exit requested while execution not in progress.");
+  public void execute() throws JavabuilderException, InternalFacingException {
+    this.onPreExecute();
+    final CodeBuilderRunnable runnable =
+        this.codeBuilderRunnableFactory.createCodeBuilderRunnable(
+            this.fileLoader, this.tempFolder, this.executionType, this.compileList);
+    runnable.run();
+  }
+
+  /**
+   * Shuts down the execution environment. If it has not already been initialized, this method does
+   * nothing.
+   */
+  public void shutDown() {
+    if (!this.isInitialized) {
       return;
     }
-    try {
-      this.onPostExecute();
-    } catch (InternalServerException e) {
-      LoggerUtils.logSevereError(e);
-    }
+    this.onPostExecute();
   }
 
   /**
@@ -162,6 +145,7 @@ public class CodeExecutionManager {
     this.overrideOutputStream = new OutputPrintStream(this.outputAdapter);
     System.setOut(this.overrideOutputStream);
     System.setIn(this.overrideInputStream);
+    this.isInitialized = true;
   }
 
   /**
@@ -169,13 +153,21 @@ public class CodeExecutionManager {
    * folder, 4) close custom in/out streams, 5) Replace System.in/out with original in/out, 6)
    * Destroy Global Protocol
    */
-  private void onPostExecute() throws InternalServerException {
-    if (!this.executionInProgress) {
-      Logger.getLogger(MAIN_LOGGER)
-          .warning("onPostExecute() called while execution not in progress.");
-      return;
+  private void onPostExecute() {
+    // Notify user and listeners
+    try {
+      this.outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.EXITED));
+    } catch (InternalFacingRuntimeException e) {
+      // Only log if this is not a connection terminated exception. If it is, we should have already
+      // logged a warning.
+      if (!e.getMessage().equals(CONNECTION_TERMINATED)) {
+        Logger.getLogger(MAIN_LOGGER).warning(e.getLoggingString());
+      }
+    } catch (Exception e) {
+      // Catch any other exceptions here to prevent them from propagating.
+      Logger.getLogger(MAIN_LOGGER).warning(e.getMessage());
     }
-    // Notify listeners
+
     this.lifecycleNotifier.onExecutionEnded();
     GlobalProtocol.getInstance().cleanUpResources();
     try {
@@ -195,7 +187,7 @@ public class CodeExecutionManager {
       System.setIn(this.systemInputStream);
       System.setOut(this.systemOutputStream);
       GlobalProtocol.destroy();
-      this.executionInProgress = false;
+      this.isInitialized = false;
     }
   }
 }
