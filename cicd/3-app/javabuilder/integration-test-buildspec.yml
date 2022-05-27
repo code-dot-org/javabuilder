@@ -14,8 +14,9 @@ phases:
       - set -e
 
       - # TODO: Make the ARN and/or secret names configurable too?
-      - private_key=$(aws secretsmanager get-secret-value --secret-id arn:aws:secretsmanager:us-east-1:475661607190:secret:development/cdo/javabuilder_integration_tests_key-b4BQG2)
-      - password=$(aws secretsmanager get-secret-value --secret-id arn:aws:secretsmanager:us-east-1:475661607190:secret:development/cdo/javabuilder_integration_tests_key_password-sWpRnW)
+      - ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
+      - private_key=$(aws secretsmanager get-secret-value --secret-id arn:aws:secretsmanager:us-east-1:${ACCOUNT_ID}:secret:development/cdo/javabuilder_integration_tests_key-b4BQG2)
+      - password=$(aws secretsmanager get-secret-value --secret-id arn:aws:secretsmanager:us-east-1:${ACCOUNT_ID}:secret:development/cdo/javabuilder_integration_tests_key_password-sWpRnW)
 
       - # TODO: Make these configurable
       - sub_domain=javabuilder-test
