@@ -18,9 +18,10 @@ phases:
       - private_key=$(aws secretsmanager get-secret-value --secret-id arn:aws:secretsmanager:us-east-1:${ACCOUNT_ID}:secret:development/cdo/javabuilder_integration_tests_key-b4BQG2)
       - password=$(aws secretsmanager get-secret-value --secret-id arn:aws:secretsmanager:us-east-1:${ACCOUNT_ID}:secret:development/cdo/javabuilder_integration_tests_key_password-sWpRnW)
 
-      - # TODO: Make these configurable
-      - sub_domain=javabuilder-test
-      - base_domain=code.org
+      - sub_domain=$APP_SUBDOMAIN
+      - base_domain=$APP_BASE_DOMAIN
+
+      - echo Running integration tests targeting "$sub_domain"."$base_domain"
 
       - JAVABUILDER_PRIVATE_KEY=$private_key \
       - JAVABUILDER_PASSWORD=$password \
