@@ -746,10 +746,10 @@ Resources:
       AlarmActions:
         - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-slow-performance"]
       InsufficientDataActions: []
-      EvaluationPeriods: 15
+      EvaluationPeriods: 20
       DatapointsToAlarm: 15
       ComparisonOperator: GreaterThanUpperThreshold
-      TreatMissingData: ignore
+      TreatMissingData: notBreaching
       Metrics:
           - Id: m1
             ReturnData: true
@@ -779,10 +779,10 @@ Resources:
       AlarmActions:
         - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-slow-performance"]
       InsufficientDataActions: []
-      EvaluationPeriods: 15
+      EvaluationPeriods: 20
       DatapointsToAlarm: 15
       ComparisonOperator: GreaterThanUpperThreshold
-      TreatMissingData: ignore
+      TreatMissingData: notBreaching
       Metrics:
           - Id: m1
             ReturnData: true
@@ -812,10 +812,10 @@ Resources:
       AlarmActions:
         - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-slow-performance"]
       InsufficientDataActions: []
-      EvaluationPeriods: 15
+      EvaluationPeriods: 20
       DatapointsToAlarm: 15
       ComparisonOperator: GreaterThanUpperThreshold
-      TreatMissingData: ignore
+      TreatMissingData: notBreaching
       Metrics:
           - Id: m1
             ReturnData: true
@@ -845,10 +845,10 @@ Resources:
         AlarmActions:
           - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-slow-performance"]
         InsufficientDataActions: []
-        EvaluationPeriods: 15
+        EvaluationPeriods: 20
         DatapointsToAlarm: 15
         ComparisonOperator: GreaterThanUpperThreshold
-        TreatMissingData: missing
+        TreatMissingData: notBreaching
         Metrics:
             - Id: m1
               ReturnData: true
@@ -864,7 +864,7 @@ Resources:
             - Id: ad1
               Label: TransitionTime (expected)
               ReturnData: true
-              Expression: ANOMALY_DETECTION_BAND(m1, 3)
+              Expression: ANOMALY_DETECTION_BAND(m1, 5)
         ThresholdMetricId: ad1
 
 <%end -%>
