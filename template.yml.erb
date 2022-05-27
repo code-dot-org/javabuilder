@@ -873,11 +873,7 @@ Resources:
         AlarmName: !Sub "${SubDomainName}_<%=name.downcase%>_high_invocations"
         AlarmDescription: Significantly higher <%=name%> build and run invocations than
             normal detected. Investigate if there is a DDOS.
-        ActionsEnabled: true
-        OKActions: []
-        AlarmActions: []
-        InsufficientDataActions: []
-        Dimensions: []
+        ActionsEnabled: false
         EvaluationPeriods: 20
         DatapointsToAlarm: 20
         ComparisonOperator: GreaterThanUpperThreshold
