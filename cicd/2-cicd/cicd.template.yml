@@ -301,7 +301,7 @@ Resources:
               InputArtifacts:
                 - Name: appBuildResults
               Configuration:
-                StackName: !If [TargetsMainBranch, javabuilder-test, !Sub javabuilder-${GitHubBranch}-test]
+                StackName: !If [TargetsMainBranch, "javabuilder-test", !Sub "javabuilder-${GitHubBranch}-test"]
                 ActionMode: CREATE_UPDATE
                 TemplatePath: appBuildResults::packaged-app-template.yml
                 TemplateConfiguration: appBuildResults::cicd/3-app/javabuilder/test.config.json
@@ -320,10 +320,9 @@ Resources:
                 - Name: sourceCode
               Configuration:
                 ProjectName: !Ref IntegrationTestBuildProject
-                EnvironmentVariables:
-                  - name: APP_SUBDOMAIN
-                    value: !If [TargetsMainBranch, javabuilder-test, !Sub javabuilder-${GitHubBranch}-test]
-                  - name: APP_BASE_DOMAIN
-                    value: code.org
+                EnvironmentVariables: !Sub
+                  - '[{"name":"APP_SUBDOMAIN","value":"${SUBDOMAIN}","type":"PLAINTEXT"},{"name":"APP_BASE_DOMAIN","value":"${BASE_DOMAIN}","type":"PLAINTEXT"}]'
+                  - BASE_DOMAIN: code.org
+                    SUBDOMAIN: !If [TargetsMainBranch, "javabuilder-test", !Sub "javabuilder-${GitHubBranch}-test"]
               OutputArtifacts:
                 - Name: integrationTestResultsPOC
