@@ -867,6 +867,39 @@ Resources:
               Expression: ANOMALY_DETECTION_BAND(m1, 5)
         ThresholdMetricId: ad1
 
+  <%=name%>HighInvocationsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+        AlarmName: !Sub "${SubDomainName}_<%=name.downcase%>_high_invocations"
+        AlarmDescription: Significantly higher <%=name%> build and run invocations than
+            normal detected. Investigate if there is a DDOS.
+        ActionsEnabled: true
+        OKActions: []
+        AlarmActions: []
+        InsufficientDataActions: []
+        Dimensions: []
+        EvaluationPeriods: 20
+        DatapointsToAlarm: 20
+        ComparisonOperator: GreaterThanUpperThreshold
+        TreatMissingData: notBreaching
+        Metrics:
+            - Id: m1
+              ReturnData: true
+              MetricStat:
+                  Metric:
+                      Namespace: AWS/Lambda
+                      MetricName: Invocations
+                      Dimensions:
+                          - Name: FunctionName
+                            Value: !Ref BuildAndRunJava<%=name%>ProjectFunction
+                  Period: 60
+                  Stat: Sum
+            - Id: ad1
+              Label: Invocations (expected)
+              ReturnData: true
+              Expression: ANOMALY_DETECTION_BAND(m1, 8)
+        ThresholdMetricId: ad1
+
 <%end -%>
 
 # We use shortened versions of names for partition keys (eg, user_id),
