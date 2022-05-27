@@ -320,5 +320,10 @@ Resources:
                 - Name: sourceCode
               Configuration:
                 ProjectName: !Ref IntegrationTestBuildProject
+                EnvironmentVariables:
+                  - name: APP_SUBDOMAIN
+                    value: !If [TargetsMainBranch, javabuilder-test, !Sub javabuilder-${GitHubBranch}-test]
+                  - name: APP_BASE_DOMAIN
+                    value: code.org
               OutputArtifacts:
                 - Name: integrationTestResultsPOC
