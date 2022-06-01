@@ -8,3 +8,5 @@ gem 'jwt'
 gem "aws-sdk-dynamodb", "~> 1.60"
 
 gem "aws-sdk-cloudwatch", "~> 1.52"
+
+gem "minitest", "~> 5.5"
