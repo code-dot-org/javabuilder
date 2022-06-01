@@ -13,12 +13,10 @@ class JwtHelperTest < Minitest::Test
 
     auth_response = JwtHelper.generate_allow(resource, token_payload)
 
-    assert auth_response != nil
     assert_equal "#{issuer}/#{user_id}", auth_response['principalId']
     assert_equal token_payload, auth_response['context']
 
-    policy_document = auth_response['policyDocument']
-    statement = policy_document['Statement'][0]
+    statement = auth_response['policyDocument']['Statement'][0]
     assert_equal 'Allow', statement['Effect']
     assert_equal resource, statement['Resource']
    end
