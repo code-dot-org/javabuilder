@@ -1,8 +1,6 @@
 package org.code.javabuilder;
 
-import static org.code.javabuilder.InternalFacingExceptionTypes.CONNECTION_TERMINATED;
 import static org.code.javabuilder.LambdaErrorCodes.TEMP_DIRECTORY_CLEANUP_ERROR_CODE;
-import static org.code.protocol.LoggerNames.MAIN_LOGGER;
 
 import java.io.File;
 import java.io.IOException;
@@ -10,7 +8,7 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.nio.file.Files;
 import java.util.List;
-import java.util.logging.Logger;
+import org.code.javabuilder.util.LambdaUtils;
 import org.code.protocol.*;
 
 /**
@@ -155,19 +153,8 @@ public class CodeExecutionManager {
    */
   private void onPostExecute() {
     // Notify user and listeners
-    try {
-      this.outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.EXITED));
-    } catch (InternalFacingRuntimeException e) {
-      // Only log if this is not a connection terminated exception. If it is, we should have already
-      // logged a warning.
-      if (!e.getMessage().equals(CONNECTION_TERMINATED)) {
-        Logger.getLogger(MAIN_LOGGER).warning(e.getLoggingString());
-      }
-    } catch (Exception e) {
-      // Catch any other exceptions here to prevent them from propagating.
-      Logger.getLogger(MAIN_LOGGER).warning(e.getMessage());
-    }
-
+    LambdaUtils.safelySendMessage(
+        this.outputAdapter, new StatusMessage(StatusMessageKey.EXITED), false);
     this.lifecycleNotifier.onExecutionEnded();
     GlobalProtocol.getInstance().cleanUpResources();
     try {
