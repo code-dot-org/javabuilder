@@ -3,6 +3,7 @@ package org.code.javabuilder;
 import static org.code.protocol.LoggerNames.MAIN_LOGGER;
 
 import java.util.logging.Logger;
+import org.code.javabuilder.util.LambdaUtils;
 import org.code.protocol.*;
 
 /**
@@ -26,7 +27,7 @@ public class ExceptionHandler {
       final FatalError error = (FatalError) e;
       LoggerUtils.logSevereError(
           error.getExceptionMessage(), error.getLoggingString(), e.getCause());
-      this.sendMessage(error.getExceptionMessage());
+      LambdaUtils.safelySendMessage(this.outputAdapter, error.getExceptionMessage(), true);
       this.systemExitHelper.exit(error.getErrorCode());
       return;
     }
@@ -37,7 +38,7 @@ public class ExceptionHandler {
       final JavabuilderThrowableProtocol throwable = (JavabuilderThrowableProtocol) e;
       LoggerUtils.logSevereError(
           throwable.getExceptionMessage(), throwable.getLoggingString(), e.getCause());
-      this.sendMessage(throwable.getExceptionMessage());
+      LambdaUtils.safelySendMessage(this.outputAdapter, throwable.getExceptionMessage(), true);
       return;
     }
 
@@ -50,7 +51,8 @@ public class ExceptionHandler {
 
     // Any other Javabuilder exceptions should be caused by the user. Notify them.
     if (e instanceof JavabuilderException || e instanceof JavabuilderRuntimeException) {
-      this.sendMessage(((JavabuilderThrowableProtocol) e).getExceptionMessage());
+      LambdaUtils.safelySendMessage(
+          this.outputAdapter, ((JavabuilderThrowableProtocol) e).getExceptionMessage(), true);
       return;
     }
 
@@ -59,22 +61,6 @@ public class ExceptionHandler {
     final InternalServerException error =
         new InternalServerException(InternalExceptionKey.UNKNOWN_ERROR, e);
     LoggerUtils.logSevereError(error);
-    this.sendMessage(error.getExceptionMessage());
-  }
-
-  /**
-   * Helper method for sending messages via the output adapter that catches any exceptions if they
-   * are thrown.
-   */
-  private void sendMessage(ClientMessage message) {
-    try {
-      this.outputAdapter.sendMessage(message);
-    } catch (InternalFacingRuntimeException e) {
-      // This likely means the connection has been lost. Log a warning.
-      Logger.getLogger(MAIN_LOGGER).warning(e.getLoggingString());
-    } catch (Exception e) {
-      // Catch any other exceptions here to prevent them from propagating.
-      Logger.getLogger(MAIN_LOGGER).warning(e.getMessage());
-    }
+    LambdaUtils.safelySendMessage(this.outputAdapter, error.getExceptionMessage(), true);
   }
 }

@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
+import org.code.javabuilder.util.LambdaUtils;
 import org.code.protocol.*;
 import org.code.validation.support.UserTestOutputAdapter;
 import org.json.JSONObject;
@@ -331,13 +332,14 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
               Thread.sleep(CHECK_THREAD_INTERVAL_MS);
               if ((context.getRemainingTimeInMillis() < TIMEOUT_WARNING_MS)
                   && !timeoutWarningSent) {
-                this.sendOutputMessage(
-                    outputAdapter, new StatusMessage(StatusMessageKey.TIMEOUT_WARNING));
+                LambdaUtils.safelySendMessage(
+                    outputAdapter, new StatusMessage(StatusMessageKey.TIMEOUT_WARNING), true);
                 timeoutWarningSent = true;
               }
 
               if (context.getRemainingTimeInMillis() < TIMEOUT_CLEANUP_BUFFER_MS) {
-                this.sendOutputMessage(outputAdapter, new StatusMessage(StatusMessageKey.TIMEOUT));
+                LambdaUtils.safelySendMessage(
+                    outputAdapter, new StatusMessage(StatusMessageKey.TIMEOUT), true);
                 // Shut down the environment
                 this.shutDown(codeExecutionManager, connectionId, api);
                 break;
@@ -367,23 +369,6 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     Handler[] allHandlers = Logger.getLogger(MAIN_LOGGER).getHandlers();
     for (int i = 0; i < allHandlers.length; i++) {
       Logger.getLogger(MAIN_LOGGER).removeHandler(allHandlers[i]);
-    }
-  }
-
-  /**
-   * Sends a message via the OutputAdapter and handles any exceptions if they are thrown. This
-   * allows us to safely try and send messages from the handler without unintentionally raising
-   * uncaught exceptions.
-   */
-  private void sendOutputMessage(OutputAdapter outputAdapter, ClientMessage message) {
-    try {
-      outputAdapter.sendMessage(message);
-    } catch (InternalFacingRuntimeException e) {
-      // This likely means the connection has been lost. Log a warning.
-      Logger.getLogger(MAIN_LOGGER).warning(e.getLoggingString());
-    } catch (Exception e) {
-      // Catch any other exceptions here to prevent them from propagating.
-      Logger.getLogger(MAIN_LOGGER).warning(e.getMessage());
     }
   }
 }
