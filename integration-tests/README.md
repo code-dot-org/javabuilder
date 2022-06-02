@@ -13,6 +13,12 @@ You can run tests locally against a custom deploy of Javabuilder.
 3. `./run-integration-tests.sh`
 4. `unset AWS_PROFILE`
 
+### Running Individual Tests
+
+Use the `-g` option to target a single test or group of tests; for example: `./run-integration-tests.sh -g Theater`
+
+The `-g` option runs any tests matching the provided string/pattern (see [Mocha docs](https://mochajs.org/#usage) for more information).
+
 ## Adding New Tests
 
 Write new tests in the [./test/](./test/) directory. You can also use and update support code as needed.
