@@ -650,6 +650,25 @@ Resources:
               Expression: ANOMALY_DETECTION_BAND(m1, 8)
         ThresholdMetricId: ad1
 
+  HighUsageCompositeAlarm:
+    Type: AWS::CloudWatch::CompositeAlarm
+    Properties:
+        ActionsEnabled: true
+        AlarmActions:
+            - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-high-usage"]
+        AlarmDescription: Send message if abnormally high Javabuilder usage detected.
+            Monitors usage across the HTTP API, WebSocket API, and all Build and Run
+            Lambdas.
+        AlarmName: !Sub "${SubDomainName}_high_usage_composite"
+        AlarmRule: !Sub "ALARM(${SubDomainName}_console_high_invocations) OR
+            ALARM(${SubDomainName}_high_http_requests) OR
+            ALARM(${SubDomainName}_high_websocket_connections) OR
+            ALARM(${SubDomainName}_neighborhood_high_invocations) OR
+            ALARM(${SubDomainName}_playground_high_invocations) OR
+            ALARM(${SubDomainName}_theater_high_invocations)"
+        InsufficientDataActions: []
+        OKActions: []
+
 <%JAVALAB_APP_TYPES.each do | name | -%>
 
   <%=name%>HighSevereErrorRateAlarm:
