@@ -1,5 +1,6 @@
 package org.code.javabuilder;
 
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -41,7 +42,7 @@ class CodeExecutionManagerTest {
     contentManager = mock(ContentManager.class);
 
     when(codeBuilderRunnableFactory.createCodeBuilderRunnable(
-            eq(fileLoader), eq(outputAdapter), any(File.class), eq(executionType), eq(compileList)))
+            eq(fileLoader), any(File.class), eq(executionType), eq(compileList)))
         .thenReturn(codeBuilderRunnable);
 
     unitUnderTest =
@@ -59,42 +60,50 @@ class CodeExecutionManagerTest {
   }
 
   @Test
-  public void testExitEarlyDoesNothingIfExecutionFinished() {
+  public void testCannotShutDownIfNotInitialized()
+      throws JavabuilderException, InternalFacingException {
     unitUnderTest.execute();
+    unitUnderTest.shutDown();
     verify(codeBuilderRunnable).run();
     // Verify post-execute
     verify(lifecycleNotifier, times(1)).onExecutionEnded();
 
-    unitUnderTest.requestEarlyExit();
+    unitUnderTest.shutDown();
     // Should not call post-execute again
     verify(lifecycleNotifier, times(1)).onExecutionEnded();
   }
 
   @Test
-  public void testPostExecuteCalledOnlyOnceIfEarlyExitRequested() {
-    // Hack to simulate the timeout scenario where requestEarlyExit is called before run() is
+  public void testPostExecuteCalledOnlyOnceIfShutDownEarly()
+      throws JavabuilderException, InternalFacingException {
+    // Hack to simulate the timeout scenario where shutDown is called before run() is
     // finished
     doAnswer(
             invocation -> {
-              unitUnderTest.requestEarlyExit();
+              unitUnderTest.shutDown();
               return null;
             })
         .when(codeBuilderRunnable)
         .run();
 
     unitUnderTest.execute();
+    unitUnderTest.shutDown();
 
     // Verify post-execute happened only once
     verify(lifecycleNotifier, times(1)).onExecutionEnded();
   }
 
   @Test
-  public void testReplacesSystemIOAfterExecution() {
+  public void testReplacesSystemIOAfterExecution()
+      throws JavabuilderException, InternalFacingException {
     final PrintStream sysOut = System.out;
     final InputStream sysIn = System.in;
 
     unitUnderTest.execute();
+    assertNotSame(sysOut, System.out);
+    assertNotSame(sysIn, System.in);
 
+    unitUnderTest.shutDown();
     assertSame(sysOut, System.out);
     assertSame(sysIn, System.in);
   }
