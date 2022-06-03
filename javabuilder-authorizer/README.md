@@ -8,3 +8,6 @@ It expects a JWT token to be sent in an Authorization header in the standard for
 You must be running ruby version 2.7.2 for the upload to work properly. The lambda 
 expects the gems to be in `vendor\bundle\ruby\2.7.0\*`. You may be able to manually
 rename the `2.7.0` folder to workaround installing a different ruby version.
+
+## Testing
+To run unit tests, run `rake test` from this folder. For end to end testing, refer to the main [README](../README.MD).
