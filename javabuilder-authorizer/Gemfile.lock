@@ -21,6 +21,7 @@ GEM
       aws-eventstream (~> 1, >= 1.0.2)
     jmespath (1.4.0)
     jwt (2.2.2)
+    minitest (5.15.0)
 
 PLATFORMS
   ruby
@@ -30,6 +31,7 @@ DEPENDENCIES
   aws-sdk-dynamodb (~> 1.60)
   aws-sdk-lambda (= 1.39.0)
   jwt
+  minitest (~> 5.5)
 
 RUBY VERSION
    ruby 2.7.4p191
