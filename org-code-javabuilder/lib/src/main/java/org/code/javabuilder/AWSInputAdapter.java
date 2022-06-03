@@ -1,5 +1,7 @@
 package org.code.javabuilder;
 
+import static org.code.javabuilder.InternalFacingExceptionTypes.CONNECTION_TERMINATED;
+
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.model.Message;
 import com.amazonaws.services.sqs.model.QueueDoesNotExistException;
@@ -8,8 +10,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import org.code.protocol.InputAdapter;
-import org.code.protocol.InternalExceptionKey;
-import org.code.protocol.InternalServerRuntimeException;
 
 /** Accesses Amazon SQS to get user input for the currently running program. */
 public class AWSInputAdapter implements InputAdapter {
@@ -48,7 +48,7 @@ public class AWSInputAdapter implements InputAdapter {
         }
       } catch (QueueDoesNotExistException e) {
         // if we tried to send a message and got queue does not exist, we have lost our connection
-        throw new InternalServerRuntimeException(InternalExceptionKey.CONNECTION_TERMINATED, e);
+        throw new InternalFacingRuntimeException(CONNECTION_TERMINATED, e);
       }
     }
 

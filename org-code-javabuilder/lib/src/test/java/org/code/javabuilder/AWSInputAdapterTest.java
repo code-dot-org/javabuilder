@@ -1,5 +1,6 @@
 package org.code.javabuilder;
 
+import static org.code.javabuilder.InternalFacingExceptionTypes.CONNECTION_TERMINATED;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -11,8 +12,6 @@ import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 import com.amazonaws.services.sqs.model.ReceiveMessageResult;
 import java.util.ArrayList;
 import java.util.List;
-import org.code.protocol.InternalExceptionKey;
-import org.code.protocol.InternalServerRuntimeException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -93,7 +92,7 @@ public class AWSInputAdapterTest {
   void throwsOnLostConnection() {
     this.mockLostConnection();
     Exception actual =
-        assertThrows(InternalServerRuntimeException.class, () -> inputAdapter.getNextMessage());
-    assertEquals(InternalExceptionKey.CONNECTION_TERMINATED.toString(), actual.getMessage());
+        assertThrows(InternalFacingRuntimeException.class, () -> inputAdapter.getNextMessage());
+    assertEquals(CONNECTION_TERMINATED, actual.getMessage());
   }
 }
