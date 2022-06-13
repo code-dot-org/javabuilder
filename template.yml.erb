@@ -650,6 +650,25 @@ Resources:
               Expression: ANOMALY_DETECTION_BAND(m1, 8)
         ThresholdMetricId: ad1
 
+  HighUsageCompositeAlarm:
+    Type: AWS::CloudWatch::CompositeAlarm
+    Properties:
+        ActionsEnabled: true
+        AlarmActions:
+            - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-high-usage"]
+        AlarmDescription: Send message if abnormally high Javabuilder usage detected.
+            Monitors usage across the HTTP API, WebSocket API, and all Build and Run
+            Lambdas.
+        AlarmName: !Sub "${SubDomainName}_high_usage_composite"
+        AlarmRule: !Sub "ALARM(${SubDomainName}_console_high_invocations) OR
+            ALARM(${SubDomainName}_high_http_requests) OR
+            ALARM(${SubDomainName}_high_websocket_connections) OR
+            ALARM(${SubDomainName}_neighborhood_high_invocations) OR
+            ALARM(${SubDomainName}_playground_high_invocations) OR
+            ALARM(${SubDomainName}_theater_high_invocations)"
+        InsufficientDataActions: []
+        OKActions: []
+
 <%JAVALAB_APP_TYPES.each do | name | -%>
 
   <%=name%>HighSevereErrorRateAlarm:
@@ -976,6 +995,151 @@ Resources:
       TimeToLiveSpecification:
         AttributeName: <%=TIME_TO_LIVE_ATTRIBUTE_NAME%>
         Enabled: true
+
+  HighUsersBlockedAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+        AlarmName: !Sub "${SubDomainName}_high_users_blocked"
+        AlarmDescription: Unusually high number of users being blocked by our throttling
+            thresholds.
+        ActionsEnabled: true
+        OKActions: []
+        AlarmActions:
+          - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-high-throttling"]
+        InsufficientDataActions: []
+        MetricName: UserBlocked
+        Namespace: Javabuilder
+        Statistic: Sum
+        Dimensions:
+            - Name: functionName
+              Value: !Ref HttpAuthorizerLambda
+        Period: 60
+        EvaluationPeriods: 1
+        DatapointsToAlarm: 1
+        Threshold: 100
+        ComparisonOperator: GreaterThanThreshold
+        TreatMissingData: notBreaching
+
+  HighClassroomsBlockedAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+        AlarmName: !Sub "${SubDomainName}_high_classrooms_blocked"
+        AlarmDescription: Unusually high number of classrooms being blocked by our throttling
+            thresholds.
+        ActionsEnabled: true
+        OKActions: []
+        AlarmActions:
+          - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-high-throttling"]
+        InsufficientDataActions: []
+        MetricName: ClassroomBlocked
+        Namespace: Javabuilder
+        Statistic: Sum
+        Dimensions:
+            - Name: functionName
+              Value: !Ref HttpAuthorizerLambda
+        Period: 60
+        EvaluationPeriods: 1
+        DatapointsToAlarm: 1
+        Threshold: 10
+        ComparisonOperator: GreaterThanThreshold
+        TreatMissingData: notBreaching
+
+  HighUnknownTokensAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+        AlarmName: !Sub "${SubDomainName}_high_unknown_tokens"
+        AlarmDescription: Websocket authorizer is receiving connection requests using
+            tokens that did not pass through the HTTP authorizer first.
+        ActionsEnabled: true
+        OKActions: []
+        AlarmActions:
+          - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-high-token-errors"]
+        InsufficientDataActions: []
+        MetricName: TokenUnknownId
+        Namespace: Javabuilder
+        Statistic: Sum
+        Dimensions:
+            - Name: functionName
+              Value: !Ref WebsocketAuthorizerLambda
+        Period: 60
+        EvaluationPeriods: 1
+        DatapointsToAlarm: 1
+        Threshold: 100
+        ComparisonOperator: GreaterThanThreshold
+        TreatMissingData: notBreaching
+
+  HighUnvettedTokensAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+        AlarmName: !Sub "${SubDomainName}_high_unvetted_tokens"
+        AlarmDescription: Websocket authorizer is receiving connection requests using
+            tokens that were observed but not vetted as valid by the HTTP authorizer.
+        ActionsEnabled: true
+        OKActions: []
+        AlarmActions:
+          - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-high-token-errors"]
+        InsufficientDataActions: []
+        MetricName: TokenNotVetted
+        Namespace: Javabuilder
+        Statistic: Sum
+        Dimensions:
+            - Name: functionName
+              Value: !Ref WebsocketAuthorizerLambda
+        Period: 60
+        EvaluationPeriods: 1
+        DatapointsToAlarm: 1
+        Threshold: 100
+        ComparisonOperator: GreaterThanThreshold
+        TreatMissingData: notBreaching
+
+  WebsocketHighUsedTokensAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+        AlarmName: !Sub "${SubDomainName}_websocket_high_used_tokens"
+        AlarmDescription: Websocket authorizer is receiving connection requests using
+            tokens have already been used.
+        ActionsEnabled: true
+        OKActions: []
+        AlarmActions:
+          - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-high-token-errors"]
+        InsufficientDataActions: []
+        MetricName: TokenUsed
+        Namespace: Javabuilder
+        Statistic: Sum
+        Dimensions:
+            - Name: functionName
+              Value: !Ref WebsocketAuthorizerLambda
+        Period: 60
+        EvaluationPeriods: 1
+        DatapointsToAlarm: 1
+        Threshold: 100
+        ComparisonOperator: GreaterThanThreshold
+        TreatMissingData: notBreaching
+
+  HttpHighUsedTokensAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+        AlarmName: !Sub "${SubDomainName}_http_high_used_tokens"
+        AlarmDescription: HTTP authorizer is receiving connection requests using
+            tokens have already been used.
+        ActionsEnabled: true
+        OKActions: []
+        AlarmActions:
+          - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-high-token-errors"]
+        InsufficientDataActions: []
+        MetricName: TokenUsed
+        Namespace: Javabuilder
+        Statistic: Sum
+        Dimensions:
+            - Name: functionName
+              Value: !Ref HttpAuthorizerLambda
+        Period: 60
+        EvaluationPeriods: 1
+        DatapointsToAlarm: 1
+        Threshold: 100
+        ComparisonOperator: GreaterThanThreshold
+        TreatMissingData: notBreaching
+
 Outputs:
   JavabuilderURL:
     Value:

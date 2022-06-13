@@ -25,7 +25,8 @@ public class MainRunner implements CodeRunner {
    * @throws JavabuilderException when the user's code hits an error
    * @return true if there was code to run, false if there was not.
    */
-  public boolean run(URLClassLoader urlClassLoader) throws JavabuilderException {
+  public boolean run(URLClassLoader urlClassLoader)
+      throws JavabuilderException, InternalFacingException {
     try {
       // Preload error handling classes in case a user project uses up all resources
       Class.forName(UserInitiatedExceptionKey.class.getName());
@@ -48,13 +49,22 @@ public class MainRunner implements CodeRunner {
       // TODO: this error message may not be not very friendly
       throw new UserInitiatedException(UserInitiatedExceptionKey.ILLEGAL_METHOD_ACCESS, e);
     } catch (InvocationTargetException e) {
-      // If the invocation exception is wrapping another JavabuilderException or
-      // JavabuilderRuntimeException, we don't need to wrap it in a UserInitiatedException
+      // If the invocation exception is wrapping a known exception type, we don't need to wrap it in
+      // a UserInitiatedException
       if (e.getCause() instanceof JavabuilderException) {
         throw (JavabuilderException) e.getCause();
       }
       if (e.getCause() instanceof JavabuilderRuntimeException) {
         throw (JavabuilderRuntimeException) e.getCause();
+      }
+      if (e.getCause() instanceof InternalFacingException) {
+        throw (InternalFacingException) e.getCause();
+      }
+      if (e.getCause() instanceof InternalFacingRuntimeException) {
+        throw (InternalFacingRuntimeException) e.getCause();
+      }
+      if (e.getCause() instanceof JavabuilderError) {
+        throw (JavabuilderError) e.getCause();
       }
       // FileNotFoundExceptions may be thrown from student code, so we treat them as a
       // specific case of a UserInitiatedException

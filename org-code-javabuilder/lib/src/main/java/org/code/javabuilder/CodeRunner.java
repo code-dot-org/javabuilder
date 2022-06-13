@@ -12,5 +12,5 @@ public interface CodeRunner {
    * @throws JavabuilderException if there is an error running code
    * @return true if there was code to run, false if there was not.
    */
-  boolean run(URLClassLoader urlClassLoader) throws JavabuilderException;
+  boolean run(URLClassLoader urlClassLoader) throws JavabuilderException, InternalFacingException;
 }

@@ -1,7 +1,7 @@
 package org.code.javabuilder;
 
-import static org.code.javabuilder.LambdaErrorCodes.TEMP_DIRECTORY_CLEANUP_ERROR_CODE;
-import static org.code.protocol.InternalExceptionKey.INTERNAL_EXCEPTION;
+import static org.code.javabuilder.InternalFacingExceptionTypes.INVALID_INPUT;
+import static org.code.protocol.InternalExceptionKey.*;
 import static org.code.protocol.LoggerNames.MAIN_LOGGER;
 
 import com.amazonaws.client.builder.AwsClientBuilder;
@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
+import org.code.javabuilder.util.LambdaUtils;
 import org.code.protocol.*;
 import org.code.validation.support.UserTestOutputAdapter;
 import org.json.JSONObject;
@@ -59,6 +60,10 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
   private static final AmazonSQS SQS_CLIENT = AmazonSQSClientBuilder.defaultClient();
   private static final AmazonS3 S3_CLIENT = AmazonS3ClientBuilder.standard().build();
 
+  // Controls whether the current invocation session has been initialized. This should be reset on
+  // every invocation.
+  private boolean isSessionInitialized = false;
+
   public LambdaRequestHandler() {
     // create CachedResources once for the entire container.
     // This will only be called once in the initial creation of the lambda instance.
@@ -69,7 +74,20 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
 
   /**
    * This is the implementation of the long-running-lambda where user code will be compiled and
-   * executed.
+   * executed. The handler performs the following actions for each invocation:
+   *
+   * <p>1. Initialize the current session (set global properties, setup static objects, etc)
+   *
+   * <p>2.Create the OutputAdapter to communicate with the user
+   *
+   * <p>3. Clear the temp directory on the current container
+   *
+   * <p>4. Setup the code execution environment, and execute code
+   *
+   * <p>5. Handle any exceptions/errors if they are thrown
+   *
+   * <p>6. Shut down the current session (shut down the execution environment, clean up AWS
+   * resources, etc).
    *
    * @param lambdaInput A map of the json input to this lambda function. Input is formatted like
    *     this: { "queueUrl": <session-specific-url>, "queueName": <session-specific-string>
@@ -79,21 +97,19 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
    */
   @Override
   public String handleRequest(Map<String, String> lambdaInput, Context context) {
-    final Instant instanceStart = Clock.systemUTC().instant();
-    // The lambda handler should have minimal application logic:
-    // https://docs.aws.amazon.com/lambda/latest/dg/best-practices.html
+    this.isSessionInitialized = false;
+    this.trackStartupPerformance();
+
+    // TODO: Because we reference the logger object throughout the codebase via
+    // Logger.getLogger(MAIN_LOGGER), we need to set it up in the same scope as code execution to
+    // prevent the instance from being garbage collected. Instead, we should store a global
+    // reference to this logger object and access that directly rather than via
+    // Logger.getLogger(MAIN_LOGGER)
     final String connectionId = lambdaInput.get("connectionId");
-    final String queueUrl = lambdaInput.get("queueUrl");
-    final String queueName = lambdaInput.get("queueName");
     final String levelId = lambdaInput.get("levelId");
     final String channelId =
         lambdaInput.get("channelId") == null ? "noneProvided" : lambdaInput.get("channelId");
-    final ExecutionType executionType = ExecutionType.valueOf(lambdaInput.get("executionType"));
-    final JSONObject options = new JSONObject(lambdaInput.get("options"));
     final String javabuilderSessionId = lambdaInput.get("javabuilderSessionId");
-    final List<String> compileList = JSONUtils.listFromJSONObjectMember(options, "compileList");
-    final boolean canAccessDashboardAssets =
-        Boolean.parseBoolean(lambdaInput.get("canAccessDashboardAssets"));
     Logger logger = Logger.getLogger(MAIN_LOGGER);
     logger.addHandler(
         new LambdaLogHandler(
@@ -105,11 +121,80 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
             channelId));
     // turn off the default console logger
     logger.setUseParentHandlers(false);
+
+    this.initialize(lambdaInput, connectionId, context);
+
+    // Try to construct the output adapter as early as possible, so we can notify the user if
+    // something goes wrong. If for some reason we cannot construct the output adapter, our only
+    // option is to log and exit.
+    final OutputAdapter outputAdapter;
+    try {
+      outputAdapter = this.createOutputAdapter(lambdaInput);
+    } catch (InternalFacingException e) {
+      LoggerUtils.logSevereException(e);
+      return "error";
+    }
+
+    final ExceptionHandler exceptionHandler =
+        new ExceptionHandler(outputAdapter, new AWSSystemExitHelper(connectionId, API_CLIENT));
+    final TempDirectoryManager tempDirectoryManager = new AWSTempDirectoryManager();
+
+    CodeExecutionManager codeExecutionManager = null;
+    Thread timeoutNotifierThread = null;
+
+    try {
+      this.clearTempDirectory(tempDirectoryManager);
+
+      codeExecutionManager =
+          this.createExecutionManager(
+              lambdaInput, context, connectionId, outputAdapter, tempDirectoryManager);
+
+      // Create and start thread that that will notify us if we're nearing the timeout limit
+      timeoutNotifierThread =
+          this.createTimeoutThread(
+              context, outputAdapter, codeExecutionManager, connectionId, API_CLIENT);
+      timeoutNotifierThread.start();
+
+      // Initialize and start code execution
+      codeExecutionManager.execute();
+    } catch (Throwable e) {
+      // Catch and handle all exceptions
+      exceptionHandler.handle(e);
+    } finally {
+      if (timeoutNotifierThread != null) {
+        timeoutNotifierThread.interrupt();
+      }
+      this.shutDown(codeExecutionManager, connectionId, API_CLIENT);
+    }
+
+    return "done";
+  }
+
+  /**
+   * Sets up the lambda environment for the current invocation by setting global properties and
+   * creating global objects
+   */
+  private void initialize(Map<String, String> lambdaInput, String connectionId, Context context) {
+    final boolean canAccessDashboardAssets =
+        Boolean.parseBoolean(lambdaInput.get("canAccessDashboardAssets"));
+
     Properties.setConnectionId(connectionId);
 
     MetricClient metricClient = new AWSMetricClient(context.getFunctionName());
     MetricClientManager.create(metricClient);
 
+    // Dashboard assets are only accessible if the dashboard domain is not localhost
+    Properties.setCanAccessDashboardAssets(canAccessDashboardAssets);
+    // manually set font configuration file since there is no font configuration on a lambda.
+    java.util.Properties props = System.getProperties();
+    // /opt is the folder all layer files go into.
+    props.put("sun.awt.fontconfig", "/opt/fontconfig.properties");
+
+    this.isSessionInitialized = true;
+  }
+
+  private void trackStartupPerformance() {
+    final Instant instanceStart = Clock.systemUTC().instant();
     PerformanceTracker.resetTracker();
     if (coldBoot) {
       PerformanceTracker.getInstance().trackColdBoot(COLD_BOOT_START, COLD_BOOT_END, instanceStart);
@@ -117,105 +202,119 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     } else {
       PerformanceTracker.getInstance().trackInstanceStart(instanceStart);
     }
+  }
 
-    Properties.setCanAccessDashboardAssets(canAccessDashboardAssets);
-
-    // Create user-program output handlers
+  /**
+   * Create an {@link OutputAdapter} for the session.
+   *
+   * @throws InternalFacingException if the OutputAdapter cannot be created from the given input.
+   */
+  private OutputAdapter createOutputAdapter(Map<String, String> lambdaInput)
+      throws InternalFacingException {
+    final String connectionId = lambdaInput.get("connectionId");
+    if (connectionId == null) {
+      throw new InternalFacingException(INVALID_INPUT, new Exception("Missing connection ID"));
+    }
     final AWSOutputAdapter awsOutputAdapter = new AWSOutputAdapter(connectionId, API_CLIENT);
 
-    // Create user input handlers
-    final AWSInputAdapter inputAdapter = new AWSInputAdapter(SQS_CLIENT, queueUrl, queueName);
-    final AWSTempDirectoryManager tempDirectoryManager = new AWSTempDirectoryManager();
-    final LifecycleNotifier lifecycleNotifier = new LifecycleNotifier();
-    OutputAdapter outputAdapter = awsOutputAdapter;
-    if (executionType == ExecutionType.TEST) {
-      outputAdapter = new UserTestOutputAdapter(awsOutputAdapter);
-    }
-
-    final AWSContentManager contentManager;
     try {
-      contentManager =
-          new AWSContentManager(
-              S3_CLIENT, CONTENT_BUCKET_NAME, javabuilderSessionId, CONTENT_BUCKET_URL, context);
-    } catch (InternalServerException e) {
-      return onInitializationError("error loading data", e, outputAdapter, connectionId);
+      final ExecutionType executionType = ExecutionType.valueOf(lambdaInput.get("executionType"));
+      if (executionType == ExecutionType.TEST) {
+        return new UserTestOutputAdapter(awsOutputAdapter);
+      }
+      return awsOutputAdapter;
+    } catch (IllegalArgumentException e) {
+      throw new InternalFacingException(INVALID_INPUT, e);
     }
+  }
 
-    // manually set font configuration file since there is no font configuration on a lambda.
-    java.util.Properties props = System.getProperties();
-    // /opt is the folder all layer files go into.
-    props.put("sun.awt.fontconfig", "/opt/fontconfig.properties");
-
+  /**
+   * Clear the container's temp directory in preparation for code execution. Throws a {@link
+   * FatalError} if any IOException occurs to force the container to shutdown and release resources.
+   */
+  private void clearTempDirectory(TempDirectoryManager tempDirectoryManager) {
     try {
       // Log disk space before clearing the directory
       LoggerUtils.sendDiskSpaceReport();
-
       tempDirectoryManager.cleanUpTempDirectory(null);
     } catch (IOException e) {
       // Wrap this in our error type so we can log it and tell the user.
-      InternalServerException error = new InternalServerException(INTERNAL_EXCEPTION, e);
-      onInitializationError("error clearing tmpdir", error, outputAdapter, connectionId);
-      // If there was an issue clearing the temp directory, this may be because too many files are
-      // open. Force the JVM to quit in order to release the resources for the next use of the
-      // container.
-      System.exit(TEMP_DIRECTORY_CLEANUP_ERROR_CODE);
+      throw new FatalError(FatalErrorKey.TEMP_DIRECTORY_CLEANUP_ERROR, e);
+    }
+  }
+
+  /** Creates the {@link CodeExecutionManager} for building and executing code. */
+  private CodeExecutionManager createExecutionManager(
+      Map<String, String> lambdaInput,
+      Context context,
+      String connectionId,
+      OutputAdapter outputAdapter,
+      TempDirectoryManager tempDirectoryManager)
+      throws InternalServerException {
+    final String queueUrl = lambdaInput.get("queueUrl");
+    final String queueName = lambdaInput.get("queueName");
+    final ExecutionType executionType = ExecutionType.valueOf(lambdaInput.get("executionType"));
+    final JSONObject options = new JSONObject(lambdaInput.get("options"));
+    final String javabuilderSessionId = lambdaInput.get("javabuilderSessionId");
+    final List<String> compileList = JSONUtils.listFromJSONObjectMember(options, "compileList");
+
+    final AWSInputAdapter inputAdapter = new AWSInputAdapter(SQS_CLIENT, queueUrl, queueName);
+    final LifecycleNotifier lifecycleNotifier = new LifecycleNotifier();
+    final AWSContentManager contentManager =
+        new AWSContentManager(
+            S3_CLIENT, CONTENT_BUCKET_NAME, javabuilderSessionId, CONTENT_BUCKET_URL, context);
+
+    return new CodeExecutionManager(
+        contentManager.getProjectFileLoader(),
+        inputAdapter,
+        outputAdapter,
+        executionType,
+        compileList,
+        tempDirectoryManager,
+        contentManager,
+        lifecycleNotifier,
+        new AWSSystemExitHelper(connectionId, API_CLIENT));
+  }
+
+  /**
+   * Cleans up resources used by the current invocation, and prepares the container for the next
+   * invocation.
+   */
+  private void shutDown(
+      CodeExecutionManager executionManager,
+      String connectionId,
+      AmazonApiGatewayManagementApi api) {
+    // No need to shut down if the session is not initialized. This means that we've already shut
+    // down (ex. due to timeout) or this method was somehow called out of turn.
+    if (!this.isSessionInitialized) {
+      return;
     }
 
-    final CodeExecutionManager codeExecutionManager =
-        new CodeExecutionManager(
-            contentManager.getProjectFileLoader(),
-            inputAdapter,
-            outputAdapter,
-            executionType,
-            compileList,
-            tempDirectoryManager,
-            contentManager,
-            lifecycleNotifier,
-            new AWSSystemExitHelper(connectionId, API_CLIENT));
-
-    final Thread timeoutNotifierThread =
-        createTimeoutThread(context, outputAdapter, codeExecutionManager, connectionId, API_CLIENT);
-    timeoutNotifierThread.start();
-
-    try {
-      // start code build and block until completed
-      codeExecutionManager.execute();
-    } catch (Throwable e) {
-      // All errors should be caught, but if for any reason we encounter an error here, make sure we
-      // catch it, log, and always clean up resources
-      LoggerUtils.logSevereException(e);
-    } finally {
-      // Stop timeout listener and clean up
-      timeoutNotifierThread.interrupt();
-      PerformanceTracker.getInstance().trackInstanceEnd();
-      PerformanceTracker.getInstance().logPerformance();
-      cleanUpResources(connectionId, API_CLIENT);
-      File f = Paths.get(System.getProperty("java.io.tmpdir")).toFile();
-      if ((double) f.getUsableSpace() / f.getTotalSpace() < 0.5) {
-        // The current project holds a lock on too many resources. Force the JVM to quit in
-        // order to release the resources for the next use of the container.
-        System.exit(LOW_DISK_SPACE_ERROR_CODE);
+    if (executionManager != null) {
+      try {
+        executionManager.shutDown();
+      } catch (Throwable e) {
+        // Catch any exceptions thrown during shutdown; the program has already terminated,
+        // so these don't need to be reported to the user.
+        final InternalFacingRuntimeException internal =
+            new InternalFacingRuntimeException("Exception during shutdown", e);
+        Logger.getLogger(MAIN_LOGGER).warning(internal.getLoggingString());
       }
     }
 
-    return "done";
-  }
-
-  /** Handles logging and cleanup in the case of an initialization error. */
-  private String onInitializationError(
-      String errorMessage,
-      InternalServerException error,
-      OutputAdapter outputAdapter,
-      String connectionId) {
-    // Log the error
-    LoggerUtils.logSevereError(error);
-
-    // This affected the user. Let's tell them about it.
-    this.sendOutputMessage(outputAdapter, error.getExceptionMessage());
     PerformanceTracker.getInstance().trackInstanceEnd();
     PerformanceTracker.getInstance().logPerformance();
-    cleanUpResources(connectionId, API_CLIENT);
-    return errorMessage;
+
+    this.cleanUpAWSResources(connectionId, api);
+
+    File f = Paths.get(System.getProperty("java.io.tmpdir")).toFile();
+    if ((double) f.getUsableSpace() / f.getTotalSpace() < 0.5) {
+      // The current project holds a lock on too many resources. Force the JVM to quit in
+      // order to release the resources for the next use of the container.
+      System.exit(LOW_DISK_SPACE_ERROR_CODE);
+    }
+
+    this.isSessionInitialized = false;
   }
 
   private Thread createTimeoutThread(
@@ -233,17 +332,16 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
               Thread.sleep(CHECK_THREAD_INTERVAL_MS);
               if ((context.getRemainingTimeInMillis() < TIMEOUT_WARNING_MS)
                   && !timeoutWarningSent) {
-                this.sendOutputMessage(
-                    outputAdapter, new StatusMessage(StatusMessageKey.TIMEOUT_WARNING));
+                LambdaUtils.safelySendMessage(
+                    outputAdapter, new StatusMessage(StatusMessageKey.TIMEOUT_WARNING), true);
                 timeoutWarningSent = true;
               }
 
               if (context.getRemainingTimeInMillis() < TIMEOUT_CLEANUP_BUFFER_MS) {
-                this.sendOutputMessage(outputAdapter, new StatusMessage(StatusMessageKey.TIMEOUT));
-                // Tell the execution manager to clean up early
-                codeExecutionManager.requestEarlyExit();
-                // Clean up AWS resources
-                cleanUpResources(connectionId, api);
+                LambdaUtils.safelySendMessage(
+                    outputAdapter, new StatusMessage(StatusMessageKey.TIMEOUT), true);
+                // Shut down the environment
+                this.shutDown(codeExecutionManager, connectionId, api);
                 break;
               }
             } catch (InterruptedException e) {
@@ -257,7 +355,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
    * Note: This can sometimes be called twice when a user's project times out. Make sure anything
    * added here can be run more than once without negative effect.
    */
-  private void cleanUpResources(String connectionId, AmazonApiGatewayManagementApi api) {
+  private void cleanUpAWSResources(String connectionId, AmazonApiGatewayManagementApi api) {
     final DeleteConnectionRequest deleteConnectionRequest =
         new DeleteConnectionRequest().withConnectionId(connectionId);
     // Deleting the API Gateway connection should always be the last thing executed because the
@@ -271,23 +369,6 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     Handler[] allHandlers = Logger.getLogger(MAIN_LOGGER).getHandlers();
     for (int i = 0; i < allHandlers.length; i++) {
       Logger.getLogger(MAIN_LOGGER).removeHandler(allHandlers[i]);
-    }
-  }
-
-  /**
-   * Sends a message via the OutputAdapter and handles any exceptions if they are thrown. This
-   * allows us to safely try and send messages from the handler without unintentionally raising
-   * uncaught exceptions.
-   */
-  private void sendOutputMessage(OutputAdapter outputAdapter, ClientMessage message) {
-    try {
-      outputAdapter.sendMessage(message);
-    } catch (InternalServerRuntimeException e) {
-      // This likely means the connection has been lost. Log a warning.
-      Logger.getLogger(MAIN_LOGGER).warning(e.getLoggingString());
-    } catch (Exception e) {
-      // Catch any other exceptions here to prevent them from propogating.
-      Logger.getLogger(MAIN_LOGGER).warning(e.getMessage());
     }
   }
 }
