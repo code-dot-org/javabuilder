@@ -89,33 +89,34 @@ public class WebSocketServer {
       outputAdapter = new UserTestOutputAdapter(websocketOutputAdapter);
     }
     final LifecycleNotifier lifecycleNotifier = new LifecycleNotifier();
-    final LocalContentManager contentManager;
-    try {
-      contentManager = new LocalContentManager();
-    } catch (InternalServerException e) {
-      // Log the error
-      LoggerUtils.logSevereError(e);
 
-      // This affected the user. Let's tell them about it.
-      outputAdapter.sendMessage(e.getExceptionMessage());
-      return;
-    }
+    final ExceptionHandler exceptionHandler =
+        new ExceptionHandler(outputAdapter, new LocalSystemExitHelper());
     // the code must be run in a thread so we can receive input messages
     Thread codeExecutor =
         new Thread(
             () -> {
-              codeExecutionManager =
-                  new CodeExecutionManager(
-                      contentManager.getProjectFileLoader(),
-                      inputAdapter,
-                      outputAdapter,
-                      executionType,
-                      compileList,
-                      new LocalTempDirectoryManager(),
-                      contentManager,
-                      lifecycleNotifier,
-                      new LocalSystemExitHelper());
-              codeExecutionManager.execute();
+              try {
+                final LocalContentManager contentManager = new LocalContentManager();
+                codeExecutionManager =
+                    new CodeExecutionManager(
+                        contentManager.getProjectFileLoader(),
+                        inputAdapter,
+                        outputAdapter,
+                        executionType,
+                        compileList,
+                        new LocalTempDirectoryManager(),
+                        contentManager,
+                        lifecycleNotifier,
+                        new LocalSystemExitHelper());
+                codeExecutionManager.execute();
+              } catch (Throwable e) {
+                // Catch all exceptions
+                exceptionHandler.handle(e);
+              }
+              if (codeExecutionManager != null) {
+                codeExecutionManager.shutDown();
+              }
               this.finishedExecution = true;
               // Clean up session
               try {
@@ -135,7 +136,9 @@ public class WebSocketServer {
     PerformanceTracker.getInstance().logPerformance();
     // If the websocket was closed before execution was finished, make sure we clean up.
     if (!this.finishedExecution) {
-      this.codeExecutionManager.requestEarlyExit();
+      if (codeExecutionManager != null) {
+        this.codeExecutionManager.shutDown();
+      }
       this.logger.removeHandler(this.logHandler);
     }
   }
