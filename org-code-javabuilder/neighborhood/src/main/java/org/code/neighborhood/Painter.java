@@ -241,6 +241,14 @@ public class Painter {
     return this.direction.getDirectionString();
   }
 
+  public void showBuckets() {
+    this.grid.showBuckets();
+  }
+
+  public void hideBuckets() {
+    this.grid.hideBuckets();
+  }
+
   /**
    * Sets the amount of paint in the painters bucket. Does nothing if paint is negative.
    *
