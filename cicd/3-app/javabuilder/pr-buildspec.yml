@@ -5,14 +5,17 @@ phases:
       ruby: 2.7
       java: corretto11
       python: 3.8
+    commands:
+      - echo $RBENV_VERSION
+      - rbenv versions
+      - rbenv rehash
+      - ruby -v
+      - gem install bundler
+      - pip install cfn-lint
 
   build:
     # This should be moved to a shell script if it gets more complicated.
     commands:
-      - ruby -v
-      - gem install bundler
-      - pip install cfn-lint
-      
       - set -e
       - BRANCH_NAME=${CODEBUILD_WEBHOOK_HEAD_REF#"refs/heads/"}
       - ARTIFACT_PATH=branch/$BRANCH_NAME/$CODEBUILD_BUILD_NUMBER
