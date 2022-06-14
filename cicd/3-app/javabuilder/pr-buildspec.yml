@@ -6,6 +6,7 @@ phases:
       java: corretto11
       python: 3.8
     commands:
+      - ruby -v
       - gem install bundler
       - pip install cfn-lint
   build:
