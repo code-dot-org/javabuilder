@@ -6,8 +6,9 @@ phases:
       java: corretto11
       python: 3.8
     commands:
-      - echo $RBENV_VERSION
       - rbenv versions
+      # downgrade from 2.7.6 or whatever runtime got installed
+      - rbenv install 2.7.2
       - rbenv rehash
       - ruby -v
       - gem install bundler
