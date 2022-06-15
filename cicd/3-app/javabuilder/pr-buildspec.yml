@@ -7,9 +7,8 @@ phases:
       python: 3.8
     commands:
       - rbenv versions
-      # downgrade from 2.7.6 or whatever runtime got installed
-      - rbenv install 2.7.2
-      - rbenv rehash
+      # downgrade from default codebuild ruby runtime to the version we specify in .ruby-version
+      - rbenv install -s
       - ruby -v
       - gem install bundler
       - pip install cfn-lint
