@@ -7,7 +7,7 @@ phases:
       python: 3.8
     commands:
       - rbenv versions
-      # downgrade from default codebuild ruby runtime to the version we specify in .ruby-version
+      # downgrade from default codebuild ruby runtime to the version we specify in .ruby-version, if different
       - rbenv install -s
       - ruby -v
       - gem install bundler
