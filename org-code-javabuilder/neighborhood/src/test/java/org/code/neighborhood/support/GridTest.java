@@ -1,9 +1,7 @@
 package org.code.neighborhood.support;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
 
-import org.code.protocol.OutputAdapter;
 import org.junit.jupiter.api.Test;
 
 public class GridTest {
@@ -13,7 +11,7 @@ public class GridTest {
     GridSquare s = new GridSquare(1, 0);
     GridSquare[][] squares = new GridSquare[1][1];
     squares[0][0] = s;
-    Grid grid = new Grid(squares, mock(OutputAdapter.class));
+    Grid grid = new Grid(squares);
   }
 
   @Test
@@ -21,7 +19,7 @@ public class GridTest {
     GridSquare s = new GridSquare(1, 0);
     GridSquare[][] squares = new GridSquare[1][1];
     squares[0][0] = s;
-    Grid grid = new Grid(squares, mock(OutputAdapter.class));
+    Grid grid = new Grid(squares);
     assertTrue(grid.validLocation(0, 0));
     assertFalse(grid.validLocation(0, 1));
     assertFalse(grid.validLocation(1, 0));
@@ -34,7 +32,7 @@ public class GridTest {
     GridSquare s = new GridSquare(1, 0);
     GridSquare[][] squares = new GridSquare[1][1];
     squares[0][0] = s;
-    Grid grid = new Grid(squares, mock(OutputAdapter.class));
+    Grid grid = new Grid(squares);
     GridSquare sq = grid.getSquare(0, 0);
     assertEquals(sq, s);
   }
@@ -44,7 +42,7 @@ public class GridTest {
     GridSquare s = new GridSquare(1, 0);
     GridSquare[][] squares = new GridSquare[1][1];
     squares[0][0] = s;
-    Grid grid = new Grid(squares, mock(OutputAdapter.class));
+    Grid grid = new Grid(squares);
     Exception exception =
         assertThrows(
             NeighborhoodRuntimeException.class,

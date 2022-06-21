@@ -6,7 +6,6 @@ import org.code.protocol.*;
 public class World {
   private static World worldInstance;
   private final Grid grid;
-  private final OutputAdapter outputAdapter;
 
   private static class CloseListener implements LifecycleListener {
     @Override
@@ -17,15 +16,13 @@ public class World {
 
   public World(int size) {
     this.registerLifecycleListener();
-    this.outputAdapter = GlobalProtocol.getInstance().getOutputAdapter();
-    GridFactory gridFactory = new GridFactory(this.outputAdapter);
+    GridFactory gridFactory = new GridFactory();
     this.grid = gridFactory.createEmptyGrid(size);
   }
 
   public World(String s) {
     this.registerLifecycleListener();
-    this.outputAdapter = GlobalProtocol.getInstance().getOutputAdapter();
-    GridFactory gridFactory = new GridFactory(this.outputAdapter);
+    GridFactory gridFactory = new GridFactory();
     try {
       this.grid = gridFactory.createGridFromString(s);
     } catch (IOException e) {
@@ -35,8 +32,7 @@ public class World {
 
   private World() {
     this.registerLifecycleListener();
-    this.outputAdapter = GlobalProtocol.getInstance().getOutputAdapter();
-    GridFactory gridFactory = new GridFactory(this.outputAdapter);
+    GridFactory gridFactory = new GridFactory();
     try {
       this.grid = gridFactory.createGridFromJSON("grid.txt");
     } catch (IOException e) {
@@ -53,10 +49,6 @@ public class World {
 
   public Grid getGrid() {
     return this.grid;
-  }
-
-  public OutputAdapter getOutputAdapter() {
-    return this.outputAdapter;
   }
 
   public static void setInstance(World world) {
