@@ -125,8 +125,9 @@ public class CodeExecutionManager {
    */
   private void onPreExecute() throws InternalServerException {
     // Create the Global Protocol instance
-    GlobalProtocol.create(
-        this.outputAdapter, this.inputAdapter, this.lifecycleNotifier, this.contentManager);
+    GlobalProtocol protocolInstance = new GlobalProtocol(
+        this.outputAdapter, new InputHandler(this.inputAdapter), this.lifecycleNotifier, this.contentManager);
+    JavabuilderContext.getInstance().register(GlobalProtocol.class, protocolInstance);
 
     // Create temp folder
     try {
@@ -139,7 +140,7 @@ public class CodeExecutionManager {
     this.systemInputStream = System.in;
     this.systemOutputStream = System.out;
     this.overrideInputStream =
-        new InputRedirectionStream(GlobalProtocol.getInstance().getInputHandler());
+        new InputRedirectionStream(protocolInstance.getInputHandler());
     this.overrideOutputStream = new OutputPrintStream(this.outputAdapter);
     System.setOut(this.overrideOutputStream);
     System.setIn(this.overrideInputStream);
@@ -156,7 +157,7 @@ public class CodeExecutionManager {
     LambdaUtils.safelySendMessage(
         this.outputAdapter, new StatusMessage(StatusMessageKey.EXITED), false);
     this.lifecycleNotifier.onExecutionEnded();
-    GlobalProtocol.getInstance().cleanUpResources();
+    JavabuilderContext.getInstance().getGlobalProtocol().cleanUpResources();
     try {
       // Close custom input/output streams
       this.overrideInputStream.close();
@@ -170,10 +171,10 @@ public class CodeExecutionManager {
       LoggerUtils.logTrackingException(e);
       this.systemExitHelper.exit(TEMP_DIRECTORY_CLEANUP_ERROR_CODE);
     } finally {
-      // Replace System in/out with original System in/out and destroy Global Protocol
+      // Replace System in/out with original System in/out and reset JavabuilderContext
       System.setIn(this.systemInputStream);
       System.setOut(this.systemOutputStream);
-      GlobalProtocol.destroy();
+      JavabuilderContext.getInstance().destroyAndReset();
       this.isInitialized = false;
     }
   }

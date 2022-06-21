@@ -14,15 +14,15 @@ import java.util.logging.Logger;
  * allows these APIs to communicate with their Client-side counterparts while using the correct IO
  * adapters.
  */
-public class GlobalProtocol {
-  private static GlobalProtocol protocolInstance;
+public class GlobalProtocol implements JavabuilderSharedObject {
+  //private static GlobalProtocol protocolInstance;
   private final OutputAdapter outputAdapter;
   private final InputHandler inputHandler;
   private final Set<MessageHandler> messageHandlers;
   private final LifecycleNotifier lifecycleNotifier;
   private final ContentManager contentManager;
 
-  private GlobalProtocol(
+  public GlobalProtocol(
       OutputAdapter outputAdapter,
       InputHandler inputHandler,
       LifecycleNotifier lifecycleNotifier,
@@ -34,35 +34,35 @@ public class GlobalProtocol {
     this.contentManager = contentManager;
   }
 
-  public static void create(
-      OutputAdapter outputAdapter,
-      InputAdapter inputAdapter,
-      LifecycleNotifier lifecycleNotifier,
-      ContentManager contentManager) {
-    if (GlobalProtocol.protocolInstance != null) {
-      Logger.getLogger(MAIN_LOGGER)
-          .warning("Tried to create GlobalProtocol instance when one already exists.");
-    }
-    GlobalProtocol.protocolInstance =
-        new GlobalProtocol(
-            outputAdapter, new InputHandler(inputAdapter), lifecycleNotifier, contentManager);
-  }
+//  public static void create(
+//      OutputAdapter outputAdapter,
+//      InputAdapter inputAdapter,
+//      LifecycleNotifier lifecycleNotifier,
+//      ContentManager contentManager) {
+//    if (GlobalProtocol.protocolInstance != null) {
+//      Logger.getLogger(MAIN_LOGGER)
+//          .warning("Tried to create GlobalProtocol instance when one already exists.");
+//    }
+//    GlobalProtocol.protocolInstance =
+//        new GlobalProtocol(
+//            outputAdapter, new InputHandler(inputAdapter), lifecycleNotifier, contentManager);
+//  }
 
-  public static GlobalProtocol getInstance() {
-    if (GlobalProtocol.protocolInstance == null) {
-      throw new InternalServerRuntimeException(InternalExceptionKey.INTERNAL_EXCEPTION);
-    }
+//  public static GlobalProtocol getInstance() {
+//    if (GlobalProtocol.protocolInstance == null) {
+//      throw new InternalServerRuntimeException(InternalExceptionKey.INTERNAL_EXCEPTION);
+//    }
+//
+//    return GlobalProtocol.protocolInstance;
+//  }
 
-    return GlobalProtocol.protocolInstance;
-  }
-
-  public static void destroy() {
-    if (GlobalProtocol.protocolInstance == null) {
-      Logger.getLogger(MAIN_LOGGER)
-          .warning("Tried to destroy GlobalProtocol instance when one does not exist.");
-    }
-
-    GlobalProtocol.protocolInstance = null;
+  public void destroy() {
+//    if (GlobalProtocol.protocolInstance == null) {
+//      Logger.getLogger(MAIN_LOGGER)
+//          .warning("Tried to destroy GlobalProtocol instance when one does not exist.");
+//    }
+//
+//    GlobalProtocol.protocolInstance = null;
   }
 
   public ContentManager getContentManager() {
