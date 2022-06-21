@@ -1,10 +1,8 @@
 package org.code.neighborhood.support;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
-import org.code.protocol.OutputAdapter;
 import org.junit.jupiter.api.Test;
 
 public class GridFactoryTest {
@@ -13,7 +11,7 @@ public class GridFactoryTest {
 
   @Test
   void createGridFromString() {
-    GridFactory gridFactory = new GridFactory(mock(OutputAdapter.class));
+    GridFactory gridFactory = new GridFactory();
     Grid grid = null;
     try {
       grid = gridFactory.createGridFromString(sampleGrid);
@@ -26,7 +24,7 @@ public class GridFactoryTest {
 
   @Test
   void createEmptyGrid() {
-    GridFactory gridFactory = new GridFactory(mock(OutputAdapter.class));
+    GridFactory gridFactory = new GridFactory();
     Grid grid = gridFactory.createEmptyGrid(2);
     assertTrue(grid instanceof Grid);
     assertTrue(grid.validLocation(1, 1));
@@ -34,7 +32,7 @@ public class GridFactoryTest {
 
   @Test
   void createGridFromStringWithInvalidJSONThrowsException() {
-    GridFactory gridFactory = new GridFactory(mock(OutputAdapter.class));
+    GridFactory gridFactory = new GridFactory();
     Exception exception =
         assertThrows(
             NeighborhoodRuntimeException.class,
@@ -48,7 +46,7 @@ public class GridFactoryTest {
 
   @Test
   void createGridFromStringWithInvalidGridShapeThrowsException() {
-    GridFactory gridFactory = new GridFactory(mock(OutputAdapter.class));
+    GridFactory gridFactory = new GridFactory();
     Exception exception =
         assertThrows(
             NeighborhoodRuntimeException.class,
@@ -62,7 +60,7 @@ public class GridFactoryTest {
 
   @Test
   void createGridFromNotSquareGridThrowsException() {
-    GridFactory gridFactory = new GridFactory(mock(OutputAdapter.class));
+    GridFactory gridFactory = new GridFactory();
     Exception exception =
         assertThrows(
             NeighborhoodRuntimeException.class,
@@ -76,7 +74,7 @@ public class GridFactoryTest {
 
   @Test
   void createGridFromStringWithInvalidTileTypeThrowsException() {
-    GridFactory gridFactory = new GridFactory(mock(OutputAdapter.class));
+    GridFactory gridFactory = new GridFactory();
     Exception exception =
         assertThrows(
             NeighborhoodRuntimeException.class,
@@ -89,7 +87,7 @@ public class GridFactoryTest {
 
   @Test
   void createGridFromStringWithInvalidAssetIdThrowsException() {
-    GridFactory gridFactory = new GridFactory(mock(OutputAdapter.class));
+    GridFactory gridFactory = new GridFactory();
     Exception exception =
         assertThrows(
             NeighborhoodRuntimeException.class,
@@ -102,7 +100,7 @@ public class GridFactoryTest {
 
   @Test
   void createGridFromStringWithInvalidValueThrowsException() {
-    GridFactory gridFactory = new GridFactory(mock(OutputAdapter.class));
+    GridFactory gridFactory = new GridFactory();
     Exception exception =
         assertThrows(
             NeighborhoodRuntimeException.class,
@@ -116,7 +114,7 @@ public class GridFactoryTest {
 
   @Test
   void creatingEmptyGridThrowsException() {
-    GridFactory gridFactory = new GridFactory(mock(OutputAdapter.class));
+    GridFactory gridFactory = new GridFactory();
     Exception exception =
         assertThrows(
             NeighborhoodRuntimeException.class,
