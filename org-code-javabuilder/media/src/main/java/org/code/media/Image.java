@@ -8,7 +8,7 @@ import java.net.URL;
 import javax.imageio.ImageIO;
 import org.code.media.support.MediaRuntimeException;
 import org.code.media.support.MediaRuntimeExceptionKeys;
-import org.code.protocol.GlobalProtocol;
+import org.code.protocol.JavabuilderContext;
 
 public class Image {
   private Pixel[][] pixels;
@@ -179,7 +179,11 @@ public class Image {
   public static BufferedImage getImageAssetFromFile(String filename) throws FileNotFoundException {
     try {
       return Image.getImageFromUrl(
-          new URL(GlobalProtocol.getInstance().getContentManager().getAssetUrl(filename)));
+          new URL(
+              JavabuilderContext.getInstance()
+                  .getGlobalProtocol()
+                  .getContentManager()
+                  .getAssetUrl(filename)));
     } catch (IOException e) {
       throw new FileNotFoundException(filename);
     }

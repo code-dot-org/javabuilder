@@ -1,7 +1,7 @@
 package org.code.theater.support;
 
 import java.util.List;
-import org.code.protocol.GlobalProtocol;
+import org.code.protocol.JavabuilderContext;
 import org.code.protocol.LifecycleListener;
 
 /**
@@ -35,7 +35,7 @@ public class TheaterPlayer implements LifecycleListener {
   TheaterPlayer(ConcertCreatorFactory concertCreatorFactory) {
     this.concertCreatorFactory = concertCreatorFactory;
     this.hasPlayed = false;
-    GlobalProtocol.getInstance().registerLifecycleListener(this);
+    JavabuilderContext.getInstance().getGlobalProtocol().registerLifecycleListener(this);
   }
 
   public void play(List<SceneAction> actions) {

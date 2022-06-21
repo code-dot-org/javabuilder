@@ -4,7 +4,7 @@ import static org.code.protocol.ClientMessageDetailKeys.*;
 
 import java.util.HashMap;
 import org.code.neighborhood.support.*;
-import org.code.protocol.GlobalProtocol;
+import org.code.protocol.JavabuilderContext;
 import org.code.protocol.OutputAdapter;
 
 public class Painter {
@@ -21,16 +21,7 @@ public class Painter {
 
   /** Creates a Painter object at (0, 0), facing East, with no paint. */
   public Painter() {
-    this.xLocation = 0;
-    this.yLocation = 0;
-    this.direction = Direction.EAST;
-    this.remainingPaint = 0;
-    World worldInstance = World.getInstance();
-    this.grid = worldInstance.getGrid();
-    this.hasInfinitePaint = this.grid.getSize() >= LARGE_GRID_SIZE;
-    this.outputAdapter = GlobalProtocol.getInstance().getOutputAdapter();
-    this.id = "painter-" + lastId++;
-    this.sendInitializationMessage();
+    this(0, 0, "East", 0, true);
   }
 
   /**
@@ -42,15 +33,23 @@ public class Painter {
    * @param paint the amount of paint the painter has to start
    */
   public Painter(int x, int y, String direction, int paint) {
+    this(x, y, direction, paint, false);
+  }
+
+  private Painter(int x, int y, String direction, int paint, boolean couldHaveInfinitePaint) {
     this.xLocation = x;
     this.yLocation = y;
     this.direction = Direction.fromString(direction);
     this.remainingPaint = paint;
-    this.hasInfinitePaint = false;
-    World worldInstance = World.getInstance();
-    this.grid = worldInstance.getGrid();
-    this.outputAdapter = GlobalProtocol.getInstance().getOutputAdapter();
+    World currentWorld = (World) JavabuilderContext.getInstance().get(World.class);
+    if (currentWorld == null) {
+      currentWorld = new World();
+      JavabuilderContext.getInstance().register(World.class, currentWorld);
+    }
+    this.grid = currentWorld.getGrid();
+    this.outputAdapter = JavabuilderContext.getInstance().getGlobalProtocol().getOutputAdapter();
     int gridSize = this.grid.getSize();
+    this.hasInfinitePaint = couldHaveInfinitePaint ? this.grid.getSize() >= LARGE_GRID_SIZE : false;
     if (x < 0 || y < 0 || x >= gridSize || y >= gridSize) {
       throw new NeighborhoodRuntimeException(ExceptionKeys.INVALID_LOCATION);
     }

@@ -16,7 +16,7 @@ public class TheaterProgressPublisher {
   private double lastUpdateTimeSeconds;
 
   public TheaterProgressPublisher() {
-    this(GlobalProtocol.getInstance().getOutputAdapter());
+    this(JavabuilderContext.getInstance().getGlobalProtocol().getOutputAdapter());
   }
 
   TheaterProgressPublisher(OutputAdapter outputAdapter) {
