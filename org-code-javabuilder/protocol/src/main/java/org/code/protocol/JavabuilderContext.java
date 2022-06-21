@@ -22,8 +22,14 @@ public class JavabuilderContext {
     return contextInstance;
   }
 
+  public void onExecutionEnded() {
+    for (JavabuilderSharedObject sharedObject : sharedObjects.values()) {
+      sharedObject.onExecutionEnded();
+    }
+  }
+
   public void destroyAndReset() {
-    for(JavabuilderSharedObject sharedObject: sharedObjects.values()) {
+    for (JavabuilderSharedObject sharedObject : sharedObjects.values()) {
       sharedObject.destroy();
     }
     this.sharedObjects = new HashMap<>();

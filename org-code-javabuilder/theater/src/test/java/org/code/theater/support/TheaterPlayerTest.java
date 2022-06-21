@@ -10,7 +10,6 @@ import org.code.protocol.InternalExceptionKey;
 import org.code.protocol.InternalServerRuntimeException;
 import org.code.protocol.LifecycleNotifier;
 import org.code.theater.support.TheaterPlayer.ConcertCreatorFactory;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -33,11 +32,6 @@ class TheaterPlayerTest {
     actions = new ArrayList<>();
 
     unitUnderTest = new TheaterPlayer(concertCreatorFactory);
-  }
-
-  @AfterEach
-  public void tearDown() {
-    GlobalProtocolTestFactory.tearDown();
   }
 
   @Test

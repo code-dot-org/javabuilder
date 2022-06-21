@@ -125,8 +125,12 @@ public class CodeExecutionManager {
    */
   private void onPreExecute() throws InternalServerException {
     // Create the Global Protocol instance
-    GlobalProtocol protocolInstance = new GlobalProtocol(
-        this.outputAdapter, new InputHandler(this.inputAdapter), this.lifecycleNotifier, this.contentManager);
+    GlobalProtocol protocolInstance =
+        new GlobalProtocol(
+            this.outputAdapter,
+            new InputHandler(this.inputAdapter),
+            this.lifecycleNotifier,
+            this.contentManager);
     JavabuilderContext.getInstance().register(GlobalProtocol.class, protocolInstance);
 
     // Create temp folder
@@ -139,8 +143,7 @@ public class CodeExecutionManager {
     // Save System in/out and replace with custom in/out
     this.systemInputStream = System.in;
     this.systemOutputStream = System.out;
-    this.overrideInputStream =
-        new InputRedirectionStream(protocolInstance.getInputHandler());
+    this.overrideInputStream = new InputRedirectionStream(protocolInstance.getInputHandler());
     this.overrideOutputStream = new OutputPrintStream(this.outputAdapter);
     System.setOut(this.overrideOutputStream);
     System.setIn(this.overrideInputStream);
@@ -157,7 +160,7 @@ public class CodeExecutionManager {
     LambdaUtils.safelySendMessage(
         this.outputAdapter, new StatusMessage(StatusMessageKey.EXITED), false);
     this.lifecycleNotifier.onExecutionEnded();
-    JavabuilderContext.getInstance().getGlobalProtocol().cleanUpResources();
+    JavabuilderContext.getInstance().onExecutionEnded();
     try {
       // Close custom input/output streams
       this.overrideInputStream.close();

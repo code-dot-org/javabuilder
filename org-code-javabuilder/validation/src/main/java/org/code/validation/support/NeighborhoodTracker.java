@@ -11,6 +11,7 @@ import org.code.neighborhood.support.NeighborhoodSignalKey;
 import org.code.neighborhood.support.World;
 import org.code.protocol.ClientMessage;
 import org.code.protocol.ClientMessageType;
+import org.code.protocol.JavabuilderContext;
 import org.code.validation.NeighborhoodLog;
 import org.code.validation.PainterEvent;
 import org.code.validation.PainterLog;
@@ -81,7 +82,8 @@ public class NeighborhoodTracker {
   }
 
   private void initializeGrid() {
-    final int gridSize = World.getInstance().getGrid().getSize();
+    World world = (World) JavabuilderContext.getInstance().get(World.class);
+    final int gridSize = world.getGrid().getSize();
     this.neighborhoodState = new String[gridSize][gridSize];
     this.isInitialized = true;
   }
