@@ -2,10 +2,8 @@ package org.code.playground;
 
 import java.util.LinkedList;
 import java.util.Queue;
-import org.code.protocol.ClientMessageDetailKeys;
-import org.code.protocol.GlobalProtocol;
-import org.code.protocol.MessageHandler;
-import org.code.protocol.OutputAdapter;
+
+import org.code.protocol.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -27,8 +25,8 @@ class PlaygroundMessageHandler implements MessageHandler {
   private final OutputAdapter outputAdapter;
 
   private PlaygroundMessageHandler() {
-    this(GlobalProtocol.getInstance().getOutputAdapter());
-    GlobalProtocol.getInstance().registerMessageHandler(this);
+    this(JavabuilderContext.getInstance().getGlobalProtocol().getOutputAdapter());
+    JavabuilderContext.getInstance().getGlobalProtocol().registerMessageHandler(this);
   }
 
   // Visible for testing only

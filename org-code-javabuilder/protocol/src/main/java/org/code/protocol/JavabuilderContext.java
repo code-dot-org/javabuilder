@@ -5,10 +5,10 @@ import java.util.Map;
 
 public class JavabuilderContext {
   private static JavabuilderContext contextInstance;
-  private Map<Class, Object> singletons;
+  private Map<Class, JavabuilderSharedObject> sharedObjects;
 
   private JavabuilderContext() {
-    this.singletons = new HashMap<>();
+    this.sharedObjects = new HashMap<>();
   }
 
   public static void create() {
@@ -16,24 +16,34 @@ public class JavabuilderContext {
   }
 
   public static JavabuilderContext getInstance() {
+    if (contextInstance == null) {
+      JavabuilderContext.create();
+    }
     return contextInstance;
   }
 
-  public void reset() {
-    this.singletons = new HashMap<>();
+  public void destroyAndReset() {
+    for(JavabuilderSharedObject sharedObject: sharedObjects.values()) {
+      sharedObject.destroy();
+    }
+    this.sharedObjects = new HashMap<>();
   }
 
-  public void destroy() {
-    this.reset();
+  public void register(Class objectClass, JavabuilderSharedObject sharedObject) {
+    this.sharedObjects.put(objectClass, sharedObject);
   }
 
-  public void registerSingleton(Class singletonClass, Object singleton) {
-    this.singletons.put(singletonClass, singleton);
+  public JavabuilderSharedObject get(Class objectClass) {
+    if (this.sharedObjects.containsKey(objectClass)) {
+      return this.sharedObjects.get(objectClass);
+    }
+    return null;
   }
 
-  public Object getSingleton(Class singletonClass) {
-    if (this.singletons.containsKey(singletonClass)) {
-      return this.singletons.get(singletonClass);
+  // Convenience method for getting Global Protocol, if it exists.
+  public GlobalProtocol getGlobalProtocol() {
+    if (this.sharedObjects.containsKey(GlobalProtocol.class)) {
+      return (GlobalProtocol) this.sharedObjects.get(GlobalProtocol.class);
     }
     return null;
   }
