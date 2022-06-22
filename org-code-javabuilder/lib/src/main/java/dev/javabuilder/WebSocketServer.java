@@ -89,7 +89,6 @@ public class WebSocketServer {
     if (executionType == ExecutionType.TEST) {
       outputAdapter = new UserTestOutputAdapter(websocketOutputAdapter);
     }
-    final LifecycleNotifier lifecycleNotifier = new LifecycleNotifier();
 
     final ExceptionHandler exceptionHandler =
         new ExceptionHandler(outputAdapter, new LocalSystemExitHelper());
@@ -108,7 +107,6 @@ public class WebSocketServer {
                         compileList,
                         new LocalTempDirectoryManager(),
                         contentManager,
-                        lifecycleNotifier,
                         new LocalSystemExitHelper());
                 codeExecutionManager.execute();
               } catch (Throwable e) {

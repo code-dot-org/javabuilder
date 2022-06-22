@@ -8,7 +8,6 @@ import java.util.List;
 import org.code.protocol.GlobalProtocolTestFactory;
 import org.code.protocol.InternalExceptionKey;
 import org.code.protocol.InternalServerRuntimeException;
-import org.code.protocol.LifecycleNotifier;
 import org.code.theater.support.TheaterPlayer.ConcertCreatorFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,7 +15,6 @@ import org.junit.jupiter.api.Test;
 class TheaterPlayerTest {
 
   private ConcertCreator concertCreator;
-  private LifecycleNotifier lifecycleNotifier;
   private List<SceneAction> actions;
   private TheaterPlayer unitUnderTest;
 
@@ -26,8 +24,7 @@ class TheaterPlayerTest {
     concertCreator = mock(ConcertCreator.class);
     when(concertCreatorFactory.create()).thenReturn(concertCreator);
 
-    lifecycleNotifier = mock(LifecycleNotifier.class);
-    GlobalProtocolTestFactory.builder().withLifecycleNotifier(lifecycleNotifier).create();
+    GlobalProtocolTestFactory.builder().create();
 
     actions = new ArrayList<>();
 
