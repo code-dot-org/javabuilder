@@ -19,7 +19,6 @@ public class PainterTest {
   String singleSquareGrid = "[[\n{\"tileType\": 1, \"assetId\": 0}]]";
   String multiSquareGrid =
       "[[\n{\"tileType\": 1, \"value\": 1, \"assetId\": 0}, {\"tileType\": 1, \"value\": 1, \"assetId\": 0}], \n[{\"tileType\": 1, \"value\": 1, \"assetId\": 0}, {\"tileType\": 1, \"value\": 1, \"assetId\": 0}]]";
-  private World world;
 
   @BeforeEach
   public void setUp() {
