@@ -36,6 +36,13 @@ public class JavabuilderContext {
   }
 
   public void register(Class objectClass, JavabuilderSharedObject sharedObject) {
+    if (!objectClass.isAssignableFrom(sharedObject.getClass())) {
+      String message =
+          String.format(
+              "Attempting to add a class, %s to JavabuilderContext that cannot be converted to its key, %s",
+              sharedObject.getClass(), objectClass);
+      throw new IllegalArgumentException(message);
+    }
     this.sharedObjects.put(objectClass, sharedObject);
   }
 
