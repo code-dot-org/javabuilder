@@ -12,7 +12,6 @@ import java.util.Set;
  * adapters.
  */
 public class GlobalProtocol extends JavabuilderSharedObject {
-  // private static GlobalProtocol protocolInstance;
   private final OutputAdapter outputAdapter;
   private final InputHandler inputHandler;
   private final Set<MessageHandler> messageHandlers;

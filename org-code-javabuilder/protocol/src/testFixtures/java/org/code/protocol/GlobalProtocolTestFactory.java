@@ -29,13 +29,13 @@ public class GlobalProtocolTestFactory {
       return this;
     }
 
-    public Builder withContentManager(ContentManager contentManager) {
-      this.contentManager = contentManager;
+    public Builder withLifecycleNotifier(LifecycleNotifier lifecycleNotifier) {
+      this.lifecycleNotifier = lifecycleNotifier;
       return this;
     }
 
-    public Builder withLifecycleNotifier(LifecycleNotifier lifecycleNotifier) {
-      this.lifecycleNotifier = lifecycleNotifier;
+    public Builder withContentManager(ContentManager contentManager) {
+      this.contentManager = contentManager;
       return this;
     }
 
