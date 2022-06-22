@@ -4,6 +4,7 @@ import static org.code.protocol.ClientMessageDetailKeys.*;
 
 import java.util.HashMap;
 import org.code.neighborhood.support.*;
+import org.code.protocol.GlobalProtocol;
 import org.code.protocol.OutputAdapter;
 
 public class Painter {
@@ -27,7 +28,7 @@ public class Painter {
     World worldInstance = World.getInstance();
     this.grid = worldInstance.getGrid();
     this.hasInfinitePaint = this.grid.getSize() >= LARGE_GRID_SIZE;
-    this.outputAdapter = worldInstance.getOutputAdapter();
+    this.outputAdapter = GlobalProtocol.getInstance().getOutputAdapter();
     this.id = "painter-" + lastId++;
     this.sendInitializationMessage();
   }
@@ -48,7 +49,7 @@ public class Painter {
     this.hasInfinitePaint = false;
     World worldInstance = World.getInstance();
     this.grid = worldInstance.getGrid();
-    this.outputAdapter = worldInstance.getOutputAdapter();
+    this.outputAdapter = GlobalProtocol.getInstance().getOutputAdapter();
     int gridSize = this.grid.getSize();
     if (x < 0 || y < 0 || x >= gridSize || y >= gridSize) {
       throw new NeighborhoodRuntimeException(ExceptionKeys.INVALID_LOCATION);
@@ -242,11 +243,13 @@ public class Painter {
   }
 
   public void showBuckets() {
-    this.grid.showBuckets();
+    this.outputAdapter.sendMessage(
+        new NeighborhoodSignalMessage(NeighborhoodSignalKey.SHOW_BUCKETS, new HashMap<>()));
   }
 
   public void hideBuckets() {
-    this.grid.hideBuckets();
+    this.outputAdapter.sendMessage(
+        new NeighborhoodSignalMessage(NeighborhoodSignalKey.HIDE_BUCKETS, new HashMap<>()));
   }
 
   /**
