@@ -35,11 +35,6 @@ class TheaterPlayerTest {
   }
 
   @Test
-  public void testRegistersLifecycleListener() {
-    verify(lifecycleNotifier).registerListener(unitUnderTest);
-  }
-
-  @Test
   public void testPublishesConcertOnPlay() {
     unitUnderTest.play(actions);
     verify(concertCreator).publishConcert(actions);
@@ -64,15 +59,5 @@ class TheaterPlayerTest {
       // expected
       verify(concertCreator).close();
     }
-  }
-
-  @Test
-  public void testExecutionEndedResetsHasPlayed() {
-    unitUnderTest.play(actions);
-    assertThrows(TheaterRuntimeException.class, () -> unitUnderTest.play(actions));
-
-    unitUnderTest.onExecutionEnded();
-
-    assertDoesNotThrow(() -> unitUnderTest.play(actions));
   }
 }
