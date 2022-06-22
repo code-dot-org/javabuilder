@@ -18,7 +18,7 @@ import org.code.media.support.FontHelper;
 import org.code.protocol.*;
 import org.code.theater.support.*;
 
-public class Stage {
+public class Stage extends JavabuilderSharedObject {
   private final BufferedImage image;
   private final OutputAdapter outputAdapter;
   private final ContentManager contentManager;
@@ -38,19 +38,6 @@ public class Stage {
   private static final int WIDTH = 400;
   private static final int HEIGHT = 400;
   private static final java.awt.Color DEFAULT_COLOR = java.awt.Color.BLACK;
-
-  private static class CloseListener implements LifecycleListener {
-    private final Stage stage;
-
-    public CloseListener(Stage stage) {
-      this.stage = stage;
-    }
-
-    @Override
-    public void onExecutionEnded() {
-      this.stage.close();
-    }
-  }
 
   /**
    * Initialize Stage with a default image. Stage should be initialized outside of org.code.theater
@@ -96,7 +83,7 @@ public class Stage {
     this.clear(Color.WHITE);
 
     System.setProperty("java.awt.headless", "true");
-    globalProtocol.registerLifecycleListener(new CloseListener(this));
+    JavabuilderContext.getInstance().register(Stage.class, this);
   }
 
   /** Returns the width of the theater canvas. */
@@ -431,7 +418,13 @@ public class Stage {
 
   /** Plays the instructions. */
   public void play() {
-    TheaterPlayer.getInstance().onStagePlay();
+    JavabuilderContext context = JavabuilderContext.getInstance();
+    if (!context.containsKey(TheaterPlayer.class)) {
+      context.register(TheaterPlayer.class, new TheaterPlayer());
+    }
+    TheaterPlayer theaterPlayer =
+        (TheaterPlayer) JavabuilderContext.getInstance().get(TheaterPlayer.class);
+    theaterPlayer.onStagePlay();
     if (this.hasPlayed) {
       throw new TheaterRuntimeException(ExceptionKeys.DUPLICATE_PLAY_COMMAND);
     } else {
@@ -443,6 +436,11 @@ public class Stage {
       this.writeImageAndAudioToFile();
       this.hasPlayed = true;
     }
+  }
+
+  @Override
+  public void onExecutionEnded() {
+    this.close();
   }
 
   /**
