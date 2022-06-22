@@ -260,7 +260,6 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     final List<String> compileList = JSONUtils.listFromJSONObjectMember(options, "compileList");
 
     final AWSInputAdapter inputAdapter = new AWSInputAdapter(SQS_CLIENT, queueUrl, queueName);
-    final LifecycleNotifier lifecycleNotifier = new LifecycleNotifier();
     final AWSContentManager contentManager =
         new AWSContentManager(
             S3_CLIENT, CONTENT_BUCKET_NAME, javabuilderSessionId, CONTENT_BUCKET_URL, context);
@@ -273,7 +272,6 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
         compileList,
         tempDirectoryManager,
         contentManager,
-        lifecycleNotifier,
         new AWSSystemExitHelper(connectionId, API_CLIENT));
   }
 

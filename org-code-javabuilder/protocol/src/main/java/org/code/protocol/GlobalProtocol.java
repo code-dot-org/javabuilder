@@ -15,18 +15,13 @@ public class GlobalProtocol extends JavabuilderSharedObject {
   private final OutputAdapter outputAdapter;
   private final InputHandler inputHandler;
   private final Set<MessageHandler> messageHandlers;
-  private final LifecycleNotifier lifecycleNotifier;
   private final ContentManager contentManager;
 
   public GlobalProtocol(
-      OutputAdapter outputAdapter,
-      InputHandler inputHandler,
-      LifecycleNotifier lifecycleNotifier,
-      ContentManager contentManager) {
+      OutputAdapter outputAdapter, InputHandler inputHandler, ContentManager contentManager) {
     this.outputAdapter = outputAdapter;
     this.inputHandler = inputHandler;
     this.messageHandlers = new HashSet<>();
-    this.lifecycleNotifier = lifecycleNotifier;
     this.contentManager = contentManager;
   }
 
@@ -44,10 +39,6 @@ public class GlobalProtocol extends JavabuilderSharedObject {
 
   public void registerMessageHandler(MessageHandler handler) {
     this.messageHandlers.add(handler);
-  }
-
-  public void registerLifecycleListener(LifecycleListener listener) {
-    this.lifecycleNotifier.registerListener(listener);
   }
 
   @Override
