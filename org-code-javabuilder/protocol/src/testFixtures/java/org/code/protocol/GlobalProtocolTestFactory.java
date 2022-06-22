@@ -16,6 +16,7 @@ public class GlobalProtocolTestFactory {
     private Builder() {
       this.outputAdapter = mock(OutputAdapter.class);
       this.inputAdapter = mock(InputAdapter.class);
+      this.lifecycleNotifier = mock(LifecycleNotifier.class);
       this.contentManager = mock(ContentManager.class);
     }
 
