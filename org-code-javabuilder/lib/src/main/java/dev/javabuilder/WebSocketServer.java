@@ -54,8 +54,9 @@ public class WebSocketServer {
   public void onOpen(Session session) {
     this.finishedExecution = false;
     JavabuilderContext.getInstance().destroyAndReset();
-    PerformanceTracker.resetTracker();
-    PerformanceTracker.getInstance().trackInstanceStart(Clock.systemUTC().instant());
+    PerformanceTracker performanceTracker = new PerformanceTracker();
+    JavabuilderContext.getInstance().register(PerformanceTracker.class, performanceTracker);
+    performanceTracker.trackInstanceStart(Clock.systemUTC().instant());
     // Decode the authorization token
     String token = session.getRequestParameterMap().get("Authorization").get(0);
     Base64.Decoder decoder = Base64.getDecoder();
@@ -77,8 +78,8 @@ public class WebSocketServer {
     // turn off the default console logger
     this.logger.setUseParentHandlers(false);
 
-    MetricClient metricClient = new LocalMetricClient();
-    MetricClientManager.create(metricClient);
+    LocalMetricClient metricClient = new LocalMetricClient();
+    JavabuilderContext.getInstance().register(MetricClient.class, metricClient);
 
     Properties.setConnectionId(connectionId);
 
@@ -132,7 +133,9 @@ public class WebSocketServer {
   @OnClose
   public void myOnClose() {
     Logger.getLogger(MAIN_LOGGER).info("WebSocket closed.");
-    PerformanceTracker.getInstance().logPerformance();
+    PerformanceTracker performanceTracker =
+        (PerformanceTracker) JavabuilderContext.getInstance().get(PerformanceTracker.class);
+    performanceTracker.logPerformance();
     // If the websocket was closed before execution was finished, make sure we clean up.
     if (!this.finishedExecution) {
       if (codeExecutionManager != null) {

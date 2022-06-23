@@ -1,5 +1,6 @@
 package org.code.validation;
 
+import org.code.protocol.JavabuilderContext;
 import org.code.validation.support.ValidationProtocol;
 
 /**
@@ -9,7 +10,9 @@ import org.code.validation.support.ValidationProtocol;
  */
 public class NeighborhoodTestRunner {
   public static NeighborhoodLog run() {
-    ValidationProtocol.getInstance().invokeMainMethod();
-    return ValidationProtocol.getInstance().getNeighborhoodLog();
+    ValidationProtocol protocolInstance =
+        (ValidationProtocol) JavabuilderContext.getInstance().get(ValidationProtocol.class);
+    protocolInstance.invokeMainMethod();
+    return protocolInstance.getNeighborhoodLog();
   }
 }

@@ -181,8 +181,8 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
 
     Properties.setConnectionId(connectionId);
 
-    MetricClient metricClient = new AWSMetricClient(context.getFunctionName());
-    MetricClientManager.create(metricClient);
+    AWSMetricClient metricClient = new AWSMetricClient(context.getFunctionName());
+    JavabuilderContext.getInstance().register(MetricClient.class, metricClient);
 
     // Dashboard assets are only accessible if the dashboard domain is not localhost
     Properties.setCanAccessDashboardAssets(canAccessDashboardAssets);
@@ -196,12 +196,13 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
 
   private void trackStartupPerformance() {
     final Instant instanceStart = Clock.systemUTC().instant();
-    PerformanceTracker.resetTracker();
+    PerformanceTracker performanceTracker = new PerformanceTracker();
+    JavabuilderContext.getInstance().register(PerformanceTracker.class, performanceTracker);
     if (coldBoot) {
-      PerformanceTracker.getInstance().trackColdBoot(COLD_BOOT_START, COLD_BOOT_END, instanceStart);
+      performanceTracker.trackColdBoot(COLD_BOOT_START, COLD_BOOT_END, instanceStart);
       coldBoot = false;
     } else {
-      PerformanceTracker.getInstance().trackInstanceStart(instanceStart);
+      performanceTracker.trackInstanceStart(instanceStart);
     }
   }
 
@@ -301,8 +302,10 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
       }
     }
 
-    PerformanceTracker.getInstance().trackInstanceEnd();
-    PerformanceTracker.getInstance().logPerformance();
+    PerformanceTracker performanceTracker =
+        (PerformanceTracker) JavabuilderContext.getInstance().get(PerformanceTracker.class);
+    performanceTracker.trackInstanceEnd();
+    performanceTracker.logPerformance();
 
     this.cleanUpAWSResources(connectionId, api);
 
