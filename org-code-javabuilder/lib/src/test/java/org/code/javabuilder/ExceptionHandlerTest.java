@@ -30,10 +30,11 @@ class ExceptionHandlerTest {
     testHandler = mock(Handler.class);
     messageCaptor = ArgumentCaptor.forClass(ClientMessage.class);
     unitUnderTest = new ExceptionHandler(outputAdapter, systemExitHelper);
+    AWSMetricClient metricClient = mock(AWSMetricClient.class);
+    JavabuilderContext.getInstance().register(MetricClient.class, metricClient);
 
     Logger.getLogger(MAIN_LOGGER).addHandler(testHandler);
     Logger.getLogger(MAIN_LOGGER).setUseParentHandlers(false);
-    MetricClientManager.create(mock(MetricClient.class));
   }
 
   @AfterEach

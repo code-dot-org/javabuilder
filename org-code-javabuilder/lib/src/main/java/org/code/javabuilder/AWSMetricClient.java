@@ -3,11 +3,12 @@ package org.code.javabuilder;
 import com.amazonaws.services.cloudwatch.AmazonCloudWatch;
 import com.amazonaws.services.cloudwatch.AmazonCloudWatchClientBuilder;
 import com.amazonaws.services.cloudwatch.model.*;
+import org.code.protocol.JavabuilderSharedObject;
 import org.code.protocol.MetricClient;
 
 // Metric Client which published metrics to AWS CloudWatch.
 // Requires cloudwatch:PutMetricData permission on the Lambda.
-public class AWSMetricClient implements MetricClient {
+public class AWSMetricClient extends JavabuilderSharedObject implements MetricClient {
   private final AmazonCloudWatch cloudWatchClient;
   private final Dimension functionNameDimension;
 
