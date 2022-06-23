@@ -165,10 +165,9 @@ public class CodeExecutionManager {
       LoggerUtils.logTrackingException(e);
       this.systemExitHelper.exit(TEMP_DIRECTORY_CLEANUP_ERROR_CODE);
     } finally {
-      // Replace System in/out with original System in/out and reset JavabuilderContext
+      // Replace System in/out with original System in/out
       System.setIn(this.systemInputStream);
       System.setOut(this.systemOutputStream);
-      JavabuilderContext.getInstance().destroyAndReset();
       this.isInitialized = false;
     }
   }

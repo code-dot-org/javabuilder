@@ -98,8 +98,8 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
   @Override
   public String handleRequest(Map<String, String> lambdaInput, Context context) {
     this.isSessionInitialized = false;
-    this.trackStartupPerformance();
     JavabuilderContext.getInstance().destroyAndReset();
+    this.trackStartupPerformance();
 
     // TODO: Because we reference the logger object throughout the codebase via
     // Logger.getLogger(MAIN_LOGGER), we need to set it up in the same scope as code execution to
@@ -306,6 +306,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
         (PerformanceTracker) JavabuilderContext.getInstance().get(PerformanceTracker.class);
     performanceTracker.trackInstanceEnd();
     performanceTracker.logPerformance();
+    JavabuilderContext.getInstance().destroyAndReset();
 
     this.cleanUpAWSResources(connectionId, api);
 

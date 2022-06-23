@@ -143,6 +143,7 @@ public class WebSocketServer {
       }
       this.logger.removeHandler(this.logHandler);
     }
+    JavabuilderContext.getInstance().destroyAndReset();
   }
 
   /**
