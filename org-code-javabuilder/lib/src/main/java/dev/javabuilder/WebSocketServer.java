@@ -64,7 +64,8 @@ public class WebSocketServer {
     JSONObject queryInput = new JSONObject(payload);
 
     final String connectionId = "LocalhostWebSocketConnection";
-    final String levelId = queryInput.has("level_id") ? queryInput.getString("level_id") : "";
+    final String levelId =
+        queryInput.has("level_id") ? String.valueOf(queryInput.getInt("level_id")) : "noneProvided";
     final String channelId =
         queryInput.has("channel_id") ? queryInput.getString("channel_id") : "noneProvided";
     final ExecutionType executionType =
