@@ -79,8 +79,9 @@ public class Stage {
       TheaterProgressPublisher progressPublisher) {
     this.image = image;
     this.graphics = this.image.createGraphics();
-    this.outputAdapter = GlobalProtocol.getInstance().getOutputAdapter();
-    this.contentManager = GlobalProtocol.getInstance().getContentManager();
+    GlobalProtocol globalProtocol = JavabuilderContext.getInstance().getGlobalProtocol();
+    this.outputAdapter = globalProtocol.getOutputAdapter();
+    this.contentManager = globalProtocol.getContentManager();
     this.imageOutputStream = new ByteArrayOutputStream();
     this.gifWriter = gifWriterFactory.createGifWriter(this.imageOutputStream);
     this.audioOutputStream = new ByteArrayOutputStream();
@@ -95,7 +96,7 @@ public class Stage {
     this.clear(Color.WHITE);
 
     System.setProperty("java.awt.headless", "true");
-    GlobalProtocol.getInstance().registerLifecycleListener(new CloseListener(this));
+    globalProtocol.registerLifecycleListener(new CloseListener(this));
   }
 
   /** Returns the width of the theater canvas. */

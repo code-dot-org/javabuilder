@@ -10,9 +10,9 @@ import org.code.neighborhood.support.NeighborhoodSignalMessage;
 import org.code.neighborhood.support.World;
 import org.code.protocol.ClientMessageType;
 import org.code.protocol.GlobalProtocolTestFactory;
+import org.code.protocol.JavabuilderContext;
 import org.code.validation.ClientMessageHelper;
 import org.code.validation.PainterLog;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -23,13 +23,8 @@ class NeighborhoodTrackerTest {
   @BeforeEach
   public void setUp() {
     GlobalProtocolTestFactory.builder().create();
-    World.setInstance(new World(GRID_SIZE));
+    JavabuilderContext.getInstance().register(World.class, new World(GRID_SIZE));
     unitUnderTest = new NeighborhoodTracker();
-  }
-
-  @AfterEach
-  public void tearDown() {
-    GlobalProtocolTestFactory.tearDown();
   }
 
   @Test

@@ -99,6 +99,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
   public String handleRequest(Map<String, String> lambdaInput, Context context) {
     this.isSessionInitialized = false;
     this.trackStartupPerformance();
+    JavabuilderContext.getInstance().destroyAndReset();
 
     // TODO: Because we reference the logger object throughout the codebase via
     // Logger.getLogger(MAIN_LOGGER), we need to set it up in the same scope as code execution to

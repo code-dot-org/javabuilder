@@ -53,6 +53,7 @@ public class WebSocketServer {
   @OnOpen
   public void onOpen(Session session) {
     this.finishedExecution = false;
+    JavabuilderContext.getInstance().destroyAndReset();
     PerformanceTracker.resetTracker();
     PerformanceTracker.getInstance().trackInstanceStart(Clock.systemUTC().instant());
     // Decode the authorization token

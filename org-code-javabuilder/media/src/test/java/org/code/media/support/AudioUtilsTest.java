@@ -56,7 +56,6 @@ class AudioUtilsTest {
 
   @AfterEach
   public void tearDown() {
-    GlobalProtocolTestFactory.tearDown();
     audioSystem.close();
   }
 

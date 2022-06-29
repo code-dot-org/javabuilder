@@ -7,10 +7,6 @@ public class GlobalProtocolTestFactory {
     return new Builder();
   }
 
-  public static void tearDown() {
-    GlobalProtocol.destroy();
-  }
-
   public static class Builder {
     private OutputAdapter outputAdapter;
     private InputAdapter inputAdapter;
@@ -45,8 +41,13 @@ public class GlobalProtocolTestFactory {
     }
 
     public void create() {
-      GlobalProtocol.create(
-          this.outputAdapter, this.inputAdapter, this.lifecycleNotifier, this.contentManager);
+      GlobalProtocol protocol =
+          new GlobalProtocol(
+              this.outputAdapter,
+              new InputHandler(this.inputAdapter),
+              this.lifecycleNotifier,
+              this.contentManager);
+      JavabuilderContext.getInstance().register(GlobalProtocol.class, protocol);
     }
   }
 }

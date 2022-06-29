@@ -6,9 +6,9 @@ import java.util.Arrays;
 import javax.sound.sampled.*;
 import org.code.media.SoundException;
 import org.code.media.support.SoundExceptionKeys;
-import org.code.protocol.GlobalProtocol;
 import org.code.protocol.InternalExceptionKey;
 import org.code.protocol.InternalServerRuntimeException;
+import org.code.protocol.JavabuilderContext;
 
 public final class AudioUtils {
   private AudioUtils() {
@@ -180,7 +180,11 @@ public final class AudioUtils {
   public static double[] readSamplesFromAssetFile(String filename) throws FileNotFoundException {
     try {
       final URL audioFileUrl =
-          new URL(GlobalProtocol.getInstance().getContentManager().getAssetUrl(filename));
+          new URL(
+              JavabuilderContext.getInstance()
+                  .getGlobalProtocol()
+                  .getContentManager()
+                  .getAssetUrl(filename));
       final AudioInputStream audioInputStream =
           AudioUtils.convertStreamToDefaultAudioFormat(
               AudioSystem.getAudioInputStream(audioFileUrl));

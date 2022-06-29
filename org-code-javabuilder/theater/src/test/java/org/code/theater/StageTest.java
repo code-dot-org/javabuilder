@@ -78,7 +78,6 @@ public class StageTest {
   @AfterEach
   public void tearDown() {
     System.setOut(standardOut);
-    GlobalProtocolTestFactory.tearDown();
   }
 
   @Test

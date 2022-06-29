@@ -34,7 +34,10 @@ public class CodeBuilderRunnable {
     UserProjectFiles validationFiles = fileLoader.getValidation();
     CodeBuilder codeBuilder =
         new CodeBuilder(
-            GlobalProtocol.getInstance(), userProjectFiles, validationFiles, this.tempFolder);
+            JavabuilderContext.getInstance().getGlobalProtocol(),
+            userProjectFiles,
+            validationFiles,
+            this.tempFolder);
     switch (this.executionType) {
       case COMPILE_ONLY:
         codeBuilder.buildUserCode(this.compileList);
