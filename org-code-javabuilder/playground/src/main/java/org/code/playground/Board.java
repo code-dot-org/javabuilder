@@ -23,8 +23,8 @@ public class Board {
   protected Board() {
     this(
         PlaygroundMessageHandler.getInstance(),
-        GlobalProtocol.getInstance().getInputHandler(),
-        GlobalProtocol.getInstance().getContentManager());
+        JavabuilderContext.getInstance().getGlobalProtocol().getInputHandler(),
+        JavabuilderContext.getInstance().getGlobalProtocol().getContentManager());
   }
 
   Board(

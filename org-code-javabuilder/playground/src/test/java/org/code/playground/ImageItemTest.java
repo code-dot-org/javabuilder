@@ -33,7 +33,6 @@ public class ImageItemTest {
   @AfterEach
   public void tearDown() {
     messageHandlerMockedStatic.close();
-    GlobalProtocolTestFactory.tearDown();
   }
 
   @Test
