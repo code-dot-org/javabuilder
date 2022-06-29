@@ -3,6 +3,11 @@ package org.code.protocol;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * This class is meant to keep track of shared singletons that should only exist for the lifetime of
+ * one Javabuilder session. Any class can be registered as long as it extends
+ * JavabuilderSharedObject, but only one object per class can be registered.
+ */
 public class JavabuilderContext {
   private static JavabuilderContext contextInstance;
   private Map<Class, JavabuilderSharedObject> sharedObjects;
