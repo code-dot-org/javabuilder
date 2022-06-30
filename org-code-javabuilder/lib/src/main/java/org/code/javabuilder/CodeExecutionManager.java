@@ -144,8 +144,7 @@ public class CodeExecutionManager {
 
   /**
    * Post-execution steps: 1) Notify listeners, 2) clean up global resources, 3) clear temporary
-   * folder, 4) close custom in/out streams, 5) Replace System.in/out with original in/out, 6)
-   * Destroy and reset JavabuilderContext
+   * folder, 4) close custom in/out streams, 5) Replace System.in/out with original in/out
    */
   private void onPostExecute() {
     // Notify user and listeners
