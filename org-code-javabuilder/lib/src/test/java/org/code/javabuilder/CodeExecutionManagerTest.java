@@ -1,7 +1,6 @@
 package org.code.javabuilder;
 
-import static org.junit.jupiter.api.Assertions.assertNotSame;
-import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -14,6 +13,7 @@ import org.code.javabuilder.CodeExecutionManager.CodeBuilderRunnableFactory;
 import org.code.protocol.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 class CodeExecutionManagerTest {
   private ProjectFileLoader fileLoader;
@@ -22,7 +22,6 @@ class CodeExecutionManagerTest {
   private ExecutionType executionType;
   private List<String> compileList;
   private TempDirectoryManager tempDirectoryManager;
-  private LifecycleNotifier lifecycleNotifier;
   private CodeBuilderRunnableFactory codeBuilderRunnableFactory;
   private CodeBuilderRunnable codeBuilderRunnable;
   private ContentManager contentManager;
@@ -36,7 +35,6 @@ class CodeExecutionManagerTest {
     executionType = ExecutionType.RUN;
     compileList = mock(List.class);
     tempDirectoryManager = mock(TempDirectoryManager.class);
-    lifecycleNotifier = mock(LifecycleNotifier.class);
     codeBuilderRunnableFactory = mock(CodeBuilderRunnableFactory.class);
     codeBuilderRunnable = mock(CodeBuilderRunnable.class);
     contentManager = mock(ContentManager.class);
@@ -53,7 +51,6 @@ class CodeExecutionManagerTest {
             executionType,
             compileList,
             tempDirectoryManager,
-            lifecycleNotifier,
             contentManager,
             mock(SystemExitHelper.class),
             codeBuilderRunnableFactory);
@@ -66,11 +63,11 @@ class CodeExecutionManagerTest {
     unitUnderTest.shutDown();
     verify(codeBuilderRunnable).run();
     // Verify post-execute
-    verify(lifecycleNotifier, times(1)).onExecutionEnded();
+    verifyExitedMessageSentOnce();
 
     unitUnderTest.shutDown();
     // Should not call post-execute again
-    verify(lifecycleNotifier, times(1)).onExecutionEnded();
+    verifyExitedMessageSentOnce();
   }
 
   @Test
@@ -90,7 +87,7 @@ class CodeExecutionManagerTest {
     unitUnderTest.shutDown();
 
     // Verify post-execute happened only once
-    verify(lifecycleNotifier, times(1)).onExecutionEnded();
+    verifyExitedMessageSentOnce();
   }
 
   @Test
@@ -106,5 +103,11 @@ class CodeExecutionManagerTest {
     unitUnderTest.shutDown();
     assertSame(sysOut, System.out);
     assertSame(sysIn, System.in);
+  }
+
+  private void verifyExitedMessageSentOnce() {
+    ArgumentCaptor<StatusMessage> message = ArgumentCaptor.forClass(StatusMessage.class);
+    verify(outputAdapter, times(1)).sendMessage(message.capture());
+    assertEquals(message.getValue().getValue(), "EXITED");
   }
 }

@@ -6,10 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.code.javabuilder.util.JarUtils;
-import org.code.protocol.JavabuilderException;
-import org.code.protocol.OutputAdapter;
-import org.code.protocol.StatusMessage;
-import org.code.protocol.StatusMessageKey;
+import org.code.protocol.*;
 
 /** The class that executes the student's code */
 public class JavaRunner {
@@ -93,11 +90,13 @@ public class JavaRunner {
             classLoaderUrls, JavaRunner.class.getClassLoader(), classNames, permissionLevel);
 
     boolean runResult;
-    PerformanceTracker.getInstance().trackUserCodeStart();
+    PerformanceTracker performanceTracker =
+        (PerformanceTracker) JavabuilderContext.getInstance().get(PerformanceTracker.class);
+    performanceTracker.trackUserCodeStart();
     try {
       runResult = runner.run(urlClassLoader);
     } finally {
-      PerformanceTracker.getInstance().trackUserCodeEnd();
+      performanceTracker.trackUserCodeEnd();
     }
 
     try {

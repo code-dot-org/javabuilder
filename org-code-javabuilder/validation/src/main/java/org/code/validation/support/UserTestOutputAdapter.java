@@ -2,6 +2,7 @@ package org.code.validation.support;
 
 import org.code.protocol.ClientMessage;
 import org.code.protocol.ClientMessageType;
+import org.code.protocol.JavabuilderContext;
 import org.code.protocol.OutputAdapter;
 
 /** Support class for parsing output messages during a test run. */
@@ -30,7 +31,9 @@ public class UserTestOutputAdapter implements OutputAdapter {
         break;
       case NEIGHBORHOOD:
         if (this.isValidation) {
-          ValidationProtocol.getInstance().trackEvent(message);
+          ValidationProtocol protocolInstance =
+              (ValidationProtocol) JavabuilderContext.getInstance().get(ValidationProtocol.class);
+          protocolInstance.trackEvent(message);
         }
         break;
       default:
