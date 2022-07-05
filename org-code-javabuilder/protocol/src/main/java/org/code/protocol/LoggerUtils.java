@@ -76,7 +76,9 @@ public class LoggerUtils {
     if (cause != null) {
       eventData.put(LoggerConstants.CAUSE, cause);
     }
-    MetricClientManager.getInstance().getMetricClient().publishSevereError();
+    MetricClient metricClient =
+        (MetricClient) JavabuilderContext.getInstance().get(MetricClient.class);
+    metricClient.publishSevereError();
     Logger.getLogger(MAIN_LOGGER).severe(eventData.toString());
   }
 
@@ -87,7 +89,9 @@ public class LoggerUtils {
     if (e.getCause() != null) {
       eventData.put(LoggerConstants.CAUSE, e.getCause());
     }
-    MetricClientManager.getInstance().getMetricClient().publishSevereError();
+    MetricClient metricClient =
+        (MetricClient) JavabuilderContext.getInstance().get(MetricClient.class);
+    metricClient.publishSevereError();
     Logger.getLogger(MAIN_LOGGER).severe(eventData.toString());
   }
 

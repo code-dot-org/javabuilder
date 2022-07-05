@@ -98,8 +98,8 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
   @Override
   public String handleRequest(Map<String, String> lambdaInput, Context context) {
     this.isSessionInitialized = false;
-    this.trackStartupPerformance();
     JavabuilderContext.getInstance().destroyAndReset();
+    this.trackStartupPerformance();
 
     // TODO: Because we reference the logger object throughout the codebase via
     // Logger.getLogger(MAIN_LOGGER), we need to set it up in the same scope as code execution to
@@ -181,8 +181,8 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
 
     Properties.setConnectionId(connectionId);
 
-    MetricClient metricClient = new AWSMetricClient(context.getFunctionName());
-    MetricClientManager.create(metricClient);
+    AWSMetricClient metricClient = new AWSMetricClient(context.getFunctionName());
+    JavabuilderContext.getInstance().register(MetricClient.class, metricClient);
 
     // Dashboard assets are only accessible if the dashboard domain is not localhost
     Properties.setCanAccessDashboardAssets(canAccessDashboardAssets);
@@ -196,12 +196,13 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
 
   private void trackStartupPerformance() {
     final Instant instanceStart = Clock.systemUTC().instant();
-    PerformanceTracker.resetTracker();
+    PerformanceTracker performanceTracker = new PerformanceTracker();
+    JavabuilderContext.getInstance().register(PerformanceTracker.class, performanceTracker);
     if (coldBoot) {
-      PerformanceTracker.getInstance().trackColdBoot(COLD_BOOT_START, COLD_BOOT_END, instanceStart);
+      performanceTracker.trackColdBoot(COLD_BOOT_START, COLD_BOOT_END, instanceStart);
       coldBoot = false;
     } else {
-      PerformanceTracker.getInstance().trackInstanceStart(instanceStart);
+      performanceTracker.trackInstanceStart(instanceStart);
     }
   }
 
@@ -260,7 +261,6 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     final List<String> compileList = JSONUtils.listFromJSONObjectMember(options, "compileList");
 
     final AWSInputAdapter inputAdapter = new AWSInputAdapter(SQS_CLIENT, queueUrl, queueName);
-    final LifecycleNotifier lifecycleNotifier = new LifecycleNotifier();
     final AWSContentManager contentManager =
         new AWSContentManager(
             S3_CLIENT, CONTENT_BUCKET_NAME, javabuilderSessionId, CONTENT_BUCKET_URL, context);
@@ -273,7 +273,6 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
         compileList,
         tempDirectoryManager,
         contentManager,
-        lifecycleNotifier,
         new AWSSystemExitHelper(connectionId, API_CLIENT));
   }
 
@@ -303,8 +302,11 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
       }
     }
 
-    PerformanceTracker.getInstance().trackInstanceEnd();
-    PerformanceTracker.getInstance().logPerformance();
+    PerformanceTracker performanceTracker =
+        (PerformanceTracker) JavabuilderContext.getInstance().get(PerformanceTracker.class);
+    performanceTracker.trackInstanceEnd();
+    performanceTracker.logPerformance();
+    JavabuilderContext.getInstance().destroyAndReset();
 
     this.cleanUpAWSResources(connectionId, api);
 

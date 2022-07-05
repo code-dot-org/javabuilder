@@ -54,8 +54,9 @@ public class WebSocketServer {
   public void onOpen(Session session) {
     this.finishedExecution = false;
     JavabuilderContext.getInstance().destroyAndReset();
-    PerformanceTracker.resetTracker();
-    PerformanceTracker.getInstance().trackInstanceStart(Clock.systemUTC().instant());
+    PerformanceTracker performanceTracker = new PerformanceTracker();
+    JavabuilderContext.getInstance().register(PerformanceTracker.class, performanceTracker);
+    performanceTracker.trackInstanceStart(Clock.systemUTC().instant());
     // Decode the authorization token
     String token = session.getRequestParameterMap().get("Authorization").get(0);
     Base64.Decoder decoder = Base64.getDecoder();
@@ -63,7 +64,8 @@ public class WebSocketServer {
     JSONObject queryInput = new JSONObject(payload);
 
     final String connectionId = "LocalhostWebSocketConnection";
-    final String levelId = queryInput.getString("level_id");
+    final String levelId =
+        queryInput.has("level_id") ? String.valueOf(queryInput.getInt("level_id")) : "noneProvided";
     final String channelId =
         queryInput.has("channel_id") ? queryInput.getString("channel_id") : "noneProvided";
     final ExecutionType executionType =
@@ -77,8 +79,8 @@ public class WebSocketServer {
     // turn off the default console logger
     this.logger.setUseParentHandlers(false);
 
-    MetricClient metricClient = new LocalMetricClient();
-    MetricClientManager.create(metricClient);
+    LocalMetricClient metricClient = new LocalMetricClient();
+    JavabuilderContext.getInstance().register(MetricClient.class, metricClient);
 
     Properties.setConnectionId(connectionId);
 
@@ -89,7 +91,6 @@ public class WebSocketServer {
     if (executionType == ExecutionType.TEST) {
       outputAdapter = new UserTestOutputAdapter(websocketOutputAdapter);
     }
-    final LifecycleNotifier lifecycleNotifier = new LifecycleNotifier();
 
     final ExceptionHandler exceptionHandler =
         new ExceptionHandler(outputAdapter, new LocalSystemExitHelper());
@@ -108,7 +109,6 @@ public class WebSocketServer {
                         compileList,
                         new LocalTempDirectoryManager(),
                         contentManager,
-                        lifecycleNotifier,
                         new LocalSystemExitHelper());
                 codeExecutionManager.execute();
               } catch (Throwable e) {
@@ -134,7 +134,9 @@ public class WebSocketServer {
   @OnClose
   public void myOnClose() {
     Logger.getLogger(MAIN_LOGGER).info("WebSocket closed.");
-    PerformanceTracker.getInstance().logPerformance();
+    PerformanceTracker performanceTracker =
+        (PerformanceTracker) JavabuilderContext.getInstance().get(PerformanceTracker.class);
+    performanceTracker.logPerformance();
     // If the websocket was closed before execution was finished, make sure we clean up.
     if (!this.finishedExecution) {
       if (codeExecutionManager != null) {
@@ -142,6 +144,7 @@ public class WebSocketServer {
       }
       this.logger.removeHandler(this.logHandler);
     }
+    JavabuilderContext.getInstance().destroyAndReset();
   }
 
   /**

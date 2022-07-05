@@ -42,11 +42,13 @@ public class UserCodeCompiler {
     this.outputAdapter.sendMessage(new StatusMessage(StatusMessageKey.COMPILING));
     DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
 
-    PerformanceTracker.getInstance().trackCompileStart();
+    PerformanceTracker performanceTracker =
+        (PerformanceTracker) JavabuilderContext.getInstance().get(PerformanceTracker.class);
+    performanceTracker.trackCompileStart();
     CompilationTask task = getCompilationTask(diagnostics);
 
     boolean success = task.call();
-    PerformanceTracker.getInstance().trackCompileEnd();
+    performanceTracker.trackCompileEnd();
 
     // diagnostics will include any compiler errors
     for (Diagnostic<? extends JavaFileObject> diagnostic : diagnostics.getDiagnostics()) {

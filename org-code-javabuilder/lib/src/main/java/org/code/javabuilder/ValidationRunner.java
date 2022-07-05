@@ -46,6 +46,9 @@ public class ValidationRunner extends BaseTestRunner {
 
   private void setUpForValidation(URLClassLoader urlClassLoader) throws UserInitiatedException {
     Method mainMethod = ProjectLoadUtils.findMainMethod(urlClassLoader, this.projectFiles);
-    ValidationProtocol.create(mainMethod, new NeighborhoodTracker());
+    JavabuilderContext.getInstance()
+        .register(
+            ValidationProtocol.class,
+            new ValidationProtocol(mainMethod, new NeighborhoodTracker()));
   }
 }

@@ -5,9 +5,7 @@ import static org.code.protocol.LoggerNames.MAIN_LOGGER;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.logging.Logger;
-import org.code.protocol.LoggerConstants;
-import org.code.protocol.MetricClient;
-import org.code.protocol.MetricClientManager;
+import org.code.protocol.*;
 import org.json.JSONObject;
 
 /**
@@ -19,7 +17,7 @@ import org.json.JSONObject;
  * Then, at the end of the project execution, PerformanceTracker.logPerformance can be invoked in
  * order to create a single record of the performance of the project execution.
  */
-public class PerformanceTracker {
+public class PerformanceTracker extends JavabuilderSharedObject {
   private static final String FIRST_INSTANCE = "firstInstance";
   private static final String COLD_BOOT_START = "coldBootStart";
   private static final String COLD_BOOT_END = "coldBootEnd";
@@ -35,23 +33,9 @@ public class PerformanceTracker {
   private static final String CLEANUP_TIME = "cleanupTime";
   private static final String TYPE = "performanceReport";
   private final JSONObject logs;
-  private static PerformanceTracker instance;
 
-  private PerformanceTracker() {
+  public PerformanceTracker() {
     this.logs = new JSONObject();
-  }
-
-  public static PerformanceTracker getInstance() {
-    if (PerformanceTracker.instance == null) {
-      PerformanceTracker.instance = new PerformanceTracker();
-    }
-
-    return PerformanceTracker.instance;
-  }
-
-  /** Clear out all previous performance logs */
-  public static void resetTracker() {
-    PerformanceTracker.instance = new PerformanceTracker();
   }
 
   public void trackColdBoot(Instant coldBootStart, Instant coldBootEnd, Instant instanceStart) {
@@ -93,7 +77,8 @@ public class PerformanceTracker {
 
   public void logPerformance() {
     logs.put(LoggerConstants.TYPE, TYPE);
-    MetricClient metricClient = MetricClientManager.getInstance().getMetricClient();
+    MetricClient metricClient =
+        (MetricClient) JavabuilderContext.getInstance().get(MetricClient.class);
     if (!logs.isNull(COLD_BOOT_START) && !logs.isNull(COLD_BOOT_END)) {
       long coldBootTime = logs.getLong(COLD_BOOT_END) - logs.getLong(COLD_BOOT_START);
       logs.put(COLD_BOOT_TIME, coldBootTime);
@@ -119,6 +104,5 @@ public class PerformanceTracker {
     }
 
     Logger.getLogger(MAIN_LOGGER).info(logs.toString());
-    PerformanceTracker.instance = null;
   }
 }

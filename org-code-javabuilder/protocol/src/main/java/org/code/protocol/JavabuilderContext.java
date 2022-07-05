@@ -40,6 +40,10 @@ public class JavabuilderContext {
     this.sharedObjects = new HashMap<>();
   }
 
+  public boolean containsKey(Class key) {
+    return this.sharedObjects.containsKey(key);
+  }
+
   public void register(Class objectClass, JavabuilderSharedObject sharedObject) {
     if (!objectClass.isAssignableFrom(sharedObject.getClass())) {
       String message =
