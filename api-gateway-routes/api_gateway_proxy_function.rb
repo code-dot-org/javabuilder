@@ -79,6 +79,8 @@ def on_connect(event, context)
     function_name = ENV['BUILD_AND_RUN_CONSOLE_PROJECT_LAMBDA_ARN']
   elsif authorizer['mini_app_type'] == 'theater'
     function_name = ENV['BUILD_AND_RUN_THEATER_PROJECT_LAMBDA_ARN']
+  elsif authorizer['mini_app_type'] == 'playground'
+    function_name = ENV['BUILD_AND_RUN_PLAYGROUND_PROJECT_LAMBDA_ARN']
   else
     return { statusCode: 400, body: "invalid mini-app" }
   end
