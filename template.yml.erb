@@ -53,6 +53,7 @@ JAVALAB_APP_TYPES = %w(
   Theater
   Neighborhood
   Console
+  Playground
 )
 -%>
 Globals:
@@ -435,7 +436,8 @@ Resources:
 <%{
   Theater: {MemorySize: 1769, Timeout: 90},
   Neighborhood: {MemorySize: 512, Timeout: 90},
-  Console: {MemorySize: 512, Timeout: 90}
+  Console: {MemorySize: 512, Timeout: 90},
+  Playground: {MemorySize: 512, Timeout: 300}
 }.each do |name, config| -%>
   BuildAndRunJava<%=name%>ProjectFunction:
     Type: AWS::Serverless::Function
@@ -572,7 +574,7 @@ Resources:
           Label: Concurrent Executions Across All Lambdas
           ReturnData: true
           Expression: SUM(METRICS())
-<%{Theater: "m2", Neighborhood: "m3", Console: "m4"}.each do |name, id| -%>
+<%{Theater: "m2", Neighborhood: "m3", Console: "m4", Playground: "m5"}.each do |name, id| -%>
         - Id: <%=id%>
           ReturnData: false
           MetricStat:
@@ -655,6 +657,7 @@ Resources:
       -  HighWebsocketConnectionsAlarm
       -  NeighborhoodHighInvocationsAlarm
       -  TheaterHighInvocationsAlarm
+      -  PlaygroundHighInvocationsAlarm
     Properties:
         ActionsEnabled: true
         AlarmActions:
@@ -667,6 +670,7 @@ Resources:
             ALARM(${SubDomainName}_high_http_requests) OR
             ALARM(${SubDomainName}_high_websocket_connections) OR
             ALARM(${SubDomainName}_neighborhood_high_invocations) OR
+            ALARM(${SubDomainName}_playground_high_invocations) OR
             ALARM(${SubDomainName}_theater_high_invocations)"
         InsufficientDataActions: []
         OKActions: []
