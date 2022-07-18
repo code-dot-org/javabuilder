@@ -53,7 +53,6 @@ JAVALAB_APP_TYPES = %w(
   Theater
   Neighborhood
   Console
-  Playground
 )
 -%>
 Globals:
@@ -436,8 +435,7 @@ Resources:
 <%{
   Theater: {MemorySize: 1769, Timeout: 90},
   Neighborhood: {MemorySize: 512, Timeout: 90},
-  Console: {MemorySize: 512, Timeout: 90},
-  Playground: {MemorySize: 512, Timeout: 300}
+  Console: {MemorySize: 512, Timeout: 90}
 }.each do |name, config| -%>
   BuildAndRunJava<%=name%>ProjectFunction:
     Type: AWS::Serverless::Function
@@ -574,7 +572,7 @@ Resources:
           Label: Concurrent Executions Across All Lambdas
           ReturnData: true
           Expression: SUM(METRICS())
-<%{Theater: "m2", Neighborhood: "m3", Console: "m4", Playground: "m5"}.each do |name, id| -%>
+<%{Theater: "m2", Neighborhood: "m3", Console: "m4"}.each do |name, id| -%>
         - Id: <%=id%>
           ReturnData: false
           MetricStat:
@@ -587,6 +585,92 @@ Resources:
               Period: 60
               Stat: Maximum
 <%end -%>
+
+  HighWebsocketConnectionsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${SubDomainName}_high_websocket_connections"
+      AlarmDescription: Significantly higher websocket connections than normal detected. Investigate if there is a DDOS.
+      ActionsEnabled: false
+      EvaluationPeriods: 20
+      DatapointsToAlarm: 20
+      ComparisonOperator: GreaterThanUpperThreshold
+      TreatMissingData: notBreaching
+      Metrics:
+          - Id: m1
+            ReturnData: true
+            MetricStat:
+                Metric:
+                    Namespace: AWS/ApiGateway
+                    MetricName: ConnectCount
+                    Dimensions:
+                        - Name: Stage
+                          Value: !Sub "${StageName}"
+                        - Name: ApiId
+                          Value: !Ref WebSocketAPI
+                Period: 60
+                Stat: Sum
+          - Id: ad1
+            Label: ConnectCount (expected)
+            ReturnData: true
+            Expression: ANOMALY_DETECTION_BAND(m1, 8)
+      ThresholdMetricId: ad1
+
+  HighHttpRequestsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+        AlarmName: !Sub "${SubDomainName}_high_http_requests"
+        AlarmDescription: Significantly higher HTTP requests than normal detected.
+            Investigate if there is a DDOS.
+        ActionsEnabled: true
+        OKActions: []
+        AlarmActions: []
+        InsufficientDataActions: []
+        EvaluationPeriods: 20
+        DatapointsToAlarm: 20
+        ComparisonOperator: GreaterThanUpperThreshold
+        TreatMissingData: notBreaching
+        Metrics:
+            - Id: m1
+              ReturnData: true
+              MetricStat:
+                  Metric:
+                      Namespace: AWS/ApiGateway
+                      MetricName: Count
+                      Dimensions:
+                          - Name: ApiId
+                            Value: !Ref HttpAPI
+                  Period: 60
+                  Stat: Sum
+            - Id: ad1
+              Label: Count (expected)
+              ReturnData: true
+              Expression: ANOMALY_DETECTION_BAND(m1, 8)
+        ThresholdMetricId: ad1
+
+  HighUsageCompositeAlarm:
+    Type: AWS::CloudWatch::CompositeAlarm
+    DependsOn:
+      - HighHttpRequestsAlarm
+      -  HighWebsocketConnectionsAlarm
+      -  NeighborhoodHighInvocationsAlarm
+      -  TheaterHighInvocationsAlarm
+    Properties:
+        ActionsEnabled: true
+        AlarmActions:
+            - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-high-usage"]
+        AlarmDescription: Send message if abnormally high Javabuilder usage detected.
+            Monitors usage across the HTTP API, WebSocket API, and all Build and Run
+            Lambdas.
+        AlarmName: !Sub "${SubDomainName}_high_usage_composite"
+        AlarmRule: !Sub "ALARM(${SubDomainName}_console_high_invocations) OR
+            ALARM(${SubDomainName}_high_http_requests) OR
+            ALARM(${SubDomainName}_high_websocket_connections) OR
+            ALARM(${SubDomainName}_neighborhood_high_invocations) OR
+            ALARM(${SubDomainName}_theater_high_invocations)"
+        InsufficientDataActions: []
+        OKActions: []
+
 <%JAVALAB_APP_TYPES.each do | name | -%>
 
   <%=name%>HighSevereErrorRateAlarm:
@@ -671,6 +755,168 @@ Resources:
                           Value: !Ref BuildAndRunJava<%=name%>ProjectFunction
                 Period: 300
                 Stat: Sum
+
+  <%=name%>SlowCleanupTimeAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${SubDomainName}_<%=name.downcase%>_slow_cleanup_time"
+      AlarmDescription: p(95) cleanup time in Javabuilder's <%=name%> build and run lambda exceeded
+        the normal cleanup time for 15 minutes. Investigate if there has been a performance regression.
+      ActionsEnabled: true
+      OKActions: []
+      AlarmActions:
+        - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-slow-performance"]
+      InsufficientDataActions: []
+      EvaluationPeriods: 20
+      DatapointsToAlarm: 15
+      ComparisonOperator: GreaterThanUpperThreshold
+      TreatMissingData: notBreaching
+      Metrics:
+          - Id: m1
+            ReturnData: true
+            MetricStat:
+                Metric:
+                    Namespace: Javabuilder
+                    MetricName: CleanupTime
+                    Dimensions:
+                        - Name: functionName
+                          Value: !Ref BuildAndRunJava<%=name%>ProjectFunction
+                Period: 60
+                Stat: p95
+          - Id: ad1
+            Label: CleanupTime (expected)
+            ReturnData: true
+            Expression: ANOMALY_DETECTION_BAND(m1, 5)
+      ThresholdMetricId: ad1
+  
+  <%=name%>SlowColdBootTimeAlarm:    
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${SubDomainName}_<%=name.downcase%>_slow_cold_boot_time"
+      AlarmDescription: p(95) cold boot time in Javabuilder's <%=name%> build and run lambda exceeded
+        the normal cleanup time for 15 minutes. Investigate if there has been a performance regression.
+      ActionsEnabled: true
+      OKActions: []
+      AlarmActions:
+        - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-slow-performance"]
+      InsufficientDataActions: []
+      EvaluationPeriods: 20
+      DatapointsToAlarm: 15
+      ComparisonOperator: GreaterThanUpperThreshold
+      TreatMissingData: notBreaching
+      Metrics:
+          - Id: m1
+            ReturnData: true
+            MetricStat:
+                Metric:
+                    Namespace: Javabuilder
+                    MetricName: ColdBootTime
+                    Dimensions:
+                        - Name: functionName
+                          Value: !Ref BuildAndRunJava<%=name%>ProjectFunction
+                Period: 60
+                Stat: p95
+          - Id: ad1
+            Label: ColdBootTime (expected)
+            ReturnData: true
+            Expression: ANOMALY_DETECTION_BAND(m1, 2)
+      ThresholdMetricId: ad1
+
+  <%=name%>SlowInitializationTimeAlarm:    
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${SubDomainName}_<%=name.downcase%>_slow_initialization_time"
+      AlarmDescription: p(95) initialization time in Javabuilder's <%=name%> build and run lambda exceeded
+        the normal cleanup time for 15 minutes. Investigate if there has been a performance regression.
+      ActionsEnabled: true
+      OKActions: []
+      AlarmActions:
+        - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-slow-performance"]
+      InsufficientDataActions: []
+      EvaluationPeriods: 20
+      DatapointsToAlarm: 15
+      ComparisonOperator: GreaterThanUpperThreshold
+      TreatMissingData: notBreaching
+      Metrics:
+          - Id: m1
+            ReturnData: true
+            MetricStat:
+                Metric:
+                    Namespace: Javabuilder
+                    MetricName: InitializationTime
+                    Dimensions:
+                        - Name: functionName
+                          Value: !Ref BuildAndRunJava<%=name%>ProjectFunction
+                Period: 60
+                Stat: p95
+          - Id: ad1
+            Label: InitializationTime (expected)
+            ReturnData: true
+            Expression: ANOMALY_DETECTION_BAND(m1, 5)
+      ThresholdMetricId: ad1
+  
+  <%=name%>SlowTransitionTimeAlarm:    
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+        AlarmName: !Sub "${SubDomainName}_<%=name.downcase%>_slow_transition_time"
+        AlarmDescription: p(95) transition time in Javabuilder's <%=name%> build and run lambda exceeded
+          the normal cleanup time for 15 minutes. Investigate if there has been a performance regression.
+        ActionsEnabled: true
+        OKActions: []
+        AlarmActions:
+          - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-slow-performance"]
+        InsufficientDataActions: []
+        EvaluationPeriods: 20
+        DatapointsToAlarm: 15
+        ComparisonOperator: GreaterThanUpperThreshold
+        TreatMissingData: notBreaching
+        Metrics:
+            - Id: m1
+              ReturnData: true
+              MetricStat:
+                  Metric:
+                      Namespace: Javabuilder
+                      MetricName: TransitionTime
+                      Dimensions:
+                          - Name: functionName
+                            Value: !Ref BuildAndRunJava<%=name%>ProjectFunction
+                  Period: 60
+                  Stat: p95
+            - Id: ad1
+              Label: TransitionTime (expected)
+              ReturnData: true
+              Expression: ANOMALY_DETECTION_BAND(m1, 5)
+        ThresholdMetricId: ad1
+
+  <%=name%>HighInvocationsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+        AlarmName: !Sub "${SubDomainName}_<%=name.downcase%>_high_invocations"
+        AlarmDescription: Significantly higher <%=name%> build and run invocations than
+            normal detected. Investigate if there is a DDOS.
+        ActionsEnabled: false
+        EvaluationPeriods: 20
+        DatapointsToAlarm: 20
+        ComparisonOperator: GreaterThanUpperThreshold
+        TreatMissingData: notBreaching
+        Metrics:
+            - Id: m1
+              ReturnData: true
+              MetricStat:
+                  Metric:
+                      Namespace: AWS/Lambda
+                      MetricName: Invocations
+                      Dimensions:
+                          - Name: FunctionName
+                            Value: !Ref BuildAndRunJava<%=name%>ProjectFunction
+                  Period: 60
+                  Stat: Sum
+            - Id: ad1
+              Label: Invocations (expected)
+              ReturnData: true
+              Expression: ANOMALY_DETECTION_BAND(m1, 8)
+        ThresholdMetricId: ad1
+
 <%end -%>
 
 # We use shortened versions of names for partition keys (eg, user_id),
@@ -751,6 +997,151 @@ Resources:
       TimeToLiveSpecification:
         AttributeName: <%=TIME_TO_LIVE_ATTRIBUTE_NAME%>
         Enabled: true
+
+  HighUsersBlockedAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+        AlarmName: !Sub "${SubDomainName}_high_users_blocked"
+        AlarmDescription: Unusually high number of users being blocked by our throttling
+            thresholds.
+        ActionsEnabled: true
+        OKActions: []
+        AlarmActions:
+          - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-high-throttling"]
+        InsufficientDataActions: []
+        MetricName: UserBlocked
+        Namespace: Javabuilder
+        Statistic: Sum
+        Dimensions:
+            - Name: functionName
+              Value: !Ref HttpAuthorizerLambda
+        Period: 60
+        EvaluationPeriods: 1
+        DatapointsToAlarm: 1
+        Threshold: 100
+        ComparisonOperator: GreaterThanThreshold
+        TreatMissingData: notBreaching
+
+  HighClassroomsBlockedAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+        AlarmName: !Sub "${SubDomainName}_high_classrooms_blocked"
+        AlarmDescription: Unusually high number of classrooms being blocked by our throttling
+            thresholds.
+        ActionsEnabled: true
+        OKActions: []
+        AlarmActions:
+          - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-high-throttling"]
+        InsufficientDataActions: []
+        MetricName: ClassroomBlocked
+        Namespace: Javabuilder
+        Statistic: Sum
+        Dimensions:
+            - Name: functionName
+              Value: !Ref HttpAuthorizerLambda
+        Period: 60
+        EvaluationPeriods: 1
+        DatapointsToAlarm: 1
+        Threshold: 10
+        ComparisonOperator: GreaterThanThreshold
+        TreatMissingData: notBreaching
+
+  HighUnknownTokensAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+        AlarmName: !Sub "${SubDomainName}_high_unknown_tokens"
+        AlarmDescription: Websocket authorizer is receiving connection requests using
+            tokens that did not pass through the HTTP authorizer first.
+        ActionsEnabled: true
+        OKActions: []
+        AlarmActions:
+          - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-high-token-errors"]
+        InsufficientDataActions: []
+        MetricName: TokenUnknownId
+        Namespace: Javabuilder
+        Statistic: Sum
+        Dimensions:
+            - Name: functionName
+              Value: !Ref WebsocketAuthorizerLambda
+        Period: 60
+        EvaluationPeriods: 1
+        DatapointsToAlarm: 1
+        Threshold: 100
+        ComparisonOperator: GreaterThanThreshold
+        TreatMissingData: notBreaching
+
+  HighUnvettedTokensAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+        AlarmName: !Sub "${SubDomainName}_high_unvetted_tokens"
+        AlarmDescription: Websocket authorizer is receiving connection requests using
+            tokens that were observed but not vetted as valid by the HTTP authorizer.
+        ActionsEnabled: true
+        OKActions: []
+        AlarmActions:
+          - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-high-token-errors"]
+        InsufficientDataActions: []
+        MetricName: TokenNotVetted
+        Namespace: Javabuilder
+        Statistic: Sum
+        Dimensions:
+            - Name: functionName
+              Value: !Ref WebsocketAuthorizerLambda
+        Period: 60
+        EvaluationPeriods: 1
+        DatapointsToAlarm: 1
+        Threshold: 100
+        ComparisonOperator: GreaterThanThreshold
+        TreatMissingData: notBreaching
+
+  WebsocketHighUsedTokensAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+        AlarmName: !Sub "${SubDomainName}_websocket_high_used_tokens"
+        AlarmDescription: Websocket authorizer is receiving connection requests using
+            tokens have already been used.
+        ActionsEnabled: true
+        OKActions: []
+        AlarmActions:
+          - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-high-token-errors"]
+        InsufficientDataActions: []
+        MetricName: TokenUsed
+        Namespace: Javabuilder
+        Statistic: Sum
+        Dimensions:
+            - Name: functionName
+              Value: !Ref WebsocketAuthorizerLambda
+        Period: 60
+        EvaluationPeriods: 1
+        DatapointsToAlarm: 1
+        Threshold: 100
+        ComparisonOperator: GreaterThanThreshold
+        TreatMissingData: notBreaching
+
+  HttpHighUsedTokensAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+        AlarmName: !Sub "${SubDomainName}_http_high_used_tokens"
+        AlarmDescription: HTTP authorizer is receiving connection requests using
+            tokens have already been used.
+        ActionsEnabled: true
+        OKActions: []
+        AlarmActions:
+          - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-high-token-errors"]
+        InsufficientDataActions: []
+        MetricName: TokenUsed
+        Namespace: Javabuilder
+        Statistic: Sum
+        Dimensions:
+            - Name: functionName
+              Value: !Ref HttpAuthorizerLambda
+        Period: 60
+        EvaluationPeriods: 1
+        DatapointsToAlarm: 1
+        Threshold: 100
+        ComparisonOperator: GreaterThanThreshold
+        TreatMissingData: notBreaching
+
 Outputs:
   JavabuilderURL:
     Value:
