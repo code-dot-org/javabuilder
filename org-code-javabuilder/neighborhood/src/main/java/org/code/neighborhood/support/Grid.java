@@ -1,20 +1,16 @@
 package org.code.neighborhood.support;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import org.code.protocol.OutputAdapter;
 
 public class Grid {
   private final GridSquare[][] grid;
   private final int width;
   private final int height;
-  private final OutputAdapter outputAdapter;
 
-  protected Grid(GridSquare[][] squares, OutputAdapter outputAdapter) {
+  protected Grid(GridSquare[][] squares) {
     this.grid = squares;
     this.height = squares.length;
     this.width = squares[0].length;
-    this.outputAdapter = outputAdapter;
   }
 
   public void printGrid() {
@@ -41,18 +37,6 @@ public class Grid {
     } else {
       throw new NeighborhoodRuntimeException(ExceptionKeys.GET_SQUARE_FAILED);
     }
-  }
-
-  /** Hides all buckets from the screen */
-  public void hideBuckets() {
-    this.outputAdapter.sendMessage(
-        new NeighborhoodSignalMessage(NeighborhoodSignalKey.HIDE_BUCKETS, new HashMap<>()));
-  }
-
-  /** Displays all buckets on the screen */
-  public void showBuckets() {
-    this.outputAdapter.sendMessage(
-        new NeighborhoodSignalMessage(NeighborhoodSignalKey.SHOW_BUCKETS, new HashMap<>()));
   }
 
   public int getSize() {

@@ -24,14 +24,13 @@ public class PainterTest {
   public void setUp() {
     GlobalProtocolTestFactory.builder().withOutputAdapter(outputAdapter).create();
     System.setOut(new PrintStream(outputStreamCaptor));
-    World w = new World(singleSquareGrid);
-    World.setInstance(w);
+    World world = new World(singleSquareGrid);
+    JavabuilderContext.getInstance().register(World.class, world);
   }
 
   @AfterEach
   public void tearDown() {
     System.setOut(standardOut);
-    GlobalProtocolTestFactory.tearDown();
   }
 
   @Test
@@ -82,7 +81,7 @@ public class PainterTest {
 
   @Test
   void canMoveReturnsTrueIfCurrentDirectionValid() {
-    World.setInstance(new World(multiSquareGrid));
+    JavabuilderContext.getInstance().register(World.class, new World(multiSquareGrid));
     Painter painter = new Painter(0, 0, "South", 5);
     assertTrue(painter.canMove());
   }
@@ -103,7 +102,7 @@ public class PainterTest {
   @Test
   void moveSignalsNewLocationIfValidMovement() {
     World w = new World(multiSquareGrid);
-    World.setInstance(w);
+    JavabuilderContext.getInstance().register(World.class, w);
     Painter painter = new Painter(0, 0, "West", 5);
     painter.turnLeft();
     ArgumentCaptor<NeighborhoodSignalMessage> message =
@@ -125,7 +124,7 @@ public class PainterTest {
   @Test
   void takePaintIncrementsPaint() {
     World w = new World(multiSquareGrid);
-    World.setInstance(w);
+    JavabuilderContext.getInstance().register(World.class, w);
     Painter painter = new Painter(0, 0, "North", 5);
     assertEquals(painter.getMyPaint(), 5);
     painter.takePaint();
@@ -154,7 +153,7 @@ public class PainterTest {
   @Test
   void largeGridInfinitePaintDefaultConstructor() {
     World w = new World(20);
-    World.setInstance(w);
+    JavabuilderContext.getInstance().register(World.class, w);
     Painter painter = new Painter();
     assertTrue(painter.hasPaint());
   }
@@ -162,7 +161,7 @@ public class PainterTest {
   @Test
   void noInfinitePaintDefaultConstructor() {
     World w = new World(19);
-    World.setInstance(w);
+    JavabuilderContext.getInstance().register(World.class, w);
     Painter painter = new Painter();
     assertFalse(painter.hasPaint());
   }
@@ -170,7 +169,7 @@ public class PainterTest {
   @Test
   void largeGridNoInfinitePaintWhenPaintSpecified() {
     World w = new World(20);
-    World.setInstance(w);
+    JavabuilderContext.getInstance().register(World.class, w);
     Painter painter = new Painter(0, 0, "North", 1);
     assertTrue(painter.hasPaint());
     painter.paint("red");
@@ -180,7 +179,7 @@ public class PainterTest {
   @Test
   void noInfinitePaint() {
     World w = new World(19);
-    World.setInstance(w);
+    JavabuilderContext.getInstance().register(World.class, w);
     Painter painter = new Painter(0, 0, "North", 1);
     assertTrue(painter.hasPaint());
     painter.paint("red");
@@ -190,7 +189,7 @@ public class PainterTest {
   @Test
   void testGetXReturnsXPos() {
     World w = new World(20);
-    World.setInstance(w);
+    JavabuilderContext.getInstance().register(World.class, w);
 
     final int xPos = 10;
     Painter painter = new Painter(xPos, 0, "East", 1);
@@ -204,7 +203,7 @@ public class PainterTest {
   @Test
   void testGetYReturnsYPos() {
     World w = new World(20);
-    World.setInstance(w);
+    JavabuilderContext.getInstance().register(World.class, w);
 
     final int yPos = 5;
     Painter painter = new Painter(0, yPos, "South", 1);
@@ -218,7 +217,7 @@ public class PainterTest {
   @Test
   void testGetDirectionReturnsDirectionString() {
     World w = new World(20);
-    World.setInstance(w);
+    JavabuilderContext.getInstance().register(World.class, w);
 
     final String direction = "North";
     Painter painter = new Painter(0, 0, direction, 1);
@@ -228,7 +227,7 @@ public class PainterTest {
   @Test
   void testSetPaintDoesNothingIfNegative() {
     World w = new World(20);
-    World.setInstance(w);
+    JavabuilderContext.getInstance().register(World.class, w);
 
     final int originalPaint = 10;
     Painter painter = new Painter(0, 0, "North", originalPaint);
@@ -239,7 +238,7 @@ public class PainterTest {
   @Test
   void testSetPaintDoesNothingIfHasInfinitePaint() {
     World w = new World(20);
-    World.setInstance(w);
+    JavabuilderContext.getInstance().register(World.class, w);
 
     Painter painter = new Painter();
     painter.setPaint(30);
@@ -249,7 +248,7 @@ public class PainterTest {
   @Test
   void testSetPaintUpdatesAmount() {
     World w = new World(20);
-    World.setInstance(w);
+    JavabuilderContext.getInstance().register(World.class, w);
 
     final int newPaint = 20;
     Painter painter = new Painter(0, 0, "North", 10);

@@ -3,7 +3,6 @@ package org.code.neighborhood.support;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import org.code.protocol.OutputAdapter;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -13,11 +12,8 @@ public class GridFactory {
   private static final String GRID_SQUARE_TYPE_FIELD = "tileType";
   private static final String GRID_SQUARE_ASSET_ID_FIELD = "assetId";
   private static final String GRID_SQUARE_VALUE_FIELD = "value";
-  private final OutputAdapter outputAdapter;
 
-  protected GridFactory(OutputAdapter outputAdapter) {
-    this.outputAdapter = outputAdapter;
-  }
+  protected GridFactory() {}
 
   protected Grid createGridFromJSON(String filename) throws IOException {
     File file = new File(GRID_FILE_NAME);
@@ -76,7 +72,7 @@ public class GridFactory {
           }
         }
       }
-      return new Grid(grid, this.outputAdapter);
+      return new Grid(grid);
     } catch (JSONException e) {
       throw new NeighborhoodRuntimeException(ExceptionKeys.INVALID_GRID);
     }
@@ -91,6 +87,6 @@ public class GridFactory {
         grid[i][j] = new GridSquare(1, 0);
       }
     }
-    return new Grid(grid, this.outputAdapter);
+    return new Grid(grid);
   }
 }

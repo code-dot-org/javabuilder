@@ -4,7 +4,7 @@ import java.io.FileNotFoundException;
 import java.util.HashMap;
 import org.code.protocol.ClientMessageDetailKeys;
 import org.code.protocol.ContentManager;
-import org.code.protocol.GlobalProtocol;
+import org.code.protocol.JavabuilderContext;
 
 public class ImageItem extends Item {
   private final ContentManager contentManager;
@@ -26,7 +26,13 @@ public class ImageItem extends Item {
    */
   public ImageItem(String filename, int x, int y, int width, int height)
       throws FileNotFoundException {
-    this(filename, x, y, width, height, GlobalProtocol.getInstance().getContentManager());
+    this(
+        filename,
+        x,
+        y,
+        width,
+        height,
+        JavabuilderContext.getInstance().getGlobalProtocol().getContentManager());
   }
 
   // Visible for testing only

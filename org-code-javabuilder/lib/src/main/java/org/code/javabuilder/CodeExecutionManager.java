@@ -23,7 +23,6 @@ public class CodeExecutionManager {
   private final ExecutionType executionType;
   private final List<String> compileList;
   private final TempDirectoryManager tempDirectoryManager;
-  private final LifecycleNotifier lifecycleNotifier;
   private final ContentManager contentManager;
   private final SystemExitHelper systemExitHelper;
   private final CodeBuilderRunnableFactory codeBuilderRunnableFactory;
@@ -53,7 +52,6 @@ public class CodeExecutionManager {
       List<String> compileList,
       TempDirectoryManager tempDirectoryManager,
       ContentManager contentManager,
-      LifecycleNotifier lifecycleNotifier,
       SystemExitHelper systemExitHelper) {
     this(
         fileLoader,
@@ -62,7 +60,6 @@ public class CodeExecutionManager {
         executionType,
         compileList,
         tempDirectoryManager,
-        lifecycleNotifier,
         contentManager,
         systemExitHelper,
         new CodeBuilderRunnableFactory());
@@ -75,7 +72,6 @@ public class CodeExecutionManager {
       ExecutionType executionType,
       List<String> compileList,
       TempDirectoryManager tempDirectoryManager,
-      LifecycleNotifier lifecycleNotifier,
       ContentManager contentManager,
       SystemExitHelper systemExitHelper,
       CodeBuilderRunnableFactory codeBuilderRunnableFactory) {
@@ -85,7 +81,6 @@ public class CodeExecutionManager {
     this.executionType = executionType;
     this.compileList = compileList;
     this.tempDirectoryManager = tempDirectoryManager;
-    this.lifecycleNotifier = lifecycleNotifier;
     this.contentManager = contentManager;
     this.systemExitHelper = systemExitHelper;
     this.codeBuilderRunnableFactory = codeBuilderRunnableFactory;
@@ -125,8 +120,10 @@ public class CodeExecutionManager {
    */
   private void onPreExecute() throws InternalServerException {
     // Create the Global Protocol instance
-    GlobalProtocol.create(
-        this.outputAdapter, this.inputAdapter, this.lifecycleNotifier, this.contentManager);
+    GlobalProtocol protocolInstance =
+        new GlobalProtocol(
+            this.outputAdapter, new InputHandler(this.inputAdapter), this.contentManager);
+    JavabuilderContext.getInstance().register(GlobalProtocol.class, protocolInstance);
 
     // Create temp folder
     try {
@@ -138,8 +135,7 @@ public class CodeExecutionManager {
     // Save System in/out and replace with custom in/out
     this.systemInputStream = System.in;
     this.systemOutputStream = System.out;
-    this.overrideInputStream =
-        new InputRedirectionStream(GlobalProtocol.getInstance().getInputHandler());
+    this.overrideInputStream = new InputRedirectionStream(protocolInstance.getInputHandler());
     this.overrideOutputStream = new OutputPrintStream(this.outputAdapter);
     System.setOut(this.overrideOutputStream);
     System.setIn(this.overrideInputStream);
@@ -148,15 +144,13 @@ public class CodeExecutionManager {
 
   /**
    * Post-execution steps: 1) Notify listeners, 2) clean up global resources, 3) clear temporary
-   * folder, 4) close custom in/out streams, 5) Replace System.in/out with original in/out, 6)
-   * Destroy Global Protocol
+   * folder, 4) close custom in/out streams, 5) Replace System.in/out with original in/out
    */
   private void onPostExecute() {
     // Notify user and listeners
     LambdaUtils.safelySendMessage(
         this.outputAdapter, new StatusMessage(StatusMessageKey.EXITED), false);
-    this.lifecycleNotifier.onExecutionEnded();
-    GlobalProtocol.getInstance().cleanUpResources();
+    JavabuilderContext.getInstance().onExecutionEnded();
     try {
       // Close custom input/output streams
       this.overrideInputStream.close();
@@ -170,10 +164,9 @@ public class CodeExecutionManager {
       LoggerUtils.logTrackingException(e);
       this.systemExitHelper.exit(TEMP_DIRECTORY_CLEANUP_ERROR_CODE);
     } finally {
-      // Replace System in/out with original System in/out and destroy Global Protocol
+      // Replace System in/out with original System in/out
       System.setIn(this.systemInputStream);
       System.setOut(this.systemOutputStream);
-      GlobalProtocol.destroy();
       this.isInitialized = false;
     }
   }

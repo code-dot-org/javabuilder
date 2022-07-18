@@ -44,8 +44,8 @@ public class ConcertCreator implements AutoCloseable {
         new GraphicsHelper.Factory(),
         new InstrumentSampleLoader(),
         new TheaterProgressPublisher(),
-        GlobalProtocol.getInstance().getOutputAdapter(),
-        GlobalProtocol.getInstance().getContentManager());
+        JavabuilderContext.getInstance().getGlobalProtocol().getOutputAdapter(),
+        JavabuilderContext.getInstance().getGlobalProtocol().getContentManager());
   }
 
   // Visible for testing

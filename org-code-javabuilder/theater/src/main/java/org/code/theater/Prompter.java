@@ -31,9 +31,9 @@ public class Prompter {
   // accessed by students.
   protected Prompter() {
     this(
-        GlobalProtocol.getInstance().getOutputAdapter(),
-        GlobalProtocol.getInstance().getContentManager(),
-        GlobalProtocol.getInstance().getInputHandler(),
+        JavabuilderContext.getInstance().getGlobalProtocol().getOutputAdapter(),
+        JavabuilderContext.getInstance().getGlobalProtocol().getContentManager(),
+        JavabuilderContext.getInstance().getGlobalProtocol().getInputHandler(),
         new ImageCreator());
   }
 
