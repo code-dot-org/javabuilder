@@ -1,11 +1,12 @@
 package dev.javabuilder;
 
+import org.code.protocol.JavabuilderSharedObject;
 import org.code.protocol.MetricClient;
 
 // Local implementation of MetricClient. Since all we can do locally
 // is log and we already have regular logging for every metric,
 // these methods do nothing.
-public class LocalMetricClient implements MetricClient {
+public class LocalMetricClient extends JavabuilderSharedObject implements MetricClient {
   @Override
   public void publishSevereError() {}
 

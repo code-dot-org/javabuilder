@@ -7,6 +7,7 @@ import com.amazonaws.services.apigatewaymanagementapi.model.DeleteConnectionRequ
 import com.amazonaws.services.apigatewaymanagementapi.model.GoneException;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
+import org.code.protocol.JavabuilderContext;
 
 public class AWSSystemExitHelper implements SystemExitHelper {
   private final String connectionId;
@@ -19,8 +20,10 @@ public class AWSSystemExitHelper implements SystemExitHelper {
 
   @Override
   public void exit(int status) {
-    PerformanceTracker.getInstance().trackInstanceEnd();
-    PerformanceTracker.getInstance().logPerformance();
+    PerformanceTracker performanceTracker =
+        (PerformanceTracker) JavabuilderContext.getInstance().get(PerformanceTracker.class);
+    performanceTracker.trackInstanceEnd();
+    performanceTracker.logPerformance();
     this.cleanUpResources();
     System.exit(status);
   }

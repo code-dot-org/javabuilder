@@ -3,22 +3,14 @@ package org.code.validation.support;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import org.code.protocol.ClientMessage;
+import org.code.protocol.JavabuilderSharedObject;
 import org.code.validation.NeighborhoodLog;
 
-public class ValidationProtocol {
-  private static ValidationProtocol instance;
+public class ValidationProtocol extends JavabuilderSharedObject {
   private final Method mainMethod;
   private final NeighborhoodTracker neighborhoodTracker;
 
-  public static void create(Method mainMethod, NeighborhoodTracker neighborhoodTracker) {
-    instance = new ValidationProtocol(mainMethod, neighborhoodTracker);
-  }
-
-  public static ValidationProtocol getInstance() {
-    return instance;
-  }
-
-  protected ValidationProtocol(Method mainMethod, NeighborhoodTracker neighborhoodTracker) {
+  public ValidationProtocol(Method mainMethod, NeighborhoodTracker neighborhoodTracker) {
     this.mainMethod = mainMethod;
     this.neighborhoodTracker = neighborhoodTracker;
   }

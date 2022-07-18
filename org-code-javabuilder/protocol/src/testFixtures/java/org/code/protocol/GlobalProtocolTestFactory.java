@@ -7,20 +7,14 @@ public class GlobalProtocolTestFactory {
     return new Builder();
   }
 
-  public static void tearDown() {
-    GlobalProtocol.destroy();
-  }
-
   public static class Builder {
     private OutputAdapter outputAdapter;
     private InputAdapter inputAdapter;
-    private LifecycleNotifier lifecycleNotifier;
     private ContentManager contentManager;
 
     private Builder() {
       this.outputAdapter = mock(OutputAdapter.class);
       this.inputAdapter = mock(InputAdapter.class);
-      this.lifecycleNotifier = mock(LifecycleNotifier.class);
       this.contentManager = mock(ContentManager.class);
     }
 
@@ -34,19 +28,16 @@ public class GlobalProtocolTestFactory {
       return this;
     }
 
-    public Builder withLifecycleNotifier(LifecycleNotifier lifecycleNotifier) {
-      this.lifecycleNotifier = lifecycleNotifier;
-      return this;
-    }
-
     public Builder withContentManager(ContentManager contentManager) {
       this.contentManager = contentManager;
       return this;
     }
 
     public void create() {
-      GlobalProtocol.create(
-          this.outputAdapter, this.inputAdapter, this.lifecycleNotifier, this.contentManager);
+      GlobalProtocol protocol =
+          new GlobalProtocol(
+              this.outputAdapter, new InputHandler(this.inputAdapter), this.contentManager);
+      JavabuilderContext.getInstance().register(GlobalProtocol.class, protocol);
     }
   }
 }

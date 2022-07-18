@@ -20,7 +20,6 @@ import org.code.theater.support.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 public class StageTest {
@@ -33,19 +32,13 @@ public class StageTest {
   private AudioWriter audioWriter;
   private InstrumentSampleLoader instrumentSampleLoader;
   private TheaterProgressPublisher progressPublisher;
-  private ArgumentCaptor<LifecycleListener> stageCloseListenerCaptor;
 
   private Stage s;
 
   @BeforeEach
   public void setUp() {
-    final LifecycleNotifier lifecycleNotifier = mock(LifecycleNotifier.class);
-    stageCloseListenerCaptor = ArgumentCaptor.forClass(LifecycleListener.class);
-    doNothing().when(lifecycleNotifier).registerListener(stageCloseListenerCaptor.capture());
-    GlobalProtocolTestFactory.builder()
-        .withOutputAdapter(outputAdapter)
-        .withLifecycleNotifier(lifecycleNotifier)
-        .create();
+    JavabuilderContext.getInstance().destroyAndReset();
+    GlobalProtocolTestFactory.builder().withOutputAdapter(outputAdapter).create();
     CachedResources.create();
     System.setOut(new PrintStream(outputStreamCaptor));
     bufferedImage = mock(BufferedImage.class);
@@ -63,9 +56,6 @@ public class StageTest {
     instrumentSampleLoader = mock(InstrumentSampleLoader.class);
     progressPublisher = mock(TheaterProgressPublisher.class);
 
-    // Reset before each test
-    TheaterPlayer.getInstance().onExecutionEnded();
-
     s =
         new Stage(
             bufferedImage,
@@ -78,7 +68,6 @@ public class StageTest {
   @AfterEach
   public void tearDown() {
     System.setOut(standardOut);
-    GlobalProtocolTestFactory.tearDown();
   }
 
   @Test
@@ -266,9 +255,7 @@ public class StageTest {
 
   @Test
   void testClosesStreamsIfExecutionEnded() {
-    final LifecycleListener stageCloseListener = stageCloseListenerCaptor.getValue();
-
-    stageCloseListener.onExecutionEnded();
+    JavabuilderContext.getInstance().onExecutionEnded();
 
     verify(gifWriter, times(1)).close();
     verify(audioWriter, times(1)).close();

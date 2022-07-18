@@ -1,22 +1,14 @@
 package org.code.theater.support;
 
 import java.util.List;
-import org.code.protocol.GlobalProtocol;
-import org.code.protocol.LifecycleListener;
+import org.code.protocol.JavabuilderSharedObject;
 
 /**
  * Plays a Theater concert with the provided list of {@link SceneAction}s, using a {@link
- * ConcertCreator}. As this class is only meant to be used as a singleton, it manages the global
- * Theater state to ensure that a concert is only played once per session, and that the flag is
- * reset when execution ends.
+ * ConcertCreator}. It manages the global Theater state to ensure that a concert is only played once
+ * per session. The object should not persist past a single session.
  */
-public class TheaterPlayer implements LifecycleListener {
-  private static final TheaterPlayer instance = new TheaterPlayer();
-
-  public static TheaterPlayer getInstance() {
-    return instance;
-  }
-
+public class TheaterPlayer extends JavabuilderSharedObject {
   // Factory for ease of testing
   static class ConcertCreatorFactory {
     public ConcertCreator create() {
@@ -27,7 +19,7 @@ public class TheaterPlayer implements LifecycleListener {
   private final ConcertCreatorFactory concertCreatorFactory;
   private boolean hasPlayed;
 
-  private TheaterPlayer() {
+  public TheaterPlayer() {
     this(new ConcertCreatorFactory());
   }
 
@@ -35,7 +27,6 @@ public class TheaterPlayer implements LifecycleListener {
   TheaterPlayer(ConcertCreatorFactory concertCreatorFactory) {
     this.concertCreatorFactory = concertCreatorFactory;
     this.hasPlayed = false;
-    GlobalProtocol.getInstance().registerLifecycleListener(this);
   }
 
   public void play(List<SceneAction> actions) {
@@ -58,10 +49,5 @@ public class TheaterPlayer implements LifecycleListener {
     }
 
     this.hasPlayed = true;
-  }
-
-  @Override
-  public void onExecutionEnded() {
-    this.hasPlayed = false;
   }
 }

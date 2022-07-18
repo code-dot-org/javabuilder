@@ -8,16 +8,13 @@ import java.util.List;
 import org.code.protocol.GlobalProtocolTestFactory;
 import org.code.protocol.InternalExceptionKey;
 import org.code.protocol.InternalServerRuntimeException;
-import org.code.protocol.LifecycleNotifier;
 import org.code.theater.support.TheaterPlayer.ConcertCreatorFactory;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class TheaterPlayerTest {
 
   private ConcertCreator concertCreator;
-  private LifecycleNotifier lifecycleNotifier;
   private List<SceneAction> actions;
   private TheaterPlayer unitUnderTest;
 
@@ -27,22 +24,11 @@ class TheaterPlayerTest {
     concertCreator = mock(ConcertCreator.class);
     when(concertCreatorFactory.create()).thenReturn(concertCreator);
 
-    lifecycleNotifier = mock(LifecycleNotifier.class);
-    GlobalProtocolTestFactory.builder().withLifecycleNotifier(lifecycleNotifier).create();
+    GlobalProtocolTestFactory.builder().create();
 
     actions = new ArrayList<>();
 
     unitUnderTest = new TheaterPlayer(concertCreatorFactory);
-  }
-
-  @AfterEach
-  public void tearDown() {
-    GlobalProtocolTestFactory.tearDown();
-  }
-
-  @Test
-  public void testRegistersLifecycleListener() {
-    verify(lifecycleNotifier).registerListener(unitUnderTest);
   }
 
   @Test
@@ -70,15 +56,5 @@ class TheaterPlayerTest {
       // expected
       verify(concertCreator).close();
     }
-  }
-
-  @Test
-  public void testExecutionEndedResetsHasPlayed() {
-    unitUnderTest.play(actions);
-    assertThrows(TheaterRuntimeException.class, () -> unitUnderTest.play(actions));
-
-    unitUnderTest.onExecutionEnded();
-
-    assertDoesNotThrow(() -> unitUnderTest.play(actions));
   }
 }

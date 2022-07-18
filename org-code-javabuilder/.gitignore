@@ -17,3 +17,6 @@ app/.project
 .vscode/*
 
 *.zip
+
+# ignore neighborhood grid.txt file (auto-generated when running locally)
+lib/grid.txt
