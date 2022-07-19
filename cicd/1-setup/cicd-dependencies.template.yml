@@ -13,7 +13,7 @@ Resources:
   # This role will be used by CodeBuild to execute the CI build. Here we have
   # the common policy rules required. Since we may want to create multiple
   # codebuild projects for different branches, we can append policies when those
-  # stack resources are created (in "2-cicd")
+  # stack resources are created (in "2-cicd/cicd.template.yml")
   JavabuilderCodeBuildRole:
     Type: AWS::IAM::Role
     Properties:
@@ -21,11 +21,29 @@ Resources:
         Statement:
           - Action: ['sts:AssumeRole']
             Effect: Allow
-            Principal: {Service: [codebuild.amazonaws.com]}
+            Principal:
+              Service:
+                - codebuild.amazonaws.com
+                - codepipeline.amazonaws.com
         Version: '2012-10-17'
       Path: /service-role/
       PermissionsBoundary: !ImportValue IAM-DevPermissions
       Policies:
+        - PolicyName: JavabuilderPassRole
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action: iam:PassRole
+                Resource: !Sub arn:aws:iam::${AWS::AccountId}:role/admin/CloudFormationService
+        - PolicyName: JavabuilderCodePipelinePolicy
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "cloudformation:DescribeStacks"
+                  - "cloudformation:CreateStack"
+                  - "cloudformation:UpdateStack"
+                Resource: "*"
         - PolicyName: CodeBuildResourcesAccess
           PolicyDocument:
             Statement:
@@ -45,10 +63,15 @@ Resources:
               - Effect: Allow
                 Action:
                   - s3:PutObject
+                  - s3:PutObjectAcl
                   - s3:GetObject
                   - s3:GetObjectVersion
                 Resource:
                   - !Sub arn:aws:s3:::${ArtifactStore}/*
+              - Effect: Allow
+                Action: codestar-connections:UseConnection
+                Resource:
+                  - !Sub arn:aws:codestar-connections:us-east-1:${AWS::AccountId}:connection/*
 
 Outputs:
   JavabuilderCodeBuildArtifactBucket:

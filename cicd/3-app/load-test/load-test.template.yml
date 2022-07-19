@@ -42,7 +42,7 @@ Resources:
               Name: nofile
               SoftLimit: 4096
       Cpu: 2048
-      ExecutionRoleArn: !Ref ExecutionRole
+      ExecutionRoleArn: !GetAtt ExecutionRole.Arn
       Memory: 4096
       NetworkMode: awsvpc
       RuntimePlatform: 
