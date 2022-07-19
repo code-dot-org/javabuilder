@@ -1,0 +1,32 @@
+version: 0.2
+phases:
+  install:
+    runtime-versions:
+      nodejs: 14
+  pre_build:
+    commands:
+      - node -v
+      - npm -v
+      - cd ./integration-tests
+      - npm install
+  build:
+    commands:
+      - set -e
+
+      - # TODO: Make the ARN and/or secret names configurable too?
+      - ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
+      - private_key=$(aws secretsmanager get-secret-value --secret-id arn:aws:secretsmanager:us-east-1:${ACCOUNT_ID}:secret:development/cdo/javabuilder_integration_tests_key-b4BQG2)
+      - password=$(aws secretsmanager get-secret-value --secret-id arn:aws:secretsmanager:us-east-1:${ACCOUNT_ID}:secret:development/cdo/javabuilder_integration_tests_key_password-sWpRnW)
+
+      - sub_domain=$APP_SUBDOMAIN
+      - base_domain=$APP_BASE_DOMAIN
+
+      - echo Running integration tests targeting "$sub_domain"."$base_domain"
+
+      - JAVABUILDER_PRIVATE_KEY=$private_key \
+      - JAVABUILDER_PASSWORD=$password \
+      - JAVABUILDER_HTTP_URL=https://"$sub_domain"-http."$base_domain"/seedsources/sources.json \
+      - JAVABUILDER_WEBSOCKET_URL=wss://"$sub_domain"."$base_domain" \
+      - JAVABUILDER_BASE_DOMAIN=$base_domain \
+      - JAVABUILDER_SUB_DOMAIN=$sub_domain \
+      - npm test

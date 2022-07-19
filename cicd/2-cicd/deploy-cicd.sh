@@ -5,12 +5,22 @@ echo Deploying Javabuilder CICD Pipeline
 # Create/Update the Javabuilder build/deploy pipeline stack. This is manually created and maintained, but should not require elevated permissions. 
 
 # 'Developer' role requires a specific service role for all CloudFormation operations.
-if [[ $(aws sts get-caller-identity --query Arn --output text) =~ "475661607190:assumed-role/Developer/" ]]; then
+if [[ $(aws sts get-caller-identity --query Arn --output text) =~ "assumed-role/Developer/" ]]; then
   # Append the role-arn option to the positional parameters $@ passed to cloudformation deploy.
   set -- "$@" --role-arn "arn:aws:iam::$(aws sts get-caller-identity --query Account --output text):role/admin/CloudFormationService"
 fi
 
-STACK_NAME=javabuilder-cicd
+# Default to main branch, but support pipelines using other branches
+TARGET_BRANCH=${TARGET_BRANCH-'main'}
+if [ "$TARGET_BRANCH" == "main" ]
+then
+  STACK_NAME=${STACK_NAME-'javabuilder-cicd'}
+else
+  STACK_NAME=${STACK_NAME-"javabuilder-$TARGET_BRANCH-cicd"}
+fi
+
+GITHUB_BADGE_ENABLED=${GITHUB_BADGE_ENABLED-'true'}
+
 TEMPLATE_FILE=cicd/2-cicd/cicd.template.yml
 
 echo Validating cloudformation template...
@@ -18,12 +28,20 @@ aws cloudformation validate-template \
   --template-body file://${TEMPLATE_FILE} \
   | cat
 
-echo Updating cloudformation stack...
-aws cloudformation deploy \
-  --stack-name $STACK_NAME \
-  --template-file $TEMPLATE_FILE \
-  --parameter-overrides GitHubBranch=main \
-  --capabilities CAPABILITY_IAM \
-  "$@"
+ACCOUNT=$(aws sts get-caller-identity --query "Account" --output text)
 
-echo Complete!
+read -r -p "Would you like to deploy this template to AWS account $ACCOUNT? [y/N] " response
+if [[ "$response" =~ ^([yY][eE][sS]|[yY])$ ]]
+then
+  echo Updating cloudformation stack...
+  aws cloudformation deploy \
+    --stack-name $STACK_NAME \
+    --template-file $TEMPLATE_FILE \
+    --parameter-overrides GitHubBranch=$TARGET_BRANCH GitHubBadgeEnabled=$GITHUB_BADGE_ENABLED \
+    --capabilities CAPABILITY_IAM \
+    "$@"
+
+  echo Complete!
+else
+  echo Exiting...
+fi

@@ -1,0 +1,40 @@
+version: 0.2
+phases:
+  install:
+    runtime-versions:
+      ruby: 2.7
+      java: corretto11
+      python: 3.8
+    commands:
+      - gem install bundler
+      - pip install cfn-lint
+  build:
+    # This should be moved to a shell script if it gets more complicated.
+    commands:
+      - set -e
+      - BRANCH_NAME=${CODEBUILD_WEBHOOK_HEAD_REF#"refs/heads/"}
+
+      - cd ./javabuilder-authorizer
+      - ./build.sh
+
+      - cd $CODEBUILD_SRC_DIR
+      - cd org-code-javabuilder
+      - ./gradlew test
+      - ./build.sh
+
+      - cd $CODEBUILD_SRC_DIR
+      - cd api-gateway-routes
+      - rake test
+
+      - cd $CODEBUILD_SRC_DIR
+      - erb -T - cicd/3-app/javabuilder/template.yml.erb > app-template.yml
+      - cfn-lint app-template.yml
+      - cat app-template.yml
+      
+      - cicd/3-app/javabuilder/config/create-environment-config.sh
+      
+      - aws cloudformation package --template-file app-template.yml --s3-bucket $ARTIFACT_STORE --s3-prefix package --output-template-file packaged-app-template.yml
+      
+      - ls cicd/3-app/javabuilder
+artifacts:
+  files: '**/*'

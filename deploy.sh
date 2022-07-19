@@ -34,7 +34,7 @@ LIMIT_PER_DAY=${LIMIT_PER_DAY-'150'}
 # Default per-classroom hourly limit
 TEACHER_LIMIT_PER_HOUR=${TEACHER_LIMIT_PER_HOUR-'1000'}
 
-erb -T - template.yml.erb > template.yml
+erb -T - cicd/3-app/javabuilder/template.yml.erb > template.yml
 TEMPLATE=template.yml
 OUTPUT_TEMPLATE=$(mktemp)
 
