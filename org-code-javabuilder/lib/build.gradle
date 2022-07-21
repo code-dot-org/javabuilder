@@ -89,7 +89,6 @@ afterEvaluate {
     def projects = [
             [':neighborhood', 'buildNeighborhood'],
             [':theater', 'buildTheater'],
-            [':playground', 'buildPlayground'],
             [':studentlib', 'buildStudentlib'],
             [':validation', 'buildValidation'],
             [':lang', 'buildLang']
