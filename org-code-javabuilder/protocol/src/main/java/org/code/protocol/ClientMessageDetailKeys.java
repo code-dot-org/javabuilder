@@ -9,16 +9,6 @@ public class ClientMessageDetailKeys {
   public static final String Y = "y";
   public static final String ID = "id";
 
-  // Playground specific
-  public static final String TEXT = "text";
-  public static final String COLOR_RED = "colorRed";
-  public static final String COLOR_BLUE = "colorBlue";
-  public static final String COLOR_GREEN = "colorGreen";
-  public static final String FONT = "font";
-  public static final String FONT_STYLE = "fontStyle";
-  public static final String ROTATION = "rotation";
-  public static final String UPDATES = "updates";
-
   // Theater specific
   public static final String PROMPT = "prompt";
   public static final String UPLOAD_URL = "uploadUrl";
