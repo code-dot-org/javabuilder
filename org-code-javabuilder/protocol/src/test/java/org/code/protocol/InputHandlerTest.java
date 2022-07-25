@@ -32,17 +32,16 @@ class InputHandlerTest {
   public void testQueuesMessageIfNotOfRequestedType() {
     final String inputMessage1 = "system in 1";
     final String inputMessage2 = "system in 2";
-    final String playgroundMessage = "playground message";
+    final String theaterMessage = "theater message";
 
     when(inputAdapter.getNextMessage())
         .thenReturn(createJsonMessage(InputMessageType.SYSTEM_IN.name(), inputMessage1))
         .thenReturn(createJsonMessage(InputMessageType.SYSTEM_IN.name(), inputMessage2))
-        .thenReturn(createJsonMessage(InputMessageType.PLAYGROUND.name(), playgroundMessage))
-        .thenReturn(createJsonMessage(InputMessageType.PLAYGROUND.name(), "other"));
+        .thenReturn(createJsonMessage(InputMessageType.THEATER.name(), theaterMessage))
+        .thenReturn(createJsonMessage(InputMessageType.THEATER.name(), "other"));
 
-    assertEquals(
-        playgroundMessage, unitUnderTest.getNextMessageForType(InputMessageType.PLAYGROUND));
-    // Should have called input adapter 3 times (until first PLAYGROUND message was received)
+    assertEquals(theaterMessage, unitUnderTest.getNextMessageForType(InputMessageType.THEATER));
+    // Should have called input adapter 3 times (until first THEATER message was received)
     verify(inputAdapter, times(3)).getNextMessage();
 
     reset(inputAdapter);

@@ -125,7 +125,6 @@ public class UserClassLoader extends URLClassLoader {
         "org.junit.jupiter.api.",
         "org.code.media.",
         "org.code.neighborhood.",
-        "org.code.playground.",
         "org.code.theater.",
         "org.code.lang"
       };
