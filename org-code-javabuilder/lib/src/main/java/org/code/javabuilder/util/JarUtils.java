@@ -15,7 +15,6 @@ public final class JarUtils {
   private static final String[] JAR_NAMES = {
     "neighborhood-full.jar",
     "theater-full.jar",
-    "playground-full.jar",
     "studentlib-full.jar",
     "validation-full.jar",
     "lang-full.jar"
