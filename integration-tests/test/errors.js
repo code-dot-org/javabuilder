@@ -10,8 +10,8 @@ import {
 import {expect} from "chai";
 import {uploadSources} from "./lib/JavabuilderConnectionHelper.js";
 
-describe("Errors", () => {
-  it("Compilation Error", (done) => {
+describe("Error States", () => {
+  it("Responds with compilation error when given malformed student code", (done) => {
     const expectedMessages = [
       COMPILING_STATUS_MESSAGE,
       { type: "SYSTEM_OUT", value: "/HelloWorld.java:1: error: reached end of file while parsing\npublic class HelloWorld {\n                         ^\n" },
@@ -23,7 +23,7 @@ describe("Errors", () => {
     verifyMessages(compilationError, CONSOLE, assertOnMessagesReceived, done);
   }).timeout(20000);
 
-  it("Runtime Error", (done) => {
+  it("Responds with FileNotFound exception when unknown file is used", (done) => {
     const expectedMessages = [
       ...INITIAL_STATUS_MESSAGES,
       {
@@ -42,7 +42,7 @@ describe("Errors", () => {
     verifyMessages(theaterRuntimeFileNotFound, THEATER, assertOnMessagesReceived, done);
   }).timeout(20000);
 
-  it("Uses blocked classes", (done) => {
+  it("Throws exception when blocked class used in student code", (done) => {
     const expectedMessages = [
       ...INITIAL_STATUS_MESSAGES,
       {
