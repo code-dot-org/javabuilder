@@ -327,34 +327,60 @@ Resources:
               OutputArtifacts:
                 - Name: integrationTestResultsPOC
   
+  # Send pipeline events to an SNS topic.
+  # Note: Integration with Slack via AWS ChatBot is configured manually via AWS Console.
   PipelineNotificationRule:
     Type: AWS::CodeStarNotifications::NotificationRule
     Properties:
-      Name: !Sub ${StackName}-pipeline
+      Name: !Sub ${AWS::StackName}-pipeline
       DetailType: FULL
-      Resource: !Ref Pipeline
+      Resource: !Sub "arn:${AWS::Partition}:codepipeline:${AWS::Region}:${AWS::AccountId}:${Pipeline}"
       EventTypeIds: 
-        - codepipeline-pipeline-action-execution-succeeded
-        - codepipeline-pipeline-action-execution-failed
-        - codepipeline-pipeline-action-execution-canceled
-        - codepipeline-pipeline-action-execution-started
-        - codepipeline-pipeline-stage-execution-started
-        - codepipeline-pipeline-stage-execution-succeeded
-        - codepipeline-pipeline-stage-execution-resumed
-        - codepipeline-pipeline-stage-execution-canceled
-        - codepipeline-pipeline-stage-execution-failed
+        # Pipeline events
         - codepipeline-pipeline-pipeline-execution-failed
-        - codepipeline-pipeline-pipeline-execution-canceled
-        - codepipeline-pipeline-pipeline-execution-started
-        - codepipeline-pipeline-pipeline-execution-resumed
         - codepipeline-pipeline-pipeline-execution-succeeded
-        - codepipeline-pipeline-pipeline-execution-superseded
-        - codepipeline-pipeline-manual-approval-failed
+        # - codepipeline-pipeline-pipeline-execution-canceled
+        # - codepipeline-pipeline-pipeline-execution-superseded
+        # - codepipeline-pipeline-pipeline-execution-started
+        # - codepipeline-pipeline-pipeline-execution-resumed
+        # Stage Events
+        # - codepipeline-pipeline-stage-execution-started
+        # - codepipeline-pipeline-stage-execution-succeeded
+        # - codepipeline-pipeline-stage-execution-resumed
+        # - codepipeline-pipeline-stage-execution-canceled
+        - codepipeline-pipeline-stage-execution-failed
+        # Action Events
+        # - codepipeline-pipeline-action-execution-succeeded
+        # - codepipeline-pipeline-action-execution-failed
+        # - codepipeline-pipeline-action-execution-canceled
+        # - codepipeline-pipeline-action-execution-started
+        # Approval Events (we don't use approvals yet)
         - codepipeline-pipeline-manual-approval-needed
-        - codepipeline-pipeline-manual-approval-succeeded
+        # - codepipeline-pipeline-manual-approval-failed
+        # - codepipeline-pipeline-manual-approval-succeeded
       Targets: 
         - TargetType: SNS 
           TargetAddress: !Ref PipelineNotificationTopic
 
   PipelineNotificationTopic:
     Type: AWS::SNS::Topic
+
+  # This policy is necessary for CodePipeline to be allowed to publish to the Topic.
+  PipelineNotificationTopicPolicy:
+    Type: AWS::SNS::TopicPolicy
+    Properties: 
+      Topics:
+        - !Ref PipelineNotificationTopic
+      PolicyDocument:
+        Version: '2008-10-17'
+        Statement:
+        - Sid: AWSCodeStarNotifications_publish
+          Effect: Allow
+          Principal:
+            Service:
+            - codestar-notifications.amazonaws.com
+          Action: SNS:Publish
+          Resource: !Ref PipelineNotificationTopic
+          Condition:
+            StringEquals:
+              aws:SourceAccount: !Ref AWS::AccountId
