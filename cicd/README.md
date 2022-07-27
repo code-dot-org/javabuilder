@@ -53,3 +53,7 @@ Finally, all of the above need some Roles to exist in the AWS accounts before we
 
 * "deploy-setup.sh"
 * "setup.template.yml" - AWS resources for the Setup infrastructure
+
+## Opportunities
+
+- Design more granular notifications by calling Slack webhooks _within_ steps.
