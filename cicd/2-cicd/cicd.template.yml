@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: 2012-10-17
+AWSTemplateFormatVersion: 2010-09-09
 Transform: AWS::Serverless-2016-10-31
 Description: Javabulder Continuous Integration pipeline
 
@@ -372,7 +372,7 @@ Resources:
       Topics:
         - !Ref PipelineNotificationTopic
       PolicyDocument:
-        Version: '2008-10-17'
+        Version: '2012-10-17'
         Statement:
         - Sid: AWSCodeStarNotifications_publish
           Effect: Allow
