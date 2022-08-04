@@ -1,6 +1,5 @@
 {
   "Parameters": {
-    "SubDomainName": "javabuilder",
     "BaseDomainName": "code.org",
     "BaseDomainNameHostedZonedID": "Z2LCOI49SCXUGU",
     "ProvisionedConcurrentExecutions": "5",
