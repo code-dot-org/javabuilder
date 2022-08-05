@@ -786,7 +786,7 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     Properties:
       AlarmName: !Sub "${SubDomainName}_<%=name.downcase%>_slow_cold_boot_time"
-      AlarmDescription: Aerage cold boot time in Javabuilder's <%=name%> build and run lambda was high for at 
+      AlarmDescription: Average cold boot time in Javabuilder's <%=name%> build and run lambda was high for at 
         least 15 out of the last 20 minutes. Investigate if there has been a performance regression.
       ActionsEnabled: true
       OKActions: []
