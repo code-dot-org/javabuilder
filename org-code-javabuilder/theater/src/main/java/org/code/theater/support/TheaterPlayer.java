@@ -39,15 +39,4 @@ public class TheaterPlayer extends JavabuilderSharedObject {
       concertCreator.publishConcert(actions);
     }
   }
-
-  // Temporary method while we support both versions of the Theater API (Stage and Scene)
-  // to ensure that only one play command is called per project. When Stage is deleted,
-  // remove this method.
-  public void onStagePlay() {
-    if (this.hasPlayed) {
-      throw new TheaterRuntimeException(ExceptionKeys.DUPLICATE_PLAY_COMMAND);
-    }
-
-    this.hasPlayed = true;
-  }
 }
