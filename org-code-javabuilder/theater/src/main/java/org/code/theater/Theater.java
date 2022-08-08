@@ -7,7 +7,6 @@ import org.code.theater.support.SceneAction;
 import org.code.theater.support.TheaterPlayer;
 
 public final class Theater {
-  public static final Stage stage = new Stage();
   public static final Prompter prompter = new Prompter();
 
   public static void playScenes(Scene scene) {
