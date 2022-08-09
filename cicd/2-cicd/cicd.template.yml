@@ -219,7 +219,7 @@ Resources:
   JavabuilderRolePolicy:
     Type: 'AWS::IAM::Policy'
     Properties:
-      PolicyName: root
+      PolicyName: !Sub "${AWS::StackName}-codebuild-policy"
       PolicyDocument:
         Version: "2012-10-17"
         Statement:
