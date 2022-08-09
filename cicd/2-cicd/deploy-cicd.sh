@@ -2,7 +2,12 @@
 
 echo Deploying Javabuilder CICD Pipeline
 
-# Create/Update the Javabuilder build/deploy pipeline stack. This is manually created and maintained, but should not require elevated permissions. 
+# Create/Update the Javabuilder build/deploy pipeline stack. This is manually created and maintained, but should not require elevated permissions.
+# Options include:
+# - TARGET_BRANCH: Defaults to `main`, passed as a Parameter for "cicd/2-cicd/cicd.template.yml"
+# - MODE: Can be 'standard' (default) or 'adhoc', passed as a Parameter for "cicd/2-cicd/cicd.template.yml"
+# - GITHUB_BADGE_ENABLED: defaults to true, passed as a Parameter for "cicd/2-cicd/cicd.template.yml"
+# - STACK_NAME: defaults to an automated naming convention, no current use cases for changing this.
 
 # 'Developer' role requires a specific service role for all CloudFormation operations.
 if [[ $(aws sts get-caller-identity --query Arn --output text) =~ "assumed-role/Developer/" ]]; then
