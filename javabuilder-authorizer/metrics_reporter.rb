@@ -11,8 +11,13 @@ class MetricsReporter
 
   def log_token_error(status, error_message)
     puts error_message
+    metric_name = TOKEN_STATUS_METRIC_NAMES[status]
+    log(metric_name)
+  end
+
+  def log(metric_name)
     metric_data = {
-      metric_name: TOKEN_STATUS_METRIC_NAMES[status],
+      metric_name: metric_name,
       dimensions: [
         {
           name: "functionName",
