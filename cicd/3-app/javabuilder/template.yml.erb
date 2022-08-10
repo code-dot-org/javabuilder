@@ -969,14 +969,14 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     Properties:
         AlarmName: !Sub "${SubDomainName}_high_users_blocked"
-        AlarmDescription: Unusually high number of users being blocked by our throttling
+        AlarmDescription: Unusually high number of users being newly blocked by our throttling
             thresholds.
         ActionsEnabled: true
         OKActions: []
         AlarmActions:
           - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-high-throttling"]
         InsufficientDataActions: []
-        MetricName: UserBlocked
+        MetricName: NewUserBlocked
         Namespace: Javabuilder
         Statistic: Sum
         Dimensions:
@@ -993,14 +993,14 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     Properties:
         AlarmName: !Sub "${SubDomainName}_high_classrooms_blocked"
-        AlarmDescription: Unusually high number of classrooms being blocked by our throttling
+        AlarmDescription: Unusually high number of classrooms being newly blocked by our throttling
             thresholds.
         ActionsEnabled: true
         OKActions: []
         AlarmActions:
           - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-high-throttling"]
         InsufficientDataActions: []
-        MetricName: ClassroomBlocked
+        MetricName: NewClassroomBlocked
         Namespace: Javabuilder
         Statistic: Sum
         Dimensions:
