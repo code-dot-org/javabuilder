@@ -25,7 +25,7 @@ Parameters:
   CodeStarConnectionResourceId:
     Type: String
     Description: The Resource Id component of the CodeStar connection ARN for the code-dot-org GitHub repository
-    Default: 7df08bcf-9883-42e8-8f5e-d083419d4fe9
+    Default: 9e27ebd6-de25-495c-9a2d-b24077376de8
   Mode:
     Type: String
     Description: Whether this should create a pipeline for an 'adhoc' deployment or 'standard' pipeline.
