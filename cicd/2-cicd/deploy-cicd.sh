@@ -14,7 +14,6 @@ if [[ $(aws sts get-caller-identity --query Arn --output text) =~ "assumed-role/
   set -- "$@" --role-arn "arn:aws:iam::$(aws sts get-caller-identity --query Account --output text):role/admin/CloudFormationService"
 fi
 
-
 # Default to main branch, but support pipelines using other branches
 TARGET_BRANCH=${TARGET_BRANCH-'main'}
 if [ "$TARGET_BRANCH" == "main" ]
