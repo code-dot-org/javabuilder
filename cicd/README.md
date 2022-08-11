@@ -1,5 +1,5 @@
 # Javabuilder CI/CD
-## CI/CD Implementation
+## CI/CD Implementation Overview
 
 There are three phases of the CI/CD configuration. They are best explained in reverse order from the way they flow in practice.
 
@@ -34,17 +34,30 @@ Finally, all of the above need some Roles to exist in the AWS accounts before we
 * "deploy-setup.sh" - Shell script to create/update this stack
 * "setup.template.yml" - AWS resources for the Setup infrastructure
 
-## Deploying an entirely new Javabuilder
+## Deploying CI/CD resources
+
+### Deploying the `main` CI/CD Pipeline
+
+1. Create/Update the Setup stack (one time, or when changes to the Setup stack occur)
+   `cicd/1-setup/deploy-cicd-dependencies.sh` (with elevated AWS permissions)
+2. Create/Update the CI/CD stack (one time, or when changes to the CI/CD stack occur)
+   `cicd/2-cicd/deploy-cicd.sh`
+3. Trigger an update of the Pipeline by doing one of the following.
+   1. Merge a PR
+   2. Push a commit to `main`
+   3. Press the "Release Change" button on the Pipeline overview page in the AWS Console.
+
+### Deploying a CI/CD pipeline for a different branch
 
 By setting the `TARGET_BRANCH` you can create a new CI/CD pipeline that watches for PR's and changes to the specified branch, deploying a Test and Production environment just like the standard pipeline.
 
 ```
-TARGET_BRANCH=mybranch MODE=adhoc cicd/2-cicd/deploy-cicd.sh
+TARGET_BRANCH=mybranch cicd/2-cicd/deploy-cicd.sh
 ```
 
-## Deploying an Adhoc environment
+### Deploying an Adhoc environment
 
-You can create an Adhoc environment by setting the `MODE` flag on the cicd deploy script. This will create a CI/CD pipeline that will watch for updates to your `TARGET_BRANCH`.
+You can create an Adhoc environment by setting the `MODE` flag on the cicd deploy script. This will create a CI/CD pipeline that will watch for updates to your `TARGET_BRANCH`. The difference between a standard deployment and an adhoc pipeline can be seen in "cicd.template.yml" by following where the `Conditions` are used. In short, an adhoc creates an adhoc environment using "adhoc.config.yml", while a standard deployment will create a Test environment and a Prod environment using the relevent config files.
 
 ```
 TARGET_BRANCH=mybranch MODE=adhoc cicd/2-cicd/deploy-cicd.sh
