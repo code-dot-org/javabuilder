@@ -100,17 +100,17 @@ Resources:
         - DomainName: !Sub "${SubDomainName}<%=config[:Suffix]%>.${BaseDomainName}"
           HostedZoneId: !Ref BaseDomainNameHostedZonedID
 
-  <%=config[:Prefix]%>DomainNameAPIMapping:
+  <%=config[:Prefix]%>DomainNameApiMapping:
     Type: AWS::ApiGatewayV2::ApiMapping
     DependsOn:
       - <%=config[:Prefix]%>Domain
     Properties:
-      ApiId: !Ref <%=apiName%>API
+      ApiId: !Ref <%=apiName%>Api
       DomainName: !Sub "${SubDomainName}<%=config[:Suffix]%>.${BaseDomainName}"
       Stage: !Ref <%=apiName%>Stage
 
 <%end -%>
-  HttpAPI:
+  HttpApi:
     Type: AWS::ApiGatewayV2::Api
     Properties:
       Name: !Sub "${SubDomainName}-http.${BaseDomainName}"
@@ -119,7 +119,7 @@ Resources:
   PutRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
-      ApiId: !Ref HttpAPI
+      ApiId: !Ref HttpApi
       RouteKey: PUT /seedsources/sources.json
       AuthorizationType: CUSTOM
       AuthorizerId: !Ref HttpAuthorizer
@@ -143,7 +143,7 @@ Resources:
   PutSourcesPermission:
     Type: AWS::Lambda::Permission
     DependsOn:
-      - HttpAPI
+      - HttpApi
     Properties:
       Action: lambda:InvokeFunction
       FunctionName: !Ref PutSourcesFunction
@@ -152,7 +152,7 @@ Resources:
   PutIntegration:
     Type: AWS::ApiGatewayV2::Integration
     Properties:
-      ApiId: !Ref HttpAPI
+      ApiId: !Ref HttpApi
       Description: PUT Integration
       # Integration method must be POST for AWS_PROXY integrations even though we're PUTting into an S3 bucket
       IntegrationMethod: POST
@@ -175,7 +175,7 @@ Resources:
       AutoDeploy: true
       StageName: !Sub "${StageName}"
       Description: The stage to deploy
-      ApiId: !Ref HttpAPI
+      ApiId: !Ref HttpApi
       DefaultRouteSettings:
         DetailedMetricsEnabled: true
       AccessLogSettings:
@@ -202,7 +202,7 @@ Resources:
   HttpAuthorizer:
     Type: AWS::ApiGatewayV2::Authorizer
     Properties:
-      ApiId: !Ref HttpAPI
+      ApiId: !Ref HttpApi
       AuthorizerCredentialsArn:
         Fn::ImportValue: JavabuilderAPIGatewayRole
       AuthorizerPayloadFormatVersion: 2.0
@@ -213,7 +213,7 @@ Resources:
         - "$request.querystring.Authorization"
       Name: HttpAuthorizer
 
-  WebSocketAPI:
+  WebSocketApi:
     Type: AWS::ApiGatewayV2::Api
     Properties:
       Name: !Sub "${SubDomainName}.${BaseDomainName}"
@@ -223,7 +223,7 @@ Resources:
   ConnectRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
-      ApiId: !Ref WebSocketAPI
+      ApiId: !Ref WebSocketApi
       RouteKey: $connect
       AuthorizationType: CUSTOM
       AuthorizerId: !Ref WebSocketAuthorizer
@@ -236,7 +236,7 @@ Resources:
   WebSocketAuthorizer:
     Type: AWS::ApiGatewayV2::Authorizer
     Properties:
-      ApiId: !Ref WebSocketAPI
+      ApiId: !Ref WebSocketApi
       AuthorizerType: REQUEST
       AuthorizerUri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${WebsocketAuthorizerLambda.Arn}/invocations"
       IdentitySource:
@@ -246,7 +246,7 @@ Resources:
   ConnectInteg:
     Type: AWS::ApiGatewayV2::Integration
     Properties:
-      ApiId: !Ref WebSocketAPI
+      ApiId: !Ref WebSocketApi
       Description: Connect Integration
       IntegrationType: AWS_PROXY
       IntegrationUri:
@@ -256,7 +256,7 @@ Resources:
   DefaultRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
-      ApiId: !Ref WebSocketAPI
+      ApiId: !Ref WebSocketApi
       RouteKey: $default
       AuthorizationType: NONE
       OperationName: DefaultRoute
@@ -269,7 +269,7 @@ Resources:
   DefaultIntegration:
     Type: AWS::ApiGatewayV2::Integration
     Properties:
-      ApiId: !Ref WebSocketAPI
+      ApiId: !Ref WebSocketApi
       Description: Lambda Proxy Integration
       IntegrationType: AWS_PROXY
       IntegrationUri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${StartSessionAndRelayMessagesFunction.Arn}/invocations"
@@ -277,7 +277,7 @@ Resources:
   DisconnectRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
-      ApiId: !Ref WebSocketAPI
+      ApiId: !Ref WebSocketApi
       RouteKey: $disconnect
       AuthorizationType: NONE
       OperationName: DisconnectRoute
@@ -289,7 +289,7 @@ Resources:
   DisconnectInteg:
     Type: AWS::ApiGatewayV2::Integration
     Properties:
-      ApiId: !Ref WebSocketAPI
+      ApiId: !Ref WebSocketApi
       Description: Disconnect Integration
       IntegrationType: AWS_PROXY
       IntegrationUri:
@@ -303,7 +303,7 @@ Resources:
       - DefaultRoute
       - DisconnectRoute
     Properties:
-      ApiId: !Ref WebSocketAPI
+      ApiId: !Ref WebSocketApi
 
   WebSocketStage:
     Type: AWS::ApiGatewayV2::Stage
@@ -311,7 +311,7 @@ Resources:
       StageName: !Sub "${StageName}"
       Description: The stage to deploy
       DeploymentId: !Ref WebSocketDeployment
-      ApiId: !Ref WebSocketAPI
+      ApiId: !Ref WebSocketApi
       DefaultRouteSettings:
         DetailedMetricsEnabled: true
         LoggingLevel: INFO
@@ -357,18 +357,12 @@ Resources:
   StartSessionAndRelayMessagesPermission:
     Type: AWS::Lambda::Permission
     DependsOn:
-      - WebSocketAPI
+      - WebSocketApi
     Properties:
       Action: lambda:InvokeFunction
       FunctionName: !Ref StartSessionAndRelayMessagesFunction
       Principal: apigateway.amazonaws.com
 
-# AWS does not seem to be case sensitive, but is case aware. Therefore, we can't update from
-# Websocket here to WebSocket as is used elsewhere when updating an existing stack. Updating this is
-# a step we should take when we create our non-beta environment from scratch. At that point, we
-# should also update uses of HttpAPI and WebSocketAPI to be HttpApi and WebSocketApi, respectively,
-# to match the AWS standard elsewhere in this template. Example: "AWS::ApiGatewayV2::ApiMapping"
-#
 # Note: hourly and daily limit values provided to both authorizers here as environment variables,
 # but are only needed in the HTTP authorizer.
 # Both authorizers need to access the token_status DynamoDB table, but only the HTTP authorizer
@@ -380,7 +374,7 @@ Resources:
     Description: "'Authorize PUT by decoding JWT in Authorization querystring parameter.'"
   },
   WebSocket: {
-    LambdaName: "Websocket",
+    LambdaName: "WebSocket",
     Handler: "websocket_authorizer_function",
     Description: "'Authorize WebSocket connect by decoding JWT in Authorization querystring parameter.'"
   },
@@ -411,7 +405,7 @@ Resources:
       Action: lambda:InvokeFunction
       FunctionName: !Ref <%=config[:LambdaName]%>AuthorizerLambda
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${<%=name%>API}/authorizers/${<%=name%>Authorizer}"
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${<%=name%>Api}/authorizers/${<%=name%>Authorizer}"
 
 <%end -%>
   ChangeJavaRuntimeDirectoryLayer:
@@ -464,7 +458,7 @@ Resources:
           CONTENT_BUCKET_URL: !Sub "https://${ContentDomain}"
           API_ENDPOINT: !Sub
             - "https://${ApiId}.execute-api.${AWS::Region}.amazonaws.com/${StageName}"
-            - ApiId: !Ref WebSocketAPI
+            - ApiId: !Ref WebSocketApi
 <%end -%>
 
   ContentBucket:
@@ -497,7 +491,7 @@ Resources:
           Resource: !Sub "arn:aws:s3:::${ContentBucket}/*"
           Principal: '*'
 
-  ContentAPICertificate:
+  ContentApiCertificate:
     Type: AWS::CertificateManager::Certificate
     Properties:
       DomainName: !Sub "${SubDomainName}-content.${BaseDomainName}"
@@ -523,7 +517,7 @@ Resources:
         Enabled: true
         Aliases: [!Sub "${SubDomainName}-content.${BaseDomainName}"]
         ViewerCertificate:
-          AcmCertificateArn: !Ref ContentAPICertificate
+          AcmCertificateArn: !Ref ContentApiCertificate
           MinimumProtocolVersion: TLSv1
           SslSupportMethod: sni-only
         CustomErrorResponses:
@@ -607,7 +601,7 @@ Resources:
                         - Name: Stage
                           Value: !Sub "${StageName}"
                         - Name: ApiId
-                          Value: !Ref WebSocketAPI
+                          Value: !Ref WebSocketApi
                 Period: 60
                 Stat: Sum
           - Id: ad1
@@ -639,7 +633,7 @@ Resources:
                       MetricName: Count
                       Dimensions:
                           - Name: ApiId
-                            Value: !Ref HttpAPI
+                            Value: !Ref HttpApi
                   Period: 60
                   Stat: Sum
             - Id: ad1
