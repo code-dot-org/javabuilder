@@ -7,7 +7,6 @@ echo Deploying Javabuilder CICD Pipeline
 # - TARGET_BRANCH: Defaults to `main`, passed as a Parameter for "cicd/2-cicd/cicd.template.yml"
 # - MODE: Can be 'standard' (default) or 'adhoc', passed as a Parameter for "cicd/2-cicd/cicd.template.yml"
 # - GITHUB_BADGE_ENABLED: defaults to true, passed as a Parameter for "cicd/2-cicd/cicd.template.yml"
-# - STACK_NAME: defaults to an automated naming convention, no current use cases for changing this.
 
 # 'Developer' role requires a specific service role for all CloudFormation operations.
 if [[ $(aws sts get-caller-identity --query Arn --output text) =~ "assumed-role/Developer/" ]]; then
@@ -20,9 +19,9 @@ fi
 TARGET_BRANCH=${TARGET_BRANCH-'main'}
 if [ "$TARGET_BRANCH" == "main" ]
 then
-  STACK_NAME=${STACK_NAME-'javabuilder-cicd'}
+  STACK_NAME="javabuilder-cicd"
 else
-  STACK_NAME=${STACK_NAME-"javabuilder-$TARGET_BRANCH-cicd"}
+  STACK_NAME=${"javabuilder-$TARGET_BRANCH-cicd"}
 fi
 
 MODE=${MODE-'standard'}

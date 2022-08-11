@@ -35,9 +35,7 @@ Parameters:
 Conditions:
   TargetsMainBranch: !Equals [ !Ref GitHubBranch, main ]
   DeployToAdhoc: !Equals [!Ref Mode, adhoc ]
-  # DeployToTest and DeployToProd are the same right now
-  DeployToTest: !Equals [!Ref Mode, standard ]
-  DeployToProd: !Equals [ !Ref Mode, standard ]
+  DeployToTestAndProd: !Equals [!Ref Mode, standard ]
 
 
 Resources:
@@ -269,7 +267,6 @@ Resources:
                 ConnectionArn: !Sub arn:aws:codestar-connections:us-east-1:${AWS::AccountId}:connection/${CodeStarConnectionResourceId}
                 FullRepositoryId: !Sub ${GitHubOwner}/${GitHubRepo}
                 BranchName: !Ref GitHubBranch
-                DetectChanges: true
 
         - Name: Build
           Actions:
@@ -325,7 +322,7 @@ Resources:
           - !Ref AWS::NoValue
 
         - !If
-          - DeployToTest
+          - DeployToTestAndProd
           - Name: Deploy_To_Test
             Actions:
               - Name: app-deploy
@@ -351,7 +348,7 @@ Resources:
           - !Ref AWS::NoValue
 
         - !If
-          - DeployToTest
+          - DeployToTestAndProd
           - Name: Integration_Test
             Actions:
               - Name: integration-test
@@ -373,7 +370,7 @@ Resources:
           - !Ref AWS::NoValue
 
         - !If
-          - DeployToProd
+          - DeployToTestAndProd
           - Name: Deploy_To_Production
             Actions:
               - Name: app-deploy
