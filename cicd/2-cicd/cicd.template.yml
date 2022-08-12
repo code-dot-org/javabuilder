@@ -25,12 +25,18 @@ Parameters:
   CodeStarConnectionResourceId:
     Type: String
     Description: The Resource Id component of the CodeStar connection ARN for the code-dot-org GitHub repository
-    Default: 7df08bcf-9883-42e8-8f5e-d083419d4fe9
+    Default: 9e27ebd6-de25-495c-9a2d-b24077376de8
+  Mode:
+    Type: String
+    Description: Whether this should create a pipeline for an 'adhoc' deployment or 'standard' pipeline.
+    Default: standard
+    AllowedValues: [adhoc, standard]
 
 Conditions:
-  TargetsMainBranch: !Equals 
-    - !Ref GitHubBranch
-    - main
+  TargetsMainBranch: !Equals [ !Ref GitHubBranch, main ]
+  DeployToAdhoc: !Equals [!Ref Mode, adhoc ]
+  DeployToTestAndProd: !Equals [!Ref Mode, standard ]
+
 
 Resources:
 
@@ -211,7 +217,7 @@ Resources:
   JavabuilderRolePolicy:
     Type: 'AWS::IAM::Policy'
     Properties:
-      PolicyName: root
+      PolicyName: !Sub "${AWS::StackName}-codebuild-policy"
       PolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -261,7 +267,6 @@ Resources:
                 ConnectionArn: !Sub arn:aws:codestar-connections:us-east-1:${AWS::AccountId}:connection/${CodeStarConnectionResourceId}
                 FullRepositoryId: !Sub ${GitHubOwner}/${GitHubRepo}
                 BranchName: !Ref GitHubBranch
-                DetectChanges: true
 
         - Name: Build
           Actions:
@@ -290,42 +295,106 @@ Resources:
               OutputArtifacts:
                 - Name: appBuildResults
 
-        - Name: Deploy_To_Test
-          Actions:
-            - Name: app-deploy
-              ActionTypeId: 
-                Category: Deploy 
-                Owner: AWS 
-                Version: 1 
-                Provider: CloudFormation
-              InputArtifacts:
-                - Name: appBuildResults
-              Configuration:
-                StackName: !If [TargetsMainBranch, "javabuilder-test", !Sub "javabuilder-${GitHubBranch}-test"]
-                ActionMode: CREATE_UPDATE
-                TemplatePath: appBuildResults::packaged-app-template.yml
-                TemplateConfiguration: appBuildResults::cicd/3-app/javabuilder/test.config.json
-                Capabilities: CAPABILITY_AUTO_EXPAND
-                RoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/admin/CloudFormationService
+        - !If
+          - DeployToAdhoc
+          - Name: Deploy_To_Adhoc
+            Actions:
+              - Name: app-deploy
+                ActionTypeId: 
+                  Category: Deploy 
+                  Owner: AWS 
+                  Version: 1 
+                  Provider: CloudFormation
+                InputArtifacts:
+                  - Name: appBuildResults
+                Configuration:
+                  StackName: !Sub "javabuilder-adhoc-${GitHubBranch}"
+                  ActionMode: CREATE_UPDATE
+                  TemplatePath: appBuildResults::packaged-app-template.yml
+                  TemplateConfiguration: appBuildResults::cicd/3-app/javabuilder/adhoc.config.json
+                  ParameterOverrides: !Join
+                      - ''
+                      - - '{ "SubDomainName": "'
+                        - !Sub "javabuilder-adhoc-${GitHubBranch}"
+                        - '" }'
+                  Capabilities: CAPABILITY_AUTO_EXPAND
+                  RoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/admin/CloudFormationService
+          - !Ref AWS::NoValue
 
-        - Name: Integration_Test
-          Actions:
-            - Name: integration-test
-              ActionTypeId:
-                Category: Build
-                Owner: AWS
-                Provider: CodeBuild
-                Version: 1
-              InputArtifacts:
-                - Name: sourceCode
-              Configuration:
-                ProjectName: !Ref IntegrationTestBuildProject
-                EnvironmentVariables: !Sub
-                  - '[{"name":"APP_SUBDOMAIN","value":"${SUBDOMAIN}","type":"PLAINTEXT"},{"name":"APP_BASE_DOMAIN","value":"${BASE_DOMAIN}","type":"PLAINTEXT"}]'
-                  - BASE_DOMAIN: code.org
-                    SUBDOMAIN: !If [TargetsMainBranch, "javabuilder-test", !Sub "javabuilder-${GitHubBranch}-test"]
-              OutputArtifacts:
-                - Name: integrationTestResultsPOC
+        - !If
+          - DeployToTestAndProd
+          - Name: Deploy_To_Test
+            Actions:
+              - Name: app-deploy
+                ActionTypeId: 
+                  Category: Deploy 
+                  Owner: AWS 
+                  Version: 1 
+                  Provider: CloudFormation
+                InputArtifacts:
+                  - Name: appBuildResults
+                Configuration:
+                  StackName: !If [TargetsMainBranch, "javabuilder-test", !Sub "javabuilder-${GitHubBranch}-test"]
+                  ActionMode: CREATE_UPDATE
+                  TemplatePath: appBuildResults::packaged-app-template.yml
+                  TemplateConfiguration: appBuildResults::cicd/3-app/javabuilder/test.config.json
+                  ParameterOverrides: !Join
+                      - ''
+                      - - '{ "SubDomainName": "'
+                        - !If [ TargetsMainBranch, 'javabuilder-test', !Sub 'javabuilder-${GitHubBranch}-test' ]
+                        - '" }'
+                  Capabilities: CAPABILITY_AUTO_EXPAND
+                  RoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/admin/CloudFormationService
+          - !Ref AWS::NoValue
+
+        - !If
+          - DeployToTestAndProd
+          - Name: Integration_Test
+            Actions:
+              - Name: integration-test
+                ActionTypeId:
+                  Category: Build
+                  Owner: AWS
+                  Provider: CodeBuild
+                  Version: 1
+                InputArtifacts:
+                  - Name: sourceCode
+                Configuration:
+                  ProjectName: !Ref IntegrationTestBuildProject
+                  EnvironmentVariables: !Sub
+                    - '[{"name":"APP_SUBDOMAIN","value":"${SUBDOMAIN}","type":"PLAINTEXT"},{"name":"APP_BASE_DOMAIN","value":"${BASE_DOMAIN}","type":"PLAINTEXT"}]'
+                    - BASE_DOMAIN: code.org
+                      SUBDOMAIN: !If [TargetsMainBranch, "javabuilder-test", !Sub "javabuilder-${GitHubBranch}-test"]
+                OutputArtifacts:
+                  - Name: integrationTestResultsPOC
+          - !Ref AWS::NoValue
+
+        - !If
+          - DeployToTestAndProd
+          - Name: Deploy_To_Production
+            Actions:
+              - Name: app-deploy
+                ActionTypeId: 
+                  Category: Deploy 
+                  Owner: AWS 
+                  Version: 1 
+                  Provider: CloudFormation
+                InputArtifacts:
+                  - Name: appBuildResults
+                # The value of `Configuration` must be an object with String (or simple type) properties
+                Configuration:
+                  StackName: !If [TargetsMainBranch, "javabuilder", !Sub "javabuilder-${GitHubBranch}"]
+                  ActionMode: CREATE_UPDATE
+                  TemplatePath: appBuildResults::packaged-app-template.yml
+                  TemplateConfiguration: appBuildResults::cicd/3-app/javabuilder/production.config.json
+                  ParameterOverrides: !Join
+                    - ''
+                    - - '{ "SubDomainName": "'
+                      - !If [ TargetsMainBranch, 'javabuilder', !Sub 'javabuilder-${GitHubBranch}' ]
+                      - '" }'
+                  Capabilities: CAPABILITY_AUTO_EXPAND
+                  RoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/admin/CloudFormationService
+          - !Ref AWS::NoValue
   
   # Send pipeline events to an SNS topic.
   # Note: Integration with Slack via AWS ChatBot is configured manually via AWS Console.
