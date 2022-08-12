@@ -1,0 +1,11 @@
+{
+  "Parameters": {
+    "BaseDomainName": "code.org",
+    "BaseDomainNameHostedZonedID": "Z2LCOI49SCXUGU",
+    "ProvisionedConcurrentExecutions": "150",
+    "ReservedConcurrentExecutions": "1650",
+    "LimitPerHour": "150",
+    "LimitPerDay": "300",
+    "SilenceAlerts": "false"
+  }
+}
