@@ -238,7 +238,7 @@ Resources:
     Properties:
       ApiId: !Ref WebSocketApi
       AuthorizerType: REQUEST
-      AuthorizerUri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${WebsocketAuthorizerLambda.Arn}/invocations"
+      AuthorizerUri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${WebSocketAuthorizerLambda.Arn}/invocations"
       IdentitySource:
         - route.request.querystring.Authorization
       Name: WebSocketAuthorizer
@@ -1023,7 +1023,7 @@ Resources:
         Statistic: Sum
         Dimensions:
             - Name: functionName
-              Value: !Ref WebsocketAuthorizerLambda
+              Value: !Ref WebSocketAuthorizerLambda
         Period: 60
         EvaluationPeriods: 1
         DatapointsToAlarm: 1
@@ -1047,7 +1047,7 @@ Resources:
         Statistic: Sum
         Dimensions:
             - Name: functionName
-              Value: !Ref WebsocketAuthorizerLambda
+              Value: !Ref WebSocketAuthorizerLambda
         Period: 60
         EvaluationPeriods: 1
         DatapointsToAlarm: 1
@@ -1071,7 +1071,7 @@ Resources:
         Statistic: Sum
         Dimensions:
             - Name: functionName
-              Value: !Ref WebsocketAuthorizerLambda
+              Value: !Ref WebSocketAuthorizerLambda
         Period: 60
         EvaluationPeriods: 1
         DatapointsToAlarm: 1
