@@ -40,4 +40,7 @@ module TokenStatus
     NOT_VETTED => 'TokenNotVetted',
     TOKEN_USED => 'TokenUsed'
   }.freeze
+
+  NEW_USER_BLOCKED = 'NewUserBlocked'.freeze
+  NEW_CLASSROOM_BLOCKED = 'NewClassroomBlocked'.freeze
 end

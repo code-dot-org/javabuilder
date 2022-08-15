@@ -136,6 +136,7 @@ class TokenValidator
             },
             condition_expression: 'attribute_not_exists(user_id)'
           )
+          @metrics_reporter.log(NEW_CLASSROOM_BLOCKED)
         rescue Aws::DynamoDB::Errors::ConditionalCheckFailedException
           # Do nothing if this teacher has already been added to blocked table
           # (possible if throttling limit was reached by a user on another lambda simultaneously)
@@ -244,6 +245,7 @@ class TokenValidator
           },
           condition_expression: 'attribute_not_exists(user_id)'
         )
+        @metrics_reporter.log(NEW_USER_BLOCKED)
       rescue Aws::DynamoDB::Errors::ConditionalCheckFailedException
         # Do nothing if this user has already been added to blocked table
         # (possible if throttling limit was reached by the same user executing code on another lambda simultaneously)
