@@ -32,8 +32,8 @@ public class ExceptionHandler {
       return;
     }
 
-    // We should also exit on an OutOfMemoryError. This means something is wrong with our memory
-    // usage
+    // We should also exit on an OutOfMemoryError.
+    // This means something is wrong with our memory usage
     // and is not likely to be recoverable.
     if (e instanceof OutOfMemoryError) {
       final InternalServerException error =
