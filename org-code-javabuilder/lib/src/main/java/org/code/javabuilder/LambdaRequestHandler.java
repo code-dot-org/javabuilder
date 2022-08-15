@@ -43,9 +43,6 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
   private static final int TIMEOUT_WARNING_MS = 20000;
   private static final int TIMEOUT_CLEANUP_BUFFER_MS = 5000;
   private static final String LAMBDA_ID = UUID.randomUUID().toString();
-  // This is an error code we made up to signal that available disk space is less than 50%.
-  // It may be used in tracking on Cloud Watch.
-  private static final int LOW_DISK_SPACE_ERROR_CODE = 50;
   private static final String CONTENT_BUCKET_NAME = System.getenv("CONTENT_BUCKET_NAME");
   private static final String CONTENT_BUCKET_URL = System.getenv("CONTENT_BUCKET_URL");
   private static final String API_ENDPOINT = System.getenv("API_ENDPOINT");
@@ -314,7 +311,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     if ((double) f.getUsableSpace() / f.getTotalSpace() < 0.5) {
       // The current project holds a lock on too many resources. Force the JVM to quit in
       // order to release the resources for the next use of the container.
-      System.exit(LOW_DISK_SPACE_ERROR_CODE);
+      System.exit(LambdaErrorCodes.LOW_DISK_SPACE_ERROR_CODE);
     }
 
     this.isSessionInitialized = false;
