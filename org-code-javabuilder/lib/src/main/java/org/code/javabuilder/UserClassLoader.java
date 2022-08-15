@@ -126,8 +126,7 @@ public class UserClassLoader extends URLClassLoader {
         "org.code.media.",
         "org.code.neighborhood.",
         "org.code.theater.",
-        "org.code.lang",
-        "org.mockito."
+        "org.code.lang"
       };
 
   // Allowed packages for code with elevated permissions, such as validation code.
