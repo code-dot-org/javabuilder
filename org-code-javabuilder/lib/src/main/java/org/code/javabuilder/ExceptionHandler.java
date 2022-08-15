@@ -32,6 +32,18 @@ public class ExceptionHandler {
       return;
     }
 
+    // We should also exit on an OutOfMemoryError. This means something is wrong with our memory
+    // usage
+    // and is not likely to be recoverable.
+    if (e instanceof OutOfMemoryError) {
+      final InternalServerException error =
+          new InternalServerException(InternalExceptionKey.UNKNOWN_ERROR, e);
+      LoggerUtils.logSevereError(error);
+      LambdaUtils.safelySendMessage(this.outputAdapter, error.getExceptionMessage(), true);
+      this.systemExitHelper.exit(LambdaErrorCodes.OUT_OF_MEMORY_ERROR_CODE);
+      return;
+    }
+
     // Internal server exceptions are caused by us (essentially an HTTP 5xx error). Log and notify
     // the user.
     if (e instanceof InternalServerException || e instanceof InternalServerRuntimeException) {
