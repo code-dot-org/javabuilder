@@ -20,8 +20,6 @@ if [ "$TARGET_BRANCH" == "main" ]
 then
   STACK_NAME="javabuilder-cicd"
 else
-  # replace any "/" characters in the branch name with "-". "/" is not allowed in a stack name.
-  TARGET_BRANCH="${TARGET_BRANCH/\//-}"
   STACK_NAME="javabuilder-${TARGET_BRANCH}-cicd"
 fi
 
