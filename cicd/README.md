@@ -58,6 +58,7 @@ TARGET_BRANCH=mybranch cicd/2-cicd/deploy-cicd.sh
 ### Deploying an Adhoc environment
 
 You can create an Adhoc environment by setting the `MODE` flag on the cicd deploy script. This will create a CI/CD pipeline that will watch for updates to your `TARGET_BRANCH`. The difference between a standard deployment and an adhoc pipeline can be seen in "cicd.template.yml" by following where the `Conditions` are used. In short, an adhoc creates an adhoc environment using "adhoc.config.yml", while a standard deployment will create a Test environment and a Prod environment using the relevent config files.
+Note: your branch name cannot contain the character `\`, as this causes issues in AWS.
 
 ```
 TARGET_BRANCH=mybranch MODE=adhoc cicd/2-cicd/deploy-cicd.sh
