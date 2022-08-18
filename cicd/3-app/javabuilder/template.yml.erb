@@ -694,7 +694,10 @@ Resources:
             MetricStat:
                 Metric:
                     Namespace: Javabuilder
-                    MetricName: Javabuilder <%=name%> "SEVERE" errors
+                    MetricName: SevereError
+                    Dimensions:
+                      - Name: functionName
+                        Value: !Ref BuildAndRunJava<%=name%>ProjectFunction
                 Period: 300
                 Stat: Sum
           - Id: m2
@@ -728,7 +731,7 @@ Resources:
           - Id: e1
             Label: Errors / Invocations
             ReturnData: true
-            Expression: (m1 / m2) * 100
+            Expression: ((m1 - m3) / m2) * 100
           - Id: m1
             ReturnData: false
             MetricStat:
@@ -751,6 +754,17 @@ Resources:
                           Value: !Ref BuildAndRunJava<%=name%>ProjectFunction
                 Period: 300
                 Stat: Sum
+          - Id: m3
+            ReturnData: false
+            MetricStat:
+                Metric:
+                    Namespace: AWS/Lambda
+                    MetricName: Duration
+                    Dimensions:
+                        - Name: FunctionName
+                          Value: !Ref BuildAndRunJava<%=name%>ProjectFunction
+                Period: 300
+                Stat: TC(89000:)
 
   <%=name%>SlowCleanupTimeAlarm:
     Type: AWS::CloudWatch::Alarm
