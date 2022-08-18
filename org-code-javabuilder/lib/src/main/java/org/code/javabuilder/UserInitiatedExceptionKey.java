@@ -10,6 +10,11 @@ public enum UserInitiatedExceptionKey {
   TWO_MAIN_METHODS,
   // The user's code does not contain a main method.
   NO_MAIN_METHOD,
+  INVALID_MAIN_METHOD,
+  MAIN_METHOD_NOT_PUBLIC,
+  MAIN_METHOD_NOT_STATIC,
+  MAIN_METHOD_NOT_VOID,
+  MAIN_METHOD_WRONG_ARGUMENTS,
   // The user's code has a compiler error.
   COMPILER_ERROR,
   // The user tried to include a source file that did not end in .java
