@@ -4,6 +4,7 @@ import static org.code.protocol.LoggerNames.MAIN_LOGGER;
 
 import java.lang.invoke.LambdaMetafactory;
 import java.lang.invoke.StringConcatFactory;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.HashSet;
@@ -112,7 +113,10 @@ public class UserClassLoader extends URLClassLoader {
           String.class.getName(),
           StringBuffer.class.getName(),
           StringBuilder.class.getName(),
-          Throwable.class.getName());
+          Throwable.class.getName(),
+          ThreadLocal.class.getName(),
+          CloneNotSupportedException.class.getName(),
+          Method.class.getName());
 
   // Allowed packages (any individual class is allowed from these classes)
   private static final String[] allowedPackages =
@@ -126,7 +130,9 @@ public class UserClassLoader extends URLClassLoader {
         "org.code.media.",
         "org.code.neighborhood.",
         "org.code.theater.",
-        "org.code.lang"
+        "org.code.lang",
+        "org.easymock.",
+        "jdk.internal.reflect.SerializationConstructorAccessorImpl"
       };
 
   // Allowed packages for code with elevated permissions, such as validation code.
