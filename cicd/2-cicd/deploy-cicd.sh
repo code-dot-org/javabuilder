@@ -20,7 +20,7 @@ if [ "$TARGET_BRANCH" == "main" ]
 then
   STACK_NAME="javabuilder-cicd"
 else
-  STACK_NAME=${"javabuilder-$TARGET_BRANCH-cicd"}
+  STACK_NAME="javabuilder-${TARGET_BRANCH}-cicd"
 fi
 
 MODE=${MODE-'standard'}
