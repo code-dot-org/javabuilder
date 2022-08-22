@@ -9,6 +9,8 @@ import com.amazonaws.services.apigatewaymanagementapi.AmazonApiGatewayManagement
 import com.amazonaws.services.apigatewaymanagementapi.AmazonApiGatewayManagementApiClientBuilder;
 import com.amazonaws.services.apigatewaymanagementapi.model.DeleteConnectionRequest;
 import com.amazonaws.services.apigatewaymanagementapi.model.GoneException;
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.s3.AmazonS3;
@@ -46,6 +48,8 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
   private static final String CONTENT_BUCKET_NAME = System.getenv("CONTENT_BUCKET_NAME");
   private static final String CONTENT_BUCKET_URL = System.getenv("CONTENT_BUCKET_URL");
   private static final String API_ENDPOINT = System.getenv("API_ENDPOINT");
+  private static final String UNHEALTHY_CONTAINERS_TABLE_NAME =
+      System.getenv("UNHEALTHY_CONTAINERS_TABLE_NAME");
 
   // Creating these clients here rather than in the request handler method allows us to use
   // provisioned concurrency to decrease cold boot time by 3-10 seconds, depending on the lambda
@@ -56,6 +60,8 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
           .build();
   private static final AmazonSQS SQS_CLIENT = AmazonSQSClientBuilder.defaultClient();
   private static final AmazonS3 S3_CLIENT = AmazonS3ClientBuilder.standard().build();
+  private static final AmazonDynamoDB DYNAMO_DB_CLIENT =
+      AmazonDynamoDBClientBuilder.defaultClient();
 
   // Controls whether the current invocation session has been initialized. This should be reset on
   // every invocation.
@@ -94,6 +100,11 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
    */
   @Override
   public String handleRequest(Map<String, String> lambdaInput, Context context) {
+    final UnhealthyContainerChecker checker =
+        new UnhealthyContainerChecker(DYNAMO_DB_CLIENT, UNHEALTHY_CONTAINERS_TABLE_NAME);
+    if (checker.shouldForceRecycleContainer(LAMBDA_ID)) {
+      System.exit(LambdaErrorCodes.UNHEALTHY_CONTAINER_ERROR_CODE);
+    }
     this.isSessionInitialized = false;
     JavabuilderContext.getInstance().destroyAndReset();
     this.trackStartupPerformance();
