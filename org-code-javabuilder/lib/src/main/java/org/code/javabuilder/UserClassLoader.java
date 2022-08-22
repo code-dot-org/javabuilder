@@ -4,6 +4,7 @@ import static org.code.protocol.LoggerNames.MAIN_LOGGER;
 
 import java.lang.invoke.LambdaMetafactory;
 import java.lang.invoke.StringConcatFactory;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -114,9 +115,10 @@ public class UserClassLoader extends URLClassLoader {
           StringBuffer.class.getName(),
           StringBuilder.class.getName(),
           Throwable.class.getName(),
-          ThreadLocal.class.getName(),
-          CloneNotSupportedException.class.getName(),
-          Method.class.getName());
+          ThreadLocal.class.getName(), // EasyMock support
+          CloneNotSupportedException.class.getName(), // EasyMock support
+          Method.class.getName(), // EasyMock support
+          InvocationTargetException.class.getName()); // EasyMock support
 
   // Allowed packages (any individual class is allowed from these classes)
   private static final String[] allowedPackages =
@@ -132,7 +134,7 @@ public class UserClassLoader extends URLClassLoader {
         "org.code.theater.",
         "org.code.lang",
         "org.easymock.",
-        "jdk.internal.reflect.SerializationConstructorAccessorImpl"
+        "jdk.internal.reflect.SerializationConstructorAccessorImpl" // EasyMock support
       };
 
   // Allowed packages for code with elevated permissions, such as validation code.
