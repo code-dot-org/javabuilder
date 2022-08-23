@@ -385,7 +385,10 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
       this.apiClient.getConnection(connectionRequest);
     } catch (IllegalStateException e) {
       // This can occur if the api client has been shut down, which we have seen happen on occasion.
-      // Recreate the api client in this case.
+      // Recreate the api client in this case. Log a warning so we can track when this happens.
+      Logger.getLogger(MAIN_LOGGER)
+          .warning(
+              "Received illegal state exception when trying to talk to API Gateway. Recreating api client.");
       this.apiClient =
           AmazonApiGatewayManagementApiClientBuilder.standard()
               .withEndpointConfiguration(
