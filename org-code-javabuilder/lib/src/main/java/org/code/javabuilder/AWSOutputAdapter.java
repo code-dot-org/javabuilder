@@ -44,6 +44,12 @@ public class AWSOutputAdapter implements OutputAdapter {
       this.api.postToConnection(post);
     } catch (GoneException e) {
       throw new InternalFacingRuntimeException(CONNECTION_TERMINATED, e);
+    } catch (IllegalStateException e) {
+      // Thrown when the API Gateway client has been unexpectedly shut down.
+      // We are still actively investigating why this happens in the first place,
+      // but this will make the container fail for all subsequent sessions, so it
+      // should be recycled.
+      throw new FatalError(FatalErrorKey.CONNECTION_POOL_SHUT_DOWN, e);
     }
   }
 }
