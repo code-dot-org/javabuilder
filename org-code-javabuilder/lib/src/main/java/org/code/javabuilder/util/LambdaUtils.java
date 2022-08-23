@@ -6,6 +6,7 @@ import static org.code.protocol.LoggerNames.MAIN_LOGGER;
 import java.util.logging.Logger;
 import org.code.javabuilder.InternalFacingRuntimeException;
 import org.code.protocol.ClientMessage;
+import org.code.protocol.JavabuilderThrowableMessageUtils;
 import org.code.protocol.OutputAdapter;
 
 public final class LambdaUtils {
@@ -33,7 +34,7 @@ public final class LambdaUtils {
       }
     } catch (Exception e) {
       // Catch any other exceptions here to prevent them from propagating.
-      Logger.getLogger(MAIN_LOGGER).warning(e.getMessage());
+      Logger.getLogger(MAIN_LOGGER).warning(JavabuilderThrowableMessageUtils.getLoggingString(e));
     }
   }
 }
