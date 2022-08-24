@@ -550,6 +550,35 @@ Resources:
           executions for 10 minutes. Occasional spikes are expected, but
           long-running high usage is an indication of an attack. Go to the
           following URLs and set reserved concurrency to 10 immediately
+
+  # Grant the Javabuilder Build And Run Lambda Role additional permissions,
+  # migrate to the role definition in the iam stack for permanent configuration.
+  JavabuilderRolePolicy:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: !Sub "${AWS::StackName}-buildandrun-policy-addition"
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action:
+              - 'dynamodb:GetItem'
+              - 'dynamodb:PutItem'
+              - 'dynamodb:Query'
+              - 'dynamodb:UpdateItem'
+            Resource:
+              - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/*_blocked_users"
+              - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/*_teacher_associated_requests"
+              - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/*_tokens"
+              - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/*_user_requests"
+              - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/*_unhealthy_containers"
+          - Effect: Allow
+            Action:
+              - 'cloudwatch:PutMetricData'
+            Resource:
+              - '*'
+      Roles:
+        - Fn::ImportValue: JavabuilderBuildAndRunLambdaRole
+
 <%JAVALAB_APP_TYPES.each do | name | -%>
           https://console.aws.amazon.com/lambda/home?region=${AWS::Region}#/functions/${BuildAndRunJava<%=name%>ProjectFunction}/edit/concurrency?tab=configure
 <%end -%>

@@ -373,7 +373,6 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     // delete action cleans up the AWS resources associated with this lambda
     try {
       api.deleteConnection(deleteConnectionRequest);
-      api.shutdown();
     } catch (GoneException e) {
       // if the connection is already gone, we don't need to delete the connection.
     }
