@@ -32,21 +32,25 @@ public class PainterTrackerTest {
     // Should move to (2, 1)
     assertEquals(2, unitUnderTest.getCurrentPosition().getX());
     assertEquals(1, unitUnderTest.getCurrentPosition().getY());
+    assertEquals("east", unitUnderTest.getCurrentPosition().getDirection());
 
     unitUnderTest.trackEvent(createMoveEvent(Direction.SOUTH));
     // Should move to (2, 2)
     assertEquals(2, unitUnderTest.getCurrentPosition().getX());
     assertEquals(2, unitUnderTest.getCurrentPosition().getY());
+    assertEquals("south", unitUnderTest.getCurrentPosition().getDirection());
 
     unitUnderTest.trackEvent(createMoveEvent(Direction.WEST));
     // Should move to (1, 2)
     assertEquals(1, unitUnderTest.getCurrentPosition().getX());
     assertEquals(2, unitUnderTest.getCurrentPosition().getY());
+    assertEquals("west", unitUnderTest.getCurrentPosition().getDirection());
 
     unitUnderTest.trackEvent(createMoveEvent(Direction.NORTH));
     // Should move to (1, 1)
     assertEquals(1, unitUnderTest.getCurrentPosition().getX());
     assertEquals(1, unitUnderTest.getCurrentPosition().getY());
+    assertEquals("north", unitUnderTest.getCurrentPosition().getDirection());
   }
 
   @Test
