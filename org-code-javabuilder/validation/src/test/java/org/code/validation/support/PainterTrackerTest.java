@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 
 public class PainterTrackerTest {
   private static final String ID = "id";
-  private static final Position POSITION = new Position(1, 1, "East");
+  private static final Position POSITION = new Position(1, 1, "east");
   private static final int PAINT_COUNT = 10;
 
   private PainterTracker unitUnderTest;
