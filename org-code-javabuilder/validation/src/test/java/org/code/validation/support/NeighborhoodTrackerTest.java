@@ -138,7 +138,7 @@ class NeighborhoodTrackerTest {
 
     final HashMap<String, String> isOnBucketDetails = new HashMap<>();
     isOnBucketDetails.put(ID, id);
-    // Take paint
+    // Check is on bucket
     unitUnderTest.trackEvent(
         new NeighborhoodSignalMessage(NeighborhoodSignalKey.IS_ON_BUCKET, isOnBucketDetails));
 
