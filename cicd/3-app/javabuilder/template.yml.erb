@@ -1117,33 +1117,6 @@ Resources:
         ComparisonOperator: GreaterThanThreshold
         TreatMissingData: notBreaching
 
-  # Grant the Javabuilder Build And Run Lambda Role additional permissions,
-  # migrate to the role definition in the iam stack for permanent configuration.
-  JavabuilderRolePolicy:
-    Type: 'AWS::IAM::Policy'
-    Properties:
-      PolicyName: !Sub "${AWS::StackName}-buildandrun-policy-addition"
-      PolicyDocument:
-        Statement:
-          - Effect: Allow
-            Action:
-              - 'dynamodb:GetItem'
-              - 'dynamodb:PutItem'
-              - 'dynamodb:Query'
-              - 'dynamodb:UpdateItem'
-            Resource:
-              - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/*_blocked_users"
-              - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/*_teacher_associated_requests"
-              - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/*_tokens"
-              - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/*_user_requests"
-          - Effect: Allow
-            Action:
-              - 'cloudwatch:PutMetricData'
-            Resource:
-              - '*'
-      Roles:
-        - Fn::ImportValue: JavabuilderBuildAndRunLambdaRole
-
 Outputs:
   JavabuilderURL:
     Value:
