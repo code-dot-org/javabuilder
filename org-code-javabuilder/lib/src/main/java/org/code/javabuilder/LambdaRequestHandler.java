@@ -76,6 +76,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
         AmazonApiGatewayManagementApiClientBuilder.standard()
             .withEndpointConfiguration(
                 new AwsClientBuilder.EndpointConfiguration(API_ENDPOINT, "us-east-1"))
+            .withMonitoringListener(new JavabuilderMonitoringListener())
             .build();
   }
 
@@ -409,6 +410,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
           AmazonApiGatewayManagementApiClientBuilder.standard()
               .withEndpointConfiguration(
                   new AwsClientBuilder.EndpointConfiguration(API_ENDPOINT, "us-east-1"))
+              .withMonitoringListener(new JavabuilderMonitoringListener())
               .build();
     }
   }
