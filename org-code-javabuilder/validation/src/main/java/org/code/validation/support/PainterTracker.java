@@ -39,16 +39,16 @@ public class PainterTracker {
           final int currentY = this.currentPosition.getY();
           switch (Direction.fromString(directionString)) {
             case NORTH:
-              this.currentPosition = new Position(currentX, currentY - 1);
+              this.currentPosition = new Position(currentX, currentY - 1, directionString);
               break;
             case EAST:
-              this.currentPosition = new Position(currentX + 1, currentY);
+              this.currentPosition = new Position(currentX + 1, currentY, directionString);
               break;
             case SOUTH:
-              this.currentPosition = new Position(currentX, currentY + 1);
+              this.currentPosition = new Position(currentX, currentY + 1, directionString);
               break;
             case WEST:
-              this.currentPosition = new Position(currentX - 1, currentY);
+              this.currentPosition = new Position(currentX - 1, currentY, directionString);
               break;
           }
         }

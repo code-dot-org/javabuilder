@@ -50,7 +50,9 @@ public class NeighborhoodTracker {
       final int x = message.getDetail().getInt(X);
       final int y = message.getDetail().getInt(Y);
       final int paint = message.getDetail().getInt(PAINT);
-      final PainterTracker painterTracker = new PainterTracker(id, new Position(x, y), paint);
+      final String direction = message.getDetail().getString(DIRECTION);
+      final PainterTracker painterTracker =
+          new PainterTracker(id, new Position(x, y, direction), paint);
       this.painterTrackers.put(id, painterTracker);
       return;
     }
