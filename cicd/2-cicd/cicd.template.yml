@@ -392,7 +392,7 @@ Resources:
                     - - '{ "SubDomainName": "'
                       - !If [ TargetsMainBranch, 'javabuilder', !Sub 'javabuilder-${GitHubBranch}' ]
                       - '" }'
-                  Capabilities: CAPABILITY_AUTO_EXPAND
+                  Capabilities: CAPABILITY_IAM,CAPABILITY_AUTO_EXPAND
                   RoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/admin/CloudFormationService
           - !Ref AWS::NoValue
   
