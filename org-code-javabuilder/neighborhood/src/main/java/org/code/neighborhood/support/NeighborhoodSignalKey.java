@@ -20,5 +20,11 @@ public enum NeighborhoodSignalKey {
   // Hide all paint buckets
   HIDE_BUCKETS,
   // Show all paint buckets
-  SHOW_BUCKETS
+  SHOW_BUCKETS,
+  // isOnBucket was called (used for validation only)
+  IS_ON_BUCKET,
+  // isOnPaint was called (used for validation only)
+  IS_ON_PAINT,
+  // canMove was called (used for validation only)
+  CAN_MOVE
 }

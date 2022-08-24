@@ -12,6 +12,7 @@ import org.code.protocol.ClientMessageType;
 import org.code.protocol.GlobalProtocolTestFactory;
 import org.code.protocol.JavabuilderContext;
 import org.code.validation.ClientMessageHelper;
+import org.code.validation.NeighborhoodActionType;
 import org.code.validation.PainterLog;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -127,6 +128,25 @@ class NeighborhoodTrackerTest {
         findPainterLogById(unitUnderTest.getNeighborhoodLog().getPainterLogs(), id3);
     assertNotNull(painter3Log);
     assertEquals(2, painter3Log.getEndingPosition().getX());
+  }
+
+  @Test
+  public void testUpdatesPainterLogWithNonAnimatedMoves() {
+    final String id = "id";
+    // Initialize
+    unitUnderTest.trackEvent(createInitEvent(id, Direction.EAST, 5, 10, 20));
+
+    final HashMap<String, String> isOnBucketDetails = new HashMap<>();
+    isOnBucketDetails.put(ID, id);
+    // Take paint
+    unitUnderTest.trackEvent(
+        new NeighborhoodSignalMessage(NeighborhoodSignalKey.IS_ON_BUCKET, isOnBucketDetails));
+
+    final PainterLog painterLog = unitUnderTest.getNeighborhoodLog().getPainterLogs()[0];
+
+    assertEquals(ID, painterLog.getPainterId());
+    assertTrue(painterLog.didActionOnce(NeighborhoodActionType.IS_ON_BUCKET));
+    assertFalse(painterLog.didActionAtLeast(NeighborhoodActionType.CAN_MOVE, 1));
   }
 
   private NeighborhoodSignalMessage createInitEvent(

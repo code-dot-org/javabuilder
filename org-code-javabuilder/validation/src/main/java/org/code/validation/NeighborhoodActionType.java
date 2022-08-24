@@ -11,5 +11,8 @@ public enum NeighborhoodActionType {
   SHOW_PAINTER,
   TURN_LEFT,
   HIDE_BUCKETS,
-  SHOW_BUCKETS
+  SHOW_BUCKETS,
+  CAN_MOVE,
+  IS_ON_BUCKET,
+  IS_ON_PAINT
 }

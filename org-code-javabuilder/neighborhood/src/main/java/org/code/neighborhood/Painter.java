@@ -143,12 +143,20 @@ public class Painter {
 
   /** @return True if there is paint in the square where the painter is standing. */
   public boolean isOnPaint() {
-    return this.grid.getSquare(this.xLocation, this.yLocation).hasColor();
+    boolean isOnPaint = this.grid.getSquare(this.xLocation, this.yLocation).hasColor();
+    this.outputAdapter.sendMessage(
+        new NeighborhoodSignalMessage(
+            NeighborhoodSignalKey.IS_ON_PAINT, this.getSignalDetailsForBooleanMethod(isOnPaint)));
+    return isOnPaint;
   }
 
   /** @return True if there is a paint bucket in the square where the painter is standing. */
   public boolean isOnBucket() {
-    return this.grid.getSquare(this.xLocation, this.yLocation).containsPaint();
+    boolean isOnBucket = this.grid.getSquare(this.xLocation, this.yLocation).containsPaint();
+    this.outputAdapter.sendMessage(
+        new NeighborhoodSignalMessage(
+            NeighborhoodSignalKey.IS_ON_BUCKET, this.getSignalDetailsForBooleanMethod(isOnBucket)));
+    return isOnBucket;
   }
 
   /** @return True if the painter's personal bucket has paint in it. */
@@ -161,12 +169,16 @@ public class Painter {
 
   /** @return True if there is no barrier one square ahead in the requested direction. */
   public boolean canMove(String direction) {
-    return this.isValidMovement(Direction.fromString(direction));
+    boolean canMove = this.isValidMovement(Direction.fromString(direction));
+    this.outputAdapter.sendMessage(
+        new NeighborhoodSignalMessage(
+            NeighborhoodSignalKey.CAN_MOVE, this.getSignalDetailsForBooleanMethod(canMove)));
+    return canMove;
   }
 
   /** @return True if there is no barrier one square ahead in the current direction. */
   public boolean canMove() {
-    return this.isValidMovement(this.direction);
+    return this.canMove(this.direction.toString());
   }
 
   /** @return the color of the square where the painter is standing. */
@@ -290,6 +302,13 @@ public class Painter {
   private HashMap<String, String> getSignalDetails() {
     HashMap<String, String> details = new HashMap<>();
     details.put(ID, this.id);
+    return details;
+  }
+
+  private HashMap<String, String> getSignalDetailsForBooleanMethod(boolean result) {
+    HashMap<String, String> details = this.getSignalDetails();
+    String resultString = result ? "true" : "false";
+    details.put(BOOLEAN_RESULT, resultString);
     return details;
   }
 
