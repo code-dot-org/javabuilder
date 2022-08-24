@@ -44,6 +44,7 @@ then
     --template-file $TEMPLATE_FILE \
     --parameter-overrides GitHubBranch=$TARGET_BRANCH GitHubBadgeEnabled=$GITHUB_BADGE_ENABLED Mode=$MODE \
     --capabilities CAPABILITY_IAM \
+    --tags environment=cicd \
     "$@"
 
   echo Complete!

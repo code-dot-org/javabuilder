@@ -21,6 +21,7 @@ then
     --stack-name javabuilder-cicd-deps \
     --template-file ${TEMPLATE_FILE} \
     --capabilities CAPABILITY_IAM \
+    --tags environment=cicd \
     "$@"
 
   echo Complete!

@@ -47,19 +47,19 @@ Finally, all of the above need some Roles to exist in the AWS accounts before we
    2. Push a commit to `main`
    3. Press the "Release Change" button on the Pipeline overview page in the AWS Console.
 
-### Deploying a CI/CD pipeline for a different branch
-
-By setting the `TARGET_BRANCH` you can create a new CI/CD pipeline that watches for PR's and changes to the specified branch, deploying a Test and Production environment just like the standard pipeline.
-
-```
-TARGET_BRANCH=mybranch cicd/2-cicd/deploy-cicd.sh
-```
-
 ### Deploying an Adhoc environment
 
 You can create an Adhoc environment by setting the `MODE` flag on the cicd deploy script. This will create a CI/CD pipeline that will watch for updates to your `TARGET_BRANCH`. The difference between a standard deployment and an adhoc pipeline can be seen in "cicd.template.yml" by following where the `Conditions` are used. In short, an adhoc creates an adhoc environment using "adhoc.config.yml", while a standard deployment will create a Test environment and a Prod environment using the relevent config files.
-Note: your branch name cannot contain the character `\`, as this causes issues in AWS.
+Note: your branch name cannot contain the character `\`, as this causes issues in AWS. Note that resources will be deployed with the tags `{environment = adhoc}`.
 
 ```
 TARGET_BRANCH=mybranch MODE=adhoc cicd/2-cicd/deploy-cicd.sh
+```
+
+### Deploying a full CI/CD pipeline for a different branch
+
+By setting the `TARGET_BRANCH` you can create a new CI/CD pipeline that watches for PR's and changes to the specified branch, deploying a Test and Production environment just like the standard pipeline. Note that resources will be deployed with the tags `{environment = production}` or `{environment = test}`.
+
+```
+TARGET_BRANCH=mybranch cicd/2-cicd/deploy-cicd.sh
 ```
