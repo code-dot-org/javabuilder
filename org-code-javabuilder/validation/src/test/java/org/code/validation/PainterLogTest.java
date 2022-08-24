@@ -26,8 +26,8 @@ public class PainterLogTest {
     unitUnderTest =
         new PainterLog(
             "sampleId",
-            new Position(0, 0, "East"),
-            new Position(5, 5, "North"),
+            new Position(0, 0, "east"),
+            new Position(5, 5, "north"),
             0,
             5,
             sampleEvents);

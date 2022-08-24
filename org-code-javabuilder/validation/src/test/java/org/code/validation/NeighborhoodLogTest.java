@@ -80,7 +80,7 @@ public class NeighborhoodLogTest {
 
   private PainterLog createPainterLog(List<PainterEvent> events) {
     return new PainterLog(
-        "sampleId", new Position(0, 0, "East"), new Position(5, 5, "East"), 0, 5, events);
+        "sampleId", new Position(0, 0, "east"), new Position(5, 5, "east"), 0, 5, events);
   }
 
   private String[][] getSampleFinalOutput() {
