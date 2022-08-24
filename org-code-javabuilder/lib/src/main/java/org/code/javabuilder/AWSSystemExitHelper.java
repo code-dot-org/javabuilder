@@ -8,6 +8,7 @@ import com.amazonaws.services.apigatewaymanagementapi.model.GoneException;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
 import org.code.protocol.JavabuilderContext;
+import org.code.protocol.JavabuilderThrowableMessageUtils;
 
 public class AWSSystemExitHelper implements SystemExitHelper {
   private final String connectionId;
@@ -37,6 +38,11 @@ public class AWSSystemExitHelper implements SystemExitHelper {
       api.deleteConnection(deleteConnectionRequest);
     } catch (GoneException e) {
       // if the connection is already gone, we don't need to delete the connection.
+    } catch (Exception e) {
+      // Handle any other exceptions so that shut down proceeds normally. If this is an
+      // IllegalStateException, it indicates that the connection was already shut down for
+      // some reason.
+      Logger.getLogger(MAIN_LOGGER).warning(JavabuilderThrowableMessageUtils.getLoggingString(e));
     }
     // clean up log handler to avoid duplicate logs in future runs.
     Handler[] allHandlers = Logger.getLogger(MAIN_LOGGER).getHandlers();
