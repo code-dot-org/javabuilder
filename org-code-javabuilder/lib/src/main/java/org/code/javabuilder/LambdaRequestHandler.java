@@ -8,6 +8,7 @@ import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.apigatewaymanagementapi.AmazonApiGatewayManagementApi;
 import com.amazonaws.services.apigatewaymanagementapi.AmazonApiGatewayManagementApiClientBuilder;
 import com.amazonaws.services.apigatewaymanagementapi.model.DeleteConnectionRequest;
+import com.amazonaws.services.apigatewaymanagementapi.model.GetConnectionRequest;
 import com.amazonaws.services.apigatewaymanagementapi.model.GoneException;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
@@ -53,11 +54,6 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
 
   // Creating these clients here rather than in the request handler method allows us to use
   // provisioned concurrency to decrease cold boot time by 3-10 seconds, depending on the lambda
-  private static final AmazonApiGatewayManagementApi API_CLIENT =
-      AmazonApiGatewayManagementApiClientBuilder.standard()
-          .withEndpointConfiguration(
-              new AwsClientBuilder.EndpointConfiguration(API_ENDPOINT, "us-east-1"))
-          .build();
   private static final AmazonSQS SQS_CLIENT = AmazonSQSClientBuilder.defaultClient();
   private static final AmazonS3 S3_CLIENT = AmazonS3ClientBuilder.standard().build();
   private static final AmazonDynamoDB DYNAMO_DB_CLIENT =
@@ -66,6 +62,9 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
   // Controls whether the current invocation session has been initialized. This should be reset on
   // every invocation.
   private boolean isSessionInitialized = false;
+  // API Gateway Client. We create this in the constructor so we can recreate it if it goes away for
+  // some reason.
+  private AmazonApiGatewayManagementApi apiClient;
 
   public LambdaRequestHandler() {
     // create CachedResources once for the entire container.
@@ -73,6 +72,11 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     // Documentation: https://docs.aws.amazon.com/lambda/latest/dg/java-handler.html
     CachedResources.create();
     COLD_BOOT_END = Clock.systemUTC().instant();
+    this.apiClient =
+        AmazonApiGatewayManagementApiClientBuilder.standard()
+            .withEndpointConfiguration(
+                new AwsClientBuilder.EndpointConfiguration(API_ENDPOINT, "us-east-1"))
+            .build();
   }
 
   /**
@@ -145,7 +149,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     }
 
     final ExceptionHandler exceptionHandler =
-        new ExceptionHandler(outputAdapter, new AWSSystemExitHelper(connectionId, API_CLIENT));
+        new ExceptionHandler(outputAdapter, new AWSSystemExitHelper(connectionId, this.apiClient));
     final TempDirectoryManager tempDirectoryManager = new AWSTempDirectoryManager();
 
     CodeExecutionManager codeExecutionManager = null;
@@ -161,7 +165,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
       // Create and start thread that that will notify us if we're nearing the timeout limit
       timeoutNotifierThread =
           this.createTimeoutThread(
-              context, outputAdapter, codeExecutionManager, connectionId, API_CLIENT);
+              context, outputAdapter, codeExecutionManager, connectionId, this.apiClient);
       timeoutNotifierThread.start();
 
       // Initialize and start code execution
@@ -173,7 +177,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
       if (timeoutNotifierThread != null) {
         timeoutNotifierThread.interrupt();
       }
-      this.shutDown(codeExecutionManager, connectionId, API_CLIENT);
+      this.shutDown(codeExecutionManager, connectionId, this.apiClient);
     }
 
     return "done";
@@ -198,6 +202,8 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     java.util.Properties props = System.getProperties();
     // /opt is the folder all layer files go into.
     props.put("sun.awt.fontconfig", "/opt/fontconfig.properties");
+
+    this.verifyApiClient(connectionId);
 
     this.isSessionInitialized = true;
   }
@@ -225,7 +231,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     if (connectionId == null) {
       throw new InternalFacingException(INVALID_INPUT, new Exception("Missing connection ID"));
     }
-    final AWSOutputAdapter awsOutputAdapter = new AWSOutputAdapter(connectionId, API_CLIENT);
+    final AWSOutputAdapter awsOutputAdapter = new AWSOutputAdapter(connectionId, this.apiClient);
 
     try {
       final ExecutionType executionType = ExecutionType.valueOf(lambdaInput.get("executionType"));
@@ -281,7 +287,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
         compileList,
         tempDirectoryManager,
         contentManager,
-        new AWSSystemExitHelper(connectionId, API_CLIENT));
+        new AWSSystemExitHelper(connectionId, this.apiClient));
   }
 
   /**
@@ -375,11 +381,35 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
       api.deleteConnection(deleteConnectionRequest);
     } catch (GoneException e) {
       // if the connection is already gone, we don't need to delete the connection.
+    } catch (Exception e) {
+      // Handle any other exceptions so that shut down proceeds normally. If this is an
+      // IllegalStateException, it indicates that the connection was already shut down for
+      // some reason.
+      Logger.getLogger(MAIN_LOGGER).warning(JavabuilderThrowableMessageUtils.getLoggingString(e));
     }
     // clean up log handler to avoid duplicate logs in future runs.
     Handler[] allHandlers = Logger.getLogger(MAIN_LOGGER).getHandlers();
     for (int i = 0; i < allHandlers.length; i++) {
       Logger.getLogger(MAIN_LOGGER).removeHandler(allHandlers[i]);
+    }
+  }
+
+  private void verifyApiClient(String connectionId) {
+    GetConnectionRequest connectionRequest =
+        new GetConnectionRequest().withConnectionId(connectionId);
+    try {
+      this.apiClient.getConnection(connectionRequest);
+    } catch (IllegalStateException e) {
+      // This can occur if the api client has been shut down, which we have seen happen on occasion.
+      // Recreate the api client in this case. Log a warning so we can track when this happens.
+      Logger.getLogger(MAIN_LOGGER)
+          .warning(
+              "Received illegal state exception when trying to talk to API Gateway. Recreating api client.");
+      this.apiClient =
+          AmazonApiGatewayManagementApiClientBuilder.standard()
+              .withEndpointConfiguration(
+                  new AwsClientBuilder.EndpointConfiguration(API_ENDPOINT, "us-east-1"))
+              .build();
     }
   }
 }

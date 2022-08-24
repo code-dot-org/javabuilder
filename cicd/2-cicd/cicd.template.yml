@@ -397,7 +397,10 @@ Resources:
           - !Ref AWS::NoValue
   
   # Send pipeline events to an SNS topic.
-  # Note: Integration with Slack via AWS ChatBot is configured manually via AWS Console.
+  # Note:
+  # Integration with Slack via AWS ChatBot is configured manually via AWS
+  # Console. If you recreate this stack, you will need to reconnect the SNS
+  # topic to the ChatBot configuration.
   PipelineNotificationRule:
     Type: AWS::CodeStarNotifications::NotificationRule
     Properties:
