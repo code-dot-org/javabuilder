@@ -541,20 +541,10 @@ Resources:
           ForwardedValues: {QueryString: true}
           ViewerProtocolPolicy: redirect-to-https
 
-  HighConcurrentExecutionsAlarm:
-    Type: AWS::CloudWatch::Alarm
-    Properties:
-      AlarmName: !Sub "${SubDomainName}_high_concurrent_executions"
-      AlarmDescription: !Sub |
-          This will page the DOTD if javabuilder usage exceeds 50 concurrent
-          executions for 10 minutes. Occasional spikes are expected, but
-          long-running high usage is an indication of an attack. Go to the
-          following URLs and set reserved concurrency to 10 immediately
-
   # Grant the Javabuilder Build And Run Lambda Role additional permissions,
   # migrate to the role definition in the iam stack for permanent configuration.
   JavabuilderRolePolicy:
-    Type: 'AWS::IAM::Policy'
+    Type: AWS::IAM::Policy
     Properties:
       PolicyName: !Sub "${AWS::StackName}-buildandrun-policy-addition"
       PolicyDocument:
@@ -579,6 +569,15 @@ Resources:
       Roles:
         - Fn::ImportValue: JavabuilderBuildAndRunLambdaRole
 
+  HighConcurrentExecutionsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${SubDomainName}_high_concurrent_executions"
+      AlarmDescription: !Sub |
+          This will page the DOTD if javabuilder usage exceeds 50 concurrent
+          executions for 10 minutes. Occasional spikes are expected, but
+          long-running high usage is an indication of an attack. Go to the
+          following URLs and set reserved concurrency to 10 immediately
 <%JAVALAB_APP_TYPES.each do | name | -%>
           https://console.aws.amazon.com/lambda/home?region=${AWS::Region}#/functions/${BuildAndRunJava<%=name%>ProjectFunction}/edit/concurrency?tab=configure
 <%end -%>
