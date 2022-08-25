@@ -16,6 +16,7 @@ public class UnhealthyContainerChecker {
   }
 
   public boolean shouldForceRecycleContainer(String containerId) {
+    LoggerUtils.logInfo("Table name: " + this.tableName);
     final GetItemRequest request =
         new GetItemRequest()
             .withKey(Map.of("container_id", new AttributeValue(containerId)))

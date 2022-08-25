@@ -939,7 +939,7 @@ Resources:
   UnhealthyContainersTable:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: !Sub "${SubDomainName}_unhealthy_containers"
+        TableName: !Sub "${SubDomainName}unhealthycontainers_blocked_users"
         KeySchema:
           - AttributeName: <%=CONTAINER_ID_ATTRIBUTE_NAME%>
             KeyType: HASH
