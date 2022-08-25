@@ -54,7 +54,7 @@ public class AWSMetricClient extends JavabuilderSharedObject implements MetricCl
             .withDimensions(this.functionNameDimension);
     PutMetricDataRequest request =
         new PutMetricDataRequest().withNamespace(NAMESPACE).withMetricData(metricDatum);
-    this.cloudWatchClient.putMetricData(request);
+    // this.cloudWatchClient.putMetricData(request);
   }
 
   private void publishCountMetric(String metricName, double count) {
@@ -66,6 +66,6 @@ public class AWSMetricClient extends JavabuilderSharedObject implements MetricCl
             .withDimensions(this.functionNameDimension);
     PutMetricDataRequest request =
         new PutMetricDataRequest().withNamespace(NAMESPACE).withMetricData(metricDatum);
-    this.cloudWatchClient.putMetricData(request);
+    // this.cloudWatchClient.putMetricData(request);
   }
 }

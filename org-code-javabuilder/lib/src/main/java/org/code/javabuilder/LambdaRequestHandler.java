@@ -59,6 +59,8 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
   private static final AmazonDynamoDB DYNAMO_DB_CLIENT =
       AmazonDynamoDBClientBuilder.defaultClient();
 
+  private final UnhealthyContainerChecker unhealthyContainerChecker;
+
   // Controls whether the current invocation session has been initialized. This should be reset on
   // every invocation.
   private boolean isSessionInitialized = false;
@@ -78,6 +80,9 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
                 new AwsClientBuilder.EndpointConfiguration(API_ENDPOINT, "us-east-1"))
             .withMonitoringListener(new JavabuilderMonitoringListener())
             .build();
+
+    this.unhealthyContainerChecker =
+        new UnhealthyContainerChecker(DYNAMO_DB_CLIENT, UNHEALTHY_CONTAINERS_TABLE_NAME);
   }
 
   /**
@@ -105,11 +110,6 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
    */
   @Override
   public String handleRequest(Map<String, String> lambdaInput, Context context) {
-    final UnhealthyContainerChecker checker =
-        new UnhealthyContainerChecker(DYNAMO_DB_CLIENT, UNHEALTHY_CONTAINERS_TABLE_NAME);
-    if (checker.shouldForceRecycleContainer(LAMBDA_ID)) {
-      System.exit(LambdaErrorCodes.UNHEALTHY_CONTAINER_ERROR_CODE);
-    }
     this.isSessionInitialized = false;
     JavabuilderContext.getInstance().destroyAndReset();
     this.trackStartupPerformance();
@@ -324,6 +324,10 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     JavabuilderContext.getInstance().destroyAndReset();
 
     this.cleanUpAWSResources(connectionId, api);
+
+    if (this.unhealthyContainerChecker.shouldForceRecycleContainer(LAMBDA_ID)) {
+      System.exit(LambdaErrorCodes.UNHEALTHY_CONTAINER_ERROR_CODE);
+    }
 
     File f = Paths.get(System.getProperty("java.io.tmpdir")).toFile();
     if ((double) f.getUsableSpace() / f.getTotalSpace() < 0.5) {
