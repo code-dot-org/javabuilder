@@ -78,7 +78,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
         AmazonApiGatewayManagementApiClientBuilder.standard()
             .withEndpointConfiguration(
                 new AwsClientBuilder.EndpointConfiguration(API_ENDPOINT, "us-east-1"))
-            .withMonitoringListener(new JavabuilderMonitoringListener())
+            // .withMonitoringListener(new JavabuilderMonitoringListener())
             .build();
 
     this.unhealthyContainerChecker =
@@ -317,6 +317,10 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
       }
     }
 
+    if (this.unhealthyContainerChecker.shouldForceRecycleContainer(LAMBDA_ID)) {
+      System.exit(LambdaErrorCodes.UNHEALTHY_CONTAINER_ERROR_CODE);
+    }
+
     PerformanceTracker performanceTracker =
         (PerformanceTracker) JavabuilderContext.getInstance().get(PerformanceTracker.class);
     performanceTracker.trackInstanceEnd();
@@ -324,10 +328,6 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     JavabuilderContext.getInstance().destroyAndReset();
 
     this.cleanUpAWSResources(connectionId, api);
-
-    if (this.unhealthyContainerChecker.shouldForceRecycleContainer(LAMBDA_ID)) {
-      System.exit(LambdaErrorCodes.UNHEALTHY_CONTAINER_ERROR_CODE);
-    }
 
     File f = Paths.get(System.getProperty("java.io.tmpdir")).toFile();
     if ((double) f.getUsableSpace() / f.getTotalSpace() < 0.5) {
@@ -414,7 +414,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
           AmazonApiGatewayManagementApiClientBuilder.standard()
               .withEndpointConfiguration(
                   new AwsClientBuilder.EndpointConfiguration(API_ENDPOINT, "us-east-1"))
-              .withMonitoringListener(new JavabuilderMonitoringListener())
+              // .withMonitoringListener(new JavabuilderMonitoringListener())
               .build();
     }
   }
