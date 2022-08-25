@@ -318,6 +318,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     }
 
     if (this.unhealthyContainerChecker.shouldForceRecycleContainer(LAMBDA_ID)) {
+      LoggerUtils.logInfo("Unhealthy container. Exiting System. byeeeee");
       System.exit(LambdaErrorCodes.UNHEALTHY_CONTAINER_ERROR_CODE);
     }
 

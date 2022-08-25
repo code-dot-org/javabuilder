@@ -32,6 +32,6 @@ public class UnhealthyContainerChecker {
       LoggerUtils.logInfo(String.format("%s: %s\n", key, item.get(key)));
     }
 
-    return false;
+    return true;
   }
 }
