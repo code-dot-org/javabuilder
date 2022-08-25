@@ -105,11 +105,11 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
    */
   @Override
   public String handleRequest(Map<String, String> lambdaInput, Context context) {
-    //    final UnhealthyContainerChecker checker =
-    //        new UnhealthyContainerChecker(DYNAMO_DB_CLIENT, UNHEALTHY_CONTAINERS_TABLE_NAME);
-    //    if (checker.shouldForceRecycleContainer(LAMBDA_ID)) {
-    //      System.exit(LambdaErrorCodes.UNHEALTHY_CONTAINER_ERROR_CODE);
-    //    }
+    final UnhealthyContainerChecker checker =
+        new UnhealthyContainerChecker(DYNAMO_DB_CLIENT, UNHEALTHY_CONTAINERS_TABLE_NAME);
+    if (checker.shouldForceRecycleContainer(LAMBDA_ID)) {
+      System.exit(LambdaErrorCodes.UNHEALTHY_CONTAINER_ERROR_CODE);
+    }
     this.isSessionInitialized = false;
     JavabuilderContext.getInstance().destroyAndReset();
     this.trackStartupPerformance();

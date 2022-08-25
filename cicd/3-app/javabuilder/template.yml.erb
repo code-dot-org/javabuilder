@@ -450,7 +450,7 @@ Resources:
       EventInvokeConfig:
         MaximumRetryAttempts: 0
       Role:
-        Fn::ImportValue: JavabuilderBuildAndRunLambdaRole
+        Fn::ImportValue: JavabuilderLambdaExecutionRole
       Environment:
         Variables:
           AWS_LAMBDA_EXEC_WRAPPER: /opt/change_runtime_directory
