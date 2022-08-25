@@ -544,7 +544,7 @@ Resources:
   # Grant the Javabuilder Build And Run Lambda Role additional permissions,
   # migrate to the role definition in the iam stack for permanent configuration.
   JavabuilderRolePolicy:
-    Type: AWS::IAM::Policy
+    Type: 'AWS::IAM::Policy'
     Properties:
       PolicyName: !Sub "${AWS::StackName}-buildandrun-policy-addition"
       PolicyDocument:
