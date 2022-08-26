@@ -935,6 +935,7 @@ Resources:
   ISSUED_AT_TIMESTAMP_ATTRIBUTE_NAME = 'issued_at'
   TIME_TO_LIVE_ATTRIBUTE_NAME = 'ttl'
   CONTAINER_ID_ATTRIBUTE_NAME = 'container_id'
+  CONTAINER_SHUTDOWN_TRIGGER_ATTRIBUTE_NAME = 'shutdown_trigger'
 -%>
   UnhealthyContainersTable:
       Type: AWS::DynamoDB::Table
@@ -943,9 +944,13 @@ Resources:
         KeySchema:
           - AttributeName: <%=CONTAINER_ID_ATTRIBUTE_NAME%>
             KeyType: HASH
+          - AttributeName: <%=CONTAINER_SHUTDOWN_TRIGGER_ATTRIBUTE_NAME%>
+            KeyType: HASH
         BillingMode: PAY_PER_REQUEST
         AttributeDefinitions:
           - AttributeName: <%=CONTAINER_ID_ATTRIBUTE_NAME%>
+            AttributeType: S
+          - AttributeName: <%=CONTAINER_SHUTDOWN_TRIGGER_ATTRIBUTE_NAME%>
             AttributeType: S
 
   BlockedUsersTable:
