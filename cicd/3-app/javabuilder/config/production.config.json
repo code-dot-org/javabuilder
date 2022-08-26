@@ -9,6 +9,6 @@
     "SilenceAlerts": "false"
   },
   "Tags" : {
-    "environment" : "production"
+    "EnvType" : "production"
   }
 }

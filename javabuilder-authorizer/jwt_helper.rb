@@ -111,6 +111,7 @@ module JwtHelper
       stage_name = "test"
     elsif standardized_origin == "studio.code.org"
       stage_name = "production"
+    # TODO: Update this to support 'development' instead of 'adhoc' naming scheme (or both)
     elsif standardized_origin.start_with?("adhoc-") && standardized_origin.end_with?("-studio.cdn-code.org")
       stage_name = "adhoc"
     elsif standardized_origin == "integration-tests"

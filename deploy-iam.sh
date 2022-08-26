@@ -10,4 +10,5 @@ aws cloudformation deploy \
   --template-file ${TEMPLATE} \
   --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM \
   --stack-name ${STACK} \
+  --tags EnvType=infrastructure
   "$@"

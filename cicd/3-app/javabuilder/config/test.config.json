@@ -9,6 +9,6 @@
     "SilenceAlerts": "false"
   },
   "Tags" : {
-    "environment" : "test"
+    "EnvType" : "test"
   }
 }
