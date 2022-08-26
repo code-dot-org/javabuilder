@@ -22,7 +22,14 @@ public class UnhealthyContainerChecker {
             .withKey(Map.of("container_id", new AttributeValue(containerId)))
             .withTableName(this.tableName);
 
-    final Map<String, AttributeValue> item = this.dynamoDBClient.getItem(request).getItem();
+    final Map<String, AttributeValue> item;
+    try {
+      item = this.dynamoDBClient.getItem(request).getItem();
+    } catch (Exception e) {
+      LoggerUtils.logInfo(e.getMessage());
+      return false;
+    }
+
     if (item == null) {
       LoggerUtils.logInfo("Nothing found for ID: " + containerId);
       return false;
@@ -30,6 +37,13 @@ public class UnhealthyContainerChecker {
 
     for (String key : item.keySet()) {
       LoggerUtils.logInfo(String.format("%s: %s\n", key, item.get(key)));
+    }
+
+    try {
+      this.dynamoDBClient.deleteItem(
+          this.tableName, Map.of("container_id", new AttributeValue(containerId)));
+    } catch (Exception e) {
+      LoggerUtils.logInfo(e.getMessage());
     }
 
     return true;
