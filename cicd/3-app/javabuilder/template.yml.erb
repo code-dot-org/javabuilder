@@ -952,6 +952,9 @@ Resources:
             AttributeType: S
           - AttributeName: <%=CONTAINER_SHUTDOWN_TRIGGER_ATTRIBUTE_NAME%>
             AttributeType: S
+        TimeToLiveSpecification:
+          AttributeName: <%=TIME_TO_LIVE_ATTRIBUTE_NAME%>
+          Enabled: true
 
   BlockedUsersTable:
     Type: AWS::DynamoDB::Table
