@@ -20,7 +20,7 @@ We also keep some CodeBuild configuration here, as this code tends to be more co
 
 ### 2 - CI/CD
 
-In order to trigger the application resources to be updated upon changes to the source code, we need CI/CD resources. This is accomplished by a CloudFormation template that defines a stack of resources, primarily including a CodeBuild project and a CodePipeline pipeline which update the [App Stack](#3---app). These CI/CD resources only need to be deployed once per deployable branch, `main` in our case (we might choose to create adhoc environments by launching a new CI/CD stack targeting a different branch).
+In order to trigger the application resources to be updated upon changes to the source code, we need CI/CD resources. This is accomplished by a CloudFormation template that defines a stack of resources, primarily including a CodeBuild project and a CodePipeline pipeline which update the [App Stack](#3---app). These CI/CD resources only need to be deployed once per deployable branch, `main` in our case (we might choose to create development environments by launching a new CI/CD stack targeting a different branch).
 
 These resources are deployed manually when changes occur. We could make yet another CodePipeline resource in the [Setup](#1---setup) section, but not today.
 
@@ -47,18 +47,22 @@ Finally, all of the above need some Roles to exist in the AWS accounts before we
    2. Push a commit to `main`
    3. Press the "Release Change" button on the Pipeline overview page in the AWS Console.
 
-### Deploying an Adhoc environment
+### Deploying an Development environment
 
-You can create an Adhoc environment by setting the `MODE` flag on the cicd deploy script. This will create a CI/CD pipeline that will watch for updates to your `TARGET_BRANCH`. The difference between a standard deployment and an adhoc pipeline can be seen in "cicd.template.yml" by following where the `Conditions` are used. In short, an adhoc creates an adhoc environment using "adhoc.config.yml", while a standard deployment will create a Test environment and a Prod environment using the relevent config files.
-Note: your branch name cannot contain the character `\`, as this causes issues in AWS. Note that resources will be deployed with the tags `{environment = adhoc}`.
+You can create an Development (aka 'adhoc') environment by setting the `ENVIRONMENT_TYPE` flag on the cicd deploy script. This will create a CI/CD pipeline that will watch for updates to your `TARGET_BRANCH`. The difference between a production and a development pipeline can be seen in "cicd.template.yml" by following where the `Conditions` are used. In short, an development pipeline creates a single environment using "dev.config.yml", while a production deployment will create a Test environment and a Prod environment using the relevent config files, running automated tests between them.
+
+Notes:
+
+* your branch name cannot contain the character `/`, as this causes issues in AWS. Note that resources will be deployed with the tags `{EnvType = development}`.
+* for now, these must deployed to the production AWS account. There is planned work to enable these to be deployed to the Dev AWS account.
 
 ```
-TARGET_BRANCH=mybranch MODE=adhoc cicd/2-cicd/deploy-cicd.sh
+TARGET_BRANCH=mybranch ENVIRONMENT_TYPE=development cicd/2-cicd/deploy-cicd.sh
 ```
 
 ### Deploying a full CI/CD pipeline for a different branch
 
-By setting the `TARGET_BRANCH` you can create a new CI/CD pipeline that watches for PR's and changes to the specified branch, deploying a Test and Production environment just like the standard pipeline. Note that resources will be deployed with the tags `{environment = production}` or `{environment = test}`.
+By setting the `TARGET_BRANCH` you can create a new CI/CD pipeline that watches for PR's and changes to the specified branch, deploying a Test and Production environment just like the standard pipeline. Note that resources will be deployed with the tags `{EnvType = production}` or `{EnvType = test}`.
 
 ```
 TARGET_BRANCH=mybranch cicd/2-cicd/deploy-cicd.sh

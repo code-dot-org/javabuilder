@@ -26,7 +26,7 @@ aws cloudformation deploy \
   --template-file $TEMPLATE_FILE \
   --parameter-overrides LoadTestImage=$LOAD_TEST_IMAGE \
   --capabilities CAPABILITY_IAM \
-  --tags javabuilder-mode=load-test \
+  --tags javabuilder-mode=load-test EnvType=load-test \
   "$@"
 
 echo Complete!

@@ -26,16 +26,16 @@ Parameters:
     Type: String
     Description: The Resource Id component of the CodeStar connection ARN for the code-dot-org GitHub repository
     Default: 9e27ebd6-de25-495c-9a2d-b24077376de8
-  Mode:
+  EnvironmentType:
     Type: String
-    Description: Whether this should create a pipeline for an 'adhoc' deployment or 'standard' pipeline.
+    Description: A 'production' cicd stack includes automated tests in the pipeline and deploys 'test' and 'production' environments. Whereas a 'development' type will only deploy a development environment.
     Default: standard
-    AllowedValues: [adhoc, standard]
+    AllowedValues: [development, production]
 
 Conditions:
   TargetsMainBranch: !Equals [ !Ref GitHubBranch, main ]
-  DeployToAdhoc: !Equals [!Ref Mode, adhoc ]
-  DeployToTestAndProd: !Equals [!Ref Mode, standard ]
+  DeployForDevelopment: !Equals [!Ref EnvironmentType, development ]
+  DeployForProduction: !Equals [!Ref EnvironmentType, production ]
 
 
 Resources:
@@ -296,8 +296,8 @@ Resources:
                 - Name: appBuildResults
 
         - !If
-          - DeployToAdhoc
-          - Name: Deploy_To_Adhoc
+          - DeployForDevelopment
+          - Name: Deploy_To_Development
             Actions:
               - Name: app-deploy
                 ActionTypeId: 
@@ -308,21 +308,21 @@ Resources:
                 InputArtifacts:
                   - Name: appBuildResults
                 Configuration:
-                  StackName: !Sub "javabuilder-adhoc-${GitHubBranch}"
+                  StackName: !Sub "javabuilder-dev-${GitHubBranch}"
                   ActionMode: CREATE_UPDATE
                   TemplatePath: appBuildResults::packaged-app-template.yml
-                  TemplateConfiguration: appBuildResults::cicd/3-app/javabuilder/adhoc.config.json
+                  TemplateConfiguration: appBuildResults::cicd/3-app/javabuilder/dev.config.json
                   ParameterOverrides: !Join
                       - ''
                       - - '{ "SubDomainName": "'
-                        - !Sub "javabuilder-adhoc-${GitHubBranch}"
+                        - !Sub "javabuilder-dev-${GitHubBranch}"
                         - '" }'
                   Capabilities: CAPABILITY_AUTO_EXPAND
                   RoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/admin/CloudFormationService
           - !Ref AWS::NoValue
 
         - !If
-          - DeployToTestAndProd
+          - DeployForProduction
           - Name: Deploy_To_Test
             Actions:
               - Name: app-deploy
@@ -348,7 +348,7 @@ Resources:
           - !Ref AWS::NoValue
 
         - !If
-          - DeployToTestAndProd
+          - DeployForProduction
           - Name: Integration_Test
             Actions:
               - Name: integration-test
@@ -370,7 +370,7 @@ Resources:
           - !Ref AWS::NoValue
 
         - !If
-          - DeployToTestAndProd
+          - DeployForProduction
           - Name: Deploy_To_Production
             Actions:
               - Name: app-deploy

@@ -9,6 +9,6 @@
     "SilenceAlerts": "true"
   },
   "Tags" : {
-    "environment" : "adhoc"
+    "EnvType" : "development"
   }
 }
