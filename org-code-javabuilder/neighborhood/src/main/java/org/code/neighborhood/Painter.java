@@ -144,18 +144,14 @@ public class Painter {
   /** @return True if there is paint in the square where the painter is standing. */
   public boolean isOnPaint() {
     boolean isOnPaint = this.grid.getSquare(this.xLocation, this.yLocation).hasColor();
-    this.outputAdapter.sendMessage(
-        new NeighborhoodSignalMessage(
-            NeighborhoodSignalKey.IS_ON_PAINT, this.getSignalDetailsForBooleanMethod(isOnPaint)));
+    this.sendBooleanMessage(NeighborhoodSignalKey.IS_ON_PAINT, isOnPaint);
     return isOnPaint;
   }
 
   /** @return True if there is a paint bucket in the square where the painter is standing. */
   public boolean isOnBucket() {
     boolean isOnBucket = this.grid.getSquare(this.xLocation, this.yLocation).containsPaint();
-    this.outputAdapter.sendMessage(
-        new NeighborhoodSignalMessage(
-            NeighborhoodSignalKey.IS_ON_BUCKET, this.getSignalDetailsForBooleanMethod(isOnBucket)));
+    this.sendBooleanMessage(NeighborhoodSignalKey.IS_ON_BUCKET, isOnBucket);
     return isOnBucket;
   }
 
@@ -170,9 +166,7 @@ public class Painter {
   /** @return True if there is no barrier one square ahead in the requested direction. */
   public boolean canMove(String direction) {
     boolean canMove = this.isValidMovement(Direction.fromString(direction));
-    this.outputAdapter.sendMessage(
-        new NeighborhoodSignalMessage(
-            NeighborhoodSignalKey.CAN_MOVE, this.getSignalDetailsForBooleanMethod(canMove)));
+    this.sendBooleanMessage(NeighborhoodSignalKey.CAN_MOVE, canMove);
     return canMove;
   }
 
@@ -305,15 +299,15 @@ public class Painter {
     return details;
   }
 
-  private HashMap<String, String> getSignalDetailsForBooleanMethod(boolean result) {
-    HashMap<String, String> details = this.getSignalDetails();
-    String resultString = result ? "true" : "false";
-    details.put(BOOLEAN_RESULT, resultString);
-    return details;
-  }
-
   private void sendOutputMessage(NeighborhoodSignalKey signalKey, HashMap<String, String> details) {
     this.outputAdapter.sendMessage(new NeighborhoodSignalMessage(signalKey, details));
+  }
+
+  private void sendBooleanMessage(NeighborhoodSignalKey signalKey, boolean result) {
+    HashMap<String, String> details = this.getSignalDetails();
+    String resultString = String.valueOf(result);
+    details.put(BOOLEAN_RESULT, resultString);
+    this.sendOutputMessage(signalKey, details);
   }
 
   private void sendInitializationMessage() {
