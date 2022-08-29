@@ -35,6 +35,12 @@ public class NeighborhoodActionTypeMapper {
         return NeighborhoodActionType.HIDE_BUCKETS;
       case SHOW_BUCKETS:
         return NeighborhoodActionType.SHOW_BUCKETS;
+      case CAN_MOVE:
+        return NeighborhoodActionType.CAN_MOVE;
+      case IS_ON_BUCKET:
+        return NeighborhoodActionType.IS_ON_BUCKET;
+      case IS_ON_PAINT:
+        return NeighborhoodActionType.IS_ON_PAINT;
       default:
         return null;
     }

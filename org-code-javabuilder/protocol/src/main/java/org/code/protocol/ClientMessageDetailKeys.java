@@ -41,4 +41,6 @@ public class ClientMessageDetailKeys {
   public static final String DIRECTION = "direction";
   public static final String COLOR = "color";
   public static final String PAINT = "paint";
+  // Used to report the result of calling a boolean method
+  public static final String BOOLEAN_RESULT = "booleanResult";
 }

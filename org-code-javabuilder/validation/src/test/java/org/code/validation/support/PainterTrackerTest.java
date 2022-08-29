@@ -2,6 +2,7 @@ package org.code.validation.support;
 
 import static org.code.protocol.ClientMessageDetailKeys.DIRECTION;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import java.util.Map;
@@ -15,7 +16,7 @@ import org.junit.jupiter.api.Test;
 
 public class PainterTrackerTest {
   private static final String ID = "id";
-  private static final Position POSITION = new Position(1, 1);
+  private static final Position POSITION = new Position(1, 1, "east");
   private static final int PAINT_COUNT = 10;
 
   private PainterTracker unitUnderTest;
@@ -31,21 +32,25 @@ public class PainterTrackerTest {
     // Should move to (2, 1)
     assertEquals(2, unitUnderTest.getCurrentPosition().getX());
     assertEquals(1, unitUnderTest.getCurrentPosition().getY());
+    assertEquals("east", unitUnderTest.getCurrentPosition().getDirection());
 
     unitUnderTest.trackEvent(createMoveEvent(Direction.SOUTH));
     // Should move to (2, 2)
     assertEquals(2, unitUnderTest.getCurrentPosition().getX());
     assertEquals(2, unitUnderTest.getCurrentPosition().getY());
+    assertEquals("south", unitUnderTest.getCurrentPosition().getDirection());
 
     unitUnderTest.trackEvent(createMoveEvent(Direction.WEST));
     // Should move to (1, 2)
     assertEquals(1, unitUnderTest.getCurrentPosition().getX());
     assertEquals(2, unitUnderTest.getCurrentPosition().getY());
+    assertEquals("west", unitUnderTest.getCurrentPosition().getDirection());
 
     unitUnderTest.trackEvent(createMoveEvent(Direction.NORTH));
     // Should move to (1, 1)
     assertEquals(1, unitUnderTest.getCurrentPosition().getX());
     assertEquals(1, unitUnderTest.getCurrentPosition().getY());
+    assertEquals("north", unitUnderTest.getCurrentPosition().getDirection());
   }
 
   @Test
@@ -88,6 +93,24 @@ public class PainterTrackerTest {
     assertEquals(3, log.getEndingPosition().getY());
     assertEquals(PAINT_COUNT - 1, log.getEndingPaintCount());
     assertEquals(events, log.getEvents());
+  }
+
+  @Test
+  public void testTracksNonAnimatedEvents() {
+    final PainterEvent event1 = new PainterEvent(NeighborhoodActionType.CAN_MOVE, Map.of());
+    final PainterEvent event2 = new PainterEvent(NeighborhoodActionType.IS_ON_BUCKET, Map.of());
+    final PainterEvent event3 = new PainterEvent(NeighborhoodActionType.IS_ON_PAINT, Map.of());
+
+    final List<PainterEvent> events = List.of(event1, event2, event3);
+
+    for (PainterEvent event : events) {
+      unitUnderTest.trackEvent(event);
+    }
+
+    final PainterLog log = unitUnderTest.getPainterLog();
+    assertTrue(log.didActionAtLeast(NeighborhoodActionType.CAN_MOVE, 1));
+    assertTrue(log.didActionOnce(NeighborhoodActionType.IS_ON_PAINT));
+    assertTrue(log.didActionOnce(NeighborhoodActionType.IS_ON_BUCKET));
   }
 
   private PainterEvent createMoveEvent(Direction direction) {

@@ -143,12 +143,16 @@ public class Painter {
 
   /** @return True if there is paint in the square where the painter is standing. */
   public boolean isOnPaint() {
-    return this.grid.getSquare(this.xLocation, this.yLocation).hasColor();
+    boolean isOnPaint = this.grid.getSquare(this.xLocation, this.yLocation).hasColor();
+    this.sendBooleanMessage(NeighborhoodSignalKey.IS_ON_PAINT, isOnPaint);
+    return isOnPaint;
   }
 
   /** @return True if there is a paint bucket in the square where the painter is standing. */
   public boolean isOnBucket() {
-    return this.grid.getSquare(this.xLocation, this.yLocation).containsPaint();
+    boolean isOnBucket = this.grid.getSquare(this.xLocation, this.yLocation).containsPaint();
+    this.sendBooleanMessage(NeighborhoodSignalKey.IS_ON_BUCKET, isOnBucket);
+    return isOnBucket;
   }
 
   /** @return True if the painter's personal bucket has paint in it. */
@@ -161,12 +165,14 @@ public class Painter {
 
   /** @return True if there is no barrier one square ahead in the requested direction. */
   public boolean canMove(String direction) {
-    return this.isValidMovement(Direction.fromString(direction));
+    boolean canMove = this.isValidMovement(Direction.fromString(direction));
+    this.sendBooleanMessage(NeighborhoodSignalKey.CAN_MOVE, canMove);
+    return canMove;
   }
 
   /** @return True if there is no barrier one square ahead in the current direction. */
   public boolean canMove() {
-    return this.isValidMovement(this.direction);
+    return this.canMove(this.direction.toString());
   }
 
   /** @return the color of the square where the painter is standing. */
@@ -295,6 +301,13 @@ public class Painter {
 
   private void sendOutputMessage(NeighborhoodSignalKey signalKey, HashMap<String, String> details) {
     this.outputAdapter.sendMessage(new NeighborhoodSignalMessage(signalKey, details));
+  }
+
+  private void sendBooleanMessage(NeighborhoodSignalKey signalKey, boolean result) {
+    HashMap<String, String> details = this.getSignalDetails();
+    String resultString = String.valueOf(result);
+    details.put(BOOLEAN_RESULT, resultString);
+    this.sendOutputMessage(signalKey, details);
   }
 
   private void sendInitializationMessage() {

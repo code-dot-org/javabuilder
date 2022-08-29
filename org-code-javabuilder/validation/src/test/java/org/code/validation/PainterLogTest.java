@@ -24,7 +24,13 @@ public class PainterLogTest {
     sampleEvents.add(new PainterEvent(NeighborhoodActionType.PAINT, null));
     sampleEvents.add(new PainterEvent(NeighborhoodActionType.TAKE_PAINT, null));
     unitUnderTest =
-        new PainterLog("sampleId", new Position(0, 0), new Position(5, 5), 0, 5, sampleEvents);
+        new PainterLog(
+            "sampleId",
+            new Position(0, 0, "east"),
+            new Position(5, 5, "north"),
+            0,
+            5,
+            sampleEvents);
   }
 
   @Test
