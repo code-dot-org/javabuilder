@@ -14,7 +14,10 @@ public class UserTestOutputAdapterTest {
 
   @BeforeEach
   public void setUp() {
+
     testOutputAdapter = new UserTestOutputAdapter(delegateOutputAdapter);
+    JavabuilderContext.getInstance()
+        .register(ValidationProtocol.class, mock(ValidationProtocol.class));
   }
 
   @Test
