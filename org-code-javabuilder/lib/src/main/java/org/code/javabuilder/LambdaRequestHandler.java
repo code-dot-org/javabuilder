@@ -189,6 +189,12 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
    * creating global objects
    */
   private void initialize(Map<String, String> lambdaInput, String connectionId, Context context) {
+    if (this.unhealthyContainerChecker.shouldForceRecycleContainer(
+        LAMBDA_ID, UnhealthyContainerChecker.ShutdownTrigger.START)) {
+      LoggerUtils.logInfo("Unhealthy container. Exiting System at start. byeeeee");
+      System.exit(LambdaErrorCodes.UNHEALTHY_CONTAINER_ERROR_CODE);
+    }
+
     final boolean canAccessDashboardAssets =
         Boolean.parseBoolean(lambdaInput.get("canAccessDashboardAssets"));
 
@@ -317,8 +323,9 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
       }
     }
 
-    if (this.unhealthyContainerChecker.shouldForceRecycleContainer(LAMBDA_ID)) {
-      LoggerUtils.logInfo("Unhealthy container. Exiting System. byeeeee");
+    if (this.unhealthyContainerChecker.shouldForceRecycleContainer(
+        LAMBDA_ID, UnhealthyContainerChecker.ShutdownTrigger.END)) {
+      LoggerUtils.logInfo("Unhealthy container. Exiting System at end. byeeeee");
       System.exit(LambdaErrorCodes.UNHEALTHY_CONTAINER_ERROR_CODE);
     }
 

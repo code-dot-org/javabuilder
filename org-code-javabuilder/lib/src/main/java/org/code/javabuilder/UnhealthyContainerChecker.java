@@ -2,11 +2,25 @@ package org.code.javabuilder;
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
-import com.amazonaws.services.dynamodbv2.model.GetItemRequest;
 import java.util.Map;
 import org.code.protocol.LoggerUtils;
 
 public class UnhealthyContainerChecker {
+  public enum ShutdownTrigger {
+    START("start"),
+    END("end");
+
+    private final String name;
+
+    ShutdownTrigger(String name) {
+      this.name = name;
+    }
+
+    public String getName() {
+      return name;
+    }
+  }
+
   private final AmazonDynamoDB dynamoDBClient;
   private final String tableName;
 
@@ -15,16 +29,19 @@ public class UnhealthyContainerChecker {
     this.tableName = tableName;
   }
 
-  public boolean shouldForceRecycleContainer(String containerId) {
+  public boolean shouldForceRecycleContainer(String containerId, ShutdownTrigger trigger) {
     LoggerUtils.logInfo("Table name: " + this.tableName);
-    final GetItemRequest request =
-        new GetItemRequest()
-            .withKey(Map.of("container_id", new AttributeValue(containerId)))
-            .withTableName(this.tableName);
 
+    // The container ID value is a concatenation of the ID and the shutdown trigger type
+    final String containerIdCompositeValue = containerId + "#" + trigger.getName();
     final Map<String, AttributeValue> item;
     try {
-      item = this.dynamoDBClient.getItem(request).getItem();
+      item =
+          this.dynamoDBClient
+              .getItem(
+                  this.tableName,
+                  Map.of("container_id", new AttributeValue(containerIdCompositeValue)))
+              .getItem();
     } catch (Exception e) {
       LoggerUtils.logInfo(e.getMessage());
       return false;
