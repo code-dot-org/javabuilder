@@ -20,6 +20,15 @@ public class SystemOutTracker {
     if (message.getType() != ClientMessageType.SYSTEM_OUT) {
       return;
     }
-    this.messages.add(message.getValue());
+    String value = message.getValue();
+    // Ignore new lines as those are indications of a println vs a print.
+    // For validation we don't care which is used.
+    if (!value.equals("\n")) {
+      this.messages.add(message.getValue());
+    }
+  }
+
+  public void reset() {
+    this.messages = new ArrayList<>();
   }
 }
