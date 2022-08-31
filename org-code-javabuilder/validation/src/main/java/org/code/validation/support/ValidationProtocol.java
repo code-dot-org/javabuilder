@@ -38,6 +38,8 @@ public class ValidationProtocol extends JavabuilderSharedObject {
     if (this.mainMethod == null) {
       throw new ValidationRuntimeException(ExceptionKey.NO_MAIN_METHOD_VALIDATION);
     }
+    this.neighborhoodTracker.reset();
+    this.systemOutTracker.reset();
     try {
       this.mainMethod.invoke(null, new Object[] {null});
     } catch (IllegalAccessException e) {
