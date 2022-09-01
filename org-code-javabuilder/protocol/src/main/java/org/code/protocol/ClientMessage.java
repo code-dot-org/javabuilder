@@ -67,4 +67,12 @@ public abstract class ClientMessage {
     }
     return formattedMessage.toString();
   }
+
+  /**
+   * @return whether or not this message should be sent in run mode. Some messages are only relevant
+   *     for test mode.
+   */
+  public boolean shouldSendInRunMode() {
+    return true;
+  }
 }
