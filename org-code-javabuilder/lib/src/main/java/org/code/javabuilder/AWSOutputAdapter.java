@@ -25,18 +25,22 @@ public class AWSOutputAdapter implements OutputAdapter {
    */
   @Override
   public void sendMessage(ClientMessage message) {
-    PostToConnectionRequest post = new PostToConnectionRequest();
-    post.setConnectionId(connectionId);
-    post.setData(ByteBuffer.wrap((message.getFormattedMessage()).getBytes()));
-    this.sendMessageHelper(post);
+    if (message.shouldSendInRunMode()) {
+      PostToConnectionRequest post = new PostToConnectionRequest();
+      post.setConnectionId(connectionId);
+      post.setData(ByteBuffer.wrap((message.getFormattedMessage()).getBytes()));
+      this.sendMessageHelper(post);
+    }
   }
 
   public void sendDebuggingMessage(ClientMessage message) {
-    String time = String.valueOf(java.time.Clock.systemUTC().instant());
-    PostToConnectionRequest post = new PostToConnectionRequest();
-    post.setConnectionId(connectionId);
-    post.setData(ByteBuffer.wrap((message + " " + time).getBytes()));
-    this.sendMessageHelper(post);
+    if (message.shouldSendInRunMode()) {
+      String time = String.valueOf(java.time.Clock.systemUTC().instant());
+      PostToConnectionRequest post = new PostToConnectionRequest();
+      post.setConnectionId(connectionId);
+      post.setData(ByteBuffer.wrap((message + " " + time).getBytes()));
+      this.sendMessageHelper(post);
+    }
   }
 
   private void sendMessageHelper(PostToConnectionRequest post) {
