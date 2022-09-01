@@ -16,6 +16,8 @@ public class SystemOutTracker {
     return this.messages;
   }
 
+  // Track a single client message event. It will only be tracked if it is a system out message
+  // that is not just a newline, otherwise it will be ignored.
   public void trackEvent(ClientMessage message) {
     if (message.getType() != ClientMessageType.SYSTEM_OUT) {
       return;
