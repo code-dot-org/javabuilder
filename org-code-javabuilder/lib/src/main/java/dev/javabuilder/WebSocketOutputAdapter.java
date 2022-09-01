@@ -20,7 +20,7 @@ public class WebSocketOutputAdapter implements OutputAdapter {
 
   @Override
   public void sendMessage(ClientMessage message) {
-    if (message.shouldSendInRunMode()) {
+    if (message.shouldAlwaysSend()) {
       try {
         endpoint.sendText(message.getFormattedMessage());
       } catch (IOException e) {
@@ -32,7 +32,7 @@ public class WebSocketOutputAdapter implements OutputAdapter {
   }
 
   public void sendDebuggingMessage(ClientMessage message) {
-    if (message.shouldSendInRunMode()) {
+    if (message.shouldAlwaysSend()) {
       try {
         endpoint.sendText(message.getFormattedMessage());
       } catch (IOException e) {

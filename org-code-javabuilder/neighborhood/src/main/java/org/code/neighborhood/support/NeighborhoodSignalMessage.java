@@ -12,7 +12,7 @@ public class NeighborhoodSignalMessage extends ClientMessage {
   }
 
   @Override
-  public boolean shouldSendInRunMode() {
+  public boolean shouldAlwaysSend() {
     String signalKey = this.getValue();
     Set<String> ignoredSignalKeys = new HashSet<>();
     // These keys are only used for testing, don't send in run mode.

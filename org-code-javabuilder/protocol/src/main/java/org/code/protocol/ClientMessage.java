@@ -69,10 +69,10 @@ public abstract class ClientMessage {
   }
 
   /**
-   * @return whether or not this message should be sent in run mode. Some messages are only relevant
-   *     for test mode.
+   * @return whether or not this message should always be sent by any output adapter. Some messages
+   *     are only relevant for the test output adapter
    */
-  public boolean shouldSendInRunMode() {
+  public boolean shouldAlwaysSend() {
     return true;
   }
 }
