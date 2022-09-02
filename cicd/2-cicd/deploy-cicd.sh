@@ -16,11 +16,19 @@ fi
 
 # Default to main branch, but support pipelines using other branches
 TARGET_BRANCH=${TARGET_BRANCH-'main'}
+
 if [ "$TARGET_BRANCH" == "main" ]
 then
   STACK_NAME="javabuilder-cicd"
 else
-  STACK_NAME="javabuilder-${TARGET_BRANCH}-cicd"
+  # only allow alphanumeric branch names that may contain an internal hyphen.
+  # to avoid complicated logic elsewhere, we're constraining it here.
+  if [[ "$TARGET_BRANCH" =~ ^[a-z0-9]([-a-z0-9]*[a-z0-9])$ ]]; then
+    STACK_NAME="javabuilder-${TARGET_BRANCH}-cicd"
+  else
+    echo "Invalid branch name '${TARGET_BRANCH}', branches must be alphanumeric and may contain hyphens."
+    exit
+  fi
 fi
 
 ENVIRONMENT_TYPE=${ENVIRONMENT_TYPE-'standard'}
