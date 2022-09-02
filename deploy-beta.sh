@@ -60,4 +60,5 @@ aws cloudformation deploy \
     ProvisionedConcurrentExecutions=$PROVISIONED_CONCURRENT_EXECUTIONS ReservedConcurrentExecutions=$RESERVED_CONCURRENT_EXECUTIONS \
     LimitPerHour=$LIMIT_PER_HOUR LimitPerDay=$LIMIT_PER_DAY TeacherLimitPerHour=$TEACHER_LIMIT_PER_HOUR SilenceAlerts=$SILENCE_ALERTS \
   --stack-name ${STACK} \
+  --tags EnvType=beta \
   "$@"
