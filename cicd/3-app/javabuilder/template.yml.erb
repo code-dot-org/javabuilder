@@ -645,25 +645,26 @@ Resources:
   HighUsageCompositeAlarm:
     Type: AWS::CloudWatch::CompositeAlarm
     DependsOn:
+      - ConsoleHighInvocationsAlarm
       - HighHttpRequestsAlarm
-      -  HighWebsocketConnectionsAlarm
-      -  NeighborhoodHighInvocationsAlarm
-      -  TheaterHighInvocationsAlarm
+      - HighWebsocketConnectionsAlarm
+      - NeighborhoodHighInvocationsAlarm
+      - TheaterHighInvocationsAlarm
     Properties:
         ActionsEnabled: true
         AlarmActions:
-            # TODO: after we have run at high usage for a while, consider re-enabling this alarm. Right now it is too noisy
-            # - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-high-usage"]
-            - !Ref AWS::NoValue
+          # TODO: after we have run at high usage for a while, consider re-enabling this alarm. Right now it is too noisy
+          # - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-high-usage"]
+          - !Ref AWS::NoValue
         AlarmDescription: Send message if abnormally high Javabuilder usage detected.
-            Monitors usage across the HTTP API, WebSocket API, and all Build and Run
-            Lambdas.
+          Monitors usage across the HTTP API, WebSocket API, and all Build and Run
+          Lambdas.
         AlarmName: !Sub "${SubDomainName}_high_usage_composite"
         AlarmRule: !Sub "ALARM(${SubDomainName}_console_high_invocations) OR
-            ALARM(${SubDomainName}_high_http_requests) OR
-            ALARM(${SubDomainName}_high_websocket_connections) OR
-            ALARM(${SubDomainName}_neighborhood_high_invocations) OR
-            ALARM(${SubDomainName}_theater_high_invocations)"
+          ALARM(${SubDomainName}_high_http_requests) OR
+          ALARM(${SubDomainName}_high_websocket_connections) OR
+          ALARM(${SubDomainName}_neighborhood_high_invocations) OR
+          ALARM(${SubDomainName}_theater_high_invocations)"
         InsufficientDataActions: []
         OKActions: []
 
