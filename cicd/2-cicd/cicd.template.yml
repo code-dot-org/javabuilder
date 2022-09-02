@@ -29,7 +29,7 @@ Parameters:
   EnvironmentType:
     Type: String
     Description: A 'production' cicd stack includes automated tests in the pipeline and deploys 'test' and 'production' environments. Whereas a 'development' type will only deploy a development environment.
-    Default: standard
+    Default: production
     AllowedValues: [development, production]
 
 Conditions:
