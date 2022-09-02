@@ -31,7 +31,7 @@ else
   fi
 fi
 
-ENVIRONMENT_TYPE=${ENVIRONMENT_TYPE-'standard'}
+ENVIRONMENT_TYPE=${ENVIRONMENT_TYPE-'production'}
 GITHUB_BADGE_ENABLED=${GITHUB_BADGE_ENABLED-'true'}
 
 TEMPLATE_FILE=cicd/2-cicd/cicd.template.yml
