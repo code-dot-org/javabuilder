@@ -20,22 +20,26 @@ public class WebSocketOutputAdapter implements OutputAdapter {
 
   @Override
   public void sendMessage(ClientMessage message) {
-    try {
-      endpoint.sendText(message.getFormattedMessage());
-    } catch (IOException e) {
-      e.printStackTrace();
-    } catch (IllegalStateException e) {
-      throw new InternalServerRuntimeException(InternalExceptionKey.CONNECTION_TERMINATED, e);
+    if (message.shouldAlwaysSend()) {
+      try {
+        endpoint.sendText(message.getFormattedMessage());
+      } catch (IOException e) {
+        e.printStackTrace();
+      } catch (IllegalStateException e) {
+        throw new InternalServerRuntimeException(InternalExceptionKey.CONNECTION_TERMINATED, e);
+      }
     }
   }
 
   public void sendDebuggingMessage(ClientMessage message) {
-    try {
-      endpoint.sendText(message.getFormattedMessage());
-    } catch (IOException e) {
-      e.printStackTrace();
-    } catch (IllegalStateException e) {
-      throw new InternalServerRuntimeException(InternalExceptionKey.CONNECTION_TERMINATED, e);
+    if (message.shouldAlwaysSend()) {
+      try {
+        endpoint.sendText(message.getFormattedMessage());
+      } catch (IOException e) {
+        e.printStackTrace();
+      } catch (IllegalStateException e) {
+        throw new InternalServerRuntimeException(InternalExceptionKey.CONNECTION_TERMINATED, e);
+      }
     }
   }
 }
