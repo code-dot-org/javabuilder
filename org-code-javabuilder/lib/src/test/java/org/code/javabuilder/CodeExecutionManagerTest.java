@@ -63,11 +63,11 @@ class CodeExecutionManagerTest {
     unitUnderTest.shutDown();
     verify(codeBuilderRunnable).run();
     // Verify post-execute
-    // verifyExitedMessageSentOnce();
+    verifyExitedMessageSentOnce();
 
     unitUnderTest.shutDown();
     // Should not call post-execute again
-    // verifyExitedMessageSentOnce();
+    verifyExitedMessageSentOnce();
   }
 
   @Test
@@ -87,7 +87,7 @@ class CodeExecutionManagerTest {
     unitUnderTest.shutDown();
 
     // Verify post-execute happened only once
-    // verifyExitedMessageSentOnce();
+    verifyExitedMessageSentOnce();
   }
 
   @Test

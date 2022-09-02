@@ -37,7 +37,7 @@ public class CodeExecutionManager {
   private PrintStream systemOutputStream;
   private boolean isInitialized;
 
-  private static final boolean LOG_MEMORY_USAGE = true;
+  private static final boolean LOG_MEMORY_USAGE = false;
 
   static class CodeBuilderRunnableFactory {
     public CodeBuilderRunnable createCodeBuilderRunnable(
@@ -195,7 +195,6 @@ public class CodeExecutionManager {
               "Loaded classes: %d, Unloaded classes: %d",
               classLoadingMXBean.getLoadedClassCount(), classLoadingMXBean.getUnloadedClassCount());
       LoggerUtils.logInfo(classLoadingMessage);
-      System.out.println(classLoadingMessage);
     }
   }
 }
