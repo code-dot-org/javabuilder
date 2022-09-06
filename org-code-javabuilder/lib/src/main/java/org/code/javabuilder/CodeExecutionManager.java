@@ -6,9 +6,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
-import java.lang.management.ClassLoadingMXBean;
-import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryPoolMXBean;
 import java.nio.file.Files;
 import java.util.List;
 import org.code.javabuilder.util.LambdaUtils;
@@ -36,8 +33,6 @@ public class CodeExecutionManager {
   private InputStream systemInputStream;
   private PrintStream systemOutputStream;
   private boolean isInitialized;
-
-  private static final boolean LOG_MEMORY_USAGE = false;
 
   static class CodeBuilderRunnableFactory {
     public CodeBuilderRunnable createCodeBuilderRunnable(
@@ -156,7 +151,6 @@ public class CodeExecutionManager {
     LambdaUtils.safelySendMessage(
         this.outputAdapter, new StatusMessage(StatusMessageKey.EXITED), false);
     JavabuilderContext.getInstance().onExecutionEnded();
-    this.logMemoryUsage();
     try {
       // Close custom input/output streams
       this.overrideInputStream.close();
@@ -174,27 +168,6 @@ public class CodeExecutionManager {
       System.setIn(this.systemInputStream);
       System.setOut(this.systemOutputStream);
       this.isInitialized = false;
-    }
-  }
-
-  private void logMemoryUsage() {
-    if (LOG_MEMORY_USAGE) {
-      List<MemoryPoolMXBean> memoryPoolMXBeans = ManagementFactory.getMemoryPoolMXBeans();
-      for (MemoryPoolMXBean memoryPoolMXBean : memoryPoolMXBeans) {
-        String usageMessage =
-            String.format(
-                "Memory pool %s\n\t Usage: %d\n\tPeak Usage %d",
-                memoryPoolMXBean.getName(),
-                memoryPoolMXBean.getUsage().getUsed(),
-                memoryPoolMXBean.getPeakUsage().getUsed());
-        LoggerUtils.logInfo(usageMessage);
-      }
-      ClassLoadingMXBean classLoadingMXBean = ManagementFactory.getClassLoadingMXBean();
-      String classLoadingMessage =
-          String.format(
-              "Loaded classes: %d, Unloaded classes: %d",
-              classLoadingMXBean.getLoadedClassCount(), classLoadingMXBean.getUnloadedClassCount());
-      LoggerUtils.logInfo(classLoadingMessage);
     }
   }
 }
