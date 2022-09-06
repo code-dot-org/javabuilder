@@ -395,6 +395,28 @@ Resources:
                   Capabilities: CAPABILITY_AUTO_EXPAND
                   RoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/admin/CloudFormationService
           - !Ref AWS::NoValue
+
+        - !If
+          - DeployForProduction
+          - Name: Smoke_Test
+            Actions:
+              - Name: smoke-test
+                ActionTypeId:
+                  Category: Build
+                  Owner: AWS
+                  Provider: CodeBuild
+                  Version: 1
+                InputArtifacts:
+                  - Name: sourceCode
+                Configuration:
+                  ProjectName: !Ref IntegrationTestBuildProject
+                  EnvironmentVariables: !Sub
+                    - '[{"name":"APP_SUBDOMAIN","value":"${SUBDOMAIN}","type":"PLAINTEXT"},{"name":"APP_BASE_DOMAIN","value":"${BASE_DOMAIN}","type":"PLAINTEXT"}]'
+                    - BASE_DOMAIN: code.org
+                      SUBDOMAIN: !If [TargetsMainBranch, "javabuilder", !Sub "javabuilder-${GitHubBranch}"]
+                OutputArtifacts:
+                  - Name: smokeTestResults
+          - !Ref AWS::NoValue
   
   # Send pipeline events to an SNS topic.
   # Note:
