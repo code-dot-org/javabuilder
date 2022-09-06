@@ -2,6 +2,7 @@ package org.code.javabuilder;
 
 import java.lang.reflect.Method;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
 import java.util.List;
 import org.code.javabuilder.util.ProjectLoadUtils;
 import org.code.protocol.*;
@@ -47,9 +48,14 @@ public class ValidationRunner extends BaseTestRunner {
 
   private void setUpForValidation(URLClassLoader urlClassLoader) throws UserInitiatedException {
     Method mainMethod = ProjectLoadUtils.findMainMethod(urlClassLoader, this.projectFiles);
+    List<String> classNames = new ArrayList<>();
+    for (JavaProjectFile projectFile : this.projectFiles) {
+      classNames.add(projectFile.getClassName());
+    }
     JavabuilderContext.getInstance()
         .register(
             ValidationProtocol.class,
-            new ValidationProtocol(mainMethod, new NeighborhoodTracker(), new SystemOutTracker()));
+            new ValidationProtocol(
+                mainMethod, new NeighborhoodTracker(), new SystemOutTracker(), classNames));
   }
 }
