@@ -937,19 +937,16 @@ Resources:
   CONTAINER_ID_AND_TRIGGER_COMPOSITE_ATTRIBUTE_NAME = 'container_id'
 -%>
   UnhealthyContainersTable:
-      Type: AWS::DynamoDB::Table
-      Properties:
-        TableName: !Sub "${SubDomainName}unhealthycontainers3_blocked_users"
-        KeySchema:
-          - AttributeName: <%=CONTAINER_ID_AND_TRIGGER_COMPOSITE_ATTRIBUTE_NAME%>
-            KeyType: HASH
-        BillingMode: PAY_PER_REQUEST
-        AttributeDefinitions:
-          - AttributeName: <%=CONTAINER_ID_AND_TRIGGER_COMPOSITE_ATTRIBUTE_NAME%>
-            AttributeType: S
-        TimeToLiveSpecification:
-          AttributeName: <%=TIME_TO_LIVE_ATTRIBUTE_NAME%>
-          Enabled: true
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "${SubDomainName}unhealthycontainers3_blocked_users"
+      KeySchema:
+        - AttributeName: <%=CONTAINER_ID_AND_TRIGGER_COMPOSITE_ATTRIBUTE_NAME%>
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: <%=CONTAINER_ID_AND_TRIGGER_COMPOSITE_ATTRIBUTE_NAME%>
+          AttributeType: S
 
   BlockedUsersTable:
     Type: AWS::DynamoDB::Table
