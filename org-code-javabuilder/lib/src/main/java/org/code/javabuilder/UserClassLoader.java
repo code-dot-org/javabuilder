@@ -138,5 +138,6 @@ public class UserClassLoader extends URLClassLoader {
       };
 
   // Allowed packages for code with elevated permissions, such as validation code.
-  private static final String[] validatorAllowedPackages = new String[] {"org.code.validation"};
+  private static final String[] validatorAllowedPackages =
+      new String[] {"org.code.validation", "java.lang.reflect"};
 }
