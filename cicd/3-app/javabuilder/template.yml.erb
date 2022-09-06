@@ -985,9 +985,6 @@ Resources:
         AttributeDefinitions:
           - AttributeName: <%=CONTAINER_ID_AND_TRIGGER_COMPOSITE_ATTRIBUTE_NAME%>
             AttributeType: S
-        TimeToLiveSpecification:
-          AttributeName: <%=TIME_TO_LIVE_ATTRIBUTE_NAME%>
-          Enabled: true
 
   HighUsersBlockedAlarm:
     Type: AWS::CloudWatch::Alarm
