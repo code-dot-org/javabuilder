@@ -11,6 +11,8 @@ import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.GetItemResult;
 import java.util.Map;
 import org.code.javabuilder.UnhealthyContainerChecker.ShutdownTrigger;
+import org.code.protocol.JavabuilderContext;
+import org.code.protocol.MetricClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -24,6 +26,7 @@ class UnhealthyContainerCheckerTest {
 
   @BeforeEach
   public void setUp() {
+    JavabuilderContext.getInstance().register(MetricClient.class, mock(AWSMetricClient.class));
     final AmazonDynamoDB dynamoDBClient = mock(AmazonDynamoDB.class);
     getItemResult = mock(GetItemResult.class);
     keyCaptor = ArgumentCaptor.forClass(Map.class);

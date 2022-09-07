@@ -47,9 +47,9 @@ public class UnhealthyContainerChecker {
     try {
       entry = this.dynamoDBClient.getItem(this.tableName, key).getItem();
     } catch (Exception e) {
-      // Indicates an unexpected error (missing entries should return null); log warning and return
+      // Indicates an unexpected error (missing entries should return null); log error and return
       // false silently to be safe.
-      LoggerUtils.logWarning(e.getMessage());
+      LoggerUtils.logSevereException(e);
       return false;
     }
 
