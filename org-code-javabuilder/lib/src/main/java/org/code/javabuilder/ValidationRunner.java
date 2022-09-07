@@ -6,6 +6,7 @@ import java.util.List;
 import org.code.javabuilder.util.ProjectLoadUtils;
 import org.code.protocol.*;
 import org.code.validation.support.NeighborhoodTracker;
+import org.code.validation.support.SystemOutTracker;
 import org.code.validation.support.ValidationProtocol;
 
 public class ValidationRunner extends BaseTestRunner {
@@ -49,6 +50,6 @@ public class ValidationRunner extends BaseTestRunner {
     JavabuilderContext.getInstance()
         .register(
             ValidationProtocol.class,
-            new ValidationProtocol(mainMethod, new NeighborhoodTracker()));
+            new ValidationProtocol(mainMethod, new NeighborhoodTracker(), new SystemOutTracker()));
   }
 }

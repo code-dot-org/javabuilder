@@ -29,15 +29,15 @@ public class UserTestOutputAdapter implements OutputAdapter {
           delegateOutputAdapter.sendMessage(message);
         }
         break;
-      case NEIGHBORHOOD:
-        if (this.isValidation) {
-          ValidationProtocol protocolInstance =
-              (ValidationProtocol) JavabuilderContext.getInstance().get(ValidationProtocol.class);
-          protocolInstance.trackEvent(message);
-        }
-        break;
       default:
         break;
+    }
+    // If this is validation, send all messages to the validation protocol, which will decide
+    // whether or not to track them.
+    if (this.isValidation) {
+      ValidationProtocol protocolInstance =
+          (ValidationProtocol) JavabuilderContext.getInstance().get(ValidationProtocol.class);
+      protocolInstance.trackEvent(message);
     }
   }
 

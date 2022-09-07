@@ -67,4 +67,12 @@ public abstract class ClientMessage {
     }
     return formattedMessage.toString();
   }
+
+  /**
+   * @return whether or not this message should always be sent by any output adapter. Some messages
+   *     are only relevant for the test output adapter
+   */
+  public boolean shouldAlwaysSend() {
+    return true;
+  }
 }

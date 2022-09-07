@@ -63,7 +63,15 @@ Resources:
                   - 'cloudwatch:PutMetricData'
                 Resource:
                   - '*'
-  
+              # Build and Run lambdas need read and delete DynamoDB records to check container health status
+              - Effect: Allow
+                Action:
+                  - 'dynamodb:GetItem'
+                  - 'dynamodb:Query'
+                  - 'dynamodb:DeleteItem'
+                Resource:
+                  - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/*_unhealthy_containers"
+
   # Permissions for the synchronous Lambda that invokes the long-running Lambda
   # and then relays web messages to it
   SessionManagerMessageRelayLambdaRole:

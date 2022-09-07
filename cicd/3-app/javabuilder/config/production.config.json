@@ -7,5 +7,8 @@
     "LimitPerHour": "150",
     "LimitPerDay": "300",
     "SilenceAlerts": "false"
+  },
+  "Tags" : {
+    "EnvType" : "production"
   }
 }
