@@ -459,6 +459,7 @@ Resources:
           API_ENDPOINT: !Sub
             - "https://${ApiId}.execute-api.${AWS::Region}.amazonaws.com/${StageName}"
             - ApiId: !Ref WebSocketApi
+          UNHEALTHY_CONTAINERS_TABLE_NAME: !Ref UnhealthyContainersTable
 <%end -%>
 
   ContentBucket:

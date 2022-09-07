@@ -10,6 +10,8 @@ import com.amazonaws.services.apigatewaymanagementapi.AmazonApiGatewayManagement
 import com.amazonaws.services.apigatewaymanagementapi.model.DeleteConnectionRequest;
 import com.amazonaws.services.apigatewaymanagementapi.model.GetConnectionRequest;
 import com.amazonaws.services.apigatewaymanagementapi.model.GoneException;
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.s3.AmazonS3;
@@ -26,6 +28,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
+import org.code.javabuilder.UnhealthyContainerChecker.ShutdownTrigger;
 import org.code.javabuilder.util.LambdaUtils;
 import org.code.protocol.*;
 import org.code.validation.support.UserTestOutputAdapter;
@@ -47,11 +50,18 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
   private static final String CONTENT_BUCKET_NAME = System.getenv("CONTENT_BUCKET_NAME");
   private static final String CONTENT_BUCKET_URL = System.getenv("CONTENT_BUCKET_URL");
   private static final String API_ENDPOINT = System.getenv("API_ENDPOINT");
+  private static final String UNHEALTHY_CONTAINERS_TABLE_NAME =
+      System.getenv("UNHEALTHY_CONTAINERS_TABLE_NAME");
 
   // Creating these clients here rather than in the request handler method allows us to use
   // provisioned concurrency to decrease cold boot time by 3-10 seconds, depending on the lambda
   private static final AmazonSQS SQS_CLIENT = AmazonSQSClientBuilder.defaultClient();
   private static final AmazonS3 S3_CLIENT = AmazonS3ClientBuilder.standard().build();
+  private static final AmazonDynamoDB DYNAMO_DB_CLIENT =
+      AmazonDynamoDBClientBuilder.defaultClient();
+
+  // Used to check whether this container has been marked unhealthy.
+  private final UnhealthyContainerChecker unhealthyContainerChecker;
 
   // Controls whether the current invocation session has been initialized. This should be reset on
   // every invocation.
@@ -71,6 +81,8 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
             .withEndpointConfiguration(
                 new AwsClientBuilder.EndpointConfiguration(API_ENDPOINT, "us-east-1"))
             .build();
+    this.unhealthyContainerChecker =
+        new UnhealthyContainerChecker(DYNAMO_DB_CLIENT, UNHEALTHY_CONTAINERS_TABLE_NAME);
   }
 
   /**
@@ -177,6 +189,9 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
    * creating global objects
    */
   private void initialize(Map<String, String> lambdaInput, String connectionId, Context context) {
+    // Check container health status and exit early if container has been marked unhealthy.
+    this.checkContainerHealth(ShutdownTrigger.START);
+
     final boolean canAccessDashboardAssets =
         Boolean.parseBoolean(lambdaInput.get("canAccessDashboardAssets"));
 
@@ -320,6 +335,9 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
       System.exit(LambdaErrorCodes.LOW_DISK_SPACE_ERROR_CODE);
     }
 
+    // Check container health status and exit if the container has been marked unhealthy.
+    this.checkContainerHealth(ShutdownTrigger.END);
+
     this.isSessionInitialized = false;
   }
 
@@ -399,6 +417,16 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
               .withEndpointConfiguration(
                   new AwsClientBuilder.EndpointConfiguration(API_ENDPOINT, "us-east-1"))
               .build();
+    }
+  }
+
+  /**
+   * Checks if this container has been marked unhealthy and if so, forces a shutdown via
+   * System.exit().
+   */
+  private void checkContainerHealth(ShutdownTrigger trigger) {
+    if (this.unhealthyContainerChecker.shouldForceShutdownContainer(LAMBDA_ID, trigger)) {
+      System.exit(LambdaErrorCodes.UNHEALTHY_CONTAINER_ERROR_CODE);
     }
   }
 }

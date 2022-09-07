@@ -29,6 +29,8 @@ dependencies {
     implementation group: 'com.amazonaws', name: 'aws-java-sdk-s3', version: '1.12.20'
     // https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-cloudwatch
     implementation group: 'com.amazonaws', name: 'aws-java-sdk-cloudwatch', version: '1.12.218'
+    // https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-dynamodb
+    implementation group: 'com.amazonaws', name: 'aws-java-sdk-dynamodb', version: '1.12.285'
     // https://mvnrepository.com/artifact/org.json/json
     implementation group: 'org.json', name: 'json', version: '20210307'
     // jaxb-api is needed to get rid of warning on run

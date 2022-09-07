@@ -112,6 +112,10 @@ public class LoggerUtils {
     Logger.getLogger(MAIN_LOGGER).info(info);
   }
 
+  public static void logWarning(String info) {
+    Logger.getLogger(MAIN_LOGGER).warning(info);
+  }
+
   private static void sendDiskSpaceLogs(String type) {
     File f = Paths.get(System.getProperty("java.io.tmpdir")).toFile();
     JSONObject eventData = new JSONObject();
