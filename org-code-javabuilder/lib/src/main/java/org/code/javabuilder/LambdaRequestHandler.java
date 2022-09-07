@@ -1,7 +1,6 @@
 package org.code.javabuilder;
 
 import static org.code.javabuilder.InternalFacingExceptionTypes.INVALID_INPUT;
-import static org.code.protocol.InternalExceptionKey.*;
 import static org.code.protocol.LoggerNames.MAIN_LOGGER;
 
 import com.amazonaws.client.builder.AwsClientBuilder;
@@ -190,7 +189,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
    */
   private void initialize(Map<String, String> lambdaInput, String connectionId, Context context) {
     // Check container health status and exit early if container has been marked unhealthy.
-    this.checkContainerHealth(ShutdownTrigger.START);
+    this.shutdownContainerIfUnhealthy(ShutdownTrigger.START);
 
     final boolean canAccessDashboardAssets =
         Boolean.parseBoolean(lambdaInput.get("canAccessDashboardAssets"));
@@ -336,7 +335,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     }
 
     // Check container health status and exit if the container has been marked unhealthy.
-    this.checkContainerHealth(ShutdownTrigger.END);
+    this.shutdownContainerIfUnhealthy(ShutdownTrigger.END);
 
     this.isSessionInitialized = false;
   }
@@ -424,7 +423,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
    * Checks if this container has been marked unhealthy and if so, forces a shutdown via
    * System.exit().
    */
-  private void checkContainerHealth(ShutdownTrigger trigger) {
+  private void shutdownContainerIfUnhealthy(ShutdownTrigger trigger) {
     if (this.unhealthyContainerChecker.shouldForceShutdownContainer(LAMBDA_ID, trigger)) {
       System.exit(LambdaErrorCodes.UNHEALTHY_CONTAINER_ERROR_CODE);
     }
