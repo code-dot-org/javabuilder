@@ -47,7 +47,7 @@ class NeighborhoodTrackerTest {
 
   @Test
   public void testUpdatesPainterTrackerWithPainterMessages() {
-    final String id = "id";
+    final String id = "id1";
     // Initialize
     unitUnderTest.trackEvent(createInitEvent(id, Direction.EAST, 5, 10, 20));
 
@@ -66,7 +66,7 @@ class NeighborhoodTrackerTest {
 
     final PainterLog painterLog = unitUnderTest.getNeighborhoodLog().getPainterLogs()[0];
 
-    assertEquals(ID, painterLog.getPainterId());
+    assertEquals(id, painterLog.getPainterId());
     assertEquals(4, painterLog.getEndingPosition().getX());
     assertEquals(10, painterLog.getEndingPosition().getY());
     assertEquals(21, painterLog.getEndingPaintCount());
@@ -132,7 +132,7 @@ class NeighborhoodTrackerTest {
 
   @Test
   public void testUpdatesPainterLogWithNonAnimatedMoves() {
-    final String id = "id";
+    final String id = "id1";
     // Initialize
     unitUnderTest.trackEvent(createInitEvent(id, Direction.EAST, 5, 10, 20));
 
@@ -144,9 +144,36 @@ class NeighborhoodTrackerTest {
 
     final PainterLog painterLog = unitUnderTest.getNeighborhoodLog().getPainterLogs()[0];
 
-    assertEquals(ID, painterLog.getPainterId());
+    assertEquals(id, painterLog.getPainterId());
     assertTrue(painterLog.didActionOnce(NeighborhoodActionType.IS_ON_BUCKET));
     assertFalse(painterLog.didActionAtLeast(NeighborhoodActionType.CAN_MOVE, 1));
+  }
+
+  @Test
+  public void resetsSuccessfully() {
+    final String id = "id1";
+    // Initialize
+    unitUnderTest.trackEvent(createInitEvent(id, Direction.EAST, 5, 10, 20));
+    // create paint event
+    final HashMap<String, String> paintDetails = new HashMap<>();
+    paintDetails.put(COLOR, "orange");
+    paintDetails.put(ID, id);
+    unitUnderTest.trackEvent(
+        new NeighborhoodSignalMessage(NeighborhoodSignalKey.PAINT, paintDetails));
+    unitUnderTest.reset();
+    // re-initialize
+    unitUnderTest.trackEvent(createInitEvent(id, Direction.EAST, 5, 10, 20));
+    // create move event
+    final HashMap<String, String> moveDetails = new HashMap<>();
+    moveDetails.put(DIRECTION, Direction.WEST.getDirectionString());
+    moveDetails.put(ID, id);
+    unitUnderTest.trackEvent(
+        new NeighborhoodSignalMessage(NeighborhoodSignalKey.MOVE, moveDetails));
+
+    final PainterLog painterLog = unitUnderTest.getNeighborhoodLog().getPainterLogs()[0];
+
+    assertEquals(false, painterLog.didActionOnce(NeighborhoodActionType.PAINT));
+    assertEquals(true, painterLog.didActionOnce(NeighborhoodActionType.MOVE));
   }
 
   private NeighborhoodSignalMessage createInitEvent(

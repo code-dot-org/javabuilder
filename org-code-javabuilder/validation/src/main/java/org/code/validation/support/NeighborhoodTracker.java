@@ -18,7 +18,7 @@ import org.code.validation.PainterLog;
 import org.code.validation.Position;
 
 public class NeighborhoodTracker {
-  private final Map<String, PainterTracker> painterTrackers;
+  private Map<String, PainterTracker> painterTrackers;
   private String[][] neighborhoodState;
   private boolean isInitialized;
 
@@ -81,6 +81,11 @@ public class NeighborhoodTracker {
       default:
         break;
     }
+  }
+
+  public void reset() {
+    this.painterTrackers = new HashMap<>();
+    this.isInitialized = false;
   }
 
   private void initializeGrid() {
