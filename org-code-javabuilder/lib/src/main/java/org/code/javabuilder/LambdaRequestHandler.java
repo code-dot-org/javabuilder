@@ -301,7 +301,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
         // so these don't need to be reported to the user.
         final InternalFacingRuntimeException internal =
             new InternalFacingRuntimeException("Exception during shutdown", e);
-        Logger.getLogger(MAIN_LOGGER).warning(internal.getLoggingString());
+        LoggerUtils.logTrackingException(internal);
       }
     }
 
@@ -374,7 +374,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
       // Handle any other exceptions so that shut down proceeds normally. If this is an
       // IllegalStateException, it indicates that the connection was already shut down for
       // some reason.
-      Logger.getLogger(MAIN_LOGGER).warning(JavabuilderThrowableMessageUtils.getLoggingString(e));
+      LoggerUtils.logTrackingException(e);
     }
     // clean up log handler to avoid duplicate logs in future runs.
     Handler[] allHandlers = Logger.getLogger(MAIN_LOGGER).getHandlers();
@@ -391,9 +391,9 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     } catch (IllegalStateException e) {
       // This can occur if the api client has been shut down, which we have seen happen on occasion.
       // Recreate the api client in this case. Log a warning so we can track when this happens.
-      Logger.getLogger(MAIN_LOGGER)
-          .warning(
-              "Received illegal state exception when trying to talk to API Gateway. Recreating api client.");
+      String warningType = "API Gateway client gone";
+      String detail = e.getMessage();
+      LoggerUtils.logWarning(warningType, detail);
       this.apiClient =
           AmazonApiGatewayManagementApiClientBuilder.standard()
               .withEndpointConfiguration(

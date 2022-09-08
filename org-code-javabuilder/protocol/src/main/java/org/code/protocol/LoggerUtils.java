@@ -105,11 +105,19 @@ public class LoggerUtils {
     if (e.getCause() != null) {
       eventData.put(LoggerConstants.CAUSE, e.getCause());
     }
+    eventData.put(LoggerConstants.TYPE, e.getClass().toString());
     Logger.getLogger(MAIN_LOGGER).warning(eventData.toString());
   }
 
   public static void logInfo(String info) {
     Logger.getLogger(MAIN_LOGGER).info(info);
+  }
+
+  public static void logWarning(String type, String detail) {
+    JSONObject eventData = new JSONObject();
+    eventData.put(LoggerConstants.TYPE, type);
+    eventData.put(LoggerConstants.DETAIL, detail);
+    Logger.getLogger(MAIN_LOGGER).warning(eventData.toString());
   }
 
   private static void sendDiskSpaceLogs(String type) {

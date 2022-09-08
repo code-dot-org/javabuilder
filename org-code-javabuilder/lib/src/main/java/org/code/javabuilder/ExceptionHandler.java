@@ -1,8 +1,5 @@
 package org.code.javabuilder;
 
-import static org.code.protocol.LoggerNames.MAIN_LOGGER;
-
-import java.util.logging.Logger;
 import org.code.javabuilder.util.LambdaUtils;
 import org.code.protocol.*;
 
@@ -57,7 +54,7 @@ public class ExceptionHandler {
     // Internal facing exceptions are caused by us (essentially an HTTP 5xx error), but don't affect
     // the user. Log only.
     if (e instanceof InternalFacingException || e instanceof InternalFacingRuntimeException) {
-      Logger.getLogger(MAIN_LOGGER).warning(((LoggableProtocol) e).getLoggingString());
+      LoggerUtils.logTrackingException(e);
       return;
     }
 

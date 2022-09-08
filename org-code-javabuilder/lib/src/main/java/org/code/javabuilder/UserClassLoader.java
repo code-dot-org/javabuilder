@@ -1,7 +1,5 @@
 package org.code.javabuilder;
 
-import static org.code.protocol.LoggerNames.MAIN_LOGGER;
-
 import java.lang.invoke.LambdaMetafactory;
 import java.lang.invoke.StringConcatFactory;
 import java.lang.reflect.InvocationTargetException;
@@ -11,9 +9,7 @@ import java.net.URLClassLoader;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Logger;
-import org.code.protocol.LoggerConstants;
-import org.json.JSONObject;
+import org.code.protocol.LoggerUtils;
 
 /**
  * Custom class loader for user-provided code. This class loader only allows certain classes to be
@@ -60,10 +56,7 @@ public class UserClassLoader extends URLClassLoader {
 
     // Log that we are going to throw an exception. Log as a warning
     // as it is most likely user error, but we want to track it.
-    JSONObject eventData = new JSONObject();
-    eventData.put(LoggerConstants.TYPE, "invalidClass");
-    eventData.put(LoggerConstants.CLASS_NAME, name);
-    Logger.getLogger(MAIN_LOGGER).warning(eventData.toString());
+    LoggerUtils.logWarning("Invalid Class", String.format("class name: %s", name));
     throw new ClassNotFoundException(name);
   }
 
