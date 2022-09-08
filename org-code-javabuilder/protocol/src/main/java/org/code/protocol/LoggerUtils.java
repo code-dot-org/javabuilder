@@ -103,7 +103,7 @@ public class LoggerUtils {
    */
   public static void logTrackingException(Throwable e) {
     JSONObject eventData = new JSONObject();
-    eventData.put(LoggerConstants.TYPE, e.getClass().toString());
+    eventData.put(LoggerConstants.TYPE, e.getClass().getName());
     eventData.put(LoggerConstants.EXCEPTION_MESSAGE, e.getMessage());
     if (e.getCause() != null) {
       eventData.put(LoggerConstants.CAUSE, e.getCause());
