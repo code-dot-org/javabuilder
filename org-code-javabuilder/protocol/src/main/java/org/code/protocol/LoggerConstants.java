@@ -15,6 +15,7 @@ public class LoggerConstants {
   public static final String MINI_APP_TYPE = "miniAppType";
   public static final String SESSION_METADATA = "sessionMetadata";
   public static final String DETAIL = "detail";
+  public static final String STACK_TRACE = "stackTrace";
 
   // Constants associated with disk space metrics
   public static final String DIRECTORY = "directory";

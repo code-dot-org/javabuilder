@@ -3,6 +3,8 @@ package org.code.protocol;
 import static org.code.protocol.LoggerNames.MAIN_LOGGER;
 
 import java.io.File;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.logging.Logger;
@@ -101,11 +103,15 @@ public class LoggerUtils {
    */
   public static void logTrackingException(Throwable e) {
     JSONObject eventData = new JSONObject();
+    eventData.put(LoggerConstants.TYPE, e.getClass().toString());
     eventData.put(LoggerConstants.EXCEPTION_MESSAGE, e.getMessage());
     if (e.getCause() != null) {
       eventData.put(LoggerConstants.CAUSE, e.getCause());
     }
-    eventData.put(LoggerConstants.TYPE, e.getClass().toString());
+    StringWriter sw = new StringWriter();
+    PrintWriter pw = new PrintWriter(sw);
+    e.printStackTrace(pw);
+    eventData.put(LoggerConstants.STACK_TRACE, sw.toString());
     Logger.getLogger(MAIN_LOGGER).warning(eventData.toString());
   }
 
