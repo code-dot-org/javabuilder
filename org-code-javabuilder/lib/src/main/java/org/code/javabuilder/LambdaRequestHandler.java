@@ -391,7 +391,7 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     } catch (IllegalStateException e) {
       // This can occur if the api client has been shut down, which we have seen happen on occasion.
       // Recreate the api client in this case. Log a warning so we can track when this happens.
-      String warningType = "API Gateway client gone";
+      String warningType = "API Gateway Client Gone";
       String detail = e.getMessage();
       LoggerUtils.logWarning(warningType, detail);
       this.apiClient =

@@ -37,7 +37,7 @@ public class AssetFileStubber {
     }
 
     LoggerUtils.logWarning(
-        "Unknown asset file",
+        "Unknown Asset File",
         String.format("Unknown file %s. Cannot provide stubbed asset URL.", filename));
     return null;
   }
