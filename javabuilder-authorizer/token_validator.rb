@@ -26,11 +26,16 @@ class TokenValidator
     # TODO: uncomment other throttling thresholds once we have fine-tuned those limits
     return error(TOKEN_USED) unless log_token
     return error(USER_BLOCKED) if user_blocked?
-    return error(CLASSROOM_BLOCKED) if teachers_blocked?
+    # return error(CLASSROOM_BLOCKED) if teachers_blocked?
     hourly_usage_response = user_usage(ONE_HOUR_SECONDS)
     return error(USER_BLOCKED) if user_over_hourly_limit?(hourly_usage_response)
     # return error(USER_BLOCKED) if user_over_daily_limit?
-    return error(CLASSROOM_BLOCKED) if teachers_over_hourly_limit?
+    # return error(CLASSROOM_BLOCKED) if teachers_over_hourly_limit?
+    
+    # for now, check and log if the teacher is over the hourly limit, but still 
+    # allow those users through until we fine tune the limit
+    teachers_over_hourly_limit?
+
 
     near_limit_detail = get_user_near_hourly_limit_detail(hourly_usage_response.count)
     log_requests
