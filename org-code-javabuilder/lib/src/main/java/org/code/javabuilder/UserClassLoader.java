@@ -56,7 +56,7 @@ public class UserClassLoader extends URLClassLoader {
 
     // Log that we are going to throw an exception. Log as a warning
     // as it is most likely user error, but we want to track it.
-    LoggerUtils.logWarning("Invalid Class", String.format("class name: %s", name));
+    LoggerUtils.logWarning("Invalid Class", name);
     throw new ClassNotFoundException(name);
   }
 
