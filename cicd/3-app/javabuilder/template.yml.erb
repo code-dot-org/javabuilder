@@ -914,6 +914,9 @@ Resources:
   
   <%=name%>ElevatedSevereErrorRateAlarm:
     Type: AWS::CloudWatch::CompositeAlarm
+    DependsOn:
+      - <%=name%>TenPercentSevereErrorRateAlarm
+      - <%=name%>MinimumUsageAlarm
     Properties:
         AlarmName: !Sub "${SubDomainName}_<%=name.downcase%>_high_severe_error_rate_composite"
         AlarmDescription: Alarm if Javabuilder severe error rate exceeds 10% every 5 minutes for 20
