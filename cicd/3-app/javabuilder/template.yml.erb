@@ -674,46 +674,47 @@ Resources:
     TenPercentSevereErrorRateAlarm: {Threshold: 10, AlarmName: 'ten_percent_severe_error_rate'},
     NinetyPercentSevereErrorRateAlarm: {Threshold: 90, AlarmName: 'ninety_percent_severe_error_rate'},
   }.each do |alarmTitle, config| -%>
-  <%=name%><%=alarmTitle%>:
-    Type: AWS::CloudWatch::Alarm
-    Properties:
-      AlarmName: !Sub "${SubDomainName}_<%=name.downcase%>_<%=config[:AlarmName]%>"
-      AlarmDescription: Alarm if Javabuilder severe error rate exceeds <%=config[:Threshold]%> for 20
-          minutes. Occasional spikes are expected, but a sustained high error rate
-          is an indication of an issue.
-      ActionsEnabled: false
-      EvaluationPeriods: 4
-      DatapointsToAlarm: 4
-      Threshold: <%=config[:Threshold]%>
-      ComparisonOperator: GreaterThanThreshold
-      TreatMissingData: notBreaching
-      Metrics:
-          - Id: e1
-            Label: Error Rate (%)
-            ReturnData: true
-            Expression: (m1 / m2) * 100
-          - Id: m1
-            ReturnData: false
-            MetricStat:
-                Metric:
-                    Namespace: Javabuilder
-                    MetricName: SevereError
-                    Dimensions:
-                      - Name: functionName
-                        Value: !Ref BuildAndRunJava<%=name%>ProjectFunction
-                Period: 300
-                Stat: Sum
-          - Id: m2
-            ReturnData: false
-            MetricStat:
-                Metric:
-                    Namespace: AWS/Lambda
-                    MetricName: Invocations
-                    Dimensions:
-                        - Name: FunctionName
+    <%=name%><%=alarmTitle%>:
+      Type: AWS::CloudWatch::Alarm
+      Properties:
+        AlarmName: !Sub "${SubDomainName}_<%=name.downcase%>_<%=config[:AlarmName]%>"
+        AlarmDescription: Alarm if Javabuilder severe error rate exceeds <%=config[:Threshold]%> for 20
+            minutes. Occasional spikes are expected, but a sustained high error rate
+            is an indication of an issue.
+        ActionsEnabled: false
+        EvaluationPeriods: 4
+        DatapointsToAlarm: 4
+        Threshold: <%=config[:Threshold]%>
+        ComparisonOperator: GreaterThanThreshold
+        TreatMissingData: notBreaching
+        Metrics:
+            - Id: e1
+              Label: Error Rate (%)
+              ReturnData: true
+              Expression: (m1 / m2) * 100
+            - Id: m1
+              ReturnData: false
+              MetricStat:
+                  Metric:
+                      Namespace: Javabuilder
+                      MetricName: SevereError
+                      Dimensions:
+                        - Name: functionName
                           Value: !Ref BuildAndRunJava<%=name%>ProjectFunction
-                Period: 300
-                Stat: Sum
+                  Period: 300
+                  Stat: Sum
+            - Id: m2
+              ReturnData: false
+              MetricStat:
+                  Metric:
+                      Namespace: AWS/Lambda
+                      MetricName: Invocations
+                      Dimensions:
+                          - Name: FunctionName
+                            Value: !Ref BuildAndRunJava<%=name%>ProjectFunction
+                  Period: 300
+                  Stat: Sum
+    <%end%>
 
   <%=name%>HighErrorRateAlarm:
     Type: AWS::CloudWatch::Alarm
