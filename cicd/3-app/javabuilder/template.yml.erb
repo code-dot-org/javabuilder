@@ -923,8 +923,8 @@ Resources:
         AlarmActions:
             - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:Javabuilder-high-error-rate"]
         AlarmRule: |-
-            ALARM(!Sub "${SubDomainName}_<%=name.downcase%>_ten_percent_severe_error_rate") AND 
-            ALARM(!Sub "${SubDomainName}_<%=name.downcase%>_minimum_usage")
+            ALARM(${SubDomainName}_<%=name.downcase%>_ten_percent_severe_error_rate) AND 
+            ALARM(${SubDomainName}_<%=name.downcase%>_minimum_usage)
         InsufficientDataActions: []
         OKActions: []
 
