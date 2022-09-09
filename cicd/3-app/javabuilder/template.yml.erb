@@ -670,16 +670,14 @@ Resources:
 
 <%JAVALAB_APP_TYPES.each do | name | -%>
 
-  <%=name%>HighSevereErrorRateAlarm:
+  <%=name%>TenPercentSevereErrorRateAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      AlarmName: !Sub "${SubDomainName}_<%=name.downcase%>_high_severe_error_rate"
-      AlarmDescription: Send page if Javabuilder severe error rate exceeds 10% for 20
+      AlarmName: !Sub "${SubDomainName}_<%=name.downcase%>_ten_percent_severe_error_rate"
+      AlarmDescription: Alarm if Javabuilder severe error rate exceeds 10% for 20
           minutes. Occasional spikes are expected, but a sustained high error rate
-          is an indication of an outage.
-      ActionsEnabled: true
-      AlarmActions:
-          - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:Javabuilder-high-error-rate"]
+          is an indication of an issue.
+      ActionsEnabled: false
       EvaluationPeriods: 4
       DatapointsToAlarm: 4
       Threshold: 10
@@ -892,6 +890,44 @@ Resources:
               ReturnData: true
               Expression: ANOMALY_DETECTION_BAND(m1, 8)
         ThresholdMetricId: ad1
+
+  <%=name%>MinimumUsageAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+        AlarmName: !Sub "${SubDomainName}_<%=name.downcase%>_minimum_usage"
+        AlarmDescription: This alarm is to be used as part of a composite alarm, not by itself.
+            It triggers if the usage is above a minimum threshold, so we do not alarm on error
+            rates if we have very low usage.
+        ActionsEnabled: false
+        MetricName: Invocations
+        Namespace: AWS/Lambda
+        Statistic: Sum
+        Dimensions:
+            - Name: FunctionName
+              Value: !Ref BuildAndRunJava<%=name%>ProjectFunction
+        Period: 300
+        EvaluationPeriods: 4
+        DatapointsToAlarm: 4
+        Threshold: 100
+        ComparisonOperator: GreaterThanOrEqualToThreshold
+        TreatMissingData: notBreaching
+  
+  <%=name%>ElevatedSevereErrorRatelarm
+    Type: AWS::CloudWatch::CompositeAlarm
+    Properties:
+        AlarmName: !Sub "${SubDomainName}_<%=name.downcase%>_high_severe_error_rate_composite"
+        AlarmDescription: Alarm if Javabuilder severe error rate exceeds 10% every 5 minutes for 20
+          minutes and there are at least 100 requests every 5 minutes. 
+          Occasional spikes are expected, but a sustained elevated error rate is an indication of an issue.
+        ActionsEnabled: true
+        AlarmActions:
+            - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:Javabuilder-high-error-rate"]
+        AlarmRule: |-
+            ALARM(!Sub "${SubDomainName}_<%=name.downcase%>_ten_percent_severe_error_rate") AND 
+            ALARM(!Sub "${SubDomainName}_<%=name.downcase%>_minimum_usage")
+        InsufficientDataActions: []
+        OKActions: []
+
 
 <%end -%>
 
