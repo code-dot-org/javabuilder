@@ -906,6 +906,7 @@ Resources:
   TOKEN_ID_ATTRIBUTE_NAME = 'token_id'
   ISSUED_AT_TIMESTAMP_ATTRIBUTE_NAME = 'issued_at'
   TIME_TO_LIVE_ATTRIBUTE_NAME = 'ttl'
+  CONTAINER_ID_AND_TRIGGER_COMPOSITE_ATTRIBUTE_NAME = 'container_id'
 -%>
   BlockedUsersTable:
     Type: AWS::DynamoDB::Table
@@ -973,6 +974,18 @@ Resources:
       TimeToLiveSpecification:
         AttributeName: <%=TIME_TO_LIVE_ATTRIBUTE_NAME%>
         Enabled: true
+
+  UnhealthyContainersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: !Sub "${SubDomainName}_unhealthy_containers"
+        KeySchema:
+          - AttributeName: <%=CONTAINER_ID_AND_TRIGGER_COMPOSITE_ATTRIBUTE_NAME%>
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: <%=CONTAINER_ID_AND_TRIGGER_COMPOSITE_ATTRIBUTE_NAME%>
+            AttributeType: S
 
   HighUsersBlockedAlarm:
     Type: AWS::CloudWatch::Alarm
