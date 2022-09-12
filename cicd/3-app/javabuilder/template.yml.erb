@@ -1015,7 +1015,7 @@ Resources:
   ClassroomBlockedAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-        AlarmName: !Sub "${SubDomainName}_classrooms_blocked"
+        AlarmName: !Sub "${SubDomainName}_classroom_blocked"
         AlarmDescription: A classroom was newly blocked by our threshold. Investigate if this is classroom should be blocked.
         ActionsEnabled: true
         OKActions: []
