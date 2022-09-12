@@ -677,9 +677,9 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     Properties:
       AlarmName: !Sub "${SubDomainName}_<%=name.downcase%>_<%=config[:AlarmName]%>"
-      AlarmDescription: Alarm if Javabuilder severe error rate exceeds <%=config[:Threshold]%> for 20
-          minutes. Occasional spikes are expected, but a sustained high error rate
-          is an indication of an issue.
+      AlarmDescription: Severe error rate in Javabuilder's <%=name%> build and run lambda (the core of
+          Javabuilder, which executes student <%=name%> code) exceeded <%=config[:Threshold]%>% for four
+          consecutive 5 minute periods.
       ActionsEnabled: false
       EvaluationPeriods: 4
       DatapointsToAlarm: 4
@@ -715,19 +715,22 @@ Resources:
                 Stat: Sum
 <%end%>
 
-  <%=name%>HighErrorRateAlarm:
+
+<%{
+  TwentyFivePercentErrorRateAlarm: {Threshold: 25, AlarmName: 'twenty_five_percent_error_rate'},
+  NinetyPercentErrorRateAlarm: {Threshold: 90, AlarmName: 'ninety_percent_error_rate'},
+}.each do |alarmTitle, config| -%>
+  <%=name%><%=alarmTitle%>:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      AlarmName: !Sub "${SubDomainName}_build_and_run_<%=name.downcase%>_lambda_error_rate"
+      AlarmName: !Sub "${SubDomainName}_build_and_run_<%=name.downcase%>_<%=config[:AlarmName]%>"
       AlarmDescription: Error rate in Javabuilder's <%=name%> build and run lambda (the core of
-          Javabuilder, which executes student <%=name%> code) exceeded 25% for four
+          Javabuilder, which executes student <%=name%> code) exceeded <%=config[:Threshold]%>% for four
           consecutive 5 minute periods.
-      ActionsEnabled: true
-      AlarmActions:
-        - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-build-and-run-lambda-error-rate"]
+      ActionsEnabled: false
       EvaluationPeriods: 4
       DatapointsToAlarm: 4
-      Threshold: 25
+      Threshold: <%=config[:Threshold]%>
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
       Metrics:
@@ -768,6 +771,7 @@ Resources:
                           Value: !Ref BuildAndRunJava<%=name%>ProjectFunction
                 Period: 300
                 Stat: TC(89000:)
+<%end%>
 
   <%=name%>SlowCleanupTimeAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -925,7 +929,7 @@ Resources:
         AlarmName: !Sub "${SubDomainName}_<%=name.downcase%>_elevated_severe_error_rate"
         AlarmDescription: Alarm if Javabuilder severe error rate exceeds 10% every 5 minutes for 20
           minutes and there are at least 100 requests every 5 minutes. 
-          Occasional spikes are expected, but a sustained elevated error rate is an indication of an issue.
+          Occasional spikes are expected, but a sustained elevated severe error rate is an indication of an issue.
         ActionsEnabled: true
         AlarmActions:
             - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:Javabuilder-high-error-rate"]
@@ -946,11 +950,50 @@ Resources:
         AlarmName: !Sub "${SubDomainName}_<%=name.downcase%>_high_severe_error_rate"
         AlarmDescription: Alarm if Javabuilder severe error rate exceeds 90% every 5 minutes for 20
           minutes and there are at least 100 requests every 5 minutes. 
-          Occasional spikes are expected, but a sustained high error rate is an indication of an outage.
+          Occasional spikes are expected, but a sustained high severe error rate is an indication of an outage.
         ActionsEnabled: true
         AlarmActions:
             - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:Javabuilder-high-error-rate"]
         AlarmRule: !Sub "ALARM(${SubDomainName}_<%=name.downcase%>_ninety_percent_severe_error_rate) AND 
+            ALARM(${SubDomainName}_<%=name.downcase%>_minimum_usage)"
+        InsufficientDataActions: []
+        OKActions: []
+  
+  <%=name%>ElevatedErrorRateAlarm:
+    Type: AWS::CloudWatch::CompositeAlarm
+    DependsOn:
+      - <%=name%>TwentyFivePercentErrorRateAlarm
+      - <%=name%>MinimumUsageAlarm
+    Properties:
+        AlarmName: !Sub "${SubDomainName}_<%=name.downcase%>_elevated_error_rate"
+        AlarmDescription: Alarm if Javabuilder severe error rate exceeds 25% every 5 minutes for 20
+          minutes and there are at least 100 requests every 5 minutes. 
+          Occasional spikes are expected, but a sustained elevated error rate is an indication of an issue.
+        ActionsEnabled: true
+        AlarmActions:
+            - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:Javabuilder-high-error-rate"]
+        AlarmRule: !Sub "ALARM(${SubDomainName}_<%=name.downcase%>_twenty_five_percent_error_rate) AND 
+            ALARM(${SubDomainName}_<%=name.downcase%>_minimum_usage)"
+        InsufficientDataActions: []
+        OKActions: []
+        ActionsSuppressor: !Sub "arn:aws:cloudwatch:${AWS::Region}:${AWS::AccountId}:alarm:${SubDomainName}_<%=name.downcase%>_high_error_rate"
+        ActionsSuppressorWaitPeriod: 120
+        ActionsSuppressorExtensionPeriod: 120
+
+  <%=name%>HighErrorRateAlarm:
+    Type: AWS::CloudWatch::CompositeAlarm
+    DependsOn:
+      - <%=name%>NinetyPercentErrorRateAlarm
+      - <%=name%>MinimumUsageAlarm
+    Properties:
+        AlarmName: !Sub "${SubDomainName}_<%=name.downcase%>_high_error_rate"
+        AlarmDescription: Alarm if Javabuilder error rate exceeds 90% every 5 minutes for 20
+          minutes and there are at least 100 requests every 5 minutes. 
+          Occasional spikes are expected, but a sustained high error rate is an indication of an outage.
+        ActionsEnabled: true
+        AlarmActions:
+            - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:Javabuilder-high-error-rate"]
+        AlarmRule: !Sub "ALARM(${SubDomainName}_<%=name.downcase%>_ninety_percent_error_rate) AND 
             ALARM(${SubDomainName}_<%=name.downcase%>_minimum_usage)"
         InsufficientDataActions: []
         OKActions: []
