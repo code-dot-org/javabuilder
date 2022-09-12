@@ -42,7 +42,7 @@ public class AWSSystemExitHelper implements SystemExitHelper {
       // Handle any other exceptions so that shut down proceeds normally. If this is an
       // IllegalStateException, it indicates that the connection was already shut down for
       // some reason.
-      LoggerUtils.logTrackingException(e);
+      LoggerUtils.logTrackingExceptionAsWarning(e);
     }
     // clean up log handler to avoid duplicate logs in future runs.
     Handler[] allHandlers = Logger.getLogger(MAIN_LOGGER).getHandlers();

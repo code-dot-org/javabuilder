@@ -28,11 +28,11 @@ public final class LambdaUtils {
     } catch (InternalFacingRuntimeException e) {
       // Unless logOnLostConnection is true, only log for messages that aren't CONNECTION_TERMINATED
       if (logOnLostConnection || !e.getMessage().equals(CONNECTION_TERMINATED)) {
-        LoggerUtils.logTrackingException(e);
+        LoggerUtils.logTrackingExceptionAsWarning(e);
       }
     } catch (Exception e) {
       // Catch any other exceptions here to prevent them from propagating.
-      LoggerUtils.logTrackingException(e);
+      LoggerUtils.logTrackingExceptionAsWarning(e);
     }
   }
 }

@@ -54,7 +54,7 @@ public class ExceptionHandler {
     // Internal facing exceptions are caused by us (essentially an HTTP 5xx error), but don't affect
     // the user. Log only.
     if (e instanceof InternalFacingException || e instanceof InternalFacingRuntimeException) {
-      LoggerUtils.logTrackingException(e);
+      LoggerUtils.logTrackingExceptionAsWarning(e);
       return;
     }
 

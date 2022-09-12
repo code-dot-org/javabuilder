@@ -101,7 +101,7 @@ public class LoggerUtils {
    * Exceptions logged in this way are intended to be informative, but should be removed after a
    * period of time.
    */
-  public static void logTrackingException(Throwable e) {
+  public static void logTrackingExceptionAsWarning(Throwable e) {
     JSONObject eventData = new JSONObject();
     eventData.put(LoggerConstants.TYPE, e.getClass().getName());
     eventData.put(LoggerConstants.EXCEPTION_MESSAGE, e.getMessage());
