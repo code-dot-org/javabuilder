@@ -11,14 +11,17 @@ public class ValidationProtocol extends JavabuilderSharedObject {
   private final Method mainMethod;
   private final NeighborhoodTracker neighborhoodTracker;
   private final SystemOutTracker systemOutTracker;
+  private final List<String> userClassNames;
 
   public ValidationProtocol(
       Method mainMethod,
       NeighborhoodTracker neighborhoodTracker,
-      SystemOutTracker systemOutTracker) {
+      SystemOutTracker systemOutTracker,
+      List<String> userClassNames) {
     this.mainMethod = mainMethod;
     this.neighborhoodTracker = neighborhoodTracker;
     this.systemOutTracker = systemOutTracker;
+    this.userClassNames = userClassNames;
   }
 
   public NeighborhoodLog getNeighborhoodLog() {
@@ -53,5 +56,9 @@ public class ValidationProtocol extends JavabuilderSharedObject {
       }
       throw new ValidationRuntimeException(ExceptionKey.ERROR_RUNNING_MAIN, cause);
     }
+  }
+
+  public List<String> getUserClassNames() {
+    return this.userClassNames;
   }
 }
