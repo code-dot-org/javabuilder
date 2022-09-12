@@ -58,18 +58,16 @@ There are two main ways to develop and run Javabuilder:
 ### Deploying a Dev Instance
 
 1. Make and commit your desired changes.
+1. Push your local changes to your feature branch.
 1. Deploy a development instance of Javabuilder, following the instructions here:
-   [Deploying Javabuilder](https://docs.google.com/document/d/1mMQK6HhniLsz9lynzhUcm7Tcw_2WVLBxADe0WzqL6rM/edit#bookmark=id.6objek4aiiu5).
-   The deployment should take around 10 minutes.
+   [Deploying a Development environment](https://github.com/code-dot-org/javabuilder/tree/main/cicd#deploying-an-development-environment).
 
 To connect your dev instance with Java Lab (Code Studio client) running on your local Dashboard server:   
 
-1. In the code-dot-org repo, edit the `javabuilder_url` value in
-   [cdo.rb](https://github.com/code-dot-org/code-dot-org/blob/665a45210d556b4c3d82d6ad2434617c8e2e5ea1/lib/cdo.rb#L127)
-   to point to your local dev deployment (this will typically be wss://javabuilder-<your name\>.dev-code.org).
-1. Edit the `javabuilder_upload_url` value in
-   [cdo.rb](https://github.com/code-dot-org/code-dot-org/blob/665a45210d556b4c3d82d6ad2434617c8e2e5ea1/lib/cdo.rb#L137)
-   to point to your local dev HTTP upload API (this will typically be https://javabuilder-<your name\>-http.dev-code.org/seedsources/sources.json).
+1. In your code-dot-org workspace, add an entry to your `locals.yml` file with your dev instance stack name:
+   ```
+   local_javabuilder_stack_name: 'javabuilder-dev-<your-branch-name>'
+   ```
 1. Launch dashboard using the instructions here:
    https://github.com/code-dot-org/code-dot-org/blob/staging/SETUP.md#overview
 1. Navigate to any Java Lab level, for example:
@@ -78,13 +76,10 @@ To connect your dev instance with Java Lab (Code Studio client) running on your 
 
 To connect with an adhoc:
 
-1. Make the same changes to cdo.rb listed above.
-1. Additionally, edit the `upgrade_insecure_requests` list to include
-   the deployed Javabuilder hostname.
-   [example](https://github.com/code-dot-org/code-dot-org/commit/945fa3ad38be6d85cb7c7aaeda5b3bf2e0fde60c#diff-19cc5be92c36ff06b63767f0ff922d2b9b7b9b8bebe4eaf38e0f331a14b0b528R53)
-1. Commit your changes and deploy the adhoc using the instructions in the
+1. Deploy the adhoc using the instructions in the
    [How to Provision an adhoc Environment](https://docs.google.com/document/d/1nWeQEmEQF1B2l93JTQPyeRpLEFzCzY5NdgJ8kgprcDk/edit)
    document.
+1. Add your dev instance stack name to the `locals.yml` on your adhoc machine like above.
 1. Navigate to any Java Lab level, for example:
        http://<your-adhoc-name\>.cdn-code.org/projects/javalab/new
 1. Click the "Run" button
