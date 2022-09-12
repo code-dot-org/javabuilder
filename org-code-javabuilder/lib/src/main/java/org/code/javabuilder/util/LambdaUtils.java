@@ -1,12 +1,10 @@
 package org.code.javabuilder.util;
 
 import static org.code.javabuilder.InternalFacingExceptionTypes.CONNECTION_TERMINATED;
-import static org.code.protocol.LoggerNames.MAIN_LOGGER;
 
-import java.util.logging.Logger;
 import org.code.javabuilder.InternalFacingRuntimeException;
 import org.code.protocol.ClientMessage;
-import org.code.protocol.JavabuilderThrowableMessageUtils;
+import org.code.protocol.LoggerUtils;
 import org.code.protocol.OutputAdapter;
 
 public final class LambdaUtils {
@@ -30,11 +28,11 @@ public final class LambdaUtils {
     } catch (InternalFacingRuntimeException e) {
       // Unless logOnLostConnection is true, only log for messages that aren't CONNECTION_TERMINATED
       if (logOnLostConnection || !e.getMessage().equals(CONNECTION_TERMINATED)) {
-        Logger.getLogger(MAIN_LOGGER).warning(e.getLoggingString());
+        LoggerUtils.logTrackingExceptionAsWarning(e);
       }
     } catch (Exception e) {
       // Catch any other exceptions here to prevent them from propagating.
-      Logger.getLogger(MAIN_LOGGER).warning(JavabuilderThrowableMessageUtils.getLoggingString(e));
+      LoggerUtils.logTrackingExceptionAsWarning(e);
     }
   }
 }

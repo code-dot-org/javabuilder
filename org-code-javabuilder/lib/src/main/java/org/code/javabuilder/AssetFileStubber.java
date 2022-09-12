@@ -1,8 +1,6 @@
 package org.code.javabuilder;
 
-import static org.code.protocol.LoggerNames.MAIN_LOGGER;
-
-import java.util.logging.Logger;
+import org.code.protocol.LoggerUtils;
 
 /**
  * Generates URLs for local, static asset files that can be used to stub asset file requests when
@@ -38,8 +36,9 @@ public class AssetFileStubber {
       return stubAudioUrl;
     }
 
-    Logger.getLogger(MAIN_LOGGER)
-        .warning(String.format("Unknown file %s. Cannot provide stubbed asset URL.", filename));
+    LoggerUtils.logWarning(
+        "Unknown Asset File",
+        String.format("Unknown file %s. Cannot provide stubbed asset URL.", filename));
     return null;
   }
 
