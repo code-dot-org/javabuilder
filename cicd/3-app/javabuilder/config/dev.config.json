@@ -6,7 +6,8 @@
     "ReservedConcurrentExecutions": "3",
     "LimitPerHour": "50",
     "LimitPerDay": "150",
-    "SilenceAlerts": "true"
+    "SilenceAlerts": "true",
+    "TeacherLimitPerHour": "10"
   },
   "Tags" : {
     "EnvType" : "development"

@@ -6,7 +6,8 @@
     "ReservedConcurrentExecutions": "1650",
     "LimitPerHour": "1000",
     "LimitPerDay": "5000",
-    "SilenceAlerts": "false"
+    "SilenceAlerts": "false",
+    "TeacherLimitPerHour": "25000"
   },
   "Tags" : {
     "EnvType" : "production"
