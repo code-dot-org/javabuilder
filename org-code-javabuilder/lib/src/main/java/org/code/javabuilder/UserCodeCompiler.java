@@ -1,12 +1,9 @@
 package org.code.javabuilder;
 
-import static org.code.protocol.LoggerNames.MAIN_LOGGER;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.*;
-import java.util.logging.Logger;
 import javax.tools.*;
 import javax.tools.JavaCompiler.CompilationTask;
 import org.code.javabuilder.util.JarUtils;
@@ -157,10 +154,10 @@ public class UserCodeCompiler {
    */
   private String getCompilerError(Diagnostic<? extends JavaFileObject> diagnostic) {
     if (diagnostic.getSource() == null || diagnostic.getLineNumber() == Diagnostic.NOPOS) {
-      Logger.getLogger(MAIN_LOGGER)
-          .warning(
-              "Falling back to default compiler error, diagnostic source was null or line number was -1. Diagnostic error code is "
-                  + diagnostic.getCode());
+      LoggerUtils.logWarning(
+          "Unknown Compiler Error",
+          "Falling back to default compiler error, diagnostic source was null or line number was -1. Diagnostic error code is "
+              + diagnostic.getCode());
       return diagnostic.toString();
     }
     // Subtract 1 from the line number to account for our auto-import

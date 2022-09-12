@@ -161,7 +161,7 @@ public class CodeExecutionManager {
       // If there was an issue clearing the temp directory, this may be because too many files are
       // open. Force the JVM to quit in order to release the resources for the next use of the
       // container. Temporarily logging the exception for investigation purposes.
-      LoggerUtils.logTrackingException(e);
+      LoggerUtils.logTrackingExceptionAsWarning(e);
       this.systemExitHelper.exit(TEMP_DIRECTORY_CLEANUP_ERROR_CODE);
     } finally {
       // Replace System in/out with original System in/out

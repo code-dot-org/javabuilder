@@ -3,6 +3,8 @@ package org.code.protocol;
 import static org.code.protocol.LoggerNames.MAIN_LOGGER;
 
 import java.io.File;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.logging.Logger;
@@ -99,17 +101,29 @@ public class LoggerUtils {
    * Exceptions logged in this way are intended to be informative, but should be removed after a
    * period of time.
    */
-  public static void logTrackingException(Throwable e) {
+  public static void logTrackingExceptionAsWarning(Throwable e) {
     JSONObject eventData = new JSONObject();
+    eventData.put(LoggerConstants.TYPE, e.getClass().getName());
     eventData.put(LoggerConstants.EXCEPTION_MESSAGE, e.getMessage());
     if (e.getCause() != null) {
       eventData.put(LoggerConstants.CAUSE, e.getCause());
     }
+    StringWriter sw = new StringWriter();
+    PrintWriter pw = new PrintWriter(sw);
+    e.printStackTrace(pw);
+    eventData.put(LoggerConstants.STACK_TRACE, sw.toString());
     Logger.getLogger(MAIN_LOGGER).warning(eventData.toString());
   }
 
   public static void logInfo(String info) {
     Logger.getLogger(MAIN_LOGGER).info(info);
+  }
+
+  public static void logWarning(String type, String detail) {
+    JSONObject eventData = new JSONObject();
+    eventData.put(LoggerConstants.TYPE, type);
+    eventData.put(LoggerConstants.DETAIL, detail);
+    Logger.getLogger(MAIN_LOGGER).warning(eventData.toString());
   }
 
   private static void sendDiskSpaceLogs(String type) {
