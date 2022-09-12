@@ -128,6 +128,7 @@ class TokenValidator
       # Log the count of requests per hour to a metric. We are logging this for now so we can determine if we
       # have set a good threshold for blocking classrooms.
       @metrics_reporter.log_count_with_value(CLASSROOM_HOURLY_REQUEST_COUNT, response.count)
+      puts "just logged count"
 
       if response.count > ENV['teacher_limit_per_hour'].to_i
         begin
