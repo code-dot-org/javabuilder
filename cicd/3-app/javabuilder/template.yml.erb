@@ -669,52 +669,51 @@ Resources:
         OKActions: []
 
 <%JAVALAB_APP_TYPES.each do | name | -%>
-
-  <%{
-    TenPercentSevereErrorRateAlarm: {Threshold: 10, AlarmName: 'ten_percent_severe_error_rate'},
-    NinetyPercentSevereErrorRateAlarm: {Threshold: 90, AlarmName: 'ninety_percent_severe_error_rate'},
-  }.each do |alarmTitle, config| -%>
-    <%=name%><%=alarmTitle%>:
-      Type: AWS::CloudWatch::Alarm
-      Properties:
-        AlarmName: !Sub "${SubDomainName}_<%=name.downcase%>_<%=config[:AlarmName]%>"
-        AlarmDescription: Alarm if Javabuilder severe error rate exceeds <%=config[:Threshold]%> for 20
-            minutes. Occasional spikes are expected, but a sustained high error rate
-            is an indication of an issue.
-        ActionsEnabled: false
-        EvaluationPeriods: 4
-        DatapointsToAlarm: 4
-        Threshold: <%=config[:Threshold]%>
-        ComparisonOperator: GreaterThanThreshold
-        TreatMissingData: notBreaching
-        Metrics:
-            - Id: e1
-              Label: Error Rate (%)
-              ReturnData: true
-              Expression: (m1 / m2) * 100
-            - Id: m1
-              ReturnData: false
-              MetricStat:
-                  Metric:
-                      Namespace: Javabuilder
-                      MetricName: SevereError
-                      Dimensions:
-                        - Name: functionName
+<%{
+  TenPercentSevereErrorRateAlarm: {Threshold: 10, AlarmName: 'ten_percent_severe_error_rate'},
+  NinetyPercentSevereErrorRateAlarm: {Threshold: 90, AlarmName: 'ninety_percent_severe_error_rate'},
+}.each do |alarmTitle, config| -%>
+  <%=name%><%=alarmTitle%>:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${SubDomainName}_<%=name.downcase%>_<%=config[:AlarmName]%>"
+      AlarmDescription: Alarm if Javabuilder severe error rate exceeds <%=config[:Threshold]%> for 20
+          minutes. Occasional spikes are expected, but a sustained high error rate
+          is an indication of an issue.
+      ActionsEnabled: false
+      EvaluationPeriods: 4
+      DatapointsToAlarm: 4
+      Threshold: <%=config[:Threshold]%>
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      Metrics:
+          - Id: e1
+            Label: Error Rate (%)
+            ReturnData: true
+            Expression: (m1 / m2) * 100
+          - Id: m1
+            ReturnData: false
+            MetricStat:
+                Metric:
+                    Namespace: Javabuilder
+                    MetricName: SevereError
+                    Dimensions:
+                      - Name: functionName
+                        Value: !Ref BuildAndRunJava<%=name%>ProjectFunction
+                Period: 300
+                Stat: Sum
+          - Id: m2
+            ReturnData: false
+            MetricStat:
+                Metric:
+                    Namespace: AWS/Lambda
+                    MetricName: Invocations
+                    Dimensions:
+                        - Name: FunctionName
                           Value: !Ref BuildAndRunJava<%=name%>ProjectFunction
-                  Period: 300
-                  Stat: Sum
-            - Id: m2
-              ReturnData: false
-              MetricStat:
-                  Metric:
-                      Namespace: AWS/Lambda
-                      MetricName: Invocations
-                      Dimensions:
-                          - Name: FunctionName
-                            Value: !Ref BuildAndRunJava<%=name%>ProjectFunction
-                  Period: 300
-                  Stat: Sum
-    <%end%>
+                Period: 300
+                Stat: Sum
+<%end%>
 
   <%=name%>HighErrorRateAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -934,7 +933,7 @@ Resources:
             ALARM(${SubDomainName}_<%=name.downcase%>_minimum_usage)"
         InsufficientDataActions: []
         OKActions: []
-        ActionsSuppressor: !Sub "arn:aws:cloudwatch:${AWS::Region}:${AWS::AccountId}:alarm:${SubDomainName}_<%=name.downcase%>_high_severe_error_rate
+        ActionsSuppressor: !Sub "arn:aws:cloudwatch:${AWS::Region}:${AWS::AccountId}:alarm:${SubDomainName}_<%=name.downcase%>_high_severe_error_rate"
         ActionsSuppressorWaitPeriod: 120
         ActionsSuppressorExtensionPeriod: 120
 
