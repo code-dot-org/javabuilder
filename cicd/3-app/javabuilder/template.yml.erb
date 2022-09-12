@@ -941,7 +941,7 @@ Resources:
         ActionsSuppressorWaitPeriod: 120
         ActionsSuppressorExtensionPeriod: 120
 
-  <%=name%>HighSevereErrorRateAlarm:
+  <%=name%>SevereErrorRateAlarm:
     Type: AWS::CloudWatch::CompositeAlarm
     DependsOn:
       - <%=name%>NinetyPercentSevereErrorRateAlarm
@@ -980,7 +980,7 @@ Resources:
         ActionsSuppressorWaitPeriod: 120
         ActionsSuppressorExtensionPeriod: 120
 
-  <%=name%>HighErrorRateAlarm:
+  <%=name%>ErrorRateAlarm:
     Type: AWS::CloudWatch::CompositeAlarm
     DependsOn:
       - <%=name%>NinetyPercentErrorRateAlarm
