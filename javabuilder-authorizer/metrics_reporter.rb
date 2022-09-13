@@ -31,6 +31,23 @@ class MetricsReporter
     @client.put_metric_data({namespace: "Javabuilder", metric_data: [metric_data]})
   end
 
+  def log_count_with_value(metric_name, value)
+    metric_data = {
+      metric_name: metric_name,
+      dimensions: [
+        {
+          name: "functionName",
+          value: function_name
+        }
+      ],
+      unit: "Count",
+      value: value
+    }
+
+    @client.put_metric_data({namespace: "Javabuilder", metric_data: [metric_data]})
+  end
+
+
   private
 
   # ARN is of the format arn:aws:lambda:{region}:{account_id}:function:{lambda_name}

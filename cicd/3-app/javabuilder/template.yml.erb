@@ -1012,12 +1012,11 @@ Resources:
         ComparisonOperator: GreaterThanThreshold
         TreatMissingData: notBreaching
 
-  HighClassroomsBlockedAlarm:
+  ClassroomBlockedAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-        AlarmName: !Sub "${SubDomainName}_high_classrooms_blocked"
-        AlarmDescription: Unusually high number of classrooms being newly blocked by our throttling
-            thresholds.
+        AlarmName: !Sub "${SubDomainName}_classroom_blocked"
+        AlarmDescription: A classroom was newly blocked by our threshold. Investigate if this is classroom should be blocked.
         ActionsEnabled: true
         OKActions: []
         AlarmActions:
@@ -1032,8 +1031,8 @@ Resources:
         Period: 60
         EvaluationPeriods: 1
         DatapointsToAlarm: 1
-        Threshold: 10
-        ComparisonOperator: GreaterThanThreshold
+        Threshold: 1
+        ComparisonOperator: GreaterThanOrEqualToThreshold
         TreatMissingData: notBreaching
 
   HighUnknownTokensAlarm:
