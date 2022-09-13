@@ -925,6 +925,7 @@ Resources:
     DependsOn:
       - <%=name%>TenPercentSevereErrorRateAlarm
       - <%=name%>MinimumUsageAlarm
+      - <%=name%>SevereErrorRateAlarm
     Properties:
         AlarmName: !Sub "${SubDomainName}_<%=name.downcase%>_elevated_severe_error_rate"
         AlarmDescription: Alarm if Javabuilder severe error rate exceeds 10% every 5 minutes for 20
@@ -964,6 +965,7 @@ Resources:
     DependsOn:
       - <%=name%>TwentyFivePercentErrorRateAlarm
       - <%=name%>MinimumUsageAlarm
+      - <%=name%>ErrorRateAlarm
     Properties:
         AlarmName: !Sub "${SubDomainName}_<%=name.downcase%>_elevated_error_rate"
         AlarmDescription: Alarm if Javabuilder severe error rate exceeds 25% every 5 minutes for 20
