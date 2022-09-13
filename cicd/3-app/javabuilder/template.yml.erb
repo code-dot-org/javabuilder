@@ -948,7 +948,7 @@ Resources:
       - <%=name%>NinetyPercentSevereErrorRateAlarm
       - <%=name%>MinimumUsageAlarm
     Properties:
-        AlarmName: !Sub "${SubDomainName}_<%=name.downcase%>_high_severe_error_rate"
+        AlarmName: !Sub "${SubDomainName}_<%=name.downcase%>_severe_error_rate"
         AlarmDescription: Alarm if Javabuilder severe error rate exceeds 90% every 5 minutes for 20
           minutes and there are at least 100 requests every 5 minutes. 
           Occasional spikes are expected, but a sustained high severe error rate is an indication of an outage.
@@ -988,7 +988,7 @@ Resources:
       - <%=name%>NinetyPercentErrorRateAlarm
       - <%=name%>MinimumUsageAlarm
     Properties:
-        AlarmName: !Sub "${SubDomainName}_<%=name.downcase%>_high_error_rate"
+        AlarmName: !Sub "${SubDomainName}_<%=name.downcase%>_error_rate"
         AlarmDescription: Alarm if Javabuilder error rate exceeds 90% every 5 minutes for 20
           minutes and there are at least 100 requests every 5 minutes. 
           Occasional spikes are expected, but a sustained high error rate is an indication of an outage.
