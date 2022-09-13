@@ -978,7 +978,7 @@ Resources:
             ALARM(${SubDomainName}_<%=name.downcase%>_minimum_usage)"
         InsufficientDataActions: []
         OKActions: []
-        ActionsSuppressor: !Sub "arn:aws:cloudwatch:${AWS::Region}:${AWS::AccountId}:alarm:${SubDomainName}_<%=name.downcase%>_high_error_rate"
+        ActionsSuppressor: !Sub "arn:aws:cloudwatch:${AWS::Region}:${AWS::AccountId}:alarm:${SubDomainName}_<%=name.downcase%>_error_rate"
         ActionsSuppressorWaitPeriod: 120
         ActionsSuppressorExtensionPeriod: 120
 
