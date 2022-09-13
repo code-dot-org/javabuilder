@@ -723,7 +723,7 @@ Resources:
   <%=name%><%=alarmTitle%>:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      AlarmName: !Sub "${SubDomainName}_build_and_run_<%=name.downcase%>_<%=config[:AlarmName]%>"
+      AlarmName: !Sub "${SubDomainName}_<%=name.downcase%>_<%=config[:AlarmName]%>"
       AlarmDescription: Error rate in Javabuilder's <%=name%> build and run lambda (the core of
           Javabuilder, which executes student <%=name%> code) exceeded <%=config[:Threshold]%>% for four
           consecutive 5 minute periods.
