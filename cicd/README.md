@@ -67,3 +67,12 @@ By setting the `TARGET_BRANCH` you can create a new CI/CD pipeline that watches 
 ```
 TARGET_BRANCH=mybranch cicd/2-cicd/deploy-cicd.sh
 ```
+
+## Debugging `template.yml.erb`
+If you are are updating the template file and don't want to wait for a full deploy cycle to validate the syntax, you can do the following from `cicd/3-app/javabuilder`:
+```
+erb -T - template.yml.erb > app-template-test.yml
+cfn-lint app-template-test.yml
+```
+This will run cloudformation lint on you template changes and give you a quicker feedback cycle when fixing up syntax.
+Just delete app-template-test.yml when you are done.
