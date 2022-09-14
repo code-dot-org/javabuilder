@@ -475,6 +475,3 @@ Resources:
             - codestar-notifications.amazonaws.com
           Action: SNS:Publish
           Resource: !Ref PipelineNotificationTopic
-          Condition:
-            StringEquals:
-              aws:SourceAccount: !Ref AWS::AccountId
