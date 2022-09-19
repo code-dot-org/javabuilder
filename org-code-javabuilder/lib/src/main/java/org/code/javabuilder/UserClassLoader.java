@@ -3,7 +3,6 @@ package org.code.javabuilder;
 import java.lang.invoke.LambdaMetafactory;
 import java.lang.invoke.StringConcatFactory;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.HashSet;
@@ -41,10 +40,16 @@ public class UserClassLoader extends URLClassLoader {
     }
     // If this is not a user provided class, we are loading something used by a user provided class.
     // If it is either an allowed class or package, we can load with our standard class loader.
-    // Otherwise, throw an exception.
     if (this.allowedClasses.contains(name)) {
       return this.approvedClassLoader.loadClass(name);
     }
+
+    // Validation code has a few additional allowed classes.
+    if (this.permissionLevel == RunPermissionLevel.VALIDATOR
+        && this.validatorAllowedClasses.contains(name)) {
+      return this.approvedClassLoader.loadClass(name);
+    }
+
     // allow .<specific-class> usage from allowed packages. If this code
     // has validation permissions, also check the
     // validator permissions allowed package list.
@@ -107,11 +112,7 @@ public class UserClassLoader extends URLClassLoader {
           String.class.getName(),
           StringBuffer.class.getName(),
           StringBuilder.class.getName(),
-          Throwable.class.getName(),
-          ThreadLocal.class.getName(), // EasyMock support
-          CloneNotSupportedException.class.getName(), // EasyMock support
-          Method.class.getName(), // EasyMock support
-          InvocationTargetException.class.getName()); // EasyMock support
+          Throwable.class.getName());
 
   // Allowed packages (any individual class is allowed from these classes)
   private static final String[] allowedPackages =
@@ -126,11 +127,16 @@ public class UserClassLoader extends URLClassLoader {
         "org.code.neighborhood.",
         "org.code.theater.",
         "org.code.lang",
-        "org.easymock.",
         "jdk.internal.reflect.SerializationConstructorAccessorImpl" // EasyMock support
       };
 
   // Allowed packages for code with elevated permissions, such as validation code.
   private static final String[] validatorAllowedPackages =
-      new String[] {"org.code.validation", "java.lang.reflect"};
+      new String[] {"org.code.validation", "java.lang.reflect", "org.easymock."};
+
+  private static final Set<String> validatorAllowedClasses =
+      Set.of(
+          ThreadLocal.class.getName(), // EasyMock support
+          CloneNotSupportedException.class.getName(), // EasyMock support
+          InvocationTargetException.class.getName()); // EasyMock support
 }
