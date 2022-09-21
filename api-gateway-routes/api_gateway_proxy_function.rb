@@ -80,6 +80,8 @@ def on_connect(event, context)
   elsif authorizer['mini_app_type'] == 'theater'
     function_name = ENV['BUILD_AND_RUN_THEATER_PROJECT_LAMBDA_ARN']
   else
+    # log so we know we saw an invalid mini app
+    put {connectionId: request_context["connectionId"], statusCode: 400, reason: "invalid mini-app"}
     return { statusCode: 400, body: "invalid mini-app" }
   end
 
