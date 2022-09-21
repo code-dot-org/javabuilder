@@ -81,7 +81,12 @@ def on_connect(event, context)
     function_name = ENV['BUILD_AND_RUN_THEATER_PROJECT_LAMBDA_ARN']
   else
     # log so we know we saw an invalid mini app
-    put {connectionId: request_context["connectionId"], statusCode: 400, reason: "invalid mini-app"}
+    log_data = {
+      connectionId: request_context["connectionId"], 
+      statusCode: 400, 
+      reason: "invalid mini-app"
+    }.to_json
+    puts log_data
     return { statusCode: 400, body: "invalid mini-app" }
   end
 
