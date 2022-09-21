@@ -541,46 +541,6 @@ Resources:
           ForwardedValues: {QueryString: true}
           ViewerProtocolPolicy: redirect-to-https
 
-  HighConcurrentExecutionsAlarm:
-    Type: AWS::CloudWatch::Alarm
-    Properties:
-      AlarmName: !Sub "${SubDomainName}_high_concurrent_executions"
-      AlarmDescription: !Sub |
-          This will page the DOTD if javabuilder usage exceeds 150 concurrent
-          executions for 10 minutes. Occasional spikes are expected, but
-          long-running high usage is an indication of an attack. Go to the
-          following URLs and set reserved concurrency to 50 immediately
-<%JAVALAB_APP_TYPES.each do | name | -%>
-          https://console.aws.amazon.com/lambda/home?region=${AWS::Region}#/functions/${BuildAndRunJava<%=name%>ProjectFunction}/edit/concurrency?tab=configure
-<%end -%>
-          Then post in #ap-csa-dev.
-      ActionsEnabled: true
-      AlarmActions:
-          - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:CDO-Urgent"]
-      EvaluationPeriods: 10
-      DatapointsToAlarm: 10
-      Threshold: 150
-      ComparisonOperator: GreaterThanThreshold
-      TreatMissingData: notBreaching
-      Metrics:
-        - Id: e1
-          Label: Concurrent Executions Across All Lambdas
-          ReturnData: true
-          Expression: SUM(METRICS())
-<%{Theater: "m2", Neighborhood: "m3", Console: "m4"}.each do |name, id| -%>
-        - Id: <%=id%>
-          ReturnData: false
-          MetricStat:
-              Metric:
-                  Namespace: AWS/Lambda
-                  MetricName: ConcurrentExecutions
-                  Dimensions:
-                      - Name: FunctionName
-                        Value: !Ref BuildAndRunJava<%=name%>ProjectFunction
-              Period: 60
-              Stat: Maximum
-<%end -%>
-
   HighWebsocketConnectionsAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
@@ -1008,7 +968,33 @@ Resources:
             ALARM(${SubDomainName}_<%=name.downcase%>_minimum_usage)"
         InsufficientDataActions: []
         OKActions: []
-
+  
+  <%=name%>HighConcurrentExecutionsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${SubDomainName}_<%=name.downcase%>_high_concurrent_executions"
+      AlarmDescription: !Sub |
+          This will page the DOTD if javabuilder usage exceeds 400 concurrent
+          executions for 10 minutes. Occasional spikes are expected, but
+          long-running high usage is an indication of an attack. Go to the
+          following URL and set reserved concurrency to 100 immediately
+          https://console.aws.amazon.com/lambda/home?region=${AWS::Region}#/functions/${BuildAndRunJava<%=name%>ProjectFunction}/edit/concurrency?tab=configure
+          Then post in #ap-csa-dev.
+      ActionsEnabled: true
+      AlarmActions:
+          - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:CDO-Urgent"]
+      EvaluationPeriods: 10
+      DatapointsToAlarm: 10
+      Period: 60
+      Threshold: 400
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      MetricName: ConcurrentExecutions
+      Namespace: AWS/Lambda
+      Statistic: Maximum
+      Dimensions:
+        - Name: functionName
+          Value: !Ref BuildAndRunJava<%=name%>ProjectFunctionAliaslive
 <%end -%>
 
 # We use shortened versions of names for partition keys (eg, user_id),
