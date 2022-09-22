@@ -315,7 +315,7 @@ Resources:
       DefaultRouteSettings:
         DetailedMetricsEnabled: true
         LoggingLevel: INFO
-        DataTraceEnabled: true
+        DataTraceEnabled: false
       AccessLogSettings:
         DestinationArn: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/apigateway/accesslog/${SubDomainName}.${BaseDomainName}"
         # TODO: Also log authorizer status code, authorizer error message, Javabuilder session id, and Origin.
