@@ -37,12 +37,14 @@ def on_connect(event, context)
   # connection is made.
   if authorization_error_response
     # Add some logging to make sure we know this is happening.
-    puts get_formatted_log("AUTHORIZATION ERROR: #{authorization_error_response[:body]}", request_context, nil)
+    puts get_formatted_log("AUTHORIZATION ERROR: #{authorization_error_response[:body]}", request_context, nil).to_json
     return { statusCode: 200, body: authorization_error_response[:body] }
   end
 
   # log entire request context object for debugging
-  puts get_formatted_log("CONNECT REQUEST CONTEXT: #{request_context}", request_context, nil)
+  request_context_log = get_formatted_log("CONNECT REQUEST CONTEXT", request_context, nil)
+  request_context_log[:request_context] = request_context
+  puts request_context_log.to_json
 
   # Return early if this is the user connectivity test
   if is_connectivity_test(authorizer)
@@ -82,7 +84,7 @@ def on_connect(event, context)
   else
     # log so we know we saw an invalid mini app
     invalid_message = "invalid mini-app"
-    puts get_formatted_log(invalid_message, request_context, 400)
+    puts get_formatted_log(invalid_message, request_context, 400).to_json
     return { statusCode: 400, body: invalid_message }
   end
 
@@ -204,7 +206,7 @@ def sqs_operation_with_retries(sqs_operation, request_context, *operation_params
     raise(e) if retries >= MAX_SQS_RETRIES
     retries += 1
     sleep(sleep_time)
-    puts get_formatted_log("RETRY #{retries}, just slept for #{sleep_time} seconds", request_context, nil)
+    puts get_formatted_log("RETRY #{retries}, just slept for #{sleep_time} seconds", request_context, nil).to_json
     # double sleep time for next retry
     sleep_time = sleep_time * 2
     retry
@@ -232,7 +234,7 @@ def delete_queue(sqs_client, event, context)
     # This exception is expected during connectivity tests,
     # so do not log in those cases.
     unless is_connectivity_test(authorizer)
-      puts get_formatted_log("DISCONNECT ERROR: #{e.message}", request_context, nil)
+      puts get_formatted_log("DISCONNECT ERROR: #{e.message}", request_context, nil).to_json
     end
   end
 end
@@ -243,5 +245,5 @@ def get_formatted_log(log_message, request_context, status_code)
     message: log_message
   }
   log_data[:status_code] = status_code if status_code
-  log_data.to_json
+  log_data
 end
