@@ -6,9 +6,8 @@ Javabuilder is a serverless AWS application with three main parts:
 1. The code execution layer, handled by AWS Lambda
 1. The data layer, handled by Code.org's Dashboard server
 
-For an in-depth description of how these three parts work together, see the
-[Code.org Javabuilder Service Infrastructure](https://docs.google.com/document/d/196aKj947BYZXZH3nGvzHprgWPOoy2Kw1x3sKgziUaSo/edit)
-doc.
+The Javabuilder dev doc can be found at
+[Code.org Javabuilder Service Infrastructure](https://docs.google.com/document/d/196aKj947BYZXZH3nGvzHprgWPOoy2Kw1x3sKgziUaSo/edit). This doc includes an in-depth description of how the three main parts of Javabuilder work together.
 
 ### Directory
 * [api-gateway-routes](https://github.com/code-dot-org/javabuilder/tree/main/api-gateway-routes)
