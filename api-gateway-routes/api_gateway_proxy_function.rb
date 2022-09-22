@@ -37,12 +37,12 @@ def on_connect(event, context)
   # connection is made.
   if authorization_error_response
     # Add some logging to make sure we know this is happening.
-    puts "AUTHORIZATION ERROR: #{authorization_error_response[:body]}"
+    p get_formatted_log("AUTHORIZATION ERROR: #{authorization_error_response[:body]}", request_context)
     return { statusCode: 200, body: authorization_error_response[:body] }
   end
 
-  # Add in some logging to make debugging easier
-  puts "CONNECT REQUEST CONTEXT: #{request_context}"
+  # log entire request context object for debugging
+  p get_formatted_log("CONNECT REQUEST CONTEXT: #{request_context}", request_context)
 
   # Return early if this is the user connectivity test
   if is_connectivity_test(authorizer)
@@ -81,13 +81,9 @@ def on_connect(event, context)
     function_name = ENV['BUILD_AND_RUN_THEATER_PROJECT_LAMBDA_ARN']
   else
     # log so we know we saw an invalid mini app
-    log_data = {
-      connectionId: request_context["connectionId"], 
-      statusCode: 400, 
-      reason: "invalid mini-app"
-    }.to_json
-    puts log_data
-    return { statusCode: 400, body: "invalid mini-app" }
+    invalid_message = "invalid mini-app"
+    p get_formatted_log(invalid_message, request_context, 400)
+    return { statusCode: 400, body: invalid_message }
   end
 
   response = lambda_client.invoke({
@@ -240,4 +236,12 @@ def delete_queue(sqs_client, event, context)
       puts "DISCONNECT ERROR: #{e.message}"
     end
   end
+
+  def get_formatted_log(log_message, request_context, status_code)
+    log_data = {
+      connectionId: request_context['connectionId'],
+      message: log_message
+    }
+    log_data[:status_code] = status_code if status_code
+    log_data
 end
