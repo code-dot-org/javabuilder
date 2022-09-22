@@ -541,94 +541,6 @@ Resources:
           ForwardedValues: {QueryString: true}
           ViewerProtocolPolicy: redirect-to-https
 
-  HighWebsocketConnectionsAlarm:
-    Type: AWS::CloudWatch::Alarm
-    Properties:
-      AlarmName: !Sub "${SubDomainName}_high_websocket_connections"
-      AlarmDescription: Significantly higher websocket connections than normal detected. Investigate if there is a DDOS.
-      ActionsEnabled: false
-      EvaluationPeriods: 20
-      DatapointsToAlarm: 20
-      ComparisonOperator: GreaterThanUpperThreshold
-      TreatMissingData: notBreaching
-      Metrics:
-          - Id: m1
-            ReturnData: true
-            MetricStat:
-                Metric:
-                    Namespace: AWS/ApiGateway
-                    MetricName: ConnectCount
-                    Dimensions:
-                        - Name: Stage
-                          Value: !Sub "${StageName}"
-                        - Name: ApiId
-                          Value: !Ref WebSocketApi
-                Period: 60
-                Stat: Sum
-          - Id: ad1
-            Label: ConnectCount (expected)
-            ReturnData: true
-            Expression: ANOMALY_DETECTION_BAND(m1, 8)
-      ThresholdMetricId: ad1
-
-  HighHttpRequestsAlarm:
-    Type: AWS::CloudWatch::Alarm
-    Properties:
-        AlarmName: !Sub "${SubDomainName}_high_http_requests"
-        AlarmDescription: Significantly higher HTTP requests than normal detected.
-            Investigate if there is a DDOS.
-        ActionsEnabled: true
-        OKActions: []
-        AlarmActions: []
-        InsufficientDataActions: []
-        EvaluationPeriods: 20
-        DatapointsToAlarm: 20
-        ComparisonOperator: GreaterThanUpperThreshold
-        TreatMissingData: notBreaching
-        Metrics:
-            - Id: m1
-              ReturnData: true
-              MetricStat:
-                  Metric:
-                      Namespace: AWS/ApiGateway
-                      MetricName: Count
-                      Dimensions:
-                          - Name: ApiId
-                            Value: !Ref HttpApi
-                  Period: 60
-                  Stat: Sum
-            - Id: ad1
-              Label: Count (expected)
-              ReturnData: true
-              Expression: ANOMALY_DETECTION_BAND(m1, 8)
-        ThresholdMetricId: ad1
-
-  HighUsageCompositeAlarm:
-    Type: AWS::CloudWatch::CompositeAlarm
-    DependsOn:
-      - ConsoleHighInvocationsAlarm
-      - HighHttpRequestsAlarm
-      - HighWebsocketConnectionsAlarm
-      - NeighborhoodHighInvocationsAlarm
-      - TheaterHighInvocationsAlarm
-    Properties:
-        ActionsEnabled: true
-        AlarmActions:
-          # TODO: after we have run at high usage for a while, consider re-enabling this alarm. Right now it is too noisy
-          # - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-high-usage"]
-          - !Ref AWS::NoValue
-        AlarmDescription: Send message if abnormally high Javabuilder usage detected.
-          Monitors usage across the HTTP API, WebSocket API, and all Build and Run
-          Lambdas.
-        AlarmName: !Sub "${SubDomainName}_high_usage_composite"
-        AlarmRule: !Sub "ALARM(${SubDomainName}_console_high_invocations) OR
-          ALARM(${SubDomainName}_high_http_requests) OR
-          ALARM(${SubDomainName}_high_websocket_connections) OR
-          ALARM(${SubDomainName}_neighborhood_high_invocations) OR
-          ALARM(${SubDomainName}_theater_high_invocations)"
-        InsufficientDataActions: []
-        OKActions: []
-
 <%JAVALAB_APP_TYPES.each do | name | -%>
 <%{
   TenPercentSevereErrorRateAlarm: {Threshold: 10, AlarmName: 'ten_percent_severe_error_rate'},
@@ -830,35 +742,6 @@ Resources:
         TreatMissingData: notBreaching
         Threshold: 2500
         Period: 60
-
-  <%=name%>HighInvocationsAlarm:
-    Type: AWS::CloudWatch::Alarm
-    Properties:
-        AlarmName: !Sub "${SubDomainName}_<%=name.downcase%>_high_invocations"
-        AlarmDescription: Significantly higher <%=name%> build and run invocations than
-            normal detected. Investigate if there is a DDOS.
-        ActionsEnabled: false
-        EvaluationPeriods: 20
-        DatapointsToAlarm: 20
-        ComparisonOperator: GreaterThanUpperThreshold
-        TreatMissingData: notBreaching
-        Metrics:
-            - Id: m1
-              ReturnData: true
-              MetricStat:
-                  Metric:
-                      Namespace: AWS/Lambda
-                      MetricName: Invocations
-                      Dimensions:
-                          - Name: FunctionName
-                            Value: !Ref BuildAndRunJava<%=name%>ProjectFunction
-                  Period: 60
-                  Stat: Sum
-            - Id: ad1
-              Label: Invocations (expected)
-              ReturnData: true
-              Expression: ANOMALY_DETECTION_BAND(m1, 8)
-        ThresholdMetricId: ad1
 
   <%=name%>MinimumUsageAlarm:
     Type: AWS::CloudWatch::Alarm
