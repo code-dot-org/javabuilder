@@ -1,10 +1,7 @@
 package org.code.javabuilder;
 
-import static org.code.protocol.LoggerNames.MAIN_LOGGER;
-
 import java.time.Clock;
 import java.time.Instant;
-import java.util.logging.Logger;
 import org.code.protocol.*;
 import org.json.JSONObject;
 
@@ -103,6 +100,6 @@ public class PerformanceTracker extends JavabuilderSharedObject {
       metricClient.publishCleanupTime(cleanupTime);
     }
 
-    Logger.getLogger(MAIN_LOGGER).info(logs.toString());
+    LoggerUtils.logInfo(logs.toString());
   }
 }

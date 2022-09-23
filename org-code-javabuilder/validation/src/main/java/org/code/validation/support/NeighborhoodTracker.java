@@ -1,17 +1,13 @@
 package org.code.validation.support;
 
 import static org.code.protocol.ClientMessageDetailKeys.*;
-import static org.code.protocol.LoggerNames.MAIN_LOGGER;
 
 import java.util.*;
 import java.util.function.Function;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.code.neighborhood.support.NeighborhoodSignalKey;
 import org.code.neighborhood.support.World;
-import org.code.protocol.ClientMessage;
-import org.code.protocol.ClientMessageType;
-import org.code.protocol.JavabuilderContext;
+import org.code.protocol.*;
 import org.code.validation.NeighborhoodLog;
 import org.code.validation.PainterEvent;
 import org.code.validation.PainterLog;
@@ -58,11 +54,12 @@ public class NeighborhoodTracker {
     }
 
     if (!this.painterTrackers.containsKey(id) || !this.isInitialized) {
-      Logger.getLogger(MAIN_LOGGER)
-          .severe(
-              String.format(
-                  "Error: received a painter event for an uninitialized painter: %s, %s\n",
-                  message.getValue(), message.getDetail()));
+      String loggingString =
+          String.format(
+              "Error: received a painter event for an uninitialized painter: %s, %s\n",
+              message.getValue(), message.getDetail());
+      LoggerUtils.logSevereError(
+          (JavabuilderThrowableMessage) message, loggingString, new Throwable());
       return;
     }
 
