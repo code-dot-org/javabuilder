@@ -54,12 +54,6 @@ public class NeighborhoodTracker {
     }
 
     if (!this.painterTrackers.containsKey(id) || !this.isInitialized) {
-      String loggingString =
-          String.format(
-              "Error: received a painter event for an uninitialized painter: %s, %s\n",
-              message.getValue(), message.getDetail());
-      LoggerUtils.logSevereError(
-          (JavabuilderThrowableMessage) message, loggingString, new Throwable());
       return;
     }
 
