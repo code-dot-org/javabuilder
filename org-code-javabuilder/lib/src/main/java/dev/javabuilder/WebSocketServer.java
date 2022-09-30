@@ -133,7 +133,7 @@ public class WebSocketServer {
 
   @OnClose
   public void myOnClose() {
-    Logger.getLogger(MAIN_LOGGER).info("WebSocket closed.");
+    LoggerUtils.logInfo("WebSocket closed.");
     PerformanceTracker performanceTracker =
         (PerformanceTracker) JavabuilderContext.getInstance().get(PerformanceTracker.class);
     performanceTracker.logPerformance();
