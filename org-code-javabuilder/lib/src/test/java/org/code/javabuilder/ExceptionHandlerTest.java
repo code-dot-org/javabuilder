@@ -1,46 +1,40 @@
 package org.code.javabuilder;
 
-import static org.code.protocol.LoggerNames.MAIN_LOGGER;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import java.io.IOException;
-import java.util.logging.Handler;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
 import org.code.protocol.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
 class ExceptionHandlerTest {
 
   private OutputAdapter outputAdapter;
   private SystemExitHelper systemExitHelper;
-  private Handler testHandler;
   private ArgumentCaptor<ClientMessage> messageCaptor;
   private ExceptionHandler unitUnderTest;
+  private MockedStatic<LoggerUtils> loggerUtilsMockedStatic;
 
   @BeforeEach
   public void setUp() {
     outputAdapter = mock(OutputAdapter.class);
     systemExitHelper = mock(SystemExitHelper.class);
-    testHandler = mock(Handler.class);
     messageCaptor = ArgumentCaptor.forClass(ClientMessage.class);
     unitUnderTest = new ExceptionHandler(outputAdapter, systemExitHelper);
     AWSMetricClient metricClient = mock(AWSMetricClient.class);
     JavabuilderContext.getInstance().register(MetricClient.class, metricClient);
-
-    Logger.getLogger(MAIN_LOGGER).addHandler(testHandler);
-    Logger.getLogger(MAIN_LOGGER).setUseParentHandlers(false);
+    loggerUtilsMockedStatic = Mockito.mockStatic(LoggerUtils.class);
   }
 
   @AfterEach
   public void tearDown() {
-    Logger.getLogger(MAIN_LOGGER).removeHandler(testHandler);
-    Logger.getLogger(MAIN_LOGGER).setUseParentHandlers(true);
+    loggerUtilsMockedStatic.close();
   }
 
   @Test
@@ -49,7 +43,7 @@ class ExceptionHandlerTest {
     unitUnderTest.handle(error);
 
     // Should log, notify user, and exit
-    verify(testHandler).publish(any(LogRecord.class));
+    loggerUtilsMockedStatic.verify(() -> LoggerUtils.logSevereError(any(), any(), any()));
     verify(outputAdapter).sendMessage(any(ClientMessage.class));
     verify(systemExitHelper).exit(error.getErrorCode());
   }
@@ -61,7 +55,7 @@ class ExceptionHandlerTest {
     unitUnderTest.handle(internal);
 
     // Should log and notify user
-    verify(testHandler).publish(any(LogRecord.class));
+    loggerUtilsMockedStatic.verify(() -> LoggerUtils.logSevereError(any(), any(), any()));
     verify(outputAdapter).sendMessage(any(ClientMessage.class));
   }
 
@@ -72,7 +66,7 @@ class ExceptionHandlerTest {
     unitUnderTest.handle(internal);
 
     // Should log only
-    verify(testHandler).publish(any(LogRecord.class));
+    loggerUtilsMockedStatic.verify(() -> LoggerUtils.logTrackingExceptionAsWarning(any()));
     verify(outputAdapter, never()).sendMessage(any(ClientMessage.class));
   }
 
@@ -83,7 +77,7 @@ class ExceptionHandlerTest {
     unitUnderTest.handle(userInitiated);
 
     // Should notify user only
-    verify(testHandler, never()).publish(any(LogRecord.class));
+    loggerUtilsMockedStatic.verify(() -> LoggerUtils.logSevereError(any(), any(), any()), never());
     verify(outputAdapter).sendMessage(any(ClientMessage.class));
   }
 
@@ -94,7 +88,7 @@ class ExceptionHandlerTest {
     unitUnderTest.handle(unknown);
 
     // Should log and notify user
-    verify(testHandler).publish(any(LogRecord.class));
+    loggerUtilsMockedStatic.verify(() -> LoggerUtils.logSevereError(any()));
     verify(outputAdapter).sendMessage(any(ClientMessage.class));
 
     final ClientMessage message = messageCaptor.getValue();
