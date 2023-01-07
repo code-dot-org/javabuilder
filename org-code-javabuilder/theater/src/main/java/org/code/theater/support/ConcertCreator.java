@@ -218,7 +218,13 @@ public class ConcertCreator implements AutoCloseable {
   private void writeImageAndAudioToFile() {
     this.progressPublisher.onPlay(this.audioWriter.getTotalAudioLength());
     this.gifWriter.writeToGif(this.image, 0);
-    this.audioWriter.writeToAudioStream();
+    boolean shouldSendAudio = true;
+    if (this.audioWriter.getTotalAudioLength() == 0) {
+      shouldSendAudio = false;
+      this.outputAdapter.sendMessage(new TheaterMessage(TheaterSignalKey.NO_AUDIO, null));
+    } else {
+      this.audioWriter.writeToAudioStream();
+    }
 
     // We must call close() before write so that the streams are flushed.
     this.close();
@@ -227,17 +233,21 @@ public class ConcertCreator implements AutoCloseable {
       String imageUrl =
           this.contentManager.writeToOutputFile(
               THEATER_IMAGE_NAME, this.imageOutputStream.toByteArray(), "image/gif");
-      String audioUrl =
-          this.contentManager.writeToOutputFile(
-              THEATER_AUDIO_NAME, this.audioOutputStream.toByteArray(), "audio/wav");
 
       HashMap<String, String> imageMessage = new HashMap<>();
       imageMessage.put(URL, imageUrl);
       this.outputAdapter.sendMessage(new TheaterMessage(TheaterSignalKey.VISUAL_URL, imageMessage));
 
-      HashMap<String, String> audioMessage = new HashMap<>();
-      audioMessage.put(URL, audioUrl);
-      this.outputAdapter.sendMessage(new TheaterMessage(TheaterSignalKey.AUDIO_URL, audioMessage));
+      if (shouldSendAudio) {
+        String audioUrl =
+            this.contentManager.writeToOutputFile(
+                THEATER_AUDIO_NAME, this.audioOutputStream.toByteArray(), "audio/wav");
+
+        HashMap<String, String> audioMessage = new HashMap<>();
+        audioMessage.put(URL, audioUrl);
+        this.outputAdapter.sendMessage(
+            new TheaterMessage(TheaterSignalKey.AUDIO_URL, audioMessage));
+      }
     } catch (JavabuilderException e) {
       // we should not hit this (caused by too many file writes)
       // in normal execution as it is only called via play,
