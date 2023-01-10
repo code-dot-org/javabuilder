@@ -56,9 +56,13 @@ Notes:
 * your branch name cannot contain the character `/`, as this causes issues in AWS. Note that resources will be deployed with the tags `{EnvType = development}`.
 * for now, these must deployed to the production AWS account. There is planned work to enable these to be deployed to the Dev AWS account.
 
-```
-TARGET_BRANCH=mybranch ENVIRONMENT_TYPE=development cicd/2-cicd/deploy-cicd.sh
-```
+Steps
+
+- First, login to the AWS production account. You can follow steps 1-3 [here](https://docs.google.com/document/d/1mMQK6HhniLsz9lynzhUcm7Tcw_2WVLBxADe0WzqL6rM/edit#bookmark=id.wtrskofu4rb9) to do so.
+- Then, run the following command with your branch name:
+   ```
+   TARGET_BRANCH=mybranch ENVIRONMENT_TYPE=development cicd/2-cicd/deploy-cicd.sh
+   ```
 
 ### Deploying a full CI/CD pipeline for a different branch
 
