@@ -76,7 +76,6 @@ public class AudioWriter {
   public void writeToAudioStream() {
     if (this.audioSamples.length == 0) {
       // Add a silent audio sample so we can build a valid wav file.
-      // TODO: Send a "No audio" signal instead
       this.audioSamples = new double[] {0};
     }
 
