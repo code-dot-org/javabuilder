@@ -4,13 +4,13 @@ Description: Provision an instance of the Javabuilder service. Empty the Content
 Parameters:
   BaseDomainName:
     Type: String
-    Description: Base domain name.
+    Description: Base domain name (e.g. 'code.org' in 'javabuilder.code.org').
   BaseDomainNameHostedZonedID:
     Type: String
     Description: AWS Route53 Hosted Zone ID for base domain name.
-  SubDomainName:
+  SubdomainName:
     Type: String
-    Description: Sub domain name for javabuilder service.
+    Description: Sub domain name for javabuilder service (e.g. 'javabuilder' in 'javabuilder.code.org').
   # LogBucket:
   #   Type: String
   #   Default: cdo-logs.s3.amazonaws.com
@@ -76,7 +76,7 @@ Resources:
     Type: AWS::Route53::RecordSet
     Properties:
       HostedZoneName: !Sub "${BaseDomainName}."
-      Name: !Sub "${SubDomainName}<%=config[:Suffix]%>.${BaseDomainName}"
+      Name: !Sub "${SubdomainName}<%=config[:Suffix]%>.${BaseDomainName}"
       Type: A
       AliasTarget:
         DNSName: !GetAtt <%=config[:Prefix]%>DomainName.RegionalDomainName
@@ -85,19 +85,19 @@ Resources:
   <%=config[:Prefix]%>DomainName:
     Type: AWS::ApiGatewayV2::DomainName
     Properties:
-      DomainName: !Sub "${SubDomainName}<%=config[:Suffix]%>.${BaseDomainName}"
+      DomainName: !Sub "${SubdomainName}<%=config[:Suffix]%>.${BaseDomainName}"
       DomainNameConfigurations:
         - EndpointType: REGIONAL
           CertificateArn: !Ref <%=config[:Prefix]%>Certificate
-          CertificateName: !Sub "${SubDomainName}<%=config[:Suffix]%>.${BaseDomainName}"
+          CertificateName: !Sub "${SubdomainName}<%=config[:Suffix]%>.${BaseDomainName}"
 
   <%=config[:Prefix]%>Certificate:
     Type: AWS::CertificateManager::Certificate
     Properties:
-      DomainName: !Sub "${SubDomainName}<%=config[:Suffix]%>.${BaseDomainName}"
+      DomainName: !Sub "${SubdomainName}<%=config[:Suffix]%>.${BaseDomainName}"
       ValidationMethod: DNS
       DomainValidationOptions:
-        - DomainName: !Sub "${SubDomainName}<%=config[:Suffix]%>.${BaseDomainName}"
+        - DomainName: !Sub "${SubdomainName}<%=config[:Suffix]%>.${BaseDomainName}"
           HostedZoneId: !Ref BaseDomainNameHostedZonedID
 
   <%=config[:Prefix]%>DomainNameAPIMapping:
@@ -106,14 +106,14 @@ Resources:
       - <%=config[:Prefix]%>Domain
     Properties:
       ApiId: !Ref <%=apiName%>API
-      DomainName: !Sub "${SubDomainName}<%=config[:Suffix]%>.${BaseDomainName}"
+      DomainName: !Sub "${SubdomainName}<%=config[:Suffix]%>.${BaseDomainName}"
       Stage: !Ref <%=apiName%>Stage
 
 <%end -%>
   HttpAPI:
     Type: AWS::ApiGatewayV2::Api
     Properties:
-      Name: !Sub "${SubDomainName}-http.${BaseDomainName}"
+      Name: !Sub "${SubdomainName}-http.${BaseDomainName}"
       ProtocolType: HTTP
 
   PutRoute:
@@ -165,7 +165,7 @@ Resources:
   HttpStageLogs:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub "/aws/apigateway/accesslog/${SubDomainName}-http.${BaseDomainName}"
+      LogGroupName: !Sub "/aws/apigateway/accesslog/${SubdomainName}-http.${BaseDomainName}"
 
   HttpStage:
     Type: AWS::ApiGatewayV2::Stage
@@ -179,7 +179,7 @@ Resources:
       DefaultRouteSettings:
         DetailedMetricsEnabled: true
       AccessLogSettings:
-        DestinationArn: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/apigateway/accesslog/${SubDomainName}-http.${BaseDomainName}"
+        DestinationArn: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/apigateway/accesslog/${SubdomainName}-http.${BaseDomainName}"
         # TODO: Also log authorizer status code, authorizer error message, Javabuilder session id, and Origin.
         Format: '{
             "host": "$context.domainName",
@@ -216,7 +216,7 @@ Resources:
   WebSocketAPI:
     Type: AWS::ApiGatewayV2::Api
     Properties:
-      Name: !Sub "${SubDomainName}.${BaseDomainName}"
+      Name: !Sub "${SubdomainName}.${BaseDomainName}"
       ProtocolType: WEBSOCKET
       RouteSelectionExpression: "$request.body.action"
 
@@ -317,7 +317,7 @@ Resources:
         LoggingLevel: INFO
         DataTraceEnabled: true
       AccessLogSettings:
-        DestinationArn: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/apigateway/accesslog/${SubDomainName}.${BaseDomainName}"
+        DestinationArn: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/apigateway/accesslog/${SubdomainName}.${BaseDomainName}"
         # TODO: Also log authorizer status code, authorizer error message, Javabuilder session id, and Origin.
         Format: '{
             "host": "$context.domainName",
@@ -470,7 +470,7 @@ Resources:
   ContentBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !If [IsDevCondition, !Sub "cdo-dev-${SubDomainName}-content", !Sub "cdo-${SubDomainName}-content"]
+      BucketName: !If [IsDevCondition, !Sub "cdo-dev-${SubdomainName}-content", !Sub "cdo-${SubdomainName}-content"]
       CorsConfiguration:
         CorsRules:
           - AllowedMethods: [GET, PUT]
@@ -500,17 +500,17 @@ Resources:
   ContentAPICertificate:
     Type: AWS::CertificateManager::Certificate
     Properties:
-      DomainName: !Sub "${SubDomainName}-content.${BaseDomainName}"
+      DomainName: !Sub "${SubdomainName}-content.${BaseDomainName}"
       ValidationMethod: DNS
       DomainValidationOptions:
-        - DomainName: !Sub "${SubDomainName}-content.${BaseDomainName}"
+        - DomainName: !Sub "${SubdomainName}-content.${BaseDomainName}"
           HostedZoneId: !Ref BaseDomainNameHostedZonedID
 
   ContentDomain:
     Type: AWS::Route53::RecordSet
     Properties:
       HostedZoneName: !Sub "${BaseDomainName}."
-      Name: !Sub "${SubDomainName}-content.${BaseDomainName}"
+      Name: !Sub "${SubdomainName}-content.${BaseDomainName}"
       Type: A
       AliasTarget:
         DNSName: !GetAtt ContentCDN.DomainName
@@ -521,7 +521,7 @@ Resources:
     Properties:
       DistributionConfig:
         Enabled: true
-        Aliases: [!Sub "${SubDomainName}-content.${BaseDomainName}"]
+        Aliases: [!Sub "${SubdomainName}-content.${BaseDomainName}"]
         ViewerCertificate:
           AcmCertificateArn: !Ref ContentAPICertificate
           MinimumProtocolVersion: TLSv1
@@ -533,7 +533,7 @@ Resources:
         # Logging:
         #   Bucket: !Ref LogBucket
         #   IncludeCookies: false
-        #   Prefix: !Sub "${SubDomainName}-content.${BaseDomainName}"
+        #   Prefix: !Sub "${SubdomainName}-content.${BaseDomainName}"
         Origins:
           - Id: ContentBucket
             DomainName: !GetAtt ContentBucket.DomainName
@@ -549,7 +549,7 @@ Resources:
   HighConcurrentExecutionsAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      AlarmName: !Sub "${SubDomainName}_high_concurrent_executions"
+      AlarmName: !Sub "${SubdomainName}_high_concurrent_executions"
       AlarmDescription: !Sub |
           This will page the DOTD if javabuilder usage exceeds 50 concurrent
           executions for 10 minutes. Occasional spikes are expected, but
@@ -589,7 +589,7 @@ Resources:
   HighWebsocketConnectionsAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      AlarmName: !Sub "${SubDomainName}_high_websocket_connections"
+      AlarmName: !Sub "${SubdomainName}_high_websocket_connections"
       AlarmDescription: Significantly higher websocket connections than normal detected. Investigate if there is a DDOS.
       ActionsEnabled: false
       EvaluationPeriods: 20
@@ -619,7 +619,7 @@ Resources:
   HighHttpRequestsAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-        AlarmName: !Sub "${SubDomainName}_high_http_requests"
+        AlarmName: !Sub "${SubdomainName}_high_http_requests"
         AlarmDescription: Significantly higher HTTP requests than normal detected.
             Investigate if there is a DDOS.
         ActionsEnabled: true
@@ -664,12 +664,12 @@ Resources:
         AlarmDescription: Send message if abnormally high Javabuilder usage detected.
             Monitors usage across the HTTP API, WebSocket API, and all Build and Run
             Lambdas.
-        AlarmName: !Sub "${SubDomainName}_high_usage_composite"
-        AlarmRule: !Sub "ALARM(${SubDomainName}_console_high_invocations) OR
-            ALARM(${SubDomainName}_high_http_requests) OR
-            ALARM(${SubDomainName}_high_websocket_connections) OR
-            ALARM(${SubDomainName}_neighborhood_high_invocations) OR
-            ALARM(${SubDomainName}_theater_high_invocations)"
+        AlarmName: !Sub "${SubdomainName}_high_usage_composite"
+        AlarmRule: !Sub "ALARM(${SubdomainName}_console_high_invocations) OR
+            ALARM(${SubdomainName}_high_http_requests) OR
+            ALARM(${SubdomainName}_high_websocket_connections) OR
+            ALARM(${SubdomainName}_neighborhood_high_invocations) OR
+            ALARM(${SubdomainName}_theater_high_invocations)"
         InsufficientDataActions: []
         OKActions: []
 
@@ -678,7 +678,7 @@ Resources:
   <%=name%>HighSevereErrorRateAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      AlarmName: !Sub "${SubDomainName}_<%=name.downcase%>_high_severe_error_rate"
+      AlarmName: !Sub "${SubdomainName}_<%=name.downcase%>_high_severe_error_rate"
       AlarmDescription: Send page if Javabuilder severe error rate exceeds 10% for 20
           minutes. Occasional spikes are expected, but a sustained high error rate
           is an indication of an outage.
@@ -721,7 +721,7 @@ Resources:
   <%=name%>HighErrorRateAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      AlarmName: !Sub "${SubDomainName}_build_and_run_<%=name.downcase%>_lambda_error_rate"
+      AlarmName: !Sub "${SubdomainName}_build_and_run_<%=name.downcase%>_lambda_error_rate"
       AlarmDescription: Error rate in Javabuilder's <%=name%> build and run lambda (the core of
           Javabuilder, which executes student <%=name%> code) exceeded 10% for four
           consecutive 5 minute periods.
@@ -775,7 +775,7 @@ Resources:
   <%=name%>SlowCleanupTimeAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      AlarmName: !Sub "${SubDomainName}_<%=name.downcase%>_slow_cleanup_time"
+      AlarmName: !Sub "${SubdomainName}_<%=name.downcase%>_slow_cleanup_time"
       AlarmDescription: Average cleanup time in Javabuilder's <%=name%> build and run lambda was high for at 
         least 15 out of the last 20 minutes. Investigate if there has been a performance regression.
       ActionsEnabled: true
@@ -799,7 +799,7 @@ Resources:
   <%=name%>SlowColdBootTimeAlarm:    
     Type: AWS::CloudWatch::Alarm
     Properties:
-      AlarmName: !Sub "${SubDomainName}_<%=name.downcase%>_slow_cold_boot_time"
+      AlarmName: !Sub "${SubdomainName}_<%=name.downcase%>_slow_cold_boot_time"
       AlarmDescription: Average cold boot time in Javabuilder's <%=name%> build and run lambda was high for at 
         least 15 out of the last 20 minutes. Investigate if there has been a performance regression.
       ActionsEnabled: true
@@ -823,7 +823,7 @@ Resources:
   <%=name%>SlowInitializationTimeAlarm:    
     Type: AWS::CloudWatch::Alarm
     Properties:
-      AlarmName: !Sub "${SubDomainName}_<%=name.downcase%>_slow_initialization_time"
+      AlarmName: !Sub "${SubdomainName}_<%=name.downcase%>_slow_initialization_time"
       AlarmDescription: Average initialization time in Javabuilder's <%=name%> build and run lambda was high for at 
         least 15 out of the last 20 minutes. Investigate if there has been a performance regression.
       ActionsEnabled: true
@@ -848,7 +848,7 @@ Resources:
   <%=name%>SlowTransitionTimeAlarm:    
     Type: AWS::CloudWatch::Alarm
     Properties:
-        AlarmName: !Sub "${SubDomainName}_<%=name.downcase%>_slow_transition_time"
+        AlarmName: !Sub "${SubdomainName}_<%=name.downcase%>_slow_transition_time"
         AlarmDescription: Average transition time in Javabuilder's <%=name%> build and run lambda was high for at 
           least 15 out of the last 20 minutes. Investigate if there has been a performance regression.
         ActionsEnabled: true
@@ -872,7 +872,7 @@ Resources:
   <%=name%>HighInvocationsAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-        AlarmName: !Sub "${SubDomainName}_<%=name.downcase%>_high_invocations"
+        AlarmName: !Sub "${SubdomainName}_<%=name.downcase%>_high_invocations"
         AlarmDescription: Significantly higher <%=name%> build and run invocations than
             normal detected. Investigate if there is a DDOS.
         ActionsEnabled: false
@@ -915,7 +915,7 @@ Resources:
   BlockedUsersTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Sub "${SubDomainName}_blocked_users"
+      TableName: !Sub "${SubdomainName}_blocked_users"
       KeySchema:
         - AttributeName: <%=DOMAIN_AND_USER_ID_COMPOSITE_ATTRIBUTE_NAME%>
           KeyType: HASH
@@ -929,7 +929,7 @@ Resources:
   TokenStatusTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Sub "${SubDomainName}_tokens"
+      TableName: !Sub "${SubdomainName}_tokens"
       KeySchema:
         - AttributeName: <%=TOKEN_ID_ATTRIBUTE_NAME%>
           KeyType: HASH
@@ -944,7 +944,7 @@ Resources:
   UserRequestsTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Sub "${SubDomainName}_user_requests"
+      TableName: !Sub "${SubdomainName}_user_requests"
       KeySchema:
         - AttributeName: <%=DOMAIN_AND_USER_ID_COMPOSITE_ATTRIBUTE_NAME%>
           KeyType: HASH
@@ -963,7 +963,7 @@ Resources:
   TeacherAssociatedRequestsTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Sub "${SubDomainName}_teacher_associated_requests"
+      TableName: !Sub "${SubdomainName}_teacher_associated_requests"
       KeySchema:
         - AttributeName: <%=DOMAIN_AND_SECTION_OWNER_ID_COMPOSITE_ATTRIBUTE_NAME%>
           KeyType: HASH
@@ -982,7 +982,7 @@ Resources:
   HighUsersBlockedAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-        AlarmName: !Sub "${SubDomainName}_high_users_blocked"
+        AlarmName: !Sub "${SubdomainName}_high_users_blocked"
         AlarmDescription: Unusually high number of users being blocked by our throttling
             thresholds.
         ActionsEnabled: true
@@ -1006,7 +1006,7 @@ Resources:
   HighClassroomsBlockedAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-        AlarmName: !Sub "${SubDomainName}_high_classrooms_blocked"
+        AlarmName: !Sub "${SubdomainName}_high_classrooms_blocked"
         AlarmDescription: Unusually high number of classrooms being blocked by our throttling
             thresholds.
         ActionsEnabled: true
@@ -1030,7 +1030,7 @@ Resources:
   HighUnknownTokensAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-        AlarmName: !Sub "${SubDomainName}_high_unknown_tokens"
+        AlarmName: !Sub "${SubdomainName}_high_unknown_tokens"
         AlarmDescription: Websocket authorizer is receiving connection requests using
             tokens that did not pass through the HTTP authorizer first.
         ActionsEnabled: true
@@ -1054,7 +1054,7 @@ Resources:
   HighUnvettedTokensAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-        AlarmName: !Sub "${SubDomainName}_high_unvetted_tokens"
+        AlarmName: !Sub "${SubdomainName}_high_unvetted_tokens"
         AlarmDescription: Websocket authorizer is receiving connection requests using
             tokens that were observed but not vetted as valid by the HTTP authorizer.
         ActionsEnabled: true
@@ -1078,7 +1078,7 @@ Resources:
   WebsocketHighUsedTokensAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-        AlarmName: !Sub "${SubDomainName}_websocket_high_used_tokens"
+        AlarmName: !Sub "${SubdomainName}_websocket_high_used_tokens"
         AlarmDescription: Websocket authorizer is receiving connection requests using
             tokens have already been used.
         ActionsEnabled: true
@@ -1102,7 +1102,7 @@ Resources:
   HttpHighUsedTokensAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-        AlarmName: !Sub "${SubDomainName}_http_high_used_tokens"
+        AlarmName: !Sub "${SubdomainName}_http_high_used_tokens"
         AlarmDescription: HTTP authorizer is receiving connection requests using
             tokens have already been used.
         ActionsEnabled: true
@@ -1126,4 +1126,4 @@ Resources:
 Outputs:
   JavabuilderURL:
     Value:
-      Fn::Sub: wss://${SubDomainName}.${BaseDomainName}
+      Fn::Sub: wss://${SubdomainName}.${BaseDomainName}
