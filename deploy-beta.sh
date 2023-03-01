@@ -19,7 +19,7 @@ BASE_DOMAIN=${BASE_DOMAIN-'dev-code.org'}
 # Default to lookup the hosted zone by name.
 BASE_DOMAIN_HOSTED_ZONE_ID=${BASE_DOMAIN_HOSTED_ZONE_ID-$(get_hosted_zone "${BASE_DOMAIN}")}
 
-# Use sub domain name as the CloudFormation Stack name.
+# Use subdomain name as the CloudFormation Stack name.
 STACK=${SUBDOMAIN}
 
 PROVISIONED_CONCURRENT_EXECUTIONS=${PROVISIONED_CONCURRENT_EXECUTIONS-'1'}
