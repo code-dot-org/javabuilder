@@ -38,6 +38,8 @@ Finally, all of the above need some Roles to exist in the AWS accounts before we
 
 ### Deploying the `main` CI/CD Pipeline
 
+_Note: If you receive errors with the 'aws-google' gem, you may need to switch to Ruby 2.7.5 first, via `rbenv local 2.7.5`._
+
 1. Create/Update the Setup stack (one time, or when changes to the Setup stack occur)
    `cicd/1-setup/deploy-cicd-dependencies.sh` (with elevated AWS permissions)
 2. Create/Update the CI/CD stack (one time, or when changes to the CI/CD stack occur)
