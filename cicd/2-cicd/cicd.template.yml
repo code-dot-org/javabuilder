@@ -314,7 +314,7 @@ Resources:
                   TemplateConfiguration: appBuildResults::cicd/3-app/javabuilder/dev.config.json
                   ParameterOverrides: !Join
                       - ''
-                      - - '{ "SubDomainName": "'
+                      - - '{ "SubdomainName": "'
                         - !Sub "javabuilder-dev-${GitHubBranch}"
                         - '" }'
                   Capabilities: CAPABILITY_AUTO_EXPAND
@@ -340,7 +340,7 @@ Resources:
                   TemplateConfiguration: appBuildResults::cicd/3-app/javabuilder/test.config.json
                   ParameterOverrides: !Join
                       - ''
-                      - - '{ "SubDomainName": "'
+                      - - '{ "SubdomainName": "'
                         - !If [ TargetsMainBranch, 'javabuilder-test', !Sub 'javabuilder-${GitHubBranch}-test' ]
                         - '" }'
                   Capabilities: CAPABILITY_AUTO_EXPAND
@@ -389,7 +389,7 @@ Resources:
                   TemplateConfiguration: appBuildResults::cicd/3-app/javabuilder/production.config.json
                   ParameterOverrides: !Join
                     - ''
-                    - - '{ "SubDomainName": "'
+                    - - '{ "SubdomainName": "'
                       - !If [ TargetsMainBranch, 'javabuilder', !Sub 'javabuilder-${GitHubBranch}' ]
                       - '" }'
                   Capabilities: CAPABILITY_AUTO_EXPAND

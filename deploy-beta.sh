@@ -3,7 +3,7 @@
 # Create/Update a Javabuilder CloudFormation stack.
 
 TEMPLATE_BUCKET=${TEMPLATE_BUCKET?Required}
-SUB_DOMAIN=${SUB_DOMAIN?Required}
+SUBDOMAIN=${SUBDOMAIN?Required}
 
 get_hosted_zone() {
   aws route53 list-hosted-zones-by-name \
@@ -19,8 +19,8 @@ BASE_DOMAIN=${BASE_DOMAIN-'dev-code.org'}
 # Default to lookup the hosted zone by name.
 BASE_DOMAIN_HOSTED_ZONE_ID=${BASE_DOMAIN_HOSTED_ZONE_ID-$(get_hosted_zone "${BASE_DOMAIN}")}
 
-# Use sub domain name as the CloudFormation Stack name.
-STACK=${SUB_DOMAIN}
+# Use subdomain name as the CloudFormation Stack name.
+STACK=${SUBDOMAIN}
 
 PROVISIONED_CONCURRENT_EXECUTIONS=${PROVISIONED_CONCURRENT_EXECUTIONS-'1'}
 RESERVED_CONCURRENT_EXECUTIONS=${RESERVED_CONCURRENT_EXECUTIONS-'3'}
@@ -56,7 +56,7 @@ fi
 aws cloudformation deploy \
   --s3-bucket ${TEMPLATE_BUCKET} \
   --template-file ${OUTPUT_TEMPLATE} \
-  --parameter-overrides SubDomainName=$SUB_DOMAIN BaseDomainName=$BASE_DOMAIN BaseDomainNameHostedZonedID=$BASE_DOMAIN_HOSTED_ZONE_ID \
+  --parameter-overrides SubdomainName=$SUBDOMAIN BaseDomainName=$BASE_DOMAIN BaseDomainNameHostedZonedID=$BASE_DOMAIN_HOSTED_ZONE_ID \
     ProvisionedConcurrentExecutions=$PROVISIONED_CONCURRENT_EXECUTIONS ReservedConcurrentExecutions=$RESERVED_CONCURRENT_EXECUTIONS \
     LimitPerHour=$LIMIT_PER_HOUR LimitPerDay=$LIMIT_PER_DAY TeacherLimitPerHour=$TEACHER_LIMIT_PER_HOUR SilenceAlerts=$SILENCE_ALERTS \
   --stack-name ${STACK} \

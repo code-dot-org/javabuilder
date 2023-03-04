@@ -47,9 +47,9 @@ Finally, all of the above need some Roles to exist in the AWS accounts before we
    2. Push a commit to `main`
    3. Press the "Release Change" button on the Pipeline overview page in the AWS Console.
 
-### Deploying an Development environment
+### Deploying a Development environment
 
-You can create an Development (aka 'adhoc') environment by setting the `ENVIRONMENT_TYPE` flag on the cicd deploy script. This will create a CI/CD pipeline that will watch for updates to your `TARGET_BRANCH`. The difference between a production and a development pipeline can be seen in "cicd.template.yml" by following where the `Conditions` are used. In short, an development pipeline creates a single environment using "dev.config.yml", while a production deployment will create a Test environment and a Prod environment using the relevent config files, running automated tests between them.
+You can create a Development (aka 'adhoc') environment by setting the `ENVIRONMENT_TYPE` flag on the cicd deploy script. This will create a CI/CD pipeline that will watch for updates to your `TARGET_BRANCH`. The difference between a production and a development pipeline can be seen in "cicd.template.yml" by following where the `Conditions` are used. In short, an development pipeline creates a single environment using "dev.config.yml", while a production deployment will create a Test environment and a Prod environment using the relevent config files, running automated tests between them.
 
 Notes:
 
