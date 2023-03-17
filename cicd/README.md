@@ -20,7 +20,7 @@ We also keep some CodeBuild configuration here, as this code tends to be more co
 
 ### 2 - CI/CD
 
-In order to trigger the application resources to be updated upon changes to the source code, we need CI/CD resources. This is accomplished by a CloudFormation template that defines a stack of resources, primarily including a CodeBuild project and a CodePipeline pipeline which update the [App Stack](#3---app). These CI/CD resources only need to be deployed once per deployable branch, `main` in our case (we might choose to create development environments by launching a new CI/CD stack targeting a different branch).
+In order to trigger the application resources to be updated upon changes to the source code, we need CI/CD resources. This is accomplished by a CloudFormation template that defines a stack of resources, primarily including a CodeBuild project and a CodePipeline pipeline which update the [App Stack](#3---app). These CI/CD resources only need to be created once per deployable branch, `main` in our case (we might choose to create development environments by launching a new CI/CD stack targeting a different branch).
 
 These resources are deployed manually when changes occur. We could make yet another CodePipeline resource in the [Setup](#1---setup) section, but not today.
 
