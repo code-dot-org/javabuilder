@@ -33,30 +33,27 @@ Parameters:
     AllowedValues: [development, production]
 
 Conditions:
-  TargetsMainBranch: !Equals [ !Ref GitHubBranch, main ]
-  DeployForDevelopment: !Equals [!Ref EnvironmentType, development ]
-  DeployForProduction: !Equals [!Ref EnvironmentType, production ]
-
+  TargetsMainBranch: !Equals [!Ref GitHubBranch, main]
+  DeployForDevelopment: !Equals [!Ref EnvironmentType, development]
+  DeployForProduction: !Equals [!Ref EnvironmentType, production]
 
 Resources:
-
   # The Elastic Container Registry Repository will store our built docker
   # images, for example, the load-test docker image.
   EcrRepository:
     Type: AWS::ECR::Repository
-    Properties: 
+    Properties:
       RepositoryName: !Sub javabuilder-${GitHubBranch}
       RepositoryPolicyText:
         Version: "2012-10-17"
-        Statement: 
-          - 
-            Sid: AllowDeveloperPushPull
+        Statement:
+          - Sid: AllowDeveloperPushPull
             Effect: Allow
-            Principal: 
-              AWS: 
+            Principal:
+              AWS:
                 - !ImportValue JavabuilderCodeBuildRoleArn
                 - !Sub "arn:aws:iam::${AWS::AccountId}:role/admin/Developer"
-            Action: 
+            Action:
               - "ecr:GetDownloadUrlForLayer"
               - "ecr:BatchGetImage"
               - "ecr:BatchCheckLayerAvailability"
@@ -66,7 +63,7 @@ Resources:
               - "ecr:CompleteLayerUpload"
 
   EncryptionKey:
-    Type: 'AWS::KMS::Key'
+    Type: "AWS::KMS::Key"
     Properties:
       Description: encryption key for javabuilder cicd artifacts
       EnableKeyRotation: true
@@ -76,39 +73,39 @@ Resources:
           - Sid: Ensure root user access
             Effect: Allow
             Principal:
-              AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
-            Action: 'kms:*'
-            Resource: '*'
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action: "kms:*"
+            Resource: "*"
           - Sid: Allow administration of the key
             Effect: Allow
             Principal:
               AWS: !Sub arn:aws:iam::${AWS::AccountId}:role/admin/Developer
             Action:
-              - 'kms:Create*'
-              - 'kms:Describe*'
-              - 'kms:Enable*'
-              - 'kms:List*'
-              - 'kms:Put*'
-              - 'kms:Update*'
-              - 'kms:Revoke*'
-              - 'kms:Disable*'
-              - 'kms:Get*'
-              - 'kms:Delete*'
-              - 'kms:ScheduleKeyDeletion'
-              - 'kms:CancelKeyDeletion'
-            Resource: '*'
+              - "kms:Create*"
+              - "kms:Describe*"
+              - "kms:Enable*"
+              - "kms:List*"
+              - "kms:Put*"
+              - "kms:Update*"
+              - "kms:Revoke*"
+              - "kms:Disable*"
+              - "kms:Get*"
+              - "kms:Delete*"
+              - "kms:ScheduleKeyDeletion"
+              - "kms:CancelKeyDeletion"
+            Resource: "*"
           - Sid: Allow use of the key
             Effect: Allow
             Principal:
               AWS: !ImportValue JavabuilderCodeBuildRoleArn
             Action:
-              - 'kms:DescribeKey'
-              - 'kms:Encrypt'
-              - 'kms:Decrypt'
-              - 'kms:ReEncrypt*'
-              - 'kms:GenerateDataKey'
-              - 'kms:GenerateDataKeyWithoutPlaintext'
-            Resource: '*'
+              - "kms:DescribeKey"
+              - "kms:Encrypt"
+              - "kms:Decrypt"
+              - "kms:ReEncrypt*"
+              - "kms:GenerateDataKey"
+              - "kms:GenerateDataKeyWithoutPlaintext"
+            Resource: "*"
 
   # The CodeBuild Project is triggered by pull requests targeting $GitHubBranch
   # It will perform any steps defined in the pr-buildspec.yml file.
@@ -149,7 +146,7 @@ Resources:
               Type: BASE_REF
             - Pattern: PULL_REQUEST_CREATED,PULL_REQUEST_UPDATED,PULL_REQUEST_REOPENED
               Type: EVENT
-  
+
   # The CodeBuild Project is used in the CodePipeline pipeline to prepare for a release.
   # It will perform any steps defined in the referenced buildspec.yml file.
   LoadTestBuildProject:
@@ -172,7 +169,7 @@ Resources:
         BuildSpec: cicd/3-app/load-test/load-test.buildspec.yml
       Artifacts:
         Type: CODEPIPELINE
-  
+
   # The CodeBuild Project is used in the CodePipeline pipeline to prepare for a release.
   # It will perform any steps defined in the referenced buildspec.yml file.
   AppBuildProject:
@@ -215,7 +212,7 @@ Resources:
   # Grant the Javabuilder CodeBuild Role additional permissions for resources in
   # this template. This allows us to avoid granting permission to * resources.
   JavabuilderRolePolicy:
-    Type: 'AWS::IAM::Policy'
+    Type: "AWS::IAM::Policy"
     Properties:
       PolicyName: !Sub "${AWS::StackName}-codebuild-policy"
       PolicyDocument:
@@ -242,17 +239,17 @@ Resources:
 
   Pipeline:
     Type: AWS::CodePipeline::Pipeline
-    Properties: 
+    Properties:
       Name: !Ref AWS::StackName
       RoleArn: !ImportValue JavabuilderCodeBuildRoleArn
       RestartExecutionOnUpdate: true
-      ArtifactStore: 
-        Type: S3 
+      ArtifactStore:
+        Type: S3
         Location: !ImportValue JavabuilderCodeBuildArtifactBucket
         EncryptionKey:
           Id: !Ref EncryptionKey
           Type: KMS
-      Stages: 
+      Stages:
         - Name: Source
           Actions:
             - Name: Source
@@ -300,10 +297,10 @@ Resources:
           - Name: Deploy_To_Development
             Actions:
               - Name: app-deploy
-                ActionTypeId: 
-                  Category: Deploy 
-                  Owner: AWS 
-                  Version: 1 
+                ActionTypeId:
+                  Category: Deploy
+                  Owner: AWS
+                  Version: 1
                   Provider: CloudFormation
                 InputArtifacts:
                   - Name: appBuildResults
@@ -313,10 +310,10 @@ Resources:
                   TemplatePath: appBuildResults::packaged-app-template.yml
                   TemplateConfiguration: appBuildResults::cicd/3-app/javabuilder/dev.config.json
                   ParameterOverrides: !Join
-                      - ''
-                      - - '{ "SubdomainName": "'
-                        - !Sub "javabuilder-dev-${GitHubBranch}"
-                        - '" }'
+                    - ""
+                    - - '{ "SubdomainName": "'
+                      - !Sub "javabuilder-dev-${GitHubBranch}"
+                      - '" }'
                   Capabilities: CAPABILITY_AUTO_EXPAND
                   RoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/admin/CloudFormationService
           - !Ref AWS::NoValue
@@ -326,23 +323,32 @@ Resources:
           - Name: Deploy_To_Test
             Actions:
               - Name: app-deploy
-                ActionTypeId: 
-                  Category: Deploy 
-                  Owner: AWS 
-                  Version: 1 
+                ActionTypeId:
+                  Category: Deploy
+                  Owner: AWS
+                  Version: 1
                   Provider: CloudFormation
                 InputArtifacts:
                   - Name: appBuildResults
                 Configuration:
-                  StackName: !If [TargetsMainBranch, "javabuilder-test", !Sub "javabuilder-${GitHubBranch}-test"]
+                  StackName:
+                    !If [
+                      TargetsMainBranch,
+                      "javabuilder-test",
+                      !Sub "javabuilder-${GitHubBranch}-test",
+                    ]
                   ActionMode: CREATE_UPDATE
                   TemplatePath: appBuildResults::packaged-app-template.yml
                   TemplateConfiguration: appBuildResults::cicd/3-app/javabuilder/test.config.json
                   ParameterOverrides: !Join
-                      - ''
-                      - - '{ "SubdomainName": "'
-                        - !If [ TargetsMainBranch, 'javabuilder-test', !Sub 'javabuilder-${GitHubBranch}-test' ]
-                        - '" }'
+                    - ""
+                    - - '{ "SubdomainName": "'
+                      - !If [
+                          TargetsMainBranch,
+                          "javabuilder-test",
+                          !Sub "javabuilder-${GitHubBranch}-test",
+                        ]
+                      - '" }'
                   Capabilities: CAPABILITY_AUTO_EXPAND
                   RoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/admin/CloudFormationService
           - !Ref AWS::NoValue
@@ -364,7 +370,12 @@ Resources:
                   EnvironmentVariables: !Sub
                     - '[{"name":"APP_SUBDOMAIN","value":"${SUBDOMAIN}","type":"PLAINTEXT"},{"name":"APP_BASE_DOMAIN","value":"${BASE_DOMAIN}","type":"PLAINTEXT"}]'
                     - BASE_DOMAIN: code.org
-                      SUBDOMAIN: !If [TargetsMainBranch, "javabuilder-test", !Sub "javabuilder-${GitHubBranch}-test"]
+                      SUBDOMAIN:
+                        !If [
+                          TargetsMainBranch,
+                          "javabuilder-test",
+                          !Sub "javabuilder-${GitHubBranch}-test",
+                        ]
                 OutputArtifacts:
                   - Name: integrationTestResultsPOC
           - !Ref AWS::NoValue
@@ -374,23 +385,62 @@ Resources:
           - Name: Deploy_To_Production
             Actions:
               - Name: app-deploy
-                ActionTypeId: 
-                  Category: Deploy 
-                  Owner: AWS 
-                  Version: 1 
+                ActionTypeId:
+                  Category: Deploy
+                  Owner: AWS
+                  Version: 1
                   Provider: CloudFormation
                 InputArtifacts:
                   - Name: appBuildResults
                 # The value of `Configuration` must be an object with String (or simple type) properties
                 Configuration:
-                  StackName: !If [TargetsMainBranch, "javabuilder", !Sub "javabuilder-${GitHubBranch}"]
+                  StackName:
+                    !If [
+                      TargetsMainBranch,
+                      "javabuilder",
+                      !Sub "javabuilder-${GitHubBranch}",
+                    ]
                   ActionMode: CREATE_UPDATE
                   TemplatePath: appBuildResults::packaged-app-template.yml
                   TemplateConfiguration: appBuildResults::cicd/3-app/javabuilder/production.config.json
                   ParameterOverrides: !Join
-                    - ''
+                    - ""
                     - - '{ "SubdomainName": "'
-                      - !If [ TargetsMainBranch, 'javabuilder', !Sub 'javabuilder-${GitHubBranch}' ]
+                      - !If [
+                          TargetsMainBranch,
+                          "javabuilder",
+                          !Sub "javabuilder-${GitHubBranch}",
+                        ]
+                      - '" }'
+                  Capabilities: CAPABILITY_AUTO_EXPAND
+                  RoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/admin/CloudFormationService
+              - Name: app-demo-deploy
+                ActionTypeId:
+                  Category: Deploy
+                  Owner: AWS
+                  Version: 1
+                  Provider: CloudFormation
+                InputArtifacts:
+                  - Name: appBuildResults
+                # The value of `Configuration` must be an object with String (or simple type) properties
+                Configuration:
+                  StackName:
+                    !If [
+                      TargetsMainBranch,
+                      "javabuilder-demo",
+                      !Sub "javabuilder-demo-${GitHubBranch}",
+                    ]
+                  ActionMode: CREATE_UPDATE
+                  TemplatePath: appBuildResults::packaged-app-template.yml
+                  TemplateConfiguration: appBuildResults::cicd/3-app/javabuilder/production-demo.config.json
+                  ParameterOverrides: !Join
+                    - ""
+                    - - '{ "SubdomainName": "'
+                      - !If [
+                          TargetsMainBranch,
+                          "javabuilder-demo",
+                          !Sub "javabuilder-demo-${GitHubBranch}",
+                        ]
                       - '" }'
                   Capabilities: CAPABILITY_AUTO_EXPAND
                   RoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/admin/CloudFormationService
@@ -413,11 +463,16 @@ Resources:
                   EnvironmentVariables: !Sub
                     - '[{"name":"APP_SUBDOMAIN","value":"${SUBDOMAIN}","type":"PLAINTEXT"},{"name":"APP_BASE_DOMAIN","value":"${BASE_DOMAIN}","type":"PLAINTEXT"}]'
                     - BASE_DOMAIN: code.org
-                      SUBDOMAIN: !If [TargetsMainBranch, "javabuilder", !Sub "javabuilder-${GitHubBranch}"]
+                      SUBDOMAIN:
+                        !If [
+                          TargetsMainBranch,
+                          "javabuilder",
+                          !Sub "javabuilder-${GitHubBranch}",
+                        ]
                 OutputArtifacts:
                   - Name: smokeTestResults
           - !Ref AWS::NoValue
-  
+
   # Send pipeline events to an SNS topic.
   # Note:
   # Integration with Slack via AWS ChatBot is configured manually via AWS
@@ -429,7 +484,7 @@ Resources:
       Name: !Sub ${AWS::StackName}-pipeline
       DetailType: FULL
       Resource: !Sub "arn:${AWS::Partition}:codepipeline:${AWS::Region}:${AWS::AccountId}:${Pipeline}"
-      EventTypeIds: 
+      EventTypeIds:
         # Pipeline events
         - codepipeline-pipeline-pipeline-execution-failed
         - codepipeline-pipeline-pipeline-execution-succeeded
@@ -452,8 +507,8 @@ Resources:
         - codepipeline-pipeline-manual-approval-needed
         - codepipeline-pipeline-manual-approval-failed
         - codepipeline-pipeline-manual-approval-succeeded
-      Targets: 
-        - TargetType: SNS 
+      Targets:
+        - TargetType: SNS
           TargetAddress: !Ref PipelineNotificationTopic
 
   PipelineNotificationTopic:
@@ -462,16 +517,16 @@ Resources:
   # This policy is necessary for CodePipeline to be allowed to publish to the Topic.
   PipelineNotificationTopicPolicy:
     Type: AWS::SNS::TopicPolicy
-    Properties: 
+    Properties:
       Topics:
         - !Ref PipelineNotificationTopic
       PolicyDocument:
-        Version: '2012-10-17'
+        Version: "2012-10-17"
         Statement:
-        - Sid: AWSCodeStarNotifications_publish
-          Effect: Allow
-          Principal:
-            Service:
-            - codestar-notifications.amazonaws.com
-          Action: SNS:Publish
-          Resource: !Ref PipelineNotificationTopic
+          - Sid: AWSCodeStarNotifications_publish
+            Effect: Allow
+            Principal:
+              Service:
+                - codestar-notifications.amazonaws.com
+            Action: SNS:Publish
+            Resource: !Ref PipelineNotificationTopic
