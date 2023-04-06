@@ -34,9 +34,10 @@ new Ruby version. You may need to also install
 The `.ruby-version` file sets the local Ruby version for javabuilder to be 2.7.2
 
 ## Deploying Production Javabuilder
-To deploy Javabuilder to production, see the
-[Deploying Javabuilder](https://docs.google.com/document/d/1mMQK6HhniLsz9lynzhUcm7Tcw_2WVLBxADe0WzqL6rM/edit#)
-instruction doc.
+
+Javabuilder is deployed automatically upon merge to the `main` branch. See the CICD [Readme](cicd/README.md) for more information about deploying to production or other environments.
+
+Documentation for [deploying the Javabuilder Beta](https://docs.google.com/document/d/1mMQK6HhniLsz9lynzhUcm7Tcw_2WVLBxADe0WzqL6rM/edit#) is still available.
 
 ## Developing Javabuilder
 
