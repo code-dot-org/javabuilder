@@ -394,6 +394,36 @@ Resources:
                       - '" }'
                   Capabilities: CAPABILITY_AUTO_EXPAND
                   RoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/admin/CloudFormationService
+              - Name: app-demo-deploy
+                ActionTypeId:
+                  Category: Deploy
+                  Owner: AWS
+                  Version: 1
+                  Provider: CloudFormation
+                InputArtifacts:
+                  - Name: appBuildResults
+                # The value of `Configuration` must be an object with String (or simple type) properties
+                Configuration:
+                  StackName:
+                    !If [
+                      TargetsMainBranch,
+                      "javabuilder-demo",
+                      !Sub "javabuilder-demo-${GitHubBranch}",
+                    ]
+                  ActionMode: CREATE_UPDATE
+                  TemplatePath: appBuildResults::packaged-app-template.yml
+                  TemplateConfiguration: appBuildResults::cicd/3-app/javabuilder/production-demo.config.json
+                  ParameterOverrides: !Join
+                    - ""
+                    - - '{ "SubdomainName": "'
+                      - !If [
+                          TargetsMainBranch,
+                          "javabuilder-demo",
+                          !Sub "javabuilder-demo-${GitHubBranch}",
+                        ]
+                      - '" }'
+                  Capabilities: CAPABILITY_AUTO_EXPAND
+                  RoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/admin/CloudFormationService
           - !Ref AWS::NoValue
 
         - !If
