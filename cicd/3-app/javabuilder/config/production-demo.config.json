@@ -1,0 +1,15 @@
+{
+  "Parameters": {
+    "BaseDomainName": "code.org",
+    "SubdomainName": "javabuilder-demo",
+    "BaseDomainNameHostedZonedID": "Z2LCOI49SCXUGU",
+    "ProvisionedConcurrentExecutions": "50",
+    "ReservedConcurrentExecutions": "500",
+    "LimitPerHour": "25",
+    "LimitPerDay": "100",
+    "SilenceAlerts": "false"
+  },
+  "Tags": {
+    "EnvType": "production"
+  }
+}
