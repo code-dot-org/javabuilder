@@ -3,7 +3,7 @@
     "BaseDomainName": "code.org",
     "SubdomainName": "javabuilder-demo",
     "BaseDomainNameHostedZonedID": "Z2LCOI49SCXUGU",
-    "ProvisionedConcurrentExecutions": "0",
+    "ProvisionedConcurrentExecutions": "1",
     "ReservedConcurrentExecutions": "5",
     "LimitPerHour": "25",
     "LimitPerDay": "100",
