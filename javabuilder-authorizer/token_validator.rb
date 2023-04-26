@@ -29,10 +29,14 @@ class TokenValidator
     return error(CLASSROOM_BLOCKED) if teachers_blocked?
     hourly_usage_response = user_usage(ONE_HOUR_SECONDS)
     return error(USER_BLOCKED) if user_over_hourly_limit?(hourly_usage_response)
-    # return error(USER_BLOCKED) if user_over_daily_limit?
+    daily_usage_response = user_usage(ONE_DAY_SECONDS)
+    return error(USER_BLOCKED_TEMPORARY) if user_over_daily_limit?(daily_usage_response)
     return error(CLASSROOM_BLOCKED) if teachers_over_hourly_limit?
 
     near_limit_detail = get_user_near_hourly_limit_detail(hourly_usage_response.count)
+    if !near_limit_detail
+      near_limit_detail = get_user_near_daily_limit_detail(daily_usage_response.count)
+    end
     log_requests
     mark_token_as_vetted
     set_token_warning(NEAR_LIMIT, near_limit_detail) if near_limit_detail
@@ -88,24 +92,41 @@ class TokenValidator
   end
 
   def user_over_hourly_limit?(hourly_usage_response)
-    user_over_limit?(
-      hourly_usage_response,
-      ENV['limit_per_hour'].to_i,
-      USER_OVER_HOURLY_LIMIT
-    )
+    limit_per_hour =  ENV['limit_per_hour'].to_i
+    # A limit of 0 means there is no limit.
+    if limit_per_hour > 0
+      user_over_limit?(
+        hourly_usage_response,
+        ENV['limit_per_hour'].to_i,
+        USER_OVER_HOURLY_LIMIT,
+        true # Should block permanently if the limit has been reached.
+      )
+    else
+      false
+    end
   end
 
   def get_user_near_hourly_limit_detail(hourly_usage_count)
-    get_user_near_limit_detail(hourly_usage_count, ENV['limit_per_hour'].to_i)
+    get_user_near_limit_detail(hourly_usage_count, ENV['limit_per_hour'].to_i, 'hour', 'permanent')
   end
 
-  def user_over_daily_limit?
-    usage_response = user_usage(ONE_DAY_SECONDS)
-    user_over_limit?(
-      usage_response,
-      ENV['limit_per_day'].to_i,
-      USER_OVER_DAILY_LIMIT
-    )
+  def get_user_near_daily_limit_detail(daily_usage_count)
+    get_user_near_limit_detail(daily_usage_count, ENV['limit_per_day'].to_i, 'day', 'temporary')
+  end
+
+  def user_over_daily_limit?(daily_usage_response)
+    limit_per_day = ENV['limit_per_day'].to_i
+    # A limit of 0 means there is no limit.
+    if limit_per_hour > 0
+      user_over_limit?(
+        daily_usage_response,
+        ENV['limit_per_day'].to_i,
+        USER_OVER_DAILY_LIMIT,
+        false # Should not block permanently if the limit has been reached.
+      )
+    else
+      false
+    end
   end
 
   def teachers_over_hourly_limit?
@@ -226,17 +247,17 @@ class TokenValidator
     response
   end
 
-  def get_user_near_limit_detail(count, limit)
-    if count <= limit && count >= (limit - NEAR_LIMIT_BUFFER)
-      return {remaining: limit - count}
+  def get_user_near_limit_detail(count, limit, period, lock_out_type)
+    if limit > 0 && count <= limit && count >= (limit - NEAR_LIMIT_BUFFER)
+      return {remaining: limit - count, period: period, lock_out_type: lock_out_type}
     else
       return nil
     end
   end
 
-  def user_over_limit?(query_response, limit, logging_message)
+  def user_over_limit?(query_response, limit, logging_message, should_block_permanently)
     over_limit = query_response.count > limit
-    if over_limit
+    if over_limit && should_block_permanently
       # logging could be improved,
       # [{"ttl"=>0.1648766446e10, "user_id"=>"611", "issued_at"=>0.1648680046e10}, {...
       begin
