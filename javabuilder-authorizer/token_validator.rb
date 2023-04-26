@@ -97,7 +97,7 @@ class TokenValidator
     if limit_per_hour > 0
       user_over_limit?(
         hourly_usage_response,
-        ENV['limit_per_hour'].to_i,
+        limit_per_hour,
         USER_OVER_HOURLY_LIMIT,
         true # Should block permanently if the limit has been reached.
       )
@@ -107,20 +107,20 @@ class TokenValidator
   end
 
   def get_user_near_hourly_limit_detail(hourly_usage_count)
-    get_user_near_limit_detail(hourly_usage_count, ENV['limit_per_hour'].to_i, 'hour', 'permanent')
+    get_user_near_limit_detail(hourly_usage_count, ENV['limit_per_hour'].to_i, HOUR, PERMANENT_LOCKOUT)
   end
 
   def get_user_near_daily_limit_detail(daily_usage_count)
-    get_user_near_limit_detail(daily_usage_count, ENV['limit_per_day'].to_i, 'day', 'temporary')
+    get_user_near_limit_detail(daily_usage_count, ENV['limit_per_day'].to_i, DAY, TEMPORARY_LOCKOUT)
   end
 
   def user_over_daily_limit?(daily_usage_response)
     limit_per_day = ENV['limit_per_day'].to_i
     # A limit of 0 means there is no limit.
-    if limit_per_hour > 0
+    if limit_per_day > 0
       user_over_limit?(
         daily_usage_response,
-        ENV['limit_per_day'].to_i,
+        limit_per_day,
         USER_OVER_DAILY_LIMIT,
         false # Should not block permanently if the limit has been reached.
       )

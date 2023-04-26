@@ -45,4 +45,12 @@ module TokenStatus
   NEW_CLASSROOM_BLOCKED = 'NewClassroomBlocked'.freeze
   CLASSROOM_HOURLY_REQUEST_COUNT = 'ClassroomHourlyRequestCount'.freeze
   USER_BLOCKED_TEMPORARY = 'UserBlockedTemporary'.freeze
+
+  # Lockout statuses
+  PERMANENT_LOCKOUT = 'PERMANENT'.freeze
+  TEMPORARY_LOCKOUT = 'TEMPORARY'.freeze
+
+  # Lockout periods
+  DAY = 'DAY'.freeze
+  HOUR = 'HOUR'.freeze
 end
