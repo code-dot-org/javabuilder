@@ -5,7 +5,7 @@
     "ProvisionedConcurrentExecutions": "1",
     "ReservedConcurrentExecutions": "3",
     "LimitPerHour": "0",
-    "LimitPerDay": "50",
+    "LimitPerDay": "10",
     "SilenceAlerts": "true"
   },
   "Tags" : {
