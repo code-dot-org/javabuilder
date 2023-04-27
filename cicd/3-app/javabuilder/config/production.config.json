@@ -5,7 +5,7 @@
     "ProvisionedConcurrentExecutions": "50",
     "ReservedConcurrentExecutions": "500",
     "LimitPerHour": "1000",
-    "LimitPerDay": "5000",
+    "LimitPerDay": "0",
     "SilenceAlerts": "false",
     "TeacherLimitPerHour": "25000"
   },
