@@ -26,7 +26,7 @@ module TokenStatus
   NOT_VETTED = 'NOT_VETTED'.freeze
   # User has been blocks for violating daily limits. They will be automatically unblocked 
   # once they are no longer over the limit.
-  USER_BLOCKED_TEMPORARY = 'UserBlockedTemporary'.freeze
+  USER_BLOCKED_TEMPORARY = 'USER_BLOCKED_TEMPORARY'.freeze
 
   ### Token status used by both authorizers
   # Token provided to the authorizer has already been used
