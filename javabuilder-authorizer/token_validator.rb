@@ -247,9 +247,9 @@ class TokenValidator
     response
   end
 
-  def get_user_near_limit_detail(count, limit, period, lock_out_type)
+  def get_user_near_limit_detail(count, limit, period, lockout_type)
     if limit > 0 && count <= limit && count >= (limit - NEAR_LIMIT_BUFFER)
-      return {remaining: limit - count, period: period, lock_out_type: lock_out_type}
+      return {remaining: limit - count, period: period, lockout_type: lockout_type}
     else
       return nil
     end
