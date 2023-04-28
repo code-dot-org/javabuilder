@@ -11,7 +11,7 @@ class TokenValidator
   USER_REQUEST_RECORD_TTL_SECONDS = 25 * ONE_HOUR_SECONDS
   TEACHER_ASSOCIATED_REQUEST_TTL_SECONDS = 25 * ONE_HOUR_SECONDS
   NEAR_LIMIT_BUFFER = 10
-  NO_LIMIT = 0
+  NO_LIMIT = -1
 
   def initialize(payload, origin, context)
     @token_id = payload['sid']
@@ -241,7 +241,7 @@ class TokenValidator
   end
 
   def get_user_near_limit_detail(count, limit, period, lockout_type)
-    if limit > 0 && count <= limit && count >= (limit - NEAR_LIMIT_BUFFER)
+    if limit != NO_LIMIT && count <= limit && count >= (limit - NEAR_LIMIT_BUFFER)
       return {remaining: limit - count, period: period, lockout_type: lockout_type}
     else
       return nil
