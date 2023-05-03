@@ -5,8 +5,8 @@
     "BaseDomainNameHostedZonedID": "Z2LCOI49SCXUGU",
     "ProvisionedConcurrentExecutions": "1",
     "ReservedConcurrentExecutions": "5",
-    "LimitPerHour": "25",
-    "LimitPerDay": "100",
+    "LimitPerHour": "-1",
+    "LimitPerDay": "50",
     "SilenceAlerts": "false"
   },
   "Tags": {
