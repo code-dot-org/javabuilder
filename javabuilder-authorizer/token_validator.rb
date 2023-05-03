@@ -11,6 +11,7 @@ class TokenValidator
   USER_REQUEST_RECORD_TTL_SECONDS = 25 * ONE_HOUR_SECONDS
   TEACHER_ASSOCIATED_REQUEST_TTL_SECONDS = 25 * ONE_HOUR_SECONDS
   NEAR_LIMIT_BUFFER = 10
+  NO_LIMIT = -1
 
   def initialize(payload, origin, context)
     @token_id = payload['sid']
@@ -29,10 +30,14 @@ class TokenValidator
     return error(CLASSROOM_BLOCKED) if teachers_blocked?
     hourly_usage_response = user_usage(ONE_HOUR_SECONDS)
     return error(USER_BLOCKED) if user_over_hourly_limit?(hourly_usage_response)
-    # return error(USER_BLOCKED) if user_over_daily_limit?
+    daily_usage_response = user_usage(ONE_DAY_SECONDS)
+    return error(USER_BLOCKED_TEMPORARY) if user_over_daily_limit?(daily_usage_response)
     return error(CLASSROOM_BLOCKED) if teachers_over_hourly_limit?
 
     near_limit_detail = get_user_near_hourly_limit_detail(hourly_usage_response.count)
+    if !near_limit_detail
+      near_limit_detail = get_user_near_daily_limit_detail(daily_usage_response.count)
+    end
     log_requests
     mark_token_as_vetted
     set_token_warning(NEAR_LIMIT, near_limit_detail) if near_limit_detail
@@ -88,23 +93,32 @@ class TokenValidator
   end
 
   def user_over_hourly_limit?(hourly_usage_response)
+    limit_per_hour =  ENV['limit_per_hour'].to_i
+    return false if limit_per_hour == NO_LIMIT
     user_over_limit?(
       hourly_usage_response,
-      ENV['limit_per_hour'].to_i,
-      USER_OVER_HOURLY_LIMIT
+      limit_per_hour,
+      USER_OVER_HOURLY_LIMIT,
+      true # Should block permanently if the limit has been reached.
     )
   end
 
   def get_user_near_hourly_limit_detail(hourly_usage_count)
-    get_user_near_limit_detail(hourly_usage_count, ENV['limit_per_hour'].to_i)
+    get_user_near_limit_detail(hourly_usage_count, ENV['limit_per_hour'].to_i, HOUR, PERMANENT_LOCKOUT)
   end
 
-  def user_over_daily_limit?
-    usage_response = user_usage(ONE_DAY_SECONDS)
+  def get_user_near_daily_limit_detail(daily_usage_count)
+    get_user_near_limit_detail(daily_usage_count, ENV['limit_per_day'].to_i, DAY, TEMPORARY_LOCKOUT)
+  end
+
+  def user_over_daily_limit?(daily_usage_response)
+    limit_per_day = ENV['limit_per_day'].to_i
+    return false if limit_per_day == NO_LIMIT
     user_over_limit?(
-      usage_response,
-      ENV['limit_per_day'].to_i,
-      USER_OVER_DAILY_LIMIT
+      daily_usage_response,
+      limit_per_day,
+      USER_OVER_DAILY_LIMIT,
+      false # Should not block permanently if the limit has been reached.
     )
   end
 
@@ -226,17 +240,17 @@ class TokenValidator
     response
   end
 
-  def get_user_near_limit_detail(count, limit)
-    if count <= limit && count >= (limit - NEAR_LIMIT_BUFFER)
-      return {remaining: limit - count}
+  def get_user_near_limit_detail(count, limit, period, lockout_type)
+    if limit != NO_LIMIT && count <= limit && count >= (limit - NEAR_LIMIT_BUFFER)
+      return {remaining: limit - count, period: period, lockout_type: lockout_type}
     else
       return nil
     end
   end
 
-  def user_over_limit?(query_response, limit, logging_message)
+  def user_over_limit?(query_response, limit, logging_message, should_block_permanently)
     over_limit = query_response.count > limit
-    if over_limit
+    if over_limit && should_block_permanently
       # logging could be improved,
       # [{"ttl"=>0.1648766446e10, "user_id"=>"611", "issued_at"=>0.1648680046e10}, {...
       begin
