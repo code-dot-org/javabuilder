@@ -74,11 +74,29 @@ By setting the `TARGET_BRANCH` you can create a new CI/CD pipeline that watches 
 TARGET_BRANCH=mybranch cicd/2-cicd/deploy-cicd.sh
 ```
 
-## Debugging `template.yml.erb`
+## Debugging & Troubleshooting
+
+### Debugging `template.yml.erb`
+
 If you are are updating the template file and don't want to wait for a full deploy cycle to validate the syntax, you can do the following from `cicd/3-app/javabuilder`:
+
 ```
 erb -T - template.yml.erb > app-template-test.yml
 cfn-lint app-template-test.yml
 ```
+
 This will run cloudformation lint on you template changes and give you a quicker feedback cycle when fixing up syntax.
 Just delete app-template-test.yml when you are done.
+
+### Resolving "Error when retrieving credentials" when running deploy commands
+
+Because of some nuances of our AWS SSO integration and tooling, you might need to temporarily change Ruby versions when running scripts that interact with the AWS CLI. You might receive an error like the following.
+
+```
+Error when retrieving credentials from custom-process: rbenv: aws-google: command not found
+
+The `aws-google' command exists in these Ruby versions:
+  2.7.5
+```
+
+If this occurs, you can simply run `rbenv local 2.7.5` or whatever version is suggested (should be the same version used in the code-dot-org/code-dot-org repository) and try running the script again.
