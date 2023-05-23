@@ -873,6 +873,7 @@ Resources:
           - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !If [IsDemoCondition, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-demo-high-concurrency", !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:CDO-Urgent"]]
       EvaluationPeriods: 10
       DatapointsToAlarm: 10
+      Period: 60
       Threshold: !If [IsDemoCondition, 40, 400]
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
