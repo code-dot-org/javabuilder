@@ -863,7 +863,7 @@ Resources:
     Properties:
       AlarmName: !Sub "${SubdomainName}_<%=name.downcase%>_high_concurrent_executions"
       AlarmDescription: !Sub |
-          Alarm if javabuilder usage exceeds 80% of the maximum concurrent
+          Alarm if javabuilder usage exceeds !If [IsDemoCondition, 40, 400] concurrent
           executions for 10 minutes. Occasional spikes are expected, but
           long-running high usage is an indication of an attack. Page the student learning
           team for further investigation. See this doc for investigation steps
@@ -873,25 +873,15 @@ Resources:
           - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !If [IsDemoCondition, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-demo-high-concurrency", !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:CDO-Urgent"]]
       EvaluationPeriods: 10
       DatapointsToAlarm: 10
-      Threshold: 80
+      Threshold: !If [IsDemoCondition, 40, 400]
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
-      Metrics:
-        - Id: e1
-          Label: Percentage
-          ReturnData: true
-          Expression: 100*(m1/(!Ref ReservedConcurrentExecutions))
-        - Id: m1
-          ReturnData: false
-          MetricStat:
-              Metric:
-                  Namespace: AWS/Lambda
-                  MetricName: ConcurrentExecutions
-                  Dimensions:
-                      - Name: FunctionName
-                        Value: !Ref BuildAndRunJava<%=name%>ProjectFunction
-              Period: 60
-              Stat: Maximum
+      MetricName: ConcurrentExecutions
+      Namespace: AWS/Lambda
+      Statistic: Maximum
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref BuildAndRunJava<%=name%>ProjectFunction
 <%end -%>
 
 # We use shortened versions of names for partition keys (eg, user_id),
