@@ -880,7 +880,7 @@ Resources:
         - Id: e1
           Label: Percentage
           ReturnData: true
-          Expression: 100*(m1/ !Ref ReservedConcurrentExecutions)
+          Expression: 100*(m1/(!Ref ReservedConcurrentExecutions))
         - Id: m1
           ReturnData: false
           MetricStat:
