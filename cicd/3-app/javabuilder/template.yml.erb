@@ -870,7 +870,7 @@ Resources:
           https://docs.google.com/document/d/1bHvV6pvUcwxgZpw0YWBmxFggQL5KqYx9zwolwkZhjU8/edit#bookmark=id.xs1gcuxrw6ze
       ActionsEnabled: true
       AlarmActions:
-          - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !If[IsDemoCondition !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-demo-high-concurrency", !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:CDO-Urgent"]]
+          - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !If [IsDemoCondition !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-demo-high-concurrency", !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:CDO-Urgent"]]
       EvaluationPeriods: 10
       DatapointsToAlarm: 10
       Threshold: 80
