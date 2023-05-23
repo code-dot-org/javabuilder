@@ -63,7 +63,7 @@ Globals:
     Tracing: Active
 Conditions:
   IsDevCondition: !Equals [!Ref BaseDomainName, "dev-code.org"]
-  IsDemoCondition: !Equals [!Ref SubdomainName "javabuilder-demo"]
+  IsDemoCondition: !Equals [!Ref SubdomainName, "javabuilder-demo"]
   SilenceAlertsCondition: !Or [Condition: IsDevCondition, !Equals [!Ref SilenceAlerts, "true"]]
 Resources:
 # Note: We can't update the name of a DomainName resource once it has been created because the
@@ -870,7 +870,7 @@ Resources:
           https://docs.google.com/document/d/1bHvV6pvUcwxgZpw0YWBmxFggQL5KqYx9zwolwkZhjU8/edit#bookmark=id.xs1gcuxrw6ze
       ActionsEnabled: true
       AlarmActions:
-          - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !If [IsDemoCondition !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-demo-high-concurrency", !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:CDO-Urgent"]]
+          - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !If [IsDemoCondition, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-demo-high-concurrency", !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:CDO-Urgent"]]
       EvaluationPeriods: 10
       DatapointsToAlarm: 10
       Threshold: 80
