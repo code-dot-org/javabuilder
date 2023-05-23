@@ -4,7 +4,7 @@
     "SubdomainName": "javabuilder-demo",
     "BaseDomainNameHostedZonedID": "Z2LCOI49SCXUGU",
     "ProvisionedConcurrentExecutions": "1",
-    "ReservedConcurrentExecutions": "5",
+    "ReservedConcurrentExecutions": "50",
     "LimitPerHour": "-1",
     "LimitPerDay": "50",
     "SilenceAlerts": "false"

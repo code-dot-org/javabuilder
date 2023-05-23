@@ -857,7 +857,7 @@ Resources:
     Properties:
       AlarmName: !Sub "${SubdomainName}_<%=name.downcase%>_high_concurrent_executions"
       AlarmDescription: !Sub |
-          Alarm if javabuilder usage exceeds 400 concurrent
+          Alarm if javabuilder usage exceeds 80% of the maximum concurrent
           executions for 10 minutes. Occasional spikes are expected, but
           long-running high usage is an indication of an attack. Page the student learning
           team for further investigation. See this doc for investigation steps
