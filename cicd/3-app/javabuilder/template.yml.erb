@@ -48,6 +48,14 @@ Parameters:
     AllowedValues: [true, false]
     Description: If alerts should be silenced on this instance
     Default: false
+  HighConcurrentExecutionsTopic:
+    Type: String
+    Description: The name of the SNS topic to publish to for a high concurrent executions alarm.
+    Default: CDO-Urgent
+  HighConcurrentExecutionsAlarmThreshold:
+    Type: Number
+    Description: The threshold for the high concurrent executions alarm.
+    Default: 400
 <%
 JAVALAB_APP_TYPES = %w(
   Theater
@@ -857,18 +865,19 @@ Resources:
     Properties:
       AlarmName: !Sub "${SubdomainName}_<%=name.downcase%>_high_concurrent_executions"
       AlarmDescription: !Sub |
-          Alarm if javabuilder usage exceeds 400 concurrent
-          executions for 10 minutes. Occasional spikes are expected, but
-          long-running high usage is an indication of an attack. Page the student learning
-          team for further investigation. See this doc for investigation steps
+          Alarm if javabuilder usage has high concurrent executions for 10 minutes.
+          Occasional spikes are expected, but long-running high usage is an indication
+          of an attack. If this is occuring on the demo environment, this is a non-urgent
+          issue as we expect occasional periods of high usage. If it is on production, 
+          page the student learning team for further investigation. See this doc for investigation steps
           https://docs.google.com/document/d/1bHvV6pvUcwxgZpw0YWBmxFggQL5KqYx9zwolwkZhjU8/edit#bookmark=id.xs1gcuxrw6ze
       ActionsEnabled: true
       AlarmActions:
-          - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:CDO-Urgent"]
+          - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${HighConcurrentExecutionsTopic}"]
       EvaluationPeriods: 10
       DatapointsToAlarm: 10
       Period: 60
-      Threshold: 400
+      Threshold: !Ref HighConcurrentExecutionsAlarmThreshold
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
       MetricName: ConcurrentExecutions
