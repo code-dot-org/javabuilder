@@ -9,7 +9,7 @@
     "LimitPerDay": "50",
     "SilenceAlerts": "false",
     "HighConcurrentExecutionsTopic": "javabuilder-low-urgency",
-    "HighConcurrentExecutionsAlarmThreshold": 45
+    "HighConcurrentExecutionsAlarmThreshold": "45"
 
   },
   "Tags": {

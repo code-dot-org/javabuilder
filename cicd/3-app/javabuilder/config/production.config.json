@@ -9,7 +9,7 @@
     "SilenceAlerts": "false",
     "TeacherLimitPerHour": "25000",
     "HighConcurrentExecutionsTopic": "CDO-Urgent",
-    "HighConcurrentExecutionsAlarmThreshold": 400
+    "HighConcurrentExecutionsAlarmThreshold": "400"
   },
   "Tags" : {
     "EnvType" : "production"

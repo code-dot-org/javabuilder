@@ -8,7 +8,7 @@
     "LimitPerDay": "150",
     "SilenceAlerts": "false",
     "HighConcurrentExecutionsTopic": "javabuilder-low-urgency",
-    "HighConcurrentExecutionsAlarmThreshold": 40
+    "HighConcurrentExecutionsAlarmThreshold": "40"
   },
   "Tags" : {
     "EnvType" : "development"
