@@ -6,7 +6,9 @@
     "ReservedConcurrentExecutions": "25",
     "LimitPerHour": "50",
     "LimitPerDay": "150",
-    "SilenceAlerts": "false"
+    "SilenceAlerts": "false",
+    "HighConcurrentExecutionsTopic": "javabuilder-low-urgency",
+    "HighConcurrentExecutionsAlarmThreshold": "20"
   },
   "Tags" : {
     "EnvType" : "test"

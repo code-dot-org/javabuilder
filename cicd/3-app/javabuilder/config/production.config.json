@@ -7,7 +7,9 @@
     "LimitPerHour": "1000",
     "LimitPerDay": "-1",
     "SilenceAlerts": "false",
-    "TeacherLimitPerHour": "25000"
+    "TeacherLimitPerHour": "25000",
+    "HighConcurrentExecutionsTopic": "CDO-Urgent",
+    "HighConcurrentExecutionsAlarmThreshold": "400"
   },
   "Tags" : {
     "EnvType" : "production"
