@@ -465,7 +465,7 @@ Resources:
   ContentBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !If [IsDevCondition, !Sub "cdo-dev-${SubdomainName}-content", !Sub "cdo-${SubdomainName}-content"]
+      BucketName: !Sub "${SubdomainName}-content.${BaseDomainName}"
       CorsConfiguration:
         CorsRules:
           - AllowedMethods: [GET, PUT]
