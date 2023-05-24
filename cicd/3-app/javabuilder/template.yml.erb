@@ -63,9 +63,8 @@ Globals:
     Tracing: Active
 Conditions:
   IsDevCondition: !Equals [!Ref BaseDomainName, "dev-code.org"]
-  IsDemoCondition: !Equals [!Ref SubdomainName, "javabuilder-dev-molly-demo-alarm"]
+  IsDemoCondition: !Equals [!Ref SubdomainName, "javabuilder-demo"]
   SilenceAlertsCondition: !Or [Condition: IsDevCondition, !Equals [!Ref SilenceAlerts, "true"]]
-  SilenceAlertsConditionTest: !Equals [!Ref SubdomainName, "javabuilder-demo"]
 Resources:
 # Note: We can't update the name of a DomainName resource once it has been created because the
 # domain name itself has already been provisioned. When we change from javabuilderbeta to
@@ -866,16 +865,17 @@ Resources:
       AlarmDescription: !Sub |
           Alarm if javabuilder usage has high concurrent executions for 10 minutes.
           Occasional spikes are expected, but long-running high usage is an indication
-          of an attack. Page the student learning
-          team for further investigation. See this doc for investigation steps
+          of an attack. If this is occuring on the demo environment, this is a non-urgent
+          issue as we expect occasional periods of high usage. If it is on production, 
+          page the student learning team for further investigation. See this doc for investigation steps
           https://docs.google.com/document/d/1bHvV6pvUcwxgZpw0YWBmxFggQL5KqYx9zwolwkZhjU8/edit#bookmark=id.xs1gcuxrw6ze
       ActionsEnabled: true
       AlarmActions:
-          - !If [SilenceAlertsConditionTest, !Ref AWS::NoValue, !If [IsDemoCondition, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-demo-high-concurrency", !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:CDO-Urgent"]]
+          - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !If [IsDemoCondition, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-demo-high-concurrency", !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:CDO-Urgent"]]
       EvaluationPeriods: 10
       DatapointsToAlarm: 10
       Period: 60
-      Threshold: !If [IsDemoCondition, 40, 400]
+      Threshold: !If [IsDemoCondition, 45, 400]
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
       MetricName: ConcurrentExecutions
