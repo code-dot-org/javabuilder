@@ -48,6 +48,14 @@ Parameters:
     AllowedValues: [true, false]
     Description: If alerts should be silenced on this instance
     Default: false
+  HighConcurrentExecutionsTopic:
+    Type: String
+    Description: The name of the SNS topic to publish to for a high concurrent executions alarm.
+    Default: CDO-Urgent
+  HighConcurrentExecutionsAlarmThreshold:
+    Type: Number
+    Description: The threshold for the high concurrent executions alarm.
+    Default: 400
 <%
 JAVALAB_APP_TYPES = %w(
   Theater
@@ -866,11 +874,11 @@ Resources:
           https://docs.google.com/document/d/1bHvV6pvUcwxgZpw0YWBmxFggQL5KqYx9zwolwkZhjU8/edit#bookmark=id.xs1gcuxrw6ze
       ActionsEnabled: true
       AlarmActions:
-          - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !If [IsDemoCondition, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-demo-high-concurrency", !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:CDO-Urgent"]]
+          - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:{HighConcurrentExecutionsTopic}"]]
       EvaluationPeriods: 10
       DatapointsToAlarm: 10
       Period: 60
-      Threshold: !If [IsDemoCondition, 45, 400]
+      Threshold: !Ref HighConcurrentExecutionsAlarmThreshold
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
       MetricName: ConcurrentExecutions

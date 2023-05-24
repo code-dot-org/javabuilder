@@ -7,7 +7,10 @@
     "ReservedConcurrentExecutions": "50",
     "LimitPerHour": "-1",
     "LimitPerDay": "50",
-    "SilenceAlerts": "false"
+    "SilenceAlerts": "false",
+    "HighConcurrentExecutionsTopic": "javabuilder-low-urgency",
+    "HighConcurrentExecutionsAlarmThreshold": 45
+
   },
   "Tags": {
     "EnvType": "production"
