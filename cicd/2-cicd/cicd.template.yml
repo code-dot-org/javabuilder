@@ -317,7 +317,9 @@ Resources:
                       - - '{ "SubdomainName": "'
                         - !Sub "javabuilder-dev-${GitHubBranch}"
                         - '" }'
-                  Capabilities: CAPABILITY_AUTO_EXPAND
+                  Capabilities:
+                    - CAPABILITY_AUTO_EXPAND
+                    - CAPABILITY_IAM
                   RoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/admin/CloudFormationService
           - !Ref AWS::NoValue
 
@@ -343,7 +345,9 @@ Resources:
                       - - '{ "SubdomainName": "'
                         - !If [ TargetsMainBranch, 'javabuilder-test', !Sub 'javabuilder-${GitHubBranch}-test' ]
                         - '" }'
-                  Capabilities: CAPABILITY_AUTO_EXPAND
+                  Capabilities:
+                    - CAPABILITY_AUTO_EXPAND
+                    - CAPABILITY_IAM
                   RoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/admin/CloudFormationService
           - !Ref AWS::NoValue
 
