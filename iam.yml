@@ -39,11 +39,6 @@ Resources:
                 Action:
                   - "sqs:ReceiveMessage"
                   - "sqs:DeleteMessage"
-                  # May need the following
-                  # - "sqs:GetQueueAttributes"
-                  # - "sqs:GetQueueUrl"
-                  # - "sqs:ListDeadLetterSourceQueues"
-                  # - "sqs:ListQueues"
                 Resource:
                   # TODO: limit this
                   - '*' 
