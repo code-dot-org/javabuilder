@@ -55,6 +55,7 @@ You can create a Development (aka 'adhoc') environment by setting the `ENVIRONME
 
 Notes:
 
+* branch names are used as a unique identifier (stack name, among others). Therefore we can only deploy one CI/CD pipeline per branch per AWS Account.
 * your branch name cannot contain the character `/`, as this causes issues in AWS. Note that resources will be deployed with the tags `{EnvType = development}`.
 * for now, these must deployed to the production AWS account. There is planned work to enable these to be deployed to the Dev AWS account.
 

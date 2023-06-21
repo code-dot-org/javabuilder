@@ -503,6 +503,7 @@ Resources:
   ContentBucketWritePolicy:
     Type: AWS::IAM::Policy
     Properties:
+      PolicyName: !Sub "${AWS::StackName}-content-bucket-write-policy"
       PolicyDocument:
         Statement:
           - Action:
@@ -516,6 +517,7 @@ Resources:
   ContentBucketReadPolicy:
     Type: AWS::IAM::Policy
     Properties:
+      PolicyName: !Sub "${AWS::StackName}-content-bucket-read-policy"
       PolicyDocument:
         Statement:
           - Action:
