@@ -500,6 +500,7 @@ Resources:
           Resource: !Sub "arn:aws:s3:::${ContentBucket}/*"
           Principal: '*'
 
+  # TODO: the cloudformation role used to deploy this does not have permission to putRolePolicy. I'd like to find a way to allow creation of roles within this template.
   ContentBucketWritePolicy:
     Type: AWS::IAM::Policy
     Properties:
@@ -515,6 +516,7 @@ Resources:
         - javabuilder-iam-PutSourcesLambdaRole-1R0GH6YNAXIC3
         - javabuilder-iam-BuildAndRunLambdaRole-ZR48U5GF0610
 
+  # TODO: the cloudformation role used to deploy this does not have permission to putRolePolicy. I'd like to find a way to allow creation of roles within this template.
   ContentBucketReadPolicy:
     Type: AWS::IAM::Policy
     Properties:
