@@ -511,8 +511,9 @@ Resources:
             Effect: Allow
             Resource: !Sub "arn:aws:s3:::${ContentBucket}/*"
       Roles:
-        - !ImportValue JavabuilderPutSourcesLambdaRole
-        - !ImportValue JavabuilderBuildAndRunLambdaRole
+        # TODO: do not hard code these!
+        - javabuilder-iam-PutSourcesLambdaRole-1R0GH6YNAXIC3
+        - javabuilder-iam-BuildAndRunLambdaRole-ZR48U5GF0610
 
   ContentBucketReadPolicy:
     Type: AWS::IAM::Policy
@@ -525,7 +526,8 @@ Resources:
             Effect: Allow
             Resource: !Sub "arn:aws:s3:::${ContentBucket}/*"
       Roles:
-        - !ImportValue JavabuilderBuildAndRunLambdaRole
+        # TODO: do not hard code this!
+        - javabuilder-iam-BuildAndRunLambdaRole-ZR48U5GF0610
 
   ContentApiCertificate:
     Type: AWS::CertificateManager::Certificate
