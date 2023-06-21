@@ -492,6 +492,31 @@ Resources:
           Resource: !Sub "arn:aws:s3:::${ContentBucket}/*"
           Principal: '*'
 
+  ContentBucketWritePolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+            - 's3:PutObject'
+            Effect: Allow
+            Resource: !Sub "arn:aws:s3:::${ContentBucket}/*"
+      Roles:
+        - !ImportValue JavabuilderPutSourcesLambdaRole
+        - !ImportValue JavabuilderBuildAndRunLambdaRole
+
+  ContentBucketReadPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+            - 's3:GetObject'
+            Effect: Allow
+            Resource: !Sub "arn:aws:s3:::${ContentBucket}/*"
+      Roles:
+        - !ImportValue JavabuilderBuildAndRunLambdaRole
+
   ContentApiCertificate:
     Type: AWS::CertificateManager::Certificate
     Properties:

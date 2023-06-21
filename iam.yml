@@ -17,6 +17,8 @@ Parameters:
 
 Resources:
   # Permissions for the long-running lambda that compiles/runs student projects
+  # S3 Read/Write permissions are granted within the app stack
+  # TODO: create per-environment in app stack
   BuildAndRunLambdaRole:
     Type: AWS::IAM::Role
     Properties:
@@ -32,12 +34,6 @@ Resources:
         - PolicyName: BuildAndRunLambdaExecutionPolicy
           PolicyDocument:
             Statement:
-              # BuildAndRunJavaProject Lambda needs to put objects to the content bucket.
-              - Effect: Allow
-                Action:
-                  - 's3:PutObject'
-                  - 's3:GetObject'
-                Resource: 'arn:aws:s3:::cdo-*javabuilder*-content/*'
               # Read from Javabuilder SQS Queue
               - Effect: Allow
                 Action:
@@ -149,6 +145,8 @@ Resources:
                   - '*'
 
   # Permissions for the lambda that uploads student code to S3
+  # Per-bucket PutObject permissions are granted in the app template
+  # TODO move this role to the app stack
   PutSourcesLambdaRole:
     Type: AWS::IAM::Role
     Properties:
@@ -160,15 +158,6 @@ Resources:
             Principal: {Service: [lambda.amazonaws.com]}
       ManagedPolicyArns:
         - !Ref JavabuilderLoggingPolicy
-      Policies:
-        - PolicyName: named
-          PolicyDocument:
-            Statement:
-              # Put objects to the content bucket.
-              - Effect: Allow
-                Action:
-                  - 's3:putObject'
-                Resource: 'arn:aws:s3:::cdo-*javabuilder*-content/*'
 
   # Shared permissions that several lambdas need
   JavabuilderLoggingPolicy:
@@ -220,12 +209,6 @@ Resources:
                   - "codepipeline:PutApprovalResult"
                   - "cloudformation:DescribeStacks"
                 Resource: '*'
-
-              # BuildAndRunJavaProject Lambda needs to put objects to the content bucket.
-              - Effect: Allow
-                Action:
-                  - 's3:PutObject'
-                Resource: 'arn:aws:s3:::cdo-*javabuilder*-content/*'
 
               # All Lambdas need logging permissions.
               - Effect: Allow
@@ -333,8 +316,10 @@ Resources:
                   - !Sub "arn:aws:s3:::${TemplateBucket}/*"
               - Effect: Allow
                 Action:
+                  # TODO: limit this permission to only actions required by cloudformation (low priority)
                   - "s3:*"
                 Resource:
+                  #  TODO: use new bucket name
                   - "arn:aws:s3:::cdo-*javabuilder*-content"
               - Effect: Allow
                 Action:
