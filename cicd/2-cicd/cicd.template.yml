@@ -392,7 +392,9 @@ Resources:
                     - - '{ "SubdomainName": "'
                       - !If [ TargetsMainBranch, 'javabuilder', !Sub 'javabuilder-${GitHubBranch}' ]
                       - '" }'
-                  Capabilities: CAPABILITY_AUTO_EXPAND
+                  Capabilities:
+                    - CAPABILITY_AUTO_EXPAND
+                    - CAPABILITY_IAM
                   RoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/admin/CloudFormationService
               - Name: app-demo-deploy
                 ActionTypeId:
@@ -422,7 +424,9 @@ Resources:
                           !Sub "javabuilder-demo-${GitHubBranch}",
                         ]
                       - '" }'
-                  Capabilities: CAPABILITY_AUTO_EXPAND
+                  Capabilities:
+                    - CAPABILITY_AUTO_EXPAND
+                    - CAPABILITY_IAM
                   RoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/admin/CloudFormationService
           - !Ref AWS::NoValue
 
