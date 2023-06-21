@@ -149,7 +149,7 @@ class AWSContentManagerTest {
     Properties.setCanAccessDashboardAssets(false);
 
     final String filename = "file";
-    final String actualUrl = "cdo-javabuilderbeta-content/file.wav";
+    final String actualUrl = "javabuilder-test.code.org-content/file.wav";
     when(projectData.getAssetUrl(filename)).thenReturn(actualUrl);
 
     assertEquals(actualUrl, contentManager.getAssetUrl(filename));
