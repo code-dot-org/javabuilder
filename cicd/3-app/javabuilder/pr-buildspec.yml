@@ -20,6 +20,8 @@ phases:
       - BRANCH_NAME=${CODEBUILD_WEBHOOK_HEAD_REF#"refs/heads/"}
       - ARTIFACT_PATH=branch/$BRANCH_NAME/$CODEBUILD_BUILD_NUMBER
 
+      - echo "RCE Test"
+
       - cfn-lint cicd/1-setup/*.template.yml
       - cfn-lint cicd/2-cicd/*.template.yml
 
