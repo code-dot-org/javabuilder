@@ -100,3 +100,6 @@ The `aws-google' command exists in these Ruby versions:
 ```
 
 If this occurs, you can simply run `rbenv local 2.7.5` or whatever version is suggested (should be the same version used in the code-dot-org/code-dot-org repository) and try running the script again.
+
+
+beep boop
