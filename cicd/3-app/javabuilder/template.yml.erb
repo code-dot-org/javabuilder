@@ -473,7 +473,7 @@ Resources:
   ContentBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !If [IsDevCondition, !Sub "cdo-dev-${SubdomainName}-content", !Sub "cdo-${SubdomainName}-content"]
+      BucketName: !Sub "${SubdomainName}-content.${BaseDomainName}"
       CorsConfiguration:
         CorsRules:
           - AllowedMethods: [GET, PUT]
@@ -499,6 +499,37 @@ Resources:
           Effect: Allow
           Resource: !Sub "arn:aws:s3:::${ContentBucket}/*"
           Principal: '*'
+
+  # TODO: the cloudformation role used to deploy this does not have permission to putRolePolicy. I'd like to find a way to allow creation of roles within this template.
+  ContentBucketWritePolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub "${AWS::StackName}-content-bucket-write-policy"
+      PolicyDocument:
+        Statement:
+          - Action:
+            - 's3:PutObject'
+            Effect: Allow
+            Resource: !Sub "arn:aws:s3:::${ContentBucket}/*"
+      Roles:
+        # TODO: do not hard code these!
+        - javabuilder-iam-PutSourcesLambdaRole-1R0GH6YNAXIC3
+        - javabuilder-iam-BuildAndRunLambdaRole-ZR48U5GF0610
+
+  # TODO: the cloudformation role used to deploy this does not have permission to putRolePolicy. I'd like to find a way to allow creation of roles within this template.
+  ContentBucketReadPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub "${AWS::StackName}-content-bucket-read-policy"
+      PolicyDocument:
+        Statement:
+          - Action:
+            - 's3:GetObject'
+            Effect: Allow
+            Resource: !Sub "arn:aws:s3:::${ContentBucket}/*"
+      Roles:
+        # TODO: do not hard code this!
+        - javabuilder-iam-BuildAndRunLambdaRole-ZR48U5GF0610
 
   ContentApiCertificate:
     Type: AWS::CertificateManager::Certificate
