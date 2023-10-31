@@ -91,7 +91,7 @@ Resources:
     Type: AWS::CodeBuild::Project
     Properties:
       Name: !Sub ${AWS::StackName}-${GitHubBranch}-pr-build
-      ServiceRole: !ImportValue JavabuilderCodeBuildRoleArn
+      ServiceRole: !ImportValue JavabuilderPublicCodeBuildRoleArn
       BadgeEnabled: !Ref GitHubBadgeEnabled
       Environment:
         Type: LINUX_CONTAINER
