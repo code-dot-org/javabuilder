@@ -212,6 +212,34 @@ Resources:
       Roles:
         - !ImportValue JavabuilderCodeBuildRoleName
 
+  # Grant the Javabuilder CodeBuild Role additional permissions for resources in
+  # this template. This allows us to avoid granting permission to * resources.
+  JavabuilderRolePolicy:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: !Sub "${AWS::StackName}-codebuild-policy"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - codebuild:*
+            Resource:
+              - !GetAtt LoadTestBuildProject.Arn
+              - !GetAtt AppBuildProject.Arn
+              - !GetAtt IntegrationTestBuildProject.Arn
+          - Effect: Allow
+            Action:
+              - codebuild:CreateReportGroup
+              - codebuild:CreateReport
+              - codebuild:UpdateReport
+              - codebuild:BatchPutTestCases
+              - codebuild:BatchPutCodeCoverage
+            Resource:
+              - !Sub arn:aws:codebuild:us-east-1:165336972514:report-group/${AWS::StackName}-${GitHubBranch}-pr-build
+      Roles:
+        - !ImportValue JavabuilderCodeBuildRoleName
+
   Pipeline:
     Type: AWS::CodePipeline::Pipeline
     Properties: 
