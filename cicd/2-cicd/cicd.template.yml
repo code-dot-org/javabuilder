@@ -40,31 +40,6 @@ Conditions:
 
 Resources:
 
-  # The Elastic Container Registry Repository will store our built docker
-  # images, for example, the load-test docker image.
-  EcrRepository:
-    Type: AWS::ECR::Repository
-    Properties: 
-      RepositoryName: !Sub javabuilder-${GitHubBranch}
-      RepositoryPolicyText:
-        Version: "2012-10-17"
-        Statement: 
-          - 
-            Sid: AllowDeveloperPushPull
-            Effect: Allow
-            Principal: 
-              AWS: 
-                - !ImportValue JavabuilderCodeBuildRoleArn
-                - !Sub "arn:aws:iam::${AWS::AccountId}:role/admin/Developer"
-            Action: 
-              - "ecr:GetDownloadUrlForLayer"
-              - "ecr:BatchGetImage"
-              - "ecr:BatchCheckLayerAvailability"
-              - "ecr:PutImage"
-              - "ecr:InitiateLayerUpload"
-              - "ecr:UploadLayerPart"
-              - "ecr:CompleteLayerUpload"
-
   EncryptionKey:
     Type: 'AWS::KMS::Key'
     Properties:
@@ -116,7 +91,7 @@ Resources:
     Type: AWS::CodeBuild::Project
     Properties:
       Name: !Sub ${AWS::StackName}-${GitHubBranch}-pr-build
-      ServiceRole: !ImportValue JavabuilderCodeBuildRoleArn
+      ServiceRole: !ImportValue JavabuilderPublicCodeBuildRoleArn
       BadgeEnabled: !Ref GitHubBadgeEnabled
       Environment:
         Type: LINUX_CONTAINER
@@ -126,8 +101,6 @@ Resources:
         EnvironmentVariables:
           - Name: ARTIFACT_STORE
             Value: !ImportValue JavabuilderCodeBuildArtifactBucket
-          - Name: ECR_REPOSITORY
-            Value: !GetAtt EcrRepository.RepositoryUri
       Cache:
         Type: LOCAL
         Modes:
@@ -145,10 +118,13 @@ Resources:
       Triggers:
         Webhook: true
         FilterGroups:
-          - - Pattern: !Sub ^refs/heads/${GitHubBranch}$
-              Type: BASE_REF
-            - Pattern: PULL_REQUEST_CREATED,PULL_REQUEST_UPDATED,PULL_REQUEST_REOPENED
-              Type: EVENT
+          # Pull requests into `main` from a trusted user
+          - - Type: BASE_REF
+              Pattern: !Sub ^refs/heads/${GitHubBranch}$
+            - Type: EVENT
+              Pattern: PULL_REQUEST_CREATED,PULL_REQUEST_UPDATED,PULL_REQUEST_REOPENED
+            - Type: ACTOR_ACCOUNT_ID
+              Pattern: ^(31292421|113540108|10283727|105933103|16494556|11708250|11284819|8747128|25372625|46464143|2205926|131809324|7014619|7144482|5107622|68714964|8001765|1372238|5184438|2933346|137330041|208083|26844240|12300669|4108328|107423305|1859238|244100|37230822|82185575|8324574|38662275|137838584|95503833|117784268|9256643|24883357|22244040|25193259|8573958|29001621|113938636|66776217|43474485|33666587|5454101|98911841|8847422|5552007|65205145|108825710|1382374|126921802|85528507|769225|223277|2157034|14046120|1466175|137829631|142271809|56283563|146779710|124813947|31674)$
   
   # The CodeBuild Project is used in the CodePipeline pipeline to prepare for a release.
   # It will perform any steps defined in the referenced buildspec.yml file.
@@ -165,8 +141,6 @@ Resources:
         EnvironmentVariables:
           - Name: ARTIFACT_STORE
             Value: !ImportValue JavabuilderCodeBuildArtifactBucket
-          - Name: ECR_REPOSITORY
-            Value: !GetAtt EcrRepository.RepositoryUri
       Source:
         Type: CODEPIPELINE
         BuildSpec: cicd/3-app/load-test/load-test.buildspec.yml
@@ -188,8 +162,6 @@ Resources:
         EnvironmentVariables:
           - Name: ARTIFACT_STORE
             Value: !ImportValue JavabuilderCodeBuildArtifactBucket
-          - Name: ECR_REPOSITORY
-            Value: !GetAtt EcrRepository.RepositoryUri
       Source:
         Type: CODEPIPELINE
         BuildSpec: cicd/3-app/javabuilder/buildspec.yml
@@ -211,6 +183,34 @@ Resources:
         BuildSpec: cicd/3-app/javabuilder/integration-test-buildspec.yml
       Artifacts:
         Type: CODEPIPELINE
+
+  # Grant the Javabuilder CodeBuild Role additional permissions for resources in
+  # this template. This allows us to avoid granting permission to * resources.
+  JavabuilderRolePolicy:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: !Sub "${AWS::StackName}-codebuild-policy"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - codebuild:*
+            Resource:
+              - !GetAtt LoadTestBuildProject.Arn
+              - !GetAtt AppBuildProject.Arn
+              - !GetAtt IntegrationTestBuildProject.Arn
+          - Effect: Allow
+            Action:
+              - codebuild:CreateReportGroup
+              - codebuild:CreateReport
+              - codebuild:UpdateReport
+              - codebuild:BatchPutTestCases
+              - codebuild:BatchPutCodeCoverage
+            Resource:
+              - !Sub arn:aws:codebuild:us-east-1:165336972514:report-group/${AWS::StackName}-${GitHubBranch}-pr-build
+      Roles:
+        - !ImportValue JavabuilderCodeBuildRoleName
 
   # Grant the Javabuilder CodeBuild Role additional permissions for resources in
   # this template. This allows us to avoid granting permission to * resources.
