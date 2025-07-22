@@ -202,23 +202,7 @@ with open('dev-app-template-no-ssl.yml', 'w') as f:
 print("SSL resources completely removed and CloudFront certificate fixed")
 PYTHON_SCRIPT
 
-echo "⚙️ Running environment configuration script..."
-if [ -f "../config/set_environment.sh" ]; then
-    source ../config/set_environment.sh
-else
-    echo "⚠️  Environment configuration script not found, skipping..."
-fi
 
-echo "🔧 Creating minimal artifacts if missing..."
-if [ ! -d "runtime" ]; then
-    mkdir -p runtime
-    # Create a minimal zip file for Lambda functions that need CodeUri
-    echo 'print("Hello from placeholder Lambda")' > runtime/placeholder.py
-    cd runtime && zip -r ../runtime.zip . && cd ..
-    echo "✅ Created minimal runtime artifacts"
-else
-    echo "✅ Runtime directory already exists"
-fi
 
 echo "📦 Packaging CloudFormation template..."
 # Copy the template to root directory for packaging since CodeUri paths are relative to root
