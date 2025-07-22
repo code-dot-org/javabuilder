@@ -10,7 +10,7 @@ AWS_PROFILE="codeorg-dev"
 REGION="us-east-1"
 BASE_STACK_NAME="javabuilder-base-infrastructure"
 IAM_TEMPLATE_FILE="../iam.yml"
-ARTIFACT_BUCKET_NAME="javabuilder-dev-artifacts-$(date +%s)"
+ARTIFACT_BUCKET_NAME="javabuilder-dev-artifacts"
 
 echo "🚀 Starting Javabuilder Base Infrastructure Deployment..."
 

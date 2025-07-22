@@ -13,14 +13,9 @@ APP_TEMPLATE="app-template.yml"
 NO_SSL_TEMPLATE="app-template-no-ssl.yml"
 PACKAGED_TEMPLATE="packaged-app-template-no-ssl.yml"
 
-# Set artifact bucket - use environment variable if available, otherwise discover
+# Set artifact bucket - use environment variable if available, otherwise use default
 if [ -z "$ARTIFACT_STORE" ]; then
-    echo "📦 Discovering artifact bucket..."
-    ARTIFACT_STORE=$(aws s3api list-buckets --profile "$PROFILE" --query 'Buckets[?starts_with(Name, `javabuilder-dev-artifacts`)].Name' --output text | awk '{print $1}')
-    if [ -z "$ARTIFACT_STORE" ] || [ "$ARTIFACT_STORE" = "None" ]; then
-        echo "❌ Could not find artifact bucket and ARTIFACT_STORE not set"
-        exit 1
-    fi
+    ARTIFACT_STORE="javabuilder-dev-artifacts"
 fi
 echo "✅ Using artifact bucket: $ARTIFACT_STORE"
 
