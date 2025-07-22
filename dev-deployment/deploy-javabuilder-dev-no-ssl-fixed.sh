@@ -1,56 +1,74 @@
 #!/bin/bash
 
-# Deploy JavaBuilder without SSL certificates for dev environment
-# This bypasses Route53 permission issues while maintaining functionality
+# Deploy JavaBuilder without SSL certificates for dev environment  
+# Based on production buildspec.yml but with SSL removal for dev
 
 set -e
 
 PROFILE="codeorg-dev"
 REGION="us-east-1"
 STACK_NAME="javabuilder-dev"
-BASE_STACK_NAME="javabuilder-base-infrastructure"
 TEMPLATE_PATH="../cicd/3-app/javabuilder"
-PROCESSED_TEMPLATE="dev-app-template.yml"
-NO_SSL_TEMPLATE="dev-app-template-no-ssl.yml"
-PACKAGED_TEMPLATE="packaged-dev-app-template-no-ssl.yml"
+APP_TEMPLATE="app-template.yml"
+NO_SSL_TEMPLATE="app-template-no-ssl.yml"
+PACKAGED_TEMPLATE="packaged-app-template-no-ssl.yml"
 
-# Ensure Java is in PATH
+# Set artifact bucket - use environment variable if available, otherwise discover
+if [ -z "$ARTIFACT_STORE" ]; then
+    echo "📦 Discovering artifact bucket..."
+    ARTIFACT_STORE=$(aws s3api list-buckets --profile "$PROFILE" --query 'Buckets[?starts_with(Name, `javabuilder-dev-artifacts`)].Name' --output text | awk '{print $1}')
+    if [ -z "$ARTIFACT_STORE" ] || [ "$ARTIFACT_STORE" = "None" ]; then
+        echo "❌ Could not find artifact bucket and ARTIFACT_STORE not set"
+        exit 1
+    fi
+fi
+echo "✅ Using artifact bucket: $ARTIFACT_STORE"
+
+# Ensure Java is in PATH  
 export PATH="/opt/homebrew/opt/openjdk@11/bin:$PATH"
 
-echo "🚀 Starting Javabuilder Application Deployment (No SSL)..."
-echo "📋 Checking AWS CLI and credentials for profile: $PROFILE..."
+echo "🚀 Starting Javabuilder Dev Deployment (following production buildspec pattern)..."
 
-# Verify AWS credentials
-if ! aws sts get-caller-identity --profile "$PROFILE" >/dev/null 2>&1; then
-    echo "❌ AWS credentials not configured for profile: $PROFILE"
-    echo "Please run: aws configure --profile $PROFILE"
-    exit 1
-fi
-echo "✅ AWS credentials verified for profile: $PROFILE"
+# Build javabuilder-authorizer (following production buildspec)
+echo "🔐 Building javabuilder-authorizer..."
+cd ../javabuilder-authorizer
+./build.sh
 
-echo "🔍 Checking base infrastructure..."
-if ! aws cloudformation describe-stacks --stack-name "$BASE_STACK_NAME" --profile "$PROFILE" >/dev/null 2>&1; then
-    echo "❌ Base infrastructure not found. Please run ./01-deploy-base-infrastructure.sh first"
-    exit 1
-fi
-echo "✅ Base infrastructure found"
+# Build org-code-javabuilder (following production buildspec)
+echo "🔨 Building org-code-javabuilder..."
+cd ../org-code-javabuilder  
+./gradlew test
+./build.sh
 
-echo "📦 Getting artifact bucket from base infrastructure..."
-# Look for artifact bucket created by the base deployment - get just the first one
-ARTIFACT_BUCKET=$(aws s3api list-buckets --profile "$PROFILE" --query 'Buckets[?starts_with(Name, `javabuilder-dev-artifacts`)].Name' --output text | awk '{print $1}')
+# Build api-gateway-routes (following production buildspec)
+echo "🌐 Building api-gateway-routes..."
+cd ../api-gateway-routes
+rake test
 
-if [ -z "$ARTIFACT_BUCKET" ] || [ "$ARTIFACT_BUCKET" = "None" ]; then
-    echo "❌ Could not find javabuilder artifact bucket. Make sure base infrastructure was deployed."
-    exit 1
-fi
-echo "✅ Using artifact bucket: $ARTIFACT_BUCKET"
+# Return to deployment directory
+cd ../dev-deployment
 
+# Process ERB template (following production buildspec)
 echo "🔄 Processing ERB template..."
-cd "$TEMPLATE_PATH"
-# Use erb command directly with proper trim mode
-erb -T - template.yml.erb > "../../../dev-deployment/$PROCESSED_TEMPLATE"
-cd - > /dev/null
-echo "✅ Generated CloudFormation template: $PROCESSED_TEMPLATE"
+erb -T - "$TEMPLATE_PATH/template.yml.erb" > "$APP_TEMPLATE"
+echo "✅ Generated CloudFormation template: $APP_TEMPLATE"
+
+# Lint template (following production buildspec)
+echo "🗺️ Linting CloudFormation template..."
+if command -v cfn-lint >/dev/null 2>&1; then
+    cfn-lint "$APP_TEMPLATE"
+    echo "✅ Template linting passed"
+else
+    echo "⚠️ cfn-lint not found, skipping template validation"
+fi
+
+# Create environment config (following production buildspec)
+echo "⚙️ Creating environment config..."
+if [ -f "$TEMPLATE_PATH/config/create-environment-config.sh" ]; then
+    "$TEMPLATE_PATH/config/create-environment-config.sh"
+else
+    echo "⚠️ Environment config script not found, skipping..."
+fi
 
 echo "🚫 Removing SSL certificate resources from template..."
 
@@ -59,7 +77,7 @@ python3 << 'PYTHON_SCRIPT'
 import re
 
 # Read the processed template
-with open('dev-app-template.yml', 'r') as f:
+with open('app-template.yml', 'r') as f:
     content = f.read()
 
 # Target SSL resources that need complete removal
@@ -196,7 +214,7 @@ content_fixed = re.sub(
 )
 
 # Write the cleaned template
-with open('dev-app-template-no-ssl.yml', 'w') as f:
+with open('app-template-no-ssl.yml', 'w') as f:
     f.write(content_fixed)
 
 print("SSL resources completely removed and CloudFront certificate fixed")
@@ -204,18 +222,13 @@ PYTHON_SCRIPT
 
 
 
+# Package template (following production buildspec pattern)
 echo "📦 Packaging CloudFormation template..."
-# Copy the template to root directory for packaging since CodeUri paths are relative to root
-cp "$NO_SSL_TEMPLATE" "../temp-template.yml"
-cd ..
 aws cloudformation package \
-    --template-file "temp-template.yml" \
-    --s3-bucket "$ARTIFACT_BUCKET" \
-    --output-template-file "dev-deployment/$PACKAGED_TEMPLATE" \
-    --profile "$PROFILE" \
-    --region "$REGION"
-rm temp-template.yml
-cd dev-deployment
+    --template-file "$NO_SSL_TEMPLATE" \
+    --s3-bucket "$ARTIFACT_STORE" \
+    --s3-prefix package \
+    --output-template-file "$PACKAGED_TEMPLATE"
 
 echo "✅ Template packaged successfully"
 
@@ -228,61 +241,46 @@ else
     ACTION="create"
 fi
 
-echo "📎 Uploading template to S3..."
-TIMESTAMP=$(date +%s)
-TEMPLATE_KEY="templates/$TIMESTAMP-packaged-dev-app-template-no-ssl.yml"
-aws s3 cp "$PACKAGED_TEMPLATE" "s3://$ARTIFACT_BUCKET/$TEMPLATE_KEY" --profile "$PROFILE"
-TEMPLATE_URL="https://$ARTIFACT_BUCKET.s3.$REGION.amazonaws.com/$TEMPLATE_KEY"
-echo "✅ Template uploaded to: $TEMPLATE_URL"
-
+# Deploy stack using CloudFormation (dev-specific deployment logic)
 echo "🚀 Deploying application stack without SSL certificates..."
-aws cloudformation ${ACTION}-stack \
+aws cloudformation deploy \
     --stack-name "$STACK_NAME" \
-    --template-url "$TEMPLATE_URL" \
+    --template-file "$PACKAGED_TEMPLATE" \
     --capabilities CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND \
-    --parameters \
-        ParameterKey=BaseDomainName,ParameterValue=dev-code.org \
-        ParameterKey=BaseDomainNameHostedZonedID,ParameterValue=Z2LCOI49SCXUGU \
-        ParameterKey=SubdomainName,ParameterValue=javabuilder-dev \
-        ParameterKey=ProvisionedConcurrentExecutions,ParameterValue=1 \
-        ParameterKey=ReservedConcurrentExecutions,ParameterValue=3 \
-        ParameterKey=LimitPerHour,ParameterValue=50 \
-        ParameterKey=LimitPerDay,ParameterValue=150 \
-        ParameterKey=TeacherLimitPerHour,ParameterValue=5000 \
-        ParameterKey=StageName,ParameterValue=Prod \
-        ParameterKey=SilenceAlerts,ParameterValue=true \
-        ParameterKey=HighConcurrentExecutionsTopic,ParameterValue=CDO-Urgent \
-        ParameterKey=HighConcurrentExecutionsAlarmThreshold,ParameterValue=400 \
+    --parameter-overrides \
+        BaseDomainName=dev-code.org \
+        BaseDomainNameHostedZonedID=Z2LCOI49SCXUGU \
+        SubdomainName=javabuilder-dev \
+        ProvisionedConcurrentExecutions=1 \
+        ReservedConcurrentExecutions=3 \
+        LimitPerHour=50 \
+        LimitPerDay=150 \
+        TeacherLimitPerHour=5000 \
+        StageName=Prod \
+        SilenceAlerts=true \
+        HighConcurrentExecutionsTopic=CDO-Urgent \
+        HighConcurrentExecutionsAlarmThreshold=400 \
     --profile "$PROFILE" \
     --region "$REGION"
 
-echo "⏳ Waiting for application deployment to complete..."
-aws cloudformation wait stack-${ACTION}-complete --stack-name "$STACK_NAME" --profile "$PROFILE" --region "$REGION"
+echo "✅ Application deployment completed successfully!"
 
-if [ $? -eq 0 ]; then
-    echo "✅ Application deployment completed successfully!"
-    
-    echo "📊 Stack Outputs:"
-    aws cloudformation describe-stacks \
-        --stack-name "$STACK_NAME" \
-        --profile "$PROFILE" \
-        --region "$REGION" \
-        --query 'Stacks[0].Outputs[*].[OutputKey,OutputValue,Description]' \
-        --output table
-    
-    echo "🎉 Deployment Summary:"
-    echo "   Stack Name: $STACK_NAME"
-    echo "   Region: $REGION"
-    echo "   SSL Certificates: DISABLED (for dev environment)"
-    echo "   🔗 Note: Use HTTP endpoints for testing"
-else
-    echo "❌ Deployment failed. Check CloudFormation events for details:"
-    echo "   aws cloudformation describe-stack-events --stack-name $STACK_NAME --profile $PROFILE"
-    exit 1
-fi
+echo "📊 Stack Outputs:"
+aws cloudformation describe-stacks \
+    --stack-name "$STACK_NAME" \
+    --profile "$PROFILE" \
+    --region "$REGION" \
+    --query 'Stacks[0].Outputs[*].[OutputKey,OutputValue,Description]' \
+    --output table
+
+echo "🎉 Deployment Summary:"
+echo "   Stack Name: $STACK_NAME"
+echo "   Region: $REGION"
+echo "   SSL Certificates: DISABLED (for dev environment)"
+echo "   🔗 Note: Use HTTP endpoints for testing"
 
 # Cleanup temp files
-rm -f "$PROCESSED_TEMPLATE" "$NO_SSL_TEMPLATE" "$PACKAGED_TEMPLATE"
+rm -f "$APP_TEMPLATE" "$NO_SSL_TEMPLATE" "$PACKAGED_TEMPLATE"
 
 echo "✅ Deployment complete!"
 
