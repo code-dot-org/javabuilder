@@ -51,9 +51,9 @@ cd ../dev-deployment
 
 # Copy built artifacts to deployment directory for CloudFormation packaging
 echo "📋 Copying built artifacts to deployment directory..."
-rsync -a ../api-gateway-routes/ ./api-gateway-routes/
-rsync -a ../javabuilder-authorizer/ ./javabuilder-authorizer/
-rsync -a ../org-code-javabuilder/ ./org-code-javabuilder/
+cp -r ../api-gateway-routes .
+cp -r ../javabuilder-authorizer .
+cp -r ../org-code-javabuilder .
 
 # Process ERB template (following production buildspec)
 echo "🔄 Processing ERB template..."
