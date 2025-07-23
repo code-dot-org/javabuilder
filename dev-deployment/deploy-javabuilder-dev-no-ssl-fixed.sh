@@ -241,6 +241,7 @@ echo "🚀 Deploying application stack without SSL certificates..."
 aws cloudformation deploy \
     --stack-name "$STACK_NAME" \
     --template-file "$PACKAGED_TEMPLATE" \
+    --s3-bucket "$ARTIFACT_STORE" \
     --capabilities CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND \
     --parameter-overrides \
         BaseDomainName=dev-code.org \
