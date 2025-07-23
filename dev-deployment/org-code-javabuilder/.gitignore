@@ -1,0 +1,22 @@
+# Ignore Gradle project-specific cache directory
+.gradle
+
+# Ignore Gradle build output directory
+build
+bin
+
+# Ignore Gradle auto-generated files
+app/.project
+*.classpath
+.settings
+.project
+
+# Ignore AWS SAM generated files
+.aws-sam
+
+.vscode/*
+
+*.zip
+
+# ignore neighborhood grid.txt file (auto-generated when running locally)
+lib/grid.txt
