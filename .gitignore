@@ -14,5 +14,6 @@
 # Ignore Gradle build output directory
 build
 
-# Ignore the generated template.yml file
+# Ignore the generated template.yml files
 template.yml
+app-template.yml
