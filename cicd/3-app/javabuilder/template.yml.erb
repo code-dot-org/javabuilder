@@ -56,6 +56,10 @@ Parameters:
     Type: Number
     Description: The threshold for the high concurrent executions alarm.
     Default: 400
+  WildcardCertificateArn:
+    Type: String
+    Description: ARN of existing wildcard certificate for dev environments (optional)
+    Default: ""
 <%
 JAVALAB_APP_TYPES = %w(
   Theater
@@ -65,12 +69,14 @@ JAVALAB_APP_TYPES = %w(
 -%>
 Globals:
   Function:
-    Runtime: ruby2.7
+    Runtime: ruby3.2
     Timeout: 30
     MemorySize: 256
     Tracing: Active
 Conditions:
   IsDevCondition: !Equals [!Ref BaseDomainName, "dev-code.org"]
+  UseWildcardCertificate: !Not [!Equals [!Ref WildcardCertificateArn, ""]]
+  CreateNewCertificates: !Equals [!Ref WildcardCertificateArn, ""]
   SilenceAlertsCondition: !Or [Condition: IsDevCondition, !Equals [!Ref SilenceAlerts, "true"]]
 Resources:
 # Note: We can't update the name of a DomainName resource once it has been created because the
@@ -96,11 +102,12 @@ Resources:
       DomainName: !Sub "${SubdomainName}<%=config[:Suffix]%>.${BaseDomainName}"
       DomainNameConfigurations:
         - EndpointType: REGIONAL
-          CertificateArn: !Ref <%=config[:Prefix]%>Certificate
+          CertificateArn: !If [UseWildcardCertificate, !Ref WildcardCertificateArn, !Ref <%=config[:Prefix]%>Certificate]
           CertificateName: !Sub "${SubdomainName}<%=config[:Suffix]%>.${BaseDomainName}"
 
   <%=config[:Prefix]%>Certificate:
     Type: AWS::CertificateManager::Certificate
+    Condition: CreateNewCertificates
     Properties:
       DomainName: !Sub "${SubdomainName}<%=config[:Suffix]%>.${BaseDomainName}"
       ValidationMethod: DNS
@@ -489,6 +496,15 @@ Resources:
             Status: Enabled
             ExpirationInDays: 1
 
+  ContentOAC:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: !Sub "${SubdomainName}-content-oac"
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
   ContentBucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:
@@ -498,10 +514,15 @@ Resources:
         - Action: ['s3:GetObject']
           Effect: Allow
           Resource: !Sub "arn:aws:s3:::${ContentBucket}/*"
-          Principal: '*'
+          Principal:
+            Service: cloudfront.amazonaws.com
+          Condition:
+            StringEquals:
+              "AWS:SourceArn": !Sub "arn:aws:cloudfront::${AWS::AccountId}:distribution/${ContentCDN}"
 
   ContentApiCertificate:
     Type: AWS::CertificateManager::Certificate
+    Condition: CreateNewCertificates
     Properties:
       DomainName: !Sub "${SubdomainName}-content.${BaseDomainName}"
       ValidationMethod: DNS
@@ -526,7 +547,7 @@ Resources:
         Enabled: true
         Aliases: [!Sub "${SubdomainName}-content.${BaseDomainName}"]
         ViewerCertificate:
-          AcmCertificateArn: !Ref ContentApiCertificate
+          AcmCertificateArn: !If [UseWildcardCertificate, !Ref WildcardCertificateArn, !Ref ContentApiCertificate]
           MinimumProtocolVersion: TLSv1
           SslSupportMethod: sni-only
         CustomErrorResponses:
@@ -540,7 +561,7 @@ Resources:
         Origins:
           - Id: ContentBucket
             DomainName: !GetAtt ContentBucket.DomainName
-            S3OriginConfig: {}
+            OriginAccessControlId: !Ref ContentOAC
         DefaultCacheBehavior:
           TargetOriginId: ContentBucket
           AllowedMethods: [DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT]
