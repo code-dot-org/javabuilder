@@ -16,7 +16,14 @@ PACKAGED_TEMPLATE="packaged-app-template.yml"
 if [ -z "$ARTIFACT_STORE" ]; then
     ARTIFACT_STORE="javabuilder-dev-artifacts"
 fi
-echo "✅ Using artifact bucket: $ARTIFACT_STORE"
+# Check if artifact bucket exists, create if needed
+echo "🔍 Checking if artifact bucket exists: $ARTIFACT_STORE"
+if ! aws s3api head-bucket --bucket "$ARTIFACT_STORE" --profile "$PROFILE" --region "$REGION" 2>/dev/null; then
+    echo "📦 Creating artifact bucket: $ARTIFACT_STORE"
+    aws s3 mb "s3://$ARTIFACT_STORE" --profile "$PROFILE" --region "$REGION"
+else
+    echo "✅ Artifact bucket already exists: $ARTIFACT_STORE"
+fi
 
 # Ensure Java is in PATH  
 export PATH="/opt/homebrew/opt/openjdk@11/bin:$PATH"
@@ -44,9 +51,9 @@ cd ../dev-deployment
 
 # Copy built artifacts to deployment directory for CloudFormation packaging
 echo "📋 Copying built artifacts to deployment directory..."
-cp -r ../api-gateway-routes .
-cp -r ../javabuilder-authorizer .
-cp -r ../org-code-javabuilder .
+rsync -a ../api-gateway-routes/ ./api-gateway-routes/
+rsync -a ../javabuilder-authorizer/ ./javabuilder-authorizer/
+rsync -a ../org-code-javabuilder/ ./org-code-javabuilder/
 
 # Process ERB template (following production buildspec)
 echo "🔄 Processing ERB template..."
@@ -104,6 +111,7 @@ aws cloudformation deploy \
         BaseDomainName=dev-code.org \
         BaseDomainNameHostedZonedID=Z2LCOI49SCXUGU \
         SubdomainName=javabuilder-dev \
+        WildcardCertificateArn=arn:aws:acm:us-east-1:165336972514:certificate/bb245651-2ce8-4864-9975-c833af199154 \
         ProvisionedConcurrentExecutions=1 \
         ReservedConcurrentExecutions=3 \
         LimitPerHour=50 \

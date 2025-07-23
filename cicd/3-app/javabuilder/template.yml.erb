@@ -56,6 +56,10 @@ Parameters:
     Type: Number
     Description: The threshold for the high concurrent executions alarm.
     Default: 400
+  WildcardCertificateArn:
+    Type: String
+    Description: ARN of existing wildcard certificate for dev environments (optional)
+    Default: ""
 <%
 JAVALAB_APP_TYPES = %w(
   Theater
@@ -71,6 +75,8 @@ Globals:
     Tracing: Active
 Conditions:
   IsDevCondition: !Equals [!Ref BaseDomainName, "dev-code.org"]
+  UseWildcardCertificate: !Not [!Equals [!Ref WildcardCertificateArn, ""]]
+  CreateNewCertificates: !Equals [!Ref WildcardCertificateArn, ""]
   SilenceAlertsCondition: !Or [Condition: IsDevCondition, !Equals [!Ref SilenceAlerts, "true"]]
 Resources:
 # Note: We can't update the name of a DomainName resource once it has been created because the
@@ -96,11 +102,12 @@ Resources:
       DomainName: !Sub "${SubdomainName}<%=config[:Suffix]%>.${BaseDomainName}"
       DomainNameConfigurations:
         - EndpointType: REGIONAL
-          CertificateArn: !Ref <%=config[:Prefix]%>Certificate
+          CertificateArn: !If [UseWildcardCertificate, !Ref WildcardCertificateArn, !Ref <%=config[:Prefix]%>Certificate]
           CertificateName: !Sub "${SubdomainName}<%=config[:Suffix]%>.${BaseDomainName}"
 
   <%=config[:Prefix]%>Certificate:
     Type: AWS::CertificateManager::Certificate
+    Condition: CreateNewCertificates
     Properties:
       DomainName: !Sub "${SubdomainName}<%=config[:Suffix]%>.${BaseDomainName}"
       ValidationMethod: DNS
@@ -502,6 +509,7 @@ Resources:
 
   ContentApiCertificate:
     Type: AWS::CertificateManager::Certificate
+    Condition: CreateNewCertificates
     Properties:
       DomainName: !Sub "${SubdomainName}-content.${BaseDomainName}"
       ValidationMethod: DNS
@@ -526,7 +534,7 @@ Resources:
         Enabled: true
         Aliases: [!Sub "${SubdomainName}-content.${BaseDomainName}"]
         ViewerCertificate:
-          AcmCertificateArn: !Ref ContentApiCertificate
+          AcmCertificateArn: !If [UseWildcardCertificate, !Ref WildcardCertificateArn, !Ref ContentApiCertificate]
           MinimumProtocolVersion: TLSv1
           SslSupportMethod: sni-only
         CustomErrorResponses:

@@ -63,6 +63,10 @@ Parameters:
     Type: Number
     Description: The threshold for the high concurrent executions alarm.
     Default: 400
+  WildcardCertificateArn:
+    Type: String
+    Description: ARN of existing wildcard certificate for dev environments (optional)
+    Default: ''
 Globals:
   Function:
     Runtime: ruby3.2
@@ -74,6 +78,15 @@ Conditions:
     Fn::Equals:
     - Ref: BaseDomainName
     - dev-code.org
+  UseWildcardCertificate:
+    Fn::Not:
+    - Fn::Equals:
+      - Ref: WildcardCertificateArn
+      - ''
+  CreateNewCertificates:
+    Fn::Equals:
+    - Ref: WildcardCertificateArn
+    - ''
   SilenceAlertsCondition:
     Fn::Or:
     - Condition: IsDevCondition
@@ -106,11 +119,15 @@ Resources:
       DomainNameConfigurations:
       - EndpointType: REGIONAL
         CertificateArn:
-          Ref: HttpCertificate
+          Fn::If:
+          - UseWildcardCertificate
+          - Ref: WildcardCertificateArn
+          - Ref: HttpCertificate
         CertificateName:
           Fn::Sub: ${SubdomainName}-http.${BaseDomainName}
   HttpCertificate:
     Type: AWS::CertificateManager::Certificate
+    Condition: CreateNewCertificates
     Properties:
       DomainName:
         Fn::Sub: ${SubdomainName}-http.${BaseDomainName}
@@ -156,11 +173,15 @@ Resources:
       DomainNameConfigurations:
       - EndpointType: REGIONAL
         CertificateArn:
-          Ref: Certificate
+          Fn::If:
+          - UseWildcardCertificate
+          - Ref: WildcardCertificateArn
+          - Ref: Certificate
         CertificateName:
           Fn::Sub: ${SubdomainName}.${BaseDomainName}
   Certificate:
     Type: AWS::CertificateManager::Certificate
+    Condition: CreateNewCertificates
     Properties:
       DomainName:
         Fn::Sub: ${SubdomainName}.${BaseDomainName}
@@ -206,7 +227,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Description: Puts user sources into the S3 bucket
-      CodeUri: s3://javabuilder-dev-artifacts/package/6bd3c49eb168c61450647e247e641dba
+      CodeUri: s3://javabuilder-dev-artifacts/package/8cd452a43280c8ba34b6fa3e1628e1d8
       Handler: api_gateway_put_function.lambda_handler
       Role:
         Fn::ImportValue: JavabuilderPutSourcesLambdaRole
@@ -402,7 +423,7 @@ Resources:
     Properties:
       Description: Starts the long-running Lambda that compiles and runs a JavaLab
         project and relays messages to it from the JavaLab client.
-      CodeUri: s3://javabuilder-dev-artifacts/package/6bd3c49eb168c61450647e247e641dba
+      CodeUri: s3://javabuilder-dev-artifacts/package/8cd452a43280c8ba34b6fa3e1628e1d8
       Handler: api_gateway_proxy_function.lambda_handler
       Role:
         Fn::ImportValue: JavabuilderSessionManagerMessageRelayLambdaRole
@@ -427,7 +448,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: http_authorizer_function.lambda_handler
-      CodeUri: s3://javabuilder-dev-artifacts/package/d5cead5296574358e818b10e30608917
+      CodeUri: s3://javabuilder-dev-artifacts/package/0fce7fb0ce829b454a6cdfae07ef0aef
       Description: Authorize PUT by decoding JWT in Authorization querystring parameter.
       Timeout: 3
       Role:
@@ -463,7 +484,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: websocket_authorizer_function.lambda_handler
-      CodeUri: s3://javabuilder-dev-artifacts/package/d5cead5296574358e818b10e30608917
+      CodeUri: s3://javabuilder-dev-artifacts/package/0fce7fb0ce829b454a6cdfae07ef0aef
       Description: Authorize WebSocket connect by decoding JWT in Authorization querystring
         parameter.
       Timeout: 3
@@ -501,7 +522,7 @@ Resources:
     Properties:
       CompatibleRuntimes:
       - java11
-      ContentUri: s3://javabuilder-dev-artifacts/package/b82fbc3243180f25fa5143449b45f916
+      ContentUri: s3://javabuilder-dev-artifacts/package/fe8498023b5cf5a3fad0954b6cac402a
       Description: Change Java runtime to launch from the writeable /tmp directory
         to enable student projects to write files more easily.
       LayerName: change-java-runtime-directory
@@ -510,7 +531,7 @@ Resources:
     Properties:
       CompatibleRuntimes:
       - java11
-      ContentUri: s3://javabuilder-dev-artifacts/package/c87bf280749fe9edfaf51350315feca8
+      ContentUri: s3://javabuilder-dev-artifacts/package/138fadb063258a70cd0b3da934fd44bb
       Description: Add a font configuration file to enable use of fonts.
       LayerName: font-configuration
   BuildAndRunJavaTheaterProjectFunction:
@@ -521,7 +542,7 @@ Resources:
       - Ref: ChangeJavaRuntimeDirectoryLayer
       Handler: org.code.javabuilder.LambdaRequestHandler::handleRequest
       Runtime: java11
-      CodeUri: s3://javabuilder-dev-artifacts/package/2cf8630faa1e4cd4f65f77a5a3ab8645
+      CodeUri: s3://javabuilder-dev-artifacts/package/e71c1546accffe0e41e0eec91a0e6766
       AutoPublishAlias: live
       ReservedConcurrentExecutions:
         Ref: ReservedConcurrentExecutions
@@ -557,7 +578,7 @@ Resources:
       - Ref: ChangeJavaRuntimeDirectoryLayer
       Handler: org.code.javabuilder.LambdaRequestHandler::handleRequest
       Runtime: java11
-      CodeUri: s3://javabuilder-dev-artifacts/package/2cf8630faa1e4cd4f65f77a5a3ab8645
+      CodeUri: s3://javabuilder-dev-artifacts/package/e71c1546accffe0e41e0eec91a0e6766
       AutoPublishAlias: live
       ReservedConcurrentExecutions:
         Ref: ReservedConcurrentExecutions
@@ -593,7 +614,7 @@ Resources:
       - Ref: ChangeJavaRuntimeDirectoryLayer
       Handler: org.code.javabuilder.LambdaRequestHandler::handleRequest
       Runtime: java11
-      CodeUri: s3://javabuilder-dev-artifacts/package/2cf8630faa1e4cd4f65f77a5a3ab8645
+      CodeUri: s3://javabuilder-dev-artifacts/package/e71c1546accffe0e41e0eec91a0e6766
       AutoPublishAlias: live
       ReservedConcurrentExecutions:
         Ref: ReservedConcurrentExecutions
@@ -662,6 +683,7 @@ Resources:
           Principal: '*'
   ContentApiCertificate:
     Type: AWS::CertificateManager::Certificate
+    Condition: CreateNewCertificates
     Properties:
       DomainName:
         Fn::Sub: ${SubdomainName}-content.${BaseDomainName}
@@ -694,7 +716,10 @@ Resources:
         - Fn::Sub: ${SubdomainName}-content.${BaseDomainName}
         ViewerCertificate:
           AcmCertificateArn:
-            Ref: ContentApiCertificate
+            Fn::If:
+            - UseWildcardCertificate
+            - Ref: WildcardCertificateArn
+            - Ref: ContentApiCertificate
           MinimumProtocolVersion: TLSv1
           SslSupportMethod: sni-only
         CustomErrorResponses:
