@@ -496,6 +496,15 @@ Resources:
             Status: Enabled
             ExpirationInDays: 1
 
+  ContentOAC:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: !Sub "${SubdomainName}-content-oac"
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
   ContentBucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:
@@ -505,7 +514,11 @@ Resources:
         - Action: ['s3:GetObject']
           Effect: Allow
           Resource: !Sub "arn:aws:s3:::${ContentBucket}/*"
-          Principal: '*'
+          Principal:
+            Service: cloudfront.amazonaws.com
+          Condition:
+            StringEquals:
+              "AWS:SourceArn": !Sub "arn:aws:cloudfront::${AWS::AccountId}:distribution/${ContentCDN}"
 
   ContentApiCertificate:
     Type: AWS::CertificateManager::Certificate
@@ -548,7 +561,7 @@ Resources:
         Origins:
           - Id: ContentBucket
             DomainName: !GetAtt ContentBucket.DomainName
-            S3OriginConfig: {}
+            OriginAccessControlId: !Ref ContentOAC
         DefaultCacheBehavior:
           TargetOriginId: ContentBucket
           AllowedMethods: [DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT]
