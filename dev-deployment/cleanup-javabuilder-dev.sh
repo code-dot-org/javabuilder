@@ -5,7 +5,6 @@ set -e
 
 PROFILE="codeorg-dev"
 APP_STACK="javabuilder-dev"
-BASE_STACK="javabuilder-base-infrastructure"
 
 echo "🗑️  Starting JavaBuilder Dev Environment Cleanup..."
 
@@ -25,6 +24,9 @@ echo "🧹 Checking for leftover S3 buckets..."
 echo "S3 buckets that may need manual cleanup:"
 aws s3 ls --profile "$PROFILE" | grep javabuilder || echo "No JavaBuilder S3 buckets found"
 
-echo "✅ Cleanup complete!"
-echo "💡 To also remove base infrastructure, run:"
-echo "   aws cloudformation delete-stack --stack-name $BASE_STACK --profile $PROFILE"
+echo "✅ Application stack cleanup complete!"
+echo ""
+echo "💡 Note: The IAM base infrastructure stack (javabuilder-iam) was not removed."
+echo "   This stack contains shared IAM roles and can be used by multiple deployments."
+echo "   To remove it manually (only if no other deployments need it):"
+echo "   aws cloudformation delete-stack --stack-name javabuilder-iam --profile $PROFILE"

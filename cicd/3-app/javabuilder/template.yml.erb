@@ -69,7 +69,7 @@ JAVALAB_APP_TYPES = %w(
 -%>
 Globals:
   Function:
-    Runtime: ruby3.2
+    Runtime: ruby3.3
     Timeout: 30
     MemorySize: 256
     Tracing: Active
@@ -427,7 +427,7 @@ Resources:
     Type: AWS::Serverless::LayerVersion
     Properties:
       CompatibleRuntimes:
-        - java11
+        - java17
       ContentUri: org-code-javabuilder/change_runtime_directory
       Description: Change Java runtime to launch from the writeable /tmp directory to enable student projects to write files more easily.
       LayerName: change-java-runtime-directory
@@ -436,7 +436,7 @@ Resources:
     Type: AWS::Serverless::LayerVersion
     Properties:
       CompatibleRuntimes:
-        - java11
+        - java17
       ContentUri: org-code-javabuilder/font_config.zip
       Description: Add a font configuration file to enable use of fonts.
       LayerName: font-configuration
@@ -453,7 +453,7 @@ Resources:
         - !Ref FontConfigurationLayer
         - !Ref ChangeJavaRuntimeDirectoryLayer
       Handler: org.code.javabuilder.LambdaRequestHandler::handleRequest
-      Runtime: java11
+      Runtime: java17
       CodeUri: org-code-javabuilder/lib/build/distributions/lib.zip
       AutoPublishAlias: live
       ReservedConcurrentExecutions: !Ref ReservedConcurrentExecutions
@@ -561,6 +561,7 @@ Resources:
         Origins:
           - Id: ContentBucket
             DomainName: !GetAtt ContentBucket.DomainName
+            S3OriginConfig: {}
             OriginAccessControlId: !Ref ContentOAC
         DefaultCacheBehavior:
           TargetOriginId: ContentBucket

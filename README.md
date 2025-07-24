@@ -60,37 +60,47 @@ There are two main ways to develop and run Javabuilder:
 
 ### Deploying a Dev Instance
 
-There are now multiple ways to deploy a development instance of Javabuilder, with options including SSL and no-SSL deployments:
+To deploy a development instance of Javabuilder, navigate to the `dev-deployment` directory and use the available deployment script:
 
-1. **No-SSL Deployment (Recommended for Dev):**
-   Best for development environments without Route53 permissions.
+1. **SSL Deployment:**
+   For development environments with SSL certificates (uses existing wildcard certificate).
    ```bash
-   ./deploy-javabuilder-dev-no-ssl-fixed.sh
+   cd dev-deployment
+   ./deploy-javabuilder-dev-with-ssl.sh
    ```
-   - Uses CloudFront default domain for faster deployment and fewer permissions.
+   - Builds all components (javabuilder-authorizer, org-code-javabuilder, api-gateway-routes)
+   - Processes ERB templates following production buildspec pattern
+   - Deploys with SSL certificates using existing wildcard certificate for dev-code.org
+   - Creates or updates the `javabuilder-dev` CloudFormation stack
 
-2. **Full SSL Deployment:**
-   For production-like environments with Route53 access.
+2. **Clean Deployment:**
+   If you need to start fresh or the stack is in a failed state.
    ```bash
-   ./01-deploy-base-infrastructure.sh
-   ./02-build-java-components.sh
-   ./03-deploy-application.sh
-   ```
-
-3. **Clean Slate Deployment:**
-   If the stack exists but needs complete refresh.
-   ```bash
+   cd dev-deployment
    ./cleanup-javabuilder-dev.sh      # Remove existing stack
-   ./deploy-javabuilder-dev-no-ssl-fixed.sh  # Deploy fresh
+   ./deploy-javabuilder-dev-with-ssl.sh  # Deploy fresh
    ```
 
-For more detailed instructions, refer to the [Dev Deployment README](dev-deployment/README.md).
+### Base Infrastructure Necessity
+
+The `app-template.yml` used for deploying the Javabuilder application does not contain all the necessary infrastructure. Specifically, it relies on IAM roles that need to be set up beforehand via a separate IAM stack. These roles are crucial for handling permissions related to various AWS services used by Javabuilder components.
+
+#### Key Missing Components in `app-template.yml`
+- IAM roles needed for Lambda functions and API Gateway
+- Policies required to allow access to S3 buckets, DynamoDB tables, and other resources
+
+### Why Base Infrastructure is Separate
+- **Modularity**: Separate IAM roles allow multiple deployments to share IAM permissions.
+- **Security**: IAM configurations often require higher privileges and careful management.
+- **Flexibility**: The application stack can be deployed or updated independently of IAM changes.
+
+For more detailed instructions and troubleshooting, refer to the [Dev Deployment README](dev-deployment/README.md).
 
 To connect your dev instance with Java Lab (Code Studio client) running on your local Dashboard server:
 
 1. In your code-dot-org workspace, add an entry to your `locals.yml` file with your dev instance stack name:
    ```
-   local_javabuilder_stack_name: 'javabuilder-dev-<your-branch-name>'
+   local_javabuilder_stack_name: 'javabuilder-dev'
    ```
 1. Launch dashboard using the instructions here:
    https://github.com/code-dot-org/code-dot-org/blob/staging/SETUP.md#overview
