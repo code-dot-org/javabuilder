@@ -19,6 +19,9 @@ The Javabuilder dev doc can be found at
 * [org-code-javabuilder](https://github.com/code-dot-org/javabuilder/tree/main/org-code-javabuilder)
   contains the Lambda function that builds and runs student code. It also contains the
   local developent version of Javabuilder.
+* [dev-deployment](https://github.com/code-dot-org/javabuilder/tree/main/dev-deployment)
+  contains comprehensive development deployment scripts and documentation for deploying
+  development instances with optional SSL support.
 * [javabuilder](https://github.com/code-dot-org/javabuilder) (the current directory)
   contains the script and Cloud Formation template for deploying Javabuilder to
   production.
@@ -57,12 +60,33 @@ There are two main ways to develop and run Javabuilder:
 
 ### Deploying a Dev Instance
 
-1. Make and commit your desired changes.
-1. Push your local changes to your feature branch.
-1. Deploy a development instance of Javabuilder, following the instructions here:
-   [Deploying a Development environment](https://github.com/code-dot-org/javabuilder/tree/main/cicd#deploying-an-development-environment).
+There are now multiple ways to deploy a development instance of Javabuilder, with options including SSL and no-SSL deployments:
 
-To connect your dev instance with Java Lab (Code Studio client) running on your local Dashboard server:   
+1. **No-SSL Deployment (Recommended for Dev):**
+   Best for development environments without Route53 permissions.
+   ```bash
+   ./deploy-javabuilder-dev-no-ssl-fixed.sh
+   ```
+   - Uses CloudFront default domain for faster deployment and fewer permissions.
+
+2. **Full SSL Deployment:**
+   For production-like environments with Route53 access.
+   ```bash
+   ./01-deploy-base-infrastructure.sh
+   ./02-build-java-components.sh
+   ./03-deploy-application.sh
+   ```
+
+3. **Clean Slate Deployment:**
+   If the stack exists but needs complete refresh.
+   ```bash
+   ./cleanup-javabuilder-dev.sh      # Remove existing stack
+   ./deploy-javabuilder-dev-no-ssl-fixed.sh  # Deploy fresh
+   ```
+
+For more detailed instructions, refer to the [Dev Deployment README](dev-deployment/README.md).
+
+To connect your dev instance with Java Lab (Code Studio client) running on your local Dashboard server:
 
 1. In your code-dot-org workspace, add an entry to your `locals.yml` file with your dev instance stack name:
    ```
