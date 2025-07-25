@@ -193,8 +193,7 @@ def build_components
   java_version = execute_command("java -version 2>&1 | head -1", "Checking Java version", exit_on_failure: false)
   if java_version.nil?
     puts "❌ Error: Java SDK not found. Please install OpenJDK 11+ and ensure it's in your PATH."
-    puts "   On macOS with Homebrew: brew install openjdk@11"
-    puts "   Then add to PATH: export PATH=\"/opt/homebrew/opt/openjdk@11/bin:$PATH\""
+    puts "   See README.md for installation instructions."
     exit 1
   end
   

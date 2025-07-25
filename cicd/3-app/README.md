@@ -96,9 +96,17 @@ aws cloudformation delete-stack --stack-name javabuilder-dev --profile codeorg-d
 ## Troubleshooting
 
 ### Java Build Issues
-Ensure OpenJDK 11 is installed and in your PATH:
+Ensure OpenJDK 11+ is installed and accessible in your PATH.
+
+**Installation options:**
+- **macOS with Homebrew:** `brew install openjdk@11`
+- **Ubuntu/Debian:** `sudo apt-get install openjdk-11-jdk`
+- **CentOS/RHEL:** `sudo yum install java-11-openjdk-devel`
+- **Manual installation:** Download from [OpenJDK website](https://openjdk.org/)
+
+**Verify installation:**
 ```bash
-export PATH="/opt/homebrew/opt/openjdk@11/bin:$PATH"
+java -version
 ```
 
 ### Ruby Version Issues
