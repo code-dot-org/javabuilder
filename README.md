@@ -19,22 +19,23 @@ The Javabuilder dev doc can be found at
 * [org-code-javabuilder](https://github.com/code-dot-org/javabuilder/tree/main/org-code-javabuilder)
   contains the Lambda function that builds and runs student code. It also contains the
   local developent version of Javabuilder.
+* [cicd/3-app](https://github.com/code-dot-org/javabuilder/tree/main/cicd/3-app)
+  contains the Ruby deployment script for development stacks, following Code.org patterns.
 * [dev-deployment](https://github.com/code-dot-org/javabuilder/tree/main/dev-deployment)
-  contains comprehensive development deployment scripts and documentation for deploying
-  development instances with optional SSL support.
+  contains legacy deployment scripts (deprecated in favor of cicd/3-app approach).
 * [javabuilder](https://github.com/code-dot-org/javabuilder) (the current directory)
   contains the script and Cloud Formation template for deploying Javabuilder to
   production.
 
 ### Prerequisites
-Use `rbenv` to install Ruby 2.7.2 to build and/or run the Ruby lambda functions
+Use `rbenv` to install Ruby 3.3+ to build and/or run the Ruby lambda functions
 (`javabuilder-authorizer` and `api-gateway-routes`).
 [rbenv](https://github.com/rbenv/rbenv) is required for installing Ruby and managing
 multiple versions of Ruby on a single development environment. Follow the instructions
 [here](https://github.com/rbenv/rbenv#installing-ruby-versions) to use rbenv to install a
 new Ruby version. You may need to also install
 [ruby-build](https://github.com/rbenv/ruby-build#readme) to get the latest Ruby versions.
-The `.ruby-version` file sets the local Ruby version for javabuilder to be 2.7.2
+The `.ruby-version` file sets the local Ruby version for javabuilder to be 3.3.0
 
 ## Deploying Production Javabuilder
 
@@ -60,25 +61,34 @@ There are two main ways to develop and run Javabuilder:
 
 ### Deploying a Dev Instance
 
-To deploy a development instance of Javabuilder, navigate to the `dev-deployment` directory and use the available deployment script:
+To deploy a development instance of Javabuilder, use the Ruby deployment script in `cicd/3-app`:
 
-1. **SSL Deployment:**
-   For development environments with SSL certificates (uses existing wildcard certificate).
+1. **Quick Deploy:**
    ```bash
-   cd dev-deployment
-   ./deploy-javabuilder-dev-with-ssl.sh
+   cd cicd/3-app
+   ./deploy-development-stack.rb
    ```
-   - Builds all components (javabuilder-authorizer, org-code-javabuilder, api-gateway-routes)
-   - Processes ERB templates following production buildspec pattern
-   - Deploys with SSL certificates using existing wildcard certificate for dev-code.org
-   - Creates or updates the `javabuilder-dev` CloudFormation stack
+   This will:
+   - Build all components (javabuilder-authorizer, org-code-javabuilder, api-gateway-routes)
+   - Process ERB templates following production buildspec pattern
+   - Deploy with SSL certificates using existing wildcard certificate for dev-code.org
+   - Create or update the `javabuilder-dev` CloudFormation stack
+   - Preserve build artifacts in `tmp/` for debugging
 
-2. **Clean Deployment:**
-   If you need to start fresh or the stack is in a failed state.
+2. **Custom Stack Name:**
    ```bash
-   cd dev-deployment
-   ./cleanup-javabuilder-dev.sh      # Remove existing stack
-   ./deploy-javabuilder-dev-with-ssl.sh  # Deploy fresh
+   ./deploy-development-stack.rb --stack_name my-test-stack
+   ```
+
+3. **View All Options:**
+   ```bash
+   ./deploy-development-stack.rb --help
+   ```
+
+4. **Clean Deployment:**
+   If you need to start fresh, manually delete the stack from AWS console or use:
+   ```bash
+   aws cloudformation delete-stack --stack-name javabuilder-dev --profile codeorg-dev
    ```
 
 ### Base Infrastructure Necessity
@@ -94,7 +104,7 @@ The `app-template.yml` used for deploying the Javabuilder application does not c
 - **Security**: IAM configurations often require higher privileges and careful management.
 - **Flexibility**: The application stack can be deployed or updated independently of IAM changes.
 
-For more detailed instructions and troubleshooting, refer to the [Dev Deployment README](dev-deployment/README.md).
+For more detailed instructions and troubleshooting, refer to the [Development Deployment README](cicd/3-app/README.md).
 
 To connect your dev instance with Java Lab (Code Studio client) running on your local Dashboard server:
 

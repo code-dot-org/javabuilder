@@ -1,0 +1,15 @@
+# Build artifacts and temporary files
+tmp/
+*.yml
+!template.yml.erb
+packaged-*.yml
+app-template*.yml
+parameters_*.json
+
+# Component copies (copied during build process)
+api-gateway-routes/
+javabuilder-authorizer/
+org-code-javabuilder/
+
+# Logs
+*.log
