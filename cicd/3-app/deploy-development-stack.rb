@@ -60,7 +60,7 @@ opt_parser = OptionParser.new do |opts|
     '--artifact_bucket BUCKET',
     String,
     "S3 bucket for storing deployment artifacts",
-    "Will be created if it doesn't exist"
+    "Must exist in the target AWS account"
   ) do |bucket|
     options[:artifact_bucket] = bucket
   end
@@ -178,11 +178,12 @@ def ensure_artifact_bucket(bucket_name, profile, region)
   _, _, status = Open3.capture3("#{check_cmd} 2>/dev/null")
   
   if status.success?
-    puts "✅ Artifact bucket already exists: #{bucket_name}"
+    puts "✅ Artifact bucket found: #{bucket_name}"
   else
-    puts "📦 Creating artifact bucket: #{bucket_name}"
-    create_cmd = "aws s3 mb s3://#{bucket_name} --profile #{profile} --region #{region}"
-    execute_command(create_cmd, "Creating S3 bucket #{bucket_name}")
+    puts "❌ Error: Artifact bucket '#{bucket_name}' does not exist."
+    puts "   Please create the S3 bucket manually or specify an existing bucket."
+    puts "   See README.md for setup instructions."
+    exit 1
   end
 end
 

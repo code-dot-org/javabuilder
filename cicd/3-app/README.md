@@ -18,7 +18,8 @@ The script will build all components, process the CloudFormation template, and d
 Before running the deployment script, ensure you have:
 
 - **AWS CLI** configured with appropriate credentials for the dev account
-- **Java SDK** installed (OpenJDK 11 recommended)
+- **S3 Artifact Bucket** created in your target AWS account (see setup below)
+- **Java SDK** installed (OpenJDK 11+ recommended)
 - **Ruby 3.3+** installed
 - **Bundler** installed for Ruby dependencies
 - **cfn-lint** installed (optional, for template validation): `pip install cfn-lint`
@@ -34,12 +35,28 @@ The deployment script accepts several command-line options:
 Common options:
 - `--profile PROFILE`: AWS CLI profile to use (default: codeorg-dev)
 - `--stack_name NAME`: CloudFormation stack name (default: javabuilder-dev)
-- `--artifact_bucket BUCKET`: S3 bucket for build artifacts (auto-created if needed)
+- `--artifact_bucket BUCKET`: S3 bucket for build artifacts (must exist)
 - `--subdomain_name SUBDOMAIN`: Subdomain for the service (default: javabuilder-dev)
+
+## Setup
+
+### Artifact Bucket Setup
+
+Before deploying, create an S3 bucket in your target AWS account for storing deployment artifacts:
+
+```bash
+# Create a bucket (replace with your desired bucket name)
+aws s3 mb s3://my-javabuilder-artifacts --profile codeorg-dev --region us-east-1
+
+# Then use it in deployment
+./deploy-development-stack.rb --artifact_bucket my-javabuilder-artifacts
+```
+
+If no `--artifact_bucket` is specified, the script will use `{stack_name}-artifacts` as the default bucket name.
 
 ## What the Script Does
 
-1. **Artifact Bucket Setup**: Creates or verifies the S3 bucket for deployment artifacts
+1. **Artifact Bucket Verification**: Verifies the S3 bucket exists for deployment artifacts
 2. **Component Building**: 
    - Builds `javabuilder-authorizer` using its build script
    - Builds `org-code-javabuilder` using Gradle (including tests)
