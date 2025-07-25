@@ -189,8 +189,14 @@ end
 def build_components
   puts "\n=== Building JavaBuilder Components ==="
   
-  # Set up Java environment
-  ENV['PATH'] = "/opt/homebrew/opt/openjdk@11/bin:#{ENV['PATH']}"
+  # Verify Java is available
+  java_version = execute_command("java -version 2>&1 | head -1", "Checking Java version", exit_on_failure: false)
+  if java_version.nil?
+    puts "❌ Error: Java SDK not found. Please install OpenJDK 11+ and ensure it's in your PATH."
+    puts "   On macOS with Homebrew: brew install openjdk@11"
+    puts "   Then add to PATH: export PATH=\"/opt/homebrew/opt/openjdk@11/bin:$PATH\""
+    exit 1
+  end
   
   # Build javabuilder-authorizer
   puts "\n🔐 Building javabuilder-authorizer..."
