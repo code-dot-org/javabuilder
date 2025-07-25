@@ -18,7 +18,7 @@ The script will build all components, process the CloudFormation template, and d
 Before running the deployment script, ensure you have:
 
 - **AWS CLI** configured with appropriate credentials for the dev account
-- **S3 Artifact Bucket** created in your target AWS account (see setup below)
+- **S3 Artifact Bucket** created in your target AWS account (see setup instructions below)
 - **Java SDK** installed (OpenJDK 11+ recommended)
 - **Ruby 3.3+** installed
 - **Bundler** installed for Ruby dependencies
@@ -42,7 +42,7 @@ Common options:
 
 ### Artifact Bucket Setup
 
-Before deploying, create an S3 bucket in your target AWS account for storing deployment artifacts:
+**IMPORTANT:** Before deploying, you must create an S3 bucket in your target AWS account for storing deployment artifacts. The deployment script will not create this bucket automatically.
 
 ```bash
 # Create a bucket (replace with your desired bucket name)
@@ -52,11 +52,11 @@ aws s3 mb s3://my-javabuilder-artifacts --profile codeorg-dev --region us-east-1
 ./deploy-development-stack.rb --artifact_bucket my-javabuilder-artifacts
 ```
 
-If no `--artifact_bucket` is specified, the script will use `{stack_name}-artifacts` as the default bucket name.
+If no `--artifact_bucket` is specified, the script will use `{stack_name}-artifacts` as the default bucket name. **This bucket must already exist before running the deployment.**
 
 ## What the Script Does
 
-1. **Artifact Bucket Verification**: Verifies the S3 bucket exists for deployment artifacts
+1. **Artifact Bucket Verification**: Verifies the required S3 bucket exists for deployment artifacts (fails if not found)
 2. **Component Building**: 
    - Builds `javabuilder-authorizer` using its build script
    - Builds `org-code-javabuilder` using Gradle (including tests)
@@ -141,10 +141,9 @@ pip install cfn-lint
 
 ### S3 Bucket Access Issues
 Verify your AWS credentials have permissions to:
-- Create/access S3 buckets
+- Access the pre-created S3 artifact bucket
 - Deploy CloudFormation stacks
 - Create Lambda functions and other AWS resources
 
-## Legacy Scripts
+If you get an error that the artifact bucket doesn't exist, ensure you've created it according to the setup instructions above.
 
-The `dev-deployment/` directory contains legacy shell scripts that have been replaced by this Ruby-based approach. The new Ruby script follows the same patterns used by other Code.org projects and provides better error handling and artifact management.
