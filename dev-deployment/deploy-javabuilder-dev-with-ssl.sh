@@ -16,13 +16,15 @@ PACKAGED_TEMPLATE="packaged-app-template.yml"
 if [ -z "$ARTIFACT_STORE" ]; then
     ARTIFACT_STORE="javabuilder-dev-artifacts"
 fi
-# Check if artifact bucket exists, create if needed
+# Check if artifact bucket exists
 echo "🔍 Checking if artifact bucket exists: $ARTIFACT_STORE"
 if ! aws s3api head-bucket --bucket "$ARTIFACT_STORE" --profile "$PROFILE" --region "$REGION" 2>/dev/null; then
-    echo "📦 Creating artifact bucket: $ARTIFACT_STORE"
-    aws s3 mb "s3://$ARTIFACT_STORE" --profile "$PROFILE" --region "$REGION"
+    echo "❌ Error: Artifact bucket '$ARTIFACT_STORE' does not exist."
+    echo "   Please create the S3 bucket manually before running this script."
+    echo "   Example: aws s3 mb s3://$ARTIFACT_STORE --profile $PROFILE --region $REGION"
+    exit 1
 else
-    echo "✅ Artifact bucket already exists: $ARTIFACT_STORE"
+    echo "✅ Artifact bucket found: $ARTIFACT_STORE"
 fi
 
 # Ensure Java is in PATH  
