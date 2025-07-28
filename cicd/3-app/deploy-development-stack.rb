@@ -12,7 +12,6 @@ options = {
   stack_name: 'javabuilder-dev',
   base_domain_name: 'dev-code.org',
   subdomain_name: 'javabuilder-dev',
-  wildcard_certificate_arn: 'arn:aws:acm:us-east-1:165336972514:certificate/bb245651-2ce8-4864-9975-c833af199154',
   hosted_zone_id: 'Z2LCOI49SCXUGU',
   provisioned_concurrent_executions: 1,
   reserved_concurrent_executions: 3,
@@ -320,7 +319,6 @@ begin
       'BaseDomainName' => options[:base_domain_name],
       'BaseDomainNameHostedZonedID' => options[:hosted_zone_id],
       'SubdomainName' => options[:subdomain_name],
-      'WildcardCertificateArn' => options[:wildcard_certificate_arn],
       'ProvisionedConcurrentExecutions' => options[:provisioned_concurrent_executions],
       'ReservedConcurrentExecutions' => options[:reserved_concurrent_executions],
       'LimitPerHour' => options[:limit_per_hour],
@@ -357,7 +355,7 @@ begin
     puts "\n🎉 Deployment Summary:"
     puts "   Stack Name: #{options[:stack_name]}"
     puts "   Region: #{options[:region]}"
-    puts "   SSL Certificates: ENABLED (using wildcard certificate)"
+    puts "   SSL Certificates: ENABLED (individual domain certificates)"
     puts "   Build artifacts preserved in: #{temp_dir}"
     puts "   🔗 HTTPS endpoints ready for testing"
     puts "\n✅ Deployment complete!"
