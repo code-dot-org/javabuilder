@@ -18,6 +18,3 @@ build
 template.yml
 app-template.yml
 packaged-app-template.yml
-
-# Ignore health check script (keep as local dev tool only)
-dev-deployment/health-check.sh
