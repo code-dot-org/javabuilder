@@ -1,30 +1,36 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    aws-eventstream (1.1.1)
-    aws-partitions (1.441.0)
-    aws-sdk-cloudwatch (1.52.0)
-      aws-sdk-core (~> 3, >= 3.112.0)
-      aws-sigv4 (~> 1.1)
-    aws-sdk-core (3.113.1)
-      aws-eventstream (~> 1, >= 1.0.2)
-      aws-partitions (~> 1, >= 1.239.0)
-      aws-sigv4 (~> 1.1)
-      jmespath (~> 1.0)
-    aws-sdk-dynamodb (1.60.0)
-      aws-sdk-core (~> 3, >= 3.112.0)
-      aws-sigv4 (~> 1.1)
+    aws-eventstream (1.4.0)
+    aws-partitions (1.1138.0)
+    aws-sdk-cloudwatch (1.117.0)
+      aws-sdk-core (~> 3, >= 3.227.0)
+      aws-sigv4 (~> 1.5)
+    aws-sdk-core (3.227.0)
+      aws-eventstream (~> 1, >= 1.3.0)
+      aws-partitions (~> 1, >= 1.992.0)
+      aws-sigv4 (~> 1.9)
+      base64
+      jmespath (~> 1, >= 1.6.1)
+      logger
+    aws-sdk-dynamodb (1.147.0)
+      aws-sdk-core (~> 3, >= 3.227.0)
+      aws-sigv4 (~> 1.5)
     aws-sdk-lambda (1.39.0)
       aws-sdk-core (~> 3, >= 3.71.0)
       aws-sigv4 (~> 1.1)
-    aws-sigv4 (1.2.3)
+    aws-sigv4 (1.12.1)
       aws-eventstream (~> 1, >= 1.0.2)
-    jmespath (1.4.0)
-    jwt (2.2.2)
-    minitest (5.15.0)
+    base64 (0.3.0)
+    jmespath (1.6.2)
+    jwt (3.1.2)
+      base64
+    logger (1.7.0)
+    minitest (5.25.5)
 
 PLATFORMS
   ruby
+  x86_64-linux
 
 DEPENDENCIES
   aws-sdk-cloudwatch (~> 1.52)
@@ -34,7 +40,7 @@ DEPENDENCIES
   minitest (~> 5.5)
 
 RUBY VERSION
-   ruby 2.7.4p191
+   ruby 3.3.9p170
 
 BUNDLED WITH
-   2.1.4
+   2.7.1
