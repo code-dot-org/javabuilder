@@ -10,7 +10,7 @@ phases:
       # downgrade from default codebuild ruby runtime to the version we specify in .ruby-version, if different
       - rbenv install -s
       - ruby -v
-      - gem install bundler
+      - gem install bundler -v 2.4.22
       - pip install cfn-lint
 
   build:
