@@ -496,7 +496,11 @@ Resources:
         - Action: ['s3:GetObject']
           Effect: Allow
           Resource: !Sub "arn:aws:s3:::${ContentBucket}/*"
-          Principal: '*'
+          Principal:
+            Service: cloudfront.amazonaws.com
+          Condition:
+            StringEquals:
+              "AWS:SourceArn": !Sub "arn:aws:cloudfront::${AWS::AccountId}:distribution/${ContentCDN}"
 
   ContentApiCertificate:
     Type: AWS::CertificateManager::Certificate
@@ -516,6 +520,15 @@ Resources:
       AliasTarget:
         DNSName: !GetAtt ContentCDN.DomainName
         HostedZoneId: Z2FDTNDATAQYW2 # static ID for cloudfront aliases
+
+  ContentBucketOAC:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: !Sub "${SubdomainName}-content-oac"
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
 
   ContentCDN:
     Type: AWS::CloudFront::Distribution
@@ -538,7 +551,9 @@ Resources:
         Origins:
           - Id: ContentBucket
             DomainName: !GetAtt ContentBucket.DomainName
-            S3OriginConfig: {}
+            S3OriginConfig:
+              OriginAccessIdentity: ""
+            OriginAccessControlId: !Ref ContentBucketOAC
         DefaultCacheBehavior:
           TargetOriginId: ContentBucket
           AllowedMethods: [DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT]
