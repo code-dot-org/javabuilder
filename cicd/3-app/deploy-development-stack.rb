@@ -5,13 +5,30 @@ require 'open3'
 require 'erb'
 require 'json'
 
+def get_branch_name
+  # Get current git branch
+  branch_output = `git branch --show-current`.strip
+  if $?.success? && !branch_output.empty?
+    # Extract the text after the last '/' (e.g., 'feature/dev-environment-setup' -> 'dev-environment-setup')
+    branch_output.split('/').last
+  else
+    puts "❌ Error: Unable to determine current git branch"
+    exit 1
+  end
+end
+
+# Get the current branch name for default naming
+default_branch_name = get_branch_name
+default_stack_name = "javabuilder-dev-#{default_branch_name}"
+default_subdomain_name = "javabuilder-dev-#{default_branch_name}"
+
 # Default options
 options = {
   profile: 'codeorg-dev',
   region: 'us-east-1',
-  stack_name: 'javabuilder-dev',
+  stack_name: nil,  # Now required
   base_domain_name: 'dev-code.org',
-  subdomain_name: 'javabuilder-dev-anthony',
+  subdomain_name: nil,  # Now required
   hosted_zone_id: 'Z07248463JGJ44FME5BZ5',
   provisioned_concurrent_executions: 1,
   reserved_concurrent_executions: 3,
@@ -49,8 +66,9 @@ opt_parser = OptionParser.new do |opts|
   opts.on(
     '--stack_name NAME',
     String,
-    "Name of the CloudFormation stack to create or update",
-    "Default: javabuilder-dev"
+    "Name of the CloudFormation stack to create or update (REQUIRED)",
+    "Recommended: javabuilder-dev-<branch-name>",
+    "Example: javabuilder-dev-#{default_branch_name}"
   ) do |name|
     options[:stack_name] = name
   end
@@ -67,8 +85,9 @@ opt_parser = OptionParser.new do |opts|
   opts.on(
     '--subdomain_name SUBDOMAIN',
     String,
-    "Subdomain name for the JavaBuilder service",
-    "Default: javabuilder-dev"
+    "Subdomain name for the JavaBuilder service (REQUIRED)",
+    "Recommended: javabuilder-dev-<branch-name>",
+    "Example: javabuilder-dev-#{default_branch_name}"
   ) do |subdomain|
     options[:subdomain_name] = subdomain
   end
@@ -81,6 +100,14 @@ opt_parser = OptionParser.new do |opts|
     puts "  - Ruby 3.3+ installed"
     puts "  - cfn-lint installed (optional, for template validation)"
     puts "  - Bundler installed for Ruby dependencies"
+    puts "\nNaming Convention:"
+    puts "  - Multiple development stacks are supported in the same AWS Account & Region"
+    puts "  - Use branch-based naming: javabuilder-dev-<branch-name>"
+    puts "  - Current branch: #{get_branch_name}"
+    puts "  - Suggested stack name: #{default_stack_name}"
+    puts "  - Suggested subdomain: #{default_subdomain_name}"
+    puts "\nExample Usage:"
+    puts "  ./deploy-development-stack.rb --stack_name #{default_stack_name} --subdomain_name #{default_subdomain_name} --artifact_bucket my-artifacts"
     puts "\nThis script will:"
     puts "  1. Build all JavaBuilder components (API Gateway routes, authorizer, main app)"
     puts "  2. Process the CloudFormation template"
@@ -249,6 +276,23 @@ end
 
 begin
   opt_parser.parse!
+
+  # Validate required parameters
+  missing_params = []
+  missing_params << '--stack_name' if options[:stack_name].nil?
+  missing_params << '--subdomain_name' if options[:subdomain_name].nil?
+  
+  unless missing_params.empty?
+    puts "❌ Error: Missing required parameters: #{missing_params.join(', ')}"
+    puts "\nTo support multiple development environments, both stack_name and subdomain_name are required."
+    puts "\nRecommended values for current branch (#{get_branch_name}):"
+    puts "  --stack_name #{default_stack_name}"
+    puts "  --subdomain_name #{default_subdomain_name}"
+    puts "\nExample:"
+    puts "  ./deploy-development-stack.rb --stack_name #{default_stack_name} --subdomain_name #{default_subdomain_name} --artifact_bucket my-artifacts"
+    puts "\nUse --help for more information."
+    exit 1
+  end
 
   # Set default artifact bucket if not provided
   if options[:artifact_bucket].nil?
