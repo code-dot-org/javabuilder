@@ -498,7 +498,11 @@ Resources:
         - Action: ['s3:GetObject']
           Effect: Allow
           Resource: !Sub "arn:aws:s3:::${ContentBucket}/*"
-          Principal: '*'
+          Principal:
+            Service: cloudfront.amazonaws.com
+          Condition:
+            StringEquals:
+              "AWS:SourceArn": !Sub "arn:aws:cloudfront::${AWS::AccountId}:distribution/${ContentCDN}"
 
   ContentApiCertificate:
     Type: AWS::CertificateManager::Certificate
@@ -539,7 +543,7 @@ Resources:
         #   Prefix: !Sub "${SubdomainName}-content.${BaseDomainName}"
         Origins:
           - Id: ContentBucket
-            DomainName: !GetAtt ContentBucket.DomainName
+            DomainName: !GetAtt ContentBucket.RegionalDomainName
             S3OriginConfig: {}
         DefaultCacheBehavior:
           TargetOriginId: ContentBucket

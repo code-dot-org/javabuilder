@@ -11,8 +11,8 @@ options = {
   region: 'us-east-1',
   stack_name: 'javabuilder-dev',
   base_domain_name: 'dev-code.org',
-  subdomain_name: 'javabuilder-dev',
-  hosted_zone_id: 'Z2LCOI49SCXUGU',
+  subdomain_name: 'javabuilder-dev-anthony',
+  hosted_zone_id: 'Z07248463JGJ44FME5BZ5',
   provisioned_concurrent_executions: 1,
   reserved_concurrent_executions: 3,
   limit_per_hour: 50,
@@ -22,7 +22,7 @@ options = {
   silence_alerts: true,
   high_concurrent_executions_topic: 'CDO-Urgent',
   high_concurrent_executions_alarm_threshold: 400,
-  template_path: 'javabuilder'
+  template_path: '3-app/javabuilder'
 }
 
 opt_parser = OptionParser.new do |opts|
@@ -139,7 +139,7 @@ def process_template(template_file, output_file, binding_object)
   end
 end
 
-def deploy_stack(stack_name:, template_file:, parameters: {}, region:, profile:, capabilities: [])
+def deploy_stack(stack_name:, template_file:, parameters: {}, region:, profile:, capabilities: [], s3_bucket: nil)
   temp_dir = File.join(Dir.pwd, 'tmp')
   FileUtils.mkdir_p(temp_dir)
 
@@ -151,6 +151,11 @@ def deploy_stack(stack_name:, template_file:, parameters: {}, region:, profile:,
     "--region #{region}",
     "--profile #{profile}"
   ]
+
+  # Add S3 bucket if specified (required for large templates)
+  if s3_bucket
+    command_parts << "--s3-bucket #{s3_bucket}"
+  end
 
   # Add capabilities if any are specified
   unless capabilities.empty?
@@ -336,7 +341,8 @@ begin
       parameters: stack_parameters,
       region: options[:region],
       profile: options[:profile],
-      capabilities: %w(CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND)
+      capabilities: %w(CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND),
+      s3_bucket: options[:artifact_bucket]
     )
 
     # Step 8: Display stack outputs
