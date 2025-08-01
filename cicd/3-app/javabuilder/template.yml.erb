@@ -407,8 +407,6 @@ Resources:
 
   <%=name%>AuthorizerPermission:
     Type: AWS::Lambda::Permission
-    DependsOn:
-      - <%=name%>Authorizer
     Properties:
       Action: lambda:InvokeFunction
       FunctionName: !Ref <%=config[:LambdaName]%>AuthorizerLambda
