@@ -38,8 +38,6 @@ Finally, all of the above need some Roles to exist in the AWS accounts before we
 
 ### Deploying the `main` CI/CD Pipeline
 
-_Note: If you receive errors with the 'aws-google' gem, you may need to switch to Ruby 2.7.5 first, via `rbenv local 2.7.5`._
-
 1. Create/Update the Setup stack (one time, or when changes to the Setup stack occur)
    `cicd/1-setup/deploy-cicd-dependencies.sh` (with elevated AWS permissions)
 2. Create/Update the CI/CD stack (one time, or when changes to the CI/CD stack occur)
@@ -96,7 +94,7 @@ Because of some nuances of our AWS SSO integration and tooling, you might need t
 Error when retrieving credentials from custom-process: rbenv: aws-google: command not found
 
 The `aws-google' command exists in these Ruby versions:
-  2.7.5
+  3.1.0
 ```
 
-If this occurs, you can simply run `rbenv local 2.7.5` or whatever version is suggested (should be the same version used in the code-dot-org/code-dot-org repository) and try running the script again.
+If this occurs, you can try `gem install aws-google` to try installing into your current Ruby version (ideally the one in ".ruby-version") or run `rbenv local 3.1.0` or whatever version is suggested (should be the same version used in the code-dot-org/code-dot-org repository) and try running the script again.

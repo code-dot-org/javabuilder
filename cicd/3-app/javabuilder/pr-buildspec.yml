@@ -4,7 +4,7 @@ phases:
     runtime-versions:
       ruby: 2.7
       java: corretto11
-      python: 3.8
+      python: 3.3.0
     commands:
       - rbenv versions
       # downgrade from default codebuild ruby runtime to the version we specify in .ruby-version, if different
