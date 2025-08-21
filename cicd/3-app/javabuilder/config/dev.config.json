@@ -1,4 +1,5 @@
 {
+  "_comment": "This file is used by AWS CodePipeline for automated dev deployments. Referenced in cicd as TemplateConfiguration. Local dev scripts use hardcoded parameters instead.",
   "Parameters": {
     "BaseDomainName": "code.org",
     "BaseDomainNameHostedZonedID": "Z2LCOI49SCXUGU",
