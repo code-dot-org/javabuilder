@@ -97,4 +97,4 @@ The `aws-google' command exists in these Ruby versions:
   3.1.0
 ```
 
-If this occurs, you can try `gem install aws-google` to try installing into your current Ruby version (ideally the one in ".ruby-version") or run `rbenv local 3.1.0` or whatever version is suggested (should be the same version used in the code-dot-org/code-dot-org repository) and try running the script again.
+If this occurs, you can try `gem install aws-google` to try switching your Ruby version, via rbenv, to a supported version. When deploying, you just need Ruby for the aws-google gem. If you're developing on any of the Ruby code in this repo, use the versions specified in ".ruby-version".
