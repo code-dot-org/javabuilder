@@ -17,7 +17,6 @@ import org.code.protocol.InputMessageType;
 public class InputRedirectionStream extends InputStream {
   private final Queue<Byte> queue;
   private final InputHandler inputAdapter;
-  private volatile boolean closed = false;
 
   public InputRedirectionStream(InputHandler inputHandler) {
     this.inputAdapter = inputHandler;
@@ -29,20 +28,11 @@ public class InputRedirectionStream extends InputStream {
    * for existing bytes. If the queue is empty, polls the inputAdapter for new data. This is a
    * blocking call.
    *
-   * @return the first byte in the queue, or -1 if the stream is closed
+   * @return the first byte in the queue
    */
   @Override
   public int read() {
-    // If the stream is closed, return EOF immediately
-    if (closed) {
-      return -1;
-    }
-
     if (queue.peek() == null) {
-      // Check closed flag again before blocking on input
-      if (closed) {
-        return -1;
-      }
       // The Java Lab console is an <input> element that uses the enter key to trigger onSubmit.
       // Rather than adding an arbitrary line separator from the client, we instead add the
       // separator here so we can use a line separator that Scanner will recognize.
@@ -83,12 +73,7 @@ public class InputRedirectionStream extends InputStream {
 
     int k = 0;
     while (k < len) {
-      int c = this.read();
-      if (c == -1) {
-        // If we haven't read any bytes yet, return -1 to indicate EOF
-        return k == 0 ? -1 : k;
-      }
-      b[off + k] = (byte) c;
+      b[off + k] = (byte) this.read();
       k++;
       if (queue.peek() == null) {
         break;
@@ -123,19 +108,5 @@ public class InputRedirectionStream extends InputStream {
   @Override
   public boolean markSupported() {
     return false;
-  }
-
-  /**
-   * Closes this input stream and releases any system resources associated with the stream.
-   * Once the stream has been closed, further read() invocations will return -1 (EOF).
-   * This prevents Scanner or other readers from blocking indefinitely on input when the
-   * stream should be considered exhausted.
-   *
-   * See: https://docs.oracle.com/javase/8/docs/api/java/io/InputStream.html#close--
-   */
-  @Override
-  public void close() throws IOException {
-    closed = true;
-    super.close();
   }
 }

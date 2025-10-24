@@ -120,28 +120,4 @@ public class InputRedirectionStreamTest {
           stream.skip(2);
         });
   }
-
-  @Test
-  public void closeMarksStreamAsClosed() throws IOException {
-    stream.close();
-    assertEquals(-1, stream.read());
-  }
-
-  @Test
-  public void readReturnsEOFAfterClose() throws IOException {
-    when(inputHandler.getNextMessageForType(InputMessageType.SYSTEM_IN)).thenReturn("hello");
-    stream.read(); // Read one byte
-    stream.close();
-    assertEquals(-1, stream.read()); // Should return EOF
-    // Verify we didn't try to get more messages after close
-    verify(inputHandler, times(1)).getNextMessageForType(InputMessageType.SYSTEM_IN);
-  }
-
-  @Test
-  public void arrayReadReturnsZeroAfterClose() throws IOException {
-    stream.close();
-    byte[] b = new byte[5];
-    int bytesRead = stream.read(b);
-    assertEquals(-1, bytesRead);
-  }
 }
