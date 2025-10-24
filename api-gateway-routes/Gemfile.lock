@@ -26,6 +26,7 @@ GEM
     minitest (5.25.5)
 
 PLATFORMS
+  arm64-darwin-21
   ruby
   x86_64-linux
 
