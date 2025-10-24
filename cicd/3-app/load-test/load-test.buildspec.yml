@@ -2,7 +2,7 @@ version: 0.2
 phases:
   install:
     runtime-versions:
-      ruby: 2.7
+      ruby: 3.3.9
       java: corretto11
       python: 3.8
     commands:
