@@ -88,13 +88,13 @@ Just delete app-template-test.yml when you are done.
 
 ### Resolving "Error when retrieving credentials" when running deploy commands
 
-Because of some nuances of our AWS SSO integration and tooling, you might need to temporarily change Ruby versions when running scripts that interact with the AWS CLI. You might receive an error like the following.
+Because of some nuances of our AWS SSO integration and tooling, you might need to temporarily change Ruby versions when running scripts that interact with the AWS CLI. You might receive an error including the following.
 
 ```
-Error when retrieving credentials from custom-process: rbenv: aws-google: command not found
-
 The `aws-google' command exists in these Ruby versions:
+  3.0.5
   3.1.0
+  3.3.9
 ```
 
-If this occurs, you can try `gem install aws-google` to try switching your Ruby version, via rbenv, to a supported version. When deploying, you just need Ruby for the aws-google gem. If you're developing on any of the Ruby code in this repo, use the versions specified in ".ruby-version".
+If this occurs, you can try `gem install aws-google` or try switching your Ruby version, via rbenv, to a supported version. When deploying, you just need Ruby for the aws-google gem. If you're developing on any of the Ruby code in this repo, use the versions specified in ".ruby-version".
