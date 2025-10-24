@@ -4,7 +4,7 @@
   "description": "Integration Tests for Javabuilder",
   "main": "index.js",
   "scripts": {
-    "test": "mocha --reporter spec --slow 10000 --exit --require test/setup.js"
+    "test": "mocha --reporter spec --exit"
   },
   "author": "",
   "license": "ISC",

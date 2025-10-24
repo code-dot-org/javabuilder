@@ -7,9 +7,11 @@ as part of Javabuilder's CI/CD process. You can also run the tests locally in st
 
 You can run tests locally against a custom deploy of Javabuilder.
 
-1. Ensure you are using AWS credentials for the production account, as the tests require retrieval of AWS Secrets.
-2. Edit the values in [standalone.config](./standalone.config) to point to the desired deployed environment, `javabuilder-test` by default.
+1. Temporarily switch to the Code.org production AWS account: follow steps 1-3 in this [document](https://docs.google.com/document/d/1mMQK6HhniLsz9lynzhUcm7Tcw_2WVLBxADe0WzqL6rM/edit#bookmark=id.wtrskofu4rb9).
+2. (Optional) Edit the values in [standalone.config](./standalone.config) to point to a custom deploy of Javabuilder. To run against the existing "javabuilder-test" stack, leave
+   these unchanged.
 3. `./run-integration-tests.sh`
+4. `unset AWS_PROFILE`
 
 ### Running Individual Tests
 

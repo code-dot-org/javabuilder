@@ -26,19 +26,19 @@ Parameters:
     Default: 3
   LimitPerHour:
     Type: Number
-    Description: The number of Javabuilder invocations allowed per user per hour. If the value is -1, then there is no limit on the number of invocations per hour.
-    MinValue: -1
+    Description: The number of Javabuilder invocations allowed per user per hour.
+    MinValue: 1
     Default: 50
   LimitPerDay:
     Type: Number
-    Description: The number of Javabuilder invocations allowed per user per day. If the value is -1, then there is no limit on the number of invocations per day.
-    MinValue: -1
+    Description: The number of Javabuilder invocations allowed per user per day.
+    MinValue: 1
     Default: 150
   TeacherLimitPerHour:
     Type: Number
     Description: The number of Javabuilder invocations allowed for all students in a classroom per hour.
     MinValue: 1
-    Default: 5000
+    Default: 1000
   StageName:
     Type: String
     Description: The default stage name in the API Gateway APIs
@@ -48,14 +48,6 @@ Parameters:
     AllowedValues: [true, false]
     Description: If alerts should be silenced on this instance
     Default: false
-  HighConcurrentExecutionsTopic:
-    Type: String
-    Description: The name of the SNS topic to publish to for a high concurrent executions alarm.
-    Default: CDO-Urgent
-  HighConcurrentExecutionsAlarmThreshold:
-    Type: Number
-    Description: The threshold for the high concurrent executions alarm.
-    Default: 400
 <%
 JAVALAB_APP_TYPES = %w(
   Theater
@@ -108,17 +100,17 @@ Resources:
         - DomainName: !Sub "${SubdomainName}<%=config[:Suffix]%>.${BaseDomainName}"
           HostedZoneId: !Ref BaseDomainNameHostedZonedID
 
-  <%=config[:Prefix]%>DomainNameApiMapping:
+  <%=config[:Prefix]%>DomainNameAPIMapping:
     Type: AWS::ApiGatewayV2::ApiMapping
     DependsOn:
       - <%=config[:Prefix]%>Domain
     Properties:
-      ApiId: !Ref <%=apiName%>Api
+      ApiId: !Ref <%=apiName%>API
       DomainName: !Sub "${SubdomainName}<%=config[:Suffix]%>.${BaseDomainName}"
       Stage: !Ref <%=apiName%>Stage
 
 <%end -%>
-  HttpApi:
+  HttpAPI:
     Type: AWS::ApiGatewayV2::Api
     Properties:
       Name: !Sub "${SubdomainName}-http.${BaseDomainName}"
@@ -127,7 +119,7 @@ Resources:
   PutRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
-      ApiId: !Ref HttpApi
+      ApiId: !Ref HttpAPI
       RouteKey: PUT /seedsources/sources.json
       AuthorizationType: CUSTOM
       AuthorizerId: !Ref HttpAuthorizer
@@ -151,7 +143,7 @@ Resources:
   PutSourcesPermission:
     Type: AWS::Lambda::Permission
     DependsOn:
-      - HttpApi
+      - HttpAPI
     Properties:
       Action: lambda:InvokeFunction
       FunctionName: !Ref PutSourcesFunction
@@ -160,7 +152,7 @@ Resources:
   PutIntegration:
     Type: AWS::ApiGatewayV2::Integration
     Properties:
-      ApiId: !Ref HttpApi
+      ApiId: !Ref HttpAPI
       Description: PUT Integration
       # Integration method must be POST for AWS_PROXY integrations even though we're PUTting into an S3 bucket
       IntegrationMethod: POST
@@ -183,7 +175,7 @@ Resources:
       AutoDeploy: true
       StageName: !Sub "${StageName}"
       Description: The stage to deploy
-      ApiId: !Ref HttpApi
+      ApiId: !Ref HttpAPI
       DefaultRouteSettings:
         DetailedMetricsEnabled: true
       AccessLogSettings:
@@ -210,7 +202,7 @@ Resources:
   HttpAuthorizer:
     Type: AWS::ApiGatewayV2::Authorizer
     Properties:
-      ApiId: !Ref HttpApi
+      ApiId: !Ref HttpAPI
       AuthorizerCredentialsArn:
         Fn::ImportValue: JavabuilderAPIGatewayRole
       AuthorizerPayloadFormatVersion: 2.0
@@ -221,7 +213,7 @@ Resources:
         - "$request.querystring.Authorization"
       Name: HttpAuthorizer
 
-  WebSocketApi:
+  WebSocketAPI:
     Type: AWS::ApiGatewayV2::Api
     Properties:
       Name: !Sub "${SubdomainName}.${BaseDomainName}"
@@ -231,7 +223,7 @@ Resources:
   ConnectRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
-      ApiId: !Ref WebSocketApi
+      ApiId: !Ref WebSocketAPI
       RouteKey: $connect
       AuthorizationType: CUSTOM
       AuthorizerId: !Ref WebSocketAuthorizer
@@ -244,9 +236,9 @@ Resources:
   WebSocketAuthorizer:
     Type: AWS::ApiGatewayV2::Authorizer
     Properties:
-      ApiId: !Ref WebSocketApi
+      ApiId: !Ref WebSocketAPI
       AuthorizerType: REQUEST
-      AuthorizerUri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${WebSocketAuthorizerLambda.Arn}/invocations"
+      AuthorizerUri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${WebsocketAuthorizerLambda.Arn}/invocations"
       IdentitySource:
         - route.request.querystring.Authorization
       Name: WebSocketAuthorizer
@@ -254,7 +246,7 @@ Resources:
   ConnectInteg:
     Type: AWS::ApiGatewayV2::Integration
     Properties:
-      ApiId: !Ref WebSocketApi
+      ApiId: !Ref WebSocketAPI
       Description: Connect Integration
       IntegrationType: AWS_PROXY
       IntegrationUri:
@@ -264,7 +256,7 @@ Resources:
   DefaultRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
-      ApiId: !Ref WebSocketApi
+      ApiId: !Ref WebSocketAPI
       RouteKey: $default
       AuthorizationType: NONE
       OperationName: DefaultRoute
@@ -277,7 +269,7 @@ Resources:
   DefaultIntegration:
     Type: AWS::ApiGatewayV2::Integration
     Properties:
-      ApiId: !Ref WebSocketApi
+      ApiId: !Ref WebSocketAPI
       Description: Lambda Proxy Integration
       IntegrationType: AWS_PROXY
       IntegrationUri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${StartSessionAndRelayMessagesFunction.Arn}/invocations"
@@ -285,7 +277,7 @@ Resources:
   DisconnectRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
-      ApiId: !Ref WebSocketApi
+      ApiId: !Ref WebSocketAPI
       RouteKey: $disconnect
       AuthorizationType: NONE
       OperationName: DisconnectRoute
@@ -297,7 +289,7 @@ Resources:
   DisconnectInteg:
     Type: AWS::ApiGatewayV2::Integration
     Properties:
-      ApiId: !Ref WebSocketApi
+      ApiId: !Ref WebSocketAPI
       Description: Disconnect Integration
       IntegrationType: AWS_PROXY
       IntegrationUri:
@@ -311,7 +303,7 @@ Resources:
       - DefaultRoute
       - DisconnectRoute
     Properties:
-      ApiId: !Ref WebSocketApi
+      ApiId: !Ref WebSocketAPI
 
   WebSocketStage:
     Type: AWS::ApiGatewayV2::Stage
@@ -319,11 +311,11 @@ Resources:
       StageName: !Sub "${StageName}"
       Description: The stage to deploy
       DeploymentId: !Ref WebSocketDeployment
-      ApiId: !Ref WebSocketApi
+      ApiId: !Ref WebSocketAPI
       DefaultRouteSettings:
         DetailedMetricsEnabled: true
         LoggingLevel: INFO
-        DataTraceEnabled: false
+        DataTraceEnabled: true
       AccessLogSettings:
         DestinationArn: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/apigateway/accesslog/${SubdomainName}.${BaseDomainName}"
         # TODO: Also log authorizer status code, authorizer error message, Javabuilder session id, and Origin.
@@ -365,12 +357,18 @@ Resources:
   StartSessionAndRelayMessagesPermission:
     Type: AWS::Lambda::Permission
     DependsOn:
-      - WebSocketApi
+      - WebSocketAPI
     Properties:
       Action: lambda:InvokeFunction
       FunctionName: !Ref StartSessionAndRelayMessagesFunction
       Principal: apigateway.amazonaws.com
 
+# AWS does not seem to be case sensitive, but is case aware. Therefore, we can't update from
+# Websocket here to WebSocket as is used elsewhere when updating an existing stack. Updating this is
+# a step we should take when we create our non-beta environment from scratch. At that point, we
+# should also update uses of HttpAPI and WebSocketAPI to be HttpApi and WebSocketApi, respectively,
+# to match the AWS standard elsewhere in this template. Example: "AWS::ApiGatewayV2::ApiMapping"
+#
 # Note: hourly and daily limit values provided to both authorizers here as environment variables,
 # but are only needed in the HTTP authorizer.
 # Both authorizers need to access the token_status DynamoDB table, but only the HTTP authorizer
@@ -382,7 +380,7 @@ Resources:
     Description: "'Authorize PUT by decoding JWT in Authorization querystring parameter.'"
   },
   WebSocket: {
-    LambdaName: "WebSocket",
+    LambdaName: "Websocket",
     Handler: "websocket_authorizer_function",
     Description: "'Authorize WebSocket connect by decoding JWT in Authorization querystring parameter.'"
   },
@@ -413,7 +411,7 @@ Resources:
       Action: lambda:InvokeFunction
       FunctionName: !Ref <%=config[:LambdaName]%>AuthorizerLambda
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${<%=name%>Api}/authorizers/${<%=name%>Authorizer}"
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${<%=name%>API}/authorizers/${<%=name%>Authorizer}"
 
 <%end -%>
   ChangeJavaRuntimeDirectoryLayer:
@@ -436,7 +434,7 @@ Resources:
 
 <%{
   Theater: {MemorySize: 1769, Timeout: 90},
-  Neighborhood: {MemorySize: 512, Timeout: 120},
+  Neighborhood: {MemorySize: 512, Timeout: 90},
   Console: {MemorySize: 512, Timeout: 90}
 }.each do |name, config| -%>
   BuildAndRunJava<%=name%>ProjectFunction:
@@ -466,8 +464,7 @@ Resources:
           CONTENT_BUCKET_URL: !Sub "https://${ContentDomain}"
           API_ENDPOINT: !Sub
             - "https://${ApiId}.execute-api.${AWS::Region}.amazonaws.com/${StageName}"
-            - ApiId: !Ref WebSocketApi
-          UNHEALTHY_CONTAINERS_TABLE_NAME: !Ref UnhealthyContainersTable
+            - ApiId: !Ref WebSocketAPI
 <%end -%>
 
   ContentBucket:
@@ -500,7 +497,7 @@ Resources:
           Resource: !Sub "arn:aws:s3:::${ContentBucket}/*"
           Principal: '*'
 
-  ContentApiCertificate:
+  ContentAPICertificate:
     Type: AWS::CertificateManager::Certificate
     Properties:
       DomainName: !Sub "${SubdomainName}-content.${BaseDomainName}"
@@ -526,7 +523,7 @@ Resources:
         Enabled: true
         Aliases: [!Sub "${SubdomainName}-content.${BaseDomainName}"]
         ViewerCertificate:
-          AcmCertificateArn: !Ref ContentApiCertificate
+          AcmCertificateArn: !Ref ContentAPICertificate
           MinimumProtocolVersion: TLSv1
           SslSupportMethod: sni-only
         CustomErrorResponses:
@@ -549,22 +546,148 @@ Resources:
           ForwardedValues: {QueryString: true}
           ViewerProtocolPolicy: redirect-to-https
 
-<%JAVALAB_APP_TYPES.each do | name | -%>
-<%{
-  TenPercentSevereErrorRateAlarm: {Threshold: 10, AlarmName: 'ten_percent_severe_error_rate'},
-  NinetyPercentSevereErrorRateAlarm: {Threshold: 90, AlarmName: 'ninety_percent_severe_error_rate'},
-}.each do |alarmTitle, config| -%>
-  <%=name%><%=alarmTitle%>:
+  HighConcurrentExecutionsAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      AlarmName: !Sub "${SubdomainName}_<%=name.downcase%>_<%=config[:AlarmName]%>"
-      AlarmDescription: Severe error rate in Javabuilder's <%=name%> build and run lambda (the core of
-          Javabuilder, which executes student <%=name%> code) exceeded <%=config[:Threshold]%>% for four
-          consecutive 5 minute periods.
+      AlarmName: !Sub "${SubdomainName}_high_concurrent_executions"
+      AlarmDescription: !Sub |
+          This will page the DOTD if javabuilder usage exceeds 50 concurrent
+          executions for 10 minutes. Occasional spikes are expected, but
+          long-running high usage is an indication of an attack. Go to the
+          following URLs and set reserved concurrency to 10 immediately
+<%JAVALAB_APP_TYPES.each do | name | -%>
+          https://console.aws.amazon.com/lambda/home?region=${AWS::Region}#/functions/${BuildAndRunJava<%=name%>ProjectFunction}/edit/concurrency?tab=configure
+<%end -%>
+          Then post in #ap-csa-dev.
+      ActionsEnabled: true
+      AlarmActions:
+          - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:CDO-Urgent"]
+      EvaluationPeriods: 10
+      DatapointsToAlarm: 10
+      Threshold: 50
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      Metrics:
+        - Id: e1
+          Label: Concurrent Executions Across All Lambdas
+          ReturnData: true
+          Expression: SUM(METRICS())
+<%{Theater: "m2", Neighborhood: "m3", Console: "m4"}.each do |name, id| -%>
+        - Id: <%=id%>
+          ReturnData: false
+          MetricStat:
+              Metric:
+                  Namespace: AWS/Lambda
+                  MetricName: ConcurrentExecutions
+                  Dimensions:
+                      - Name: FunctionName
+                        Value: !Ref BuildAndRunJava<%=name%>ProjectFunction
+              Period: 60
+              Stat: Maximum
+<%end -%>
+
+  HighWebsocketConnectionsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${SubdomainName}_high_websocket_connections"
+      AlarmDescription: Significantly higher websocket connections than normal detected. Investigate if there is a DDOS.
       ActionsEnabled: false
+      EvaluationPeriods: 20
+      DatapointsToAlarm: 20
+      ComparisonOperator: GreaterThanUpperThreshold
+      TreatMissingData: notBreaching
+      Metrics:
+          - Id: m1
+            ReturnData: true
+            MetricStat:
+                Metric:
+                    Namespace: AWS/ApiGateway
+                    MetricName: ConnectCount
+                    Dimensions:
+                        - Name: Stage
+                          Value: !Sub "${StageName}"
+                        - Name: ApiId
+                          Value: !Ref WebSocketAPI
+                Period: 60
+                Stat: Sum
+          - Id: ad1
+            Label: ConnectCount (expected)
+            ReturnData: true
+            Expression: ANOMALY_DETECTION_BAND(m1, 8)
+      ThresholdMetricId: ad1
+
+  HighHttpRequestsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+        AlarmName: !Sub "${SubdomainName}_high_http_requests"
+        AlarmDescription: Significantly higher HTTP requests than normal detected.
+            Investigate if there is a DDOS.
+        ActionsEnabled: true
+        OKActions: []
+        AlarmActions: []
+        InsufficientDataActions: []
+        EvaluationPeriods: 20
+        DatapointsToAlarm: 20
+        ComparisonOperator: GreaterThanUpperThreshold
+        TreatMissingData: notBreaching
+        Metrics:
+            - Id: m1
+              ReturnData: true
+              MetricStat:
+                  Metric:
+                      Namespace: AWS/ApiGateway
+                      MetricName: Count
+                      Dimensions:
+                          - Name: ApiId
+                            Value: !Ref HttpAPI
+                  Period: 60
+                  Stat: Sum
+            - Id: ad1
+              Label: Count (expected)
+              ReturnData: true
+              Expression: ANOMALY_DETECTION_BAND(m1, 8)
+        ThresholdMetricId: ad1
+
+  HighUsageCompositeAlarm:
+    Type: AWS::CloudWatch::CompositeAlarm
+    DependsOn:
+      - HighHttpRequestsAlarm
+      -  HighWebsocketConnectionsAlarm
+      -  NeighborhoodHighInvocationsAlarm
+      -  TheaterHighInvocationsAlarm
+    Properties:
+        ActionsEnabled: true
+        AlarmActions:
+            # TODO: after we have run at high usage for a while, consider re-enabling this alarm. Right now it is too noisy
+            # - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-high-usage"]
+            - !Ref AWS::NoValue
+        AlarmDescription: Send message if abnormally high Javabuilder usage detected.
+            Monitors usage across the HTTP API, WebSocket API, and all Build and Run
+            Lambdas.
+        AlarmName: !Sub "${SubdomainName}_high_usage_composite"
+        AlarmRule: !Sub "ALARM(${SubdomainName}_console_high_invocations) OR
+            ALARM(${SubdomainName}_high_http_requests) OR
+            ALARM(${SubdomainName}_high_websocket_connections) OR
+            ALARM(${SubdomainName}_neighborhood_high_invocations) OR
+            ALARM(${SubdomainName}_theater_high_invocations)"
+        InsufficientDataActions: []
+        OKActions: []
+
+<%JAVALAB_APP_TYPES.each do | name | -%>
+
+  <%=name%>HighSevereErrorRateAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${SubdomainName}_<%=name.downcase%>_high_severe_error_rate"
+      AlarmDescription: Send page if Javabuilder severe error rate exceeds 10% for 20
+          minutes. Occasional spikes are expected, but a sustained high error rate
+          is an indication of an outage.
+      ActionsEnabled: true
+      AlarmActions:
+          - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:Javabuilder-high-error-rate"]
       EvaluationPeriods: 4
       DatapointsToAlarm: 4
-      Threshold: <%=config[:Threshold]%>
+      Threshold: 10
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
       Metrics:
@@ -594,24 +717,20 @@ Resources:
                           Value: !Ref BuildAndRunJava<%=name%>ProjectFunction
                 Period: 300
                 Stat: Sum
-<%end%>
 
-
-<%{
-  TwentyFivePercentErrorRateAlarm: {Threshold: 25, AlarmName: 'twenty_five_percent_error_rate'},
-  NinetyPercentErrorRateAlarm: {Threshold: 90, AlarmName: 'ninety_percent_error_rate'},
-}.each do |alarmTitle, config| -%>
-  <%=name%><%=alarmTitle%>:
+  <%=name%>HighErrorRateAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      AlarmName: !Sub "${SubdomainName}_<%=name.downcase%>_<%=config[:AlarmName]%>"
+      AlarmName: !Sub "${SubdomainName}_build_and_run_<%=name.downcase%>_lambda_error_rate"
       AlarmDescription: Error rate in Javabuilder's <%=name%> build and run lambda (the core of
-          Javabuilder, which executes student <%=name%> code) exceeded <%=config[:Threshold]%>% for four
+          Javabuilder, which executes student <%=name%> code) exceeded 10% for four
           consecutive 5 minute periods.
-      ActionsEnabled: false
+      ActionsEnabled: true
+      AlarmActions:
+        - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-build-and-run-lambda-error-rate"]
       EvaluationPeriods: 4
       DatapointsToAlarm: 4
-      Threshold: <%=config[:Threshold]%>
+      Threshold: 25
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
       Metrics:
@@ -652,7 +771,6 @@ Resources:
                           Value: !Ref BuildAndRunJava<%=name%>ProjectFunction
                 Period: 300
                 Stat: TC(89000:)
-<%end%>
 
   <%=name%>SlowCleanupTimeAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -751,141 +869,35 @@ Resources:
         Threshold: 2500
         Period: 60
 
-  <%=name%>MinimumUsageAlarm:
+  <%=name%>HighInvocationsAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-        AlarmName: !Sub "${SubdomainName}_<%=name.downcase%>_minimum_usage"
-        AlarmDescription: This alarm is to be used as part of a composite alarm, not by itself.
-            It triggers if the usage is above a minimum threshold, so we do not alarm on error
-            rates if we have very low usage.
+        AlarmName: !Sub "${SubdomainName}_<%=name.downcase%>_high_invocations"
+        AlarmDescription: Significantly higher <%=name%> build and run invocations than
+            normal detected. Investigate if there is a DDOS.
         ActionsEnabled: false
-        MetricName: Invocations
-        Namespace: AWS/Lambda
-        Statistic: Sum
-        Dimensions:
-            - Name: FunctionName
-              Value: !Ref BuildAndRunJava<%=name%>ProjectFunction
-        Period: 300
-        EvaluationPeriods: 4
-        DatapointsToAlarm: 4
-        Threshold: 100
-        ComparisonOperator: GreaterThanOrEqualToThreshold
+        EvaluationPeriods: 20
+        DatapointsToAlarm: 20
+        ComparisonOperator: GreaterThanUpperThreshold
         TreatMissingData: notBreaching
-  
-  <%=name%>SevereErrorRateAlarm:
-    Type: AWS::CloudWatch::CompositeAlarm
-    DependsOn:
-      - <%=name%>TenPercentSevereErrorRateAlarm
-      - <%=name%>MinimumUsageAlarm
-      - <%=name%>ElevatedSevereErrorRateAlarm
-    Properties:
-        AlarmName: !Sub "${SubdomainName}_<%=name.downcase%>_severe_error_rate"
-        AlarmDescription: Alarm if Javabuilder severe error rate exceeds 10% every 5 minutes for 20
-          minutes and there are at least 100 requests every 5 minutes. 
-          Occasional spikes are expected, but a sustained elevated severe error rate is an indication of an issue.
-          Severe errors are generated and emitted by our code. Please follow the instructions in this document to mitigate
-          https://docs.google.com/document/d/1bHvV6pvUcwxgZpw0YWBmxFggQL5KqYx9zwolwkZhjU8/edit#bookmark=id.2gh4dxmz643n
-        ActionsEnabled: true
-        AlarmActions:
-            - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:Javabuilder-high-error-rate"]
-        AlarmRule: !Sub "ALARM(${SubdomainName}_<%=name.downcase%>_ten_percent_severe_error_rate) AND 
-            ALARM(${SubdomainName}_<%=name.downcase%>_minimum_usage)"
-        InsufficientDataActions: []
-        OKActions: []
-        ActionsSuppressor: !Sub "arn:aws:cloudwatch:${AWS::Region}:${AWS::AccountId}:alarm:${SubdomainName}_<%=name.downcase%>_elevated_severe_error_rate"
-        ActionsSuppressorWaitPeriod: 120
-        ActionsSuppressorExtensionPeriod: 120
+        Metrics:
+            - Id: m1
+              ReturnData: true
+              MetricStat:
+                  Metric:
+                      Namespace: AWS/Lambda
+                      MetricName: Invocations
+                      Dimensions:
+                          - Name: FunctionName
+                            Value: !Ref BuildAndRunJava<%=name%>ProjectFunction
+                  Period: 60
+                  Stat: Sum
+            - Id: ad1
+              Label: Invocations (expected)
+              ReturnData: true
+              Expression: ANOMALY_DETECTION_BAND(m1, 8)
+        ThresholdMetricId: ad1
 
-  <%=name%>ElevatedSevereErrorRateAlarm:
-    Type: AWS::CloudWatch::CompositeAlarm
-    DependsOn:
-      - <%=name%>NinetyPercentSevereErrorRateAlarm
-      - <%=name%>MinimumUsageAlarm
-    Properties:
-        AlarmName: !Sub "${SubdomainName}_<%=name.downcase%>_elevated_severe_error_rate"
-        AlarmDescription: Alarm if Javabuilder severe error rate exceeds 90% every 5 minutes for 20
-          minutes and there are at least 100 requests every 5 minutes. 
-          Occasional spikes are expected, but a sustained high severe error rate is an indication of an outage.
-          Severe errors are generated and emitted by our code. Please follow the instructions in this document to mitigate
-          https://docs.google.com/document/d/1bHvV6pvUcwxgZpw0YWBmxFggQL5KqYx9zwolwkZhjU8/edit#bookmark=id.2gh4dxmz643n
-        ActionsEnabled: true
-        AlarmActions:
-            - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:CDO-Urgent"]
-        AlarmRule: !Sub "ALARM(${SubdomainName}_<%=name.downcase%>_ninety_percent_severe_error_rate) AND 
-            ALARM(${SubdomainName}_<%=name.downcase%>_minimum_usage)"
-        InsufficientDataActions: []
-        OKActions: []
-  
-  <%=name%>ErrorRateAlarm:
-    Type: AWS::CloudWatch::CompositeAlarm
-    DependsOn:
-      - <%=name%>TwentyFivePercentErrorRateAlarm
-      - <%=name%>MinimumUsageAlarm
-      - <%=name%>ElevatedErrorRateAlarm
-    Properties:
-        AlarmName: !Sub "${SubdomainName}_<%=name.downcase%>_error_rate"
-        AlarmDescription: Alarm if Javabuilder severe error rate exceeds 25% every 5 minutes for 20
-          minutes and there are at least 100 requests every 5 minutes. 
-          Occasional spikes are expected, but a sustained elevated error rate is an indication of an issue.
-          Errors are generated by the Lambda system. Please follow the instructions in this document to mitigate
-          https://docs.google.com/document/d/1bHvV6pvUcwxgZpw0YWBmxFggQL5KqYx9zwolwkZhjU8/edit#bookmark=id.2gh4dxmz643n
-        ActionsEnabled: true
-        AlarmActions:
-            - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:Javabuilder-high-error-rate"]
-        AlarmRule: !Sub "ALARM(${SubdomainName}_<%=name.downcase%>_twenty_five_percent_error_rate) AND 
-            ALARM(${SubdomainName}_<%=name.downcase%>_minimum_usage)"
-        InsufficientDataActions: []
-        OKActions: []
-        ActionsSuppressor: !Sub "arn:aws:cloudwatch:${AWS::Region}:${AWS::AccountId}:alarm:${SubdomainName}_<%=name.downcase%>_elevated_error_rate"
-        ActionsSuppressorWaitPeriod: 120
-        ActionsSuppressorExtensionPeriod: 120
-
-  <%=name%>ElevatedErrorRateAlarm:
-    Type: AWS::CloudWatch::CompositeAlarm
-    DependsOn:
-      - <%=name%>NinetyPercentErrorRateAlarm
-      - <%=name%>MinimumUsageAlarm
-    Properties:
-        AlarmName: !Sub "${SubdomainName}_<%=name.downcase%>_elevated_error_rate"
-        AlarmDescription: Alarm if Javabuilder error rate exceeds 90% every 5 minutes for 20
-          minutes and there are at least 100 requests every 5 minutes. 
-          Occasional spikes are expected, but a sustained high error rate is an indication of an outage.
-          Errors are generated by the Lambda system. Please follow the instructions in this document to mitigate
-          https://docs.google.com/document/d/1bHvV6pvUcwxgZpw0YWBmxFggQL5KqYx9zwolwkZhjU8/edit#bookmark=id.2gh4dxmz643n
-        ActionsEnabled: true
-        AlarmActions:
-            - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:CDO-Urgent"]
-        AlarmRule: !Sub "ALARM(${SubdomainName}_<%=name.downcase%>_ninety_percent_error_rate) AND 
-            ALARM(${SubdomainName}_<%=name.downcase%>_minimum_usage)"
-        InsufficientDataActions: []
-        OKActions: []
-  
-  <%=name%>HighConcurrentExecutionsAlarm:
-    Type: AWS::CloudWatch::Alarm
-    Properties:
-      AlarmName: !Sub "${SubdomainName}_<%=name.downcase%>_high_concurrent_executions"
-      AlarmDescription: !Sub |
-          Alarm if javabuilder usage has high concurrent executions for 10 minutes.
-          Occasional spikes are expected, but long-running high usage is an indication
-          of an attack. If this is occuring on the demo environment, this is a non-urgent
-          issue as we expect occasional periods of high usage. If it is on production, 
-          page the student learning team for further investigation. See this doc for investigation steps
-          https://docs.google.com/document/d/1bHvV6pvUcwxgZpw0YWBmxFggQL5KqYx9zwolwkZhjU8/edit#bookmark=id.xs1gcuxrw6ze
-      ActionsEnabled: true
-      AlarmActions:
-          - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${HighConcurrentExecutionsTopic}"]
-      EvaluationPeriods: 10
-      DatapointsToAlarm: 10
-      Period: 60
-      Threshold: !Ref HighConcurrentExecutionsAlarmThreshold
-      ComparisonOperator: GreaterThanThreshold
-      TreatMissingData: notBreaching
-      MetricName: ConcurrentExecutions
-      Namespace: AWS/Lambda
-      Statistic: Maximum
-      Dimensions:
-        - Name: FunctionName
-          Value: !Ref BuildAndRunJava<%=name%>ProjectFunction
 <%end -%>
 
 # We use shortened versions of names for partition keys (eg, user_id),
@@ -899,7 +911,6 @@ Resources:
   TOKEN_ID_ATTRIBUTE_NAME = 'token_id'
   ISSUED_AT_TIMESTAMP_ATTRIBUTE_NAME = 'issued_at'
   TIME_TO_LIVE_ATTRIBUTE_NAME = 'ttl'
-  CONTAINER_ID_AND_TRIGGER_COMPOSITE_ATTRIBUTE_NAME = 'container_id'
 -%>
   BlockedUsersTable:
     Type: AWS::DynamoDB::Table
@@ -911,7 +922,7 @@ Resources:
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: <%=DOMAIN_AND_USER_ID_COMPOSITE_ATTRIBUTE_NAME%>
-          AttributeType: "S"
+          AttributeType: S
       PointInTimeRecoverySpecification:
         PointInTimeRecoveryEnabled: true
 
@@ -925,7 +936,7 @@ Resources:
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: <%=TOKEN_ID_ATTRIBUTE_NAME%>
-          AttributeType: "S"
+          AttributeType: S
       TimeToLiveSpecification:
         AttributeName: <%=TIME_TO_LIVE_ATTRIBUTE_NAME%>
         Enabled: true
@@ -942,9 +953,9 @@ Resources:
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: <%=DOMAIN_AND_USER_ID_COMPOSITE_ATTRIBUTE_NAME%>
-          AttributeType: "S"
+          AttributeType: S
         - AttributeName: <%=ISSUED_AT_TIMESTAMP_ATTRIBUTE_NAME%>
-          AttributeType: "N"
+          AttributeType: N
       TimeToLiveSpecification:
         AttributeName: <%=TIME_TO_LIVE_ATTRIBUTE_NAME%>
         Enabled: true
@@ -961,37 +972,25 @@ Resources:
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: <%=DOMAIN_AND_SECTION_OWNER_ID_COMPOSITE_ATTRIBUTE_NAME%>
-          AttributeType: "S"
+          AttributeType: S
         - AttributeName: <%=ISSUED_AT_TIMESTAMP_ATTRIBUTE_NAME%>
-          AttributeType: "N"
+          AttributeType: N
       TimeToLiveSpecification:
         AttributeName: <%=TIME_TO_LIVE_ATTRIBUTE_NAME%>
         Enabled: true
-
-  UnhealthyContainersTable:
-      Type: AWS::DynamoDB::Table
-      Properties:
-        TableName: !Sub "${SubdomainName}_unhealthy_containers"
-        KeySchema:
-          - AttributeName: <%=CONTAINER_ID_AND_TRIGGER_COMPOSITE_ATTRIBUTE_NAME%>
-            KeyType: HASH
-        BillingMode: PAY_PER_REQUEST
-        AttributeDefinitions:
-          - AttributeName: <%=CONTAINER_ID_AND_TRIGGER_COMPOSITE_ATTRIBUTE_NAME%>
-            AttributeType: "S"
 
   HighUsersBlockedAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
         AlarmName: !Sub "${SubdomainName}_high_users_blocked"
-        AlarmDescription: Unusually high number of users being newly blocked by our throttling
+        AlarmDescription: Unusually high number of users being blocked by our throttling
             thresholds.
         ActionsEnabled: true
         OKActions: []
         AlarmActions:
           - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-high-throttling"]
         InsufficientDataActions: []
-        MetricName: NewUserBlocked
+        MetricName: UserBlocked
         Namespace: Javabuilder
         Statistic: Sum
         Dimensions:
@@ -1004,17 +1003,18 @@ Resources:
         ComparisonOperator: GreaterThanThreshold
         TreatMissingData: notBreaching
 
-  ClassroomBlockedAlarm:
+  HighClassroomsBlockedAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-        AlarmName: !Sub "${SubdomainName}_classroom_blocked"
-        AlarmDescription: A classroom was newly blocked by our threshold. Investigate if this is classroom should be blocked.
+        AlarmName: !Sub "${SubdomainName}_high_classrooms_blocked"
+        AlarmDescription: Unusually high number of classrooms being blocked by our throttling
+            thresholds.
         ActionsEnabled: true
         OKActions: []
         AlarmActions:
           - !If [SilenceAlertsCondition, !Ref AWS::NoValue, !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:javabuilder-high-throttling"]
         InsufficientDataActions: []
-        MetricName: NewClassroomBlocked
+        MetricName: ClassroomBlocked
         Namespace: Javabuilder
         Statistic: Sum
         Dimensions:
@@ -1023,8 +1023,8 @@ Resources:
         Period: 60
         EvaluationPeriods: 1
         DatapointsToAlarm: 1
-        Threshold: 1
-        ComparisonOperator: GreaterThanOrEqualToThreshold
+        Threshold: 10
+        ComparisonOperator: GreaterThanThreshold
         TreatMissingData: notBreaching
 
   HighUnknownTokensAlarm:
@@ -1043,7 +1043,7 @@ Resources:
         Statistic: Sum
         Dimensions:
             - Name: functionName
-              Value: !Ref WebSocketAuthorizerLambda
+              Value: !Ref WebsocketAuthorizerLambda
         Period: 60
         EvaluationPeriods: 1
         DatapointsToAlarm: 1
@@ -1067,7 +1067,7 @@ Resources:
         Statistic: Sum
         Dimensions:
             - Name: functionName
-              Value: !Ref WebSocketAuthorizerLambda
+              Value: !Ref WebsocketAuthorizerLambda
         Period: 60
         EvaluationPeriods: 1
         DatapointsToAlarm: 1
@@ -1091,7 +1091,7 @@ Resources:
         Statistic: Sum
         Dimensions:
             - Name: functionName
-              Value: !Ref WebSocketAuthorizerLambda
+              Value: !Ref WebsocketAuthorizerLambda
         Period: 60
         EvaluationPeriods: 1
         DatapointsToAlarm: 1
