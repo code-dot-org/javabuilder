@@ -14,6 +14,11 @@ public class JavaProjectFile implements ProjectFile {
     this.fileName = fileName;
     if (FileUtils.isJavaFile(fileName)) {
       this.className = fileName.substring(0, fileName.indexOf(FileUtils.JAVA_EXTENSION));
+      // Prevent users from creating classes in restricted packages (e.g., java.lang.Runtime)
+      // to avoid security bypasses.
+      if (FileUtils.isInRestrictedPackage(this.className)) {
+        throw new UserInitiatedException(UserInitiatedExceptionKey.INVALID_JAVA_FILE_NAME);
+      }
     } else {
       throw new UserInitiatedException(UserInitiatedExceptionKey.JAVA_EXTENSION_MISSING);
     }
