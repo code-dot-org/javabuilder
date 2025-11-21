@@ -14,6 +14,11 @@ public class JavaProjectFile implements ProjectFile {
     this.fileName = fileName;
     if (FileUtils.isJavaFile(fileName)) {
       this.className = fileName.substring(0, fileName.indexOf(FileUtils.JAVA_EXTENSION));
+
+      if (this.className.contains(".")) {
+        throw new UserInitiatedException(UserInitiatedExceptionKey.INVALID_JAVA_FILE_NAME);
+      }
+
     } else {
       throw new UserInitiatedException(UserInitiatedExceptionKey.JAVA_EXTENSION_MISSING);
     }
