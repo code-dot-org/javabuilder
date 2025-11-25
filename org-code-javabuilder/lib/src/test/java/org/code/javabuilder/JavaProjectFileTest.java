@@ -31,4 +31,97 @@ public class JavaProjectFileTest {
     String expectedCode = "import org.code.lang.System;\n" + originalCode;
     assertEquals(expectedCode, unitUnderTest.getFileContents());
   }
+
+  @Test
+  public void constructorThrowsErrorForJavaLangPackage() {
+    UserInitiatedException exception =
+        assertThrows(
+            UserInitiatedException.class,
+            () -> {
+              new JavaProjectFile("java.lang.Runtime.java");
+            });
+    assertEquals(
+        UserInitiatedExceptionKey.INVALID_JAVA_FILE_NAME.toString(), exception.getMessage());
+  }
+
+  @Test
+  public void constructorThrowsErrorForJavaLangProcess() {
+    UserInitiatedException exception =
+        assertThrows(
+            UserInitiatedException.class,
+            () -> {
+              new JavaProjectFile("java.lang.Process.java");
+            });
+    assertEquals(
+        UserInitiatedExceptionKey.INVALID_JAVA_FILE_NAME.toString(), exception.getMessage());
+  }
+
+  @Test
+  public void constructorThrowsErrorForJavaNetSocket() {
+    UserInitiatedException exception =
+        assertThrows(
+            UserInitiatedException.class,
+            () -> {
+              new JavaProjectFile("java.net.Socket.java");
+            });
+    assertEquals(
+        UserInitiatedExceptionKey.INVALID_JAVA_FILE_NAME.toString(), exception.getMessage());
+  }
+
+  @Test
+  public void constructorThrowsErrorForJavaNioFiles() {
+    UserInitiatedException exception =
+        assertThrows(
+            UserInitiatedException.class,
+            () -> {
+              new JavaProjectFile("java.nio.file.Files.java");
+            });
+    assertEquals(
+        UserInitiatedExceptionKey.INVALID_JAVA_FILE_NAME.toString(), exception.getMessage());
+  }
+
+  @Test
+  public void constructorThrowsErrorForJavaxScriptEngine() {
+    UserInitiatedException exception =
+        assertThrows(
+            UserInitiatedException.class,
+            () -> {
+              new JavaProjectFile("javax.script.ScriptEngine.java");
+            });
+    assertEquals(
+        UserInitiatedExceptionKey.INVALID_JAVA_FILE_NAME.toString(), exception.getMessage());
+  }
+
+  @Test
+  public void constructorThrowsErrorForSunMiscUnsafe() {
+    UserInitiatedException exception =
+        assertThrows(
+            UserInitiatedException.class,
+            () -> {
+              new JavaProjectFile("sun.misc.Unsafe.java");
+            });
+    assertEquals(
+        UserInitiatedExceptionKey.INVALID_JAVA_FILE_NAME.toString(), exception.getMessage());
+  }
+
+  @Test
+  public void constructorAllowsValidUserClasses() throws UserInitiatedException {
+    // These should all be allowed.
+    new JavaProjectFile("MyClass.java");
+    new JavaProjectFile("MyClass1.java");
+    new JavaProjectFile("MyClass_1.java");
+    new JavaProjectFile("My-Class.java");
+  }
+
+  @Test
+  public void constructorThrowsErrorForInvalidUserClasses() {
+    UserInitiatedException exception =
+        assertThrows(
+            UserInitiatedException.class,
+            () -> {
+              new JavaProjectFile("My.Class.java");
+            });
+    assertEquals(
+        UserInitiatedExceptionKey.INVALID_JAVA_FILE_NAME.toString(), exception.getMessage());
+  }
 }
