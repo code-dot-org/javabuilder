@@ -34,7 +34,6 @@ public class JavaProjectFileTest {
 
   @Test
   public void constructorThrowsErrorForJavaLangPackage() {
-    // Test the vulnerability: users should not be able to create java.lang.Runtime.java
     UserInitiatedException exception =
         assertThrows(
             UserInitiatedException.class,
@@ -107,7 +106,7 @@ public class JavaProjectFileTest {
 
   @Test
   public void constructorAllowsValidUserClasses() throws UserInitiatedException {
-    // These should all be allowed
+    // These should all be allowed.
     new JavaProjectFile("MyClass.java");
     new JavaProjectFile("MyClass1.java");
     new JavaProjectFile("MyClass_1.java");
