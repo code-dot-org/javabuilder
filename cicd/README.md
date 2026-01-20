@@ -34,6 +34,8 @@ Finally, all of the above need some Roles to exist in the AWS accounts before we
 * "deploy-setup.sh" - Shell script to create/update this stack
 * "setup.template.yml" - AWS resources for the Setup infrastructure
 
+Additionally, we are dependent on the "/iam.yml" stack, deployed manually by an admin.
+
 ## Deploying CI/CD resources
 
 ### Deploying the `main` CI/CD Pipeline
