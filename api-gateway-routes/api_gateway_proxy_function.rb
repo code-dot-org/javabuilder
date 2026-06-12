@@ -4,7 +4,9 @@ require 'aws-sdk-lambda'
 require 'aws-sdk-apigatewaymanagementapi'
 require 'uri'
 require_relative 'auth_response_helper'
+require_relative 'session_id_helper'
 include AuthResponseHelper
+include SessionIdHelper
 
 MAX_SQS_RETRIES = 3
 INITIAL_RETRY_SLEEP_S = 0.5
@@ -174,15 +176,6 @@ end
 # ARN is of the format arn:aws:lambda:{region}:{account_id}:function:{lambda_name}
 def get_region(context)
   context.invoked_function_arn.split(':')[3]
-end
-
-# SQS queues can only be named with the following characters:
-# alphanumeric characters, hyphens (-), and underscores (_)
-# See https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/SQS/Client.html#create_queue-instance_method
-# The connection ID always ends with an '='. We remove that here so we can use the connection ID as
-# our session ID.
-def get_session_id(event)
-  event["requestContext"]["connectionId"].delete_suffix("=")
 end
 
 def get_sqs_url(event, context)
