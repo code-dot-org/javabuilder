@@ -6,6 +6,8 @@ module SessionIdHelper
   # The connection ID is base64-encoded, so it can end with one or more '='
   # padding characters. We remove all of them here.
   def get_session_id(event)
+    stripped_connection_id = event["requestContext"]["connectionId"].sub(/=+$/, "")
+    puts "session_id_helper stripped connection id: #{stripped_connection_id}, original connection id: #{event["requestContext"]["connectionId"]}"
     event["requestContext"]["connectionId"].sub(/=+$/, "")
   end
 end
