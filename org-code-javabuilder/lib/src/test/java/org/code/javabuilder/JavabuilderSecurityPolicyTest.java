@@ -69,9 +69,13 @@ class JavabuilderSecurityPolicyTest {
   }
 
   @Test
-  public void validatorCodeIsFullyTrusted() {
-    assertTrue(policy.implies(validatorDomain, new FilePermission("/etc/passwd", "read")));
-    assertTrue(
+  public void validatorRunIsAlsoConfined() {
+    // The validation run loads and executes student code in a VALIDATOR-level UserClassLoader, so
+    // it must be confined the same way as a USER run.
+    final String tmpFile = System.getProperty("java.io.tmpdir") + "/validation-output.txt";
+    assertTrue(policy.implies(validatorDomain, new FilePermission(tmpFile, "write")));
+    assertFalse(policy.implies(validatorDomain, new FilePermission("/etc/passwd", "read")));
+    assertFalse(
         policy.implies(validatorDomain, new RuntimePermission("getenv.AWS_SECRET_ACCESS_KEY")));
   }
 

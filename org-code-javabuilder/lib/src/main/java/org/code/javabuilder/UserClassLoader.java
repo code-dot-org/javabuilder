@@ -31,14 +31,6 @@ public class UserClassLoader extends URLClassLoader {
     this.permissionLevel = permissionLevel;
   }
 
-  /**
-   * @return the permission level this class loader was created with. Used by {@link
-   *     JavabuilderSecurityPolicy} to distinguish confined USER code from trusted VALIDATOR code.
-   */
-  public RunPermissionLevel getPermissionLevel() {
-    return this.permissionLevel;
-  }
-
   @Override
   public Class<?> loadClass(String name) throws ClassNotFoundException {
     // Call super for user provided classes, as we need to verify users are not

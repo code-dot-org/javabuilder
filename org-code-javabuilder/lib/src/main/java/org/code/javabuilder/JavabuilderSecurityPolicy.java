@@ -7,9 +7,10 @@ import java.security.Policy;
 import java.security.ProtectionDomain;
 
 /**
- * Security policy that confines USER-level student code at runtime while leaving all framework,
- * JDK, AWS SDK, and VALIDATOR-level code fully trusted. Student code is identified by being loaded
- * from a USER-level {@link UserClassLoader}.
+ * Security policy that confines student code at runtime while leaving all framework, JDK, and AWS
+ * SDK code fully trusted. Student code is identified by being loaded from a {@link
+ * UserClassLoader}. This covers both standard USER runs and the VALIDATOR-level validation run,
+ * which executes student code (the student's main method) within the same class loader.
  *
  * <p>For confined student code this policy:
  *
@@ -52,7 +53,7 @@ public class JavabuilderSecurityPolicy extends Policy {
   @Override
   public boolean implies(ProtectionDomain domain, Permission permission) {
     if (!isConfinedStudentCode(domain)) {
-      // Framework / JDK / AWS SDK / validator code: full trust.
+      // Framework / JDK / AWS SDK code: full trust.
       return true;
     }
     if (permission instanceof FilePermission) {
@@ -70,12 +71,11 @@ public class JavabuilderSecurityPolicy extends Policy {
   }
 
   private boolean isConfinedStudentCode(ProtectionDomain domain) {
-    if (domain == null || !(domain.getClassLoader() instanceof UserClassLoader)) {
-      return false;
-    }
-    // Validation code is trusted first-party code; only confine USER-level runs.
-    return ((UserClassLoader) domain.getClassLoader()).getPermissionLevel()
-        == RunPermissionLevel.USER;
+    // Confine any code loaded by a UserClassLoader. This covers both standard USER runs and the
+    // VALIDATOR-level validation run: validation loads and invokes the student's code (via the
+    // student's main method) in the same class loader, so this ensures student code is confined
+    // there too, not just in RUN and user-test modes.
+    return domain != null && domain.getClassLoader() instanceof UserClassLoader;
   }
 
   private boolean isAllowedFileAccess(FilePermission permission) {
