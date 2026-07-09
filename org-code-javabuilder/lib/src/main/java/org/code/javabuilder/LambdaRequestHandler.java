@@ -76,11 +76,17 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     // Documentation: https://docs.aws.amazon.com/lambda/latest/dg/java-handler.html
     CachedResources.create();
 
-    // Install the security policy once for the entire container. The policy scopes itself to
-    // USER-level student code (via UserClassLoader), so a fresh UserClassLoader per run means
-    // confinement is applied per run without any per-invocation setup. All other code is fully
-    // trusted, so framework and AWS SDK behavior is unaffected.
-    Policy.setPolicy(new JavabuilderSecurityPolicy());
+    // Install the security policy once for the entire container. The policy scopes itself to code
+    // loaded by a UserClassLoader, so a fresh UserClassLoader per run means confinement is applied
+    // per run without any per-invocation setup. All other code is fully trusted, so framework and
+    // AWS SDK behavior is unaffected.
+    //
+    // warmUp() must run before the SecurityManager is installed: the policy is consulted on every
+    // permission check (including the file reads the class loader performs), so any class it
+    // references must already be loaded to avoid a ClassCircularityError during class loading.
+    final JavabuilderSecurityPolicy securityPolicy = new JavabuilderSecurityPolicy();
+    securityPolicy.warmUp();
+    Policy.setPolicy(securityPolicy);
     System.setSecurityManager(new SecurityManager());
     COLD_BOOT_END = Clock.systemUTC().instant();
     this.apiClient =

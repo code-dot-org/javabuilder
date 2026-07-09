@@ -2,9 +2,13 @@ package org.code.javabuilder;
 
 import java.io.File;
 import java.io.FilePermission;
+import java.net.URL;
+import java.security.CodeSource;
 import java.security.Permission;
 import java.security.Policy;
 import java.security.ProtectionDomain;
+import java.security.cert.Certificate;
+import java.util.List;
 
 /**
  * Security policy that confines student code at runtime while leaving all framework, JDK, and AWS
@@ -68,6 +72,33 @@ public class JavabuilderSecurityPolicy extends Policy {
     // File and env access are the only things we confine here. Everything else student code can do
     // today is preserved.
     return true;
+  }
+
+  /**
+   * Forces every class that {@link #implies} references to load. This MUST be called before a
+   * SecurityManager is installed.
+   *
+   * <p>{@code implies} runs on every permission check, including the {@code File.exists()} calls
+   * the class loader makes to locate a class. If a class {@code implies} references (notably {@link
+   * UserClassLoader}) is still unloaded when the first such check fires, loading it re-enters
+   * {@code implies} before the load completes and throws {@link ClassCircularityError}. Exercising
+   * both the file and getenv branches here, while no SecurityManager is active, guarantees those
+   * classes are already loaded by the time checks begin.
+   */
+  public void warmUp() {
+    final ProtectionDomain studentDomain =
+        new ProtectionDomain(
+            new CodeSource(null, (Certificate[]) null),
+            null,
+            new UserClassLoader(
+                new URL[] {},
+                ClassLoader.getSystemClassLoader(),
+                List.of(),
+                RunPermissionLevel.USER),
+            null);
+    this.implies(studentDomain, new FilePermission("warmup", "read"));
+    this.implies(studentDomain, new FilePermission("warmup", "write"));
+    this.implies(studentDomain, new RuntimePermission("getenv.WARMUP"));
   }
 
   private boolean isConfinedStudentCode(ProtectionDomain domain) {

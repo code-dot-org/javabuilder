@@ -80,6 +80,16 @@ class JavabuilderSecurityPolicyTest {
   }
 
   @Test
+  public void warmUpDoesNotThrowAndPolicyStillEnforces() {
+    final JavabuilderSecurityPolicy freshPolicy = new JavabuilderSecurityPolicy();
+    assertDoesNotThrow(freshPolicy::warmUp);
+    // Warming up must not weaken enforcement.
+    assertFalse(freshPolicy.implies(userDomain, new FilePermission("/etc/passwd", "read")));
+    assertFalse(
+        freshPolicy.implies(userDomain, new RuntimePermission("getenv.AWS_SECRET_ACCESS_KEY")));
+  }
+
+  @Test
   public void frameworkCodeIsFullyTrusted() {
     assertTrue(policy.implies(frameworkDomain, new FilePermission("/etc/passwd", "read,write")));
     assertTrue(
