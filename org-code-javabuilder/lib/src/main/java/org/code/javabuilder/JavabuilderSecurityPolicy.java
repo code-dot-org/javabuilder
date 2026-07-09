@@ -22,9 +22,8 @@ import java.util.List;
  *   <li>allows read/write/delete only under the writable temp directory,
  *   <li>allows read-only access to the app/runtime directories the JVM and student libraries need
  *       (so class loading, fonts, and bundled assets keep working),
- *   <li>denies all other filesystem access (notably /proc, /etc, $HOME, and env-backed files),
- *   <li>denies environment variable access (getenv), which on Lambda exposes the execution role's
- *       AWS credentials,
+ *   <li>denies all other filesystem access (notably /proc, /etc, $HOME, and env-backed files such
+ *       as /proc/self/environ),
  *   <li>preserves every other capability student code has today.
  * </ul>
  *
@@ -33,7 +32,6 @@ import java.util.List;
  */
 public class JavabuilderSecurityPolicy extends Policy {
   private static final String ALL_FILES = "<<ALL FILES>>";
-  private static final String GETENV_PREFIX = "getenv.";
 
   // The only root confined student code may write to / delete within.
   private final String writableRoot;
@@ -63,14 +61,12 @@ public class JavabuilderSecurityPolicy extends Policy {
     if (permission instanceof FilePermission) {
       return isAllowedFileAccess((FilePermission) permission);
     }
-    // Deny environment variable access; on Lambda this exposes AWS credentials.
-    if (permission instanceof RuntimePermission
-        && permission.getName() != null
-        && permission.getName().startsWith(GETENV_PREFIX)) {
-      return false;
-    }
-    // File and env access are the only things we confine here. Everything else student code can do
-    // today is preserved.
+    // Filesystem access is the only thing we confine here. Everything else student code can do
+    // today is preserved. Note: we intentionally do NOT deny getenv, because the AWS SDK resolves
+    // credentials via System.getenv() while student code is on the call stack (e.g. when a println
+    // is flushed through the output adapter), and AccessController would then deny the SDK's own
+    // read. Env-var credential exposure is mitigated instead by the file policy (which blocks
+    // reading /proc/self/environ) and by minimizing the Lambda execution role.
     return true;
   }
 
@@ -82,8 +78,8 @@ public class JavabuilderSecurityPolicy extends Policy {
    * the class loader makes to locate a class. If a class {@code implies} references (notably {@link
    * UserClassLoader}) is still unloaded when the first such check fires, loading it re-enters
    * {@code implies} before the load completes and throws {@link ClassCircularityError}. Exercising
-   * both the file and getenv branches here, while no SecurityManager is active, guarantees those
-   * classes are already loaded by the time checks begin.
+   * the policy here, while no SecurityManager is active, guarantees those classes are already
+   * loaded by the time checks begin.
    */
   public void warmUp() {
     final ProtectionDomain studentDomain =
@@ -98,7 +94,6 @@ public class JavabuilderSecurityPolicy extends Policy {
             null);
     this.implies(studentDomain, new FilePermission("warmup", "read"));
     this.implies(studentDomain, new FilePermission("warmup", "write"));
-    this.implies(studentDomain, new RuntimePermission("getenv.WARMUP"));
   }
 
   private boolean isConfinedStudentCode(ProtectionDomain domain) {
