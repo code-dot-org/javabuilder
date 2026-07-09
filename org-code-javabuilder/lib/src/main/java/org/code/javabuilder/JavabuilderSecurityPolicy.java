@@ -22,9 +22,7 @@ import java.util.List;
  *   <li>allows read/write/delete only under the writable temp directory,
  *   <li>allows read-only access to the app/runtime directories the JVM and student libraries need
  *       (so class loading, fonts, and bundled assets keep working),
- *   <li>denies all other filesystem access (notably /proc, /etc, $HOME, and env-backed files such
- *       as /proc/self/environ),
- *   <li>preserves every other capability student code has today.
+ *   <li>denies all other filesystem access 
  * </ul>
  *
  * <p>NOTE: {@link SecurityManager} / {@link Policy} are deprecated in Java 17 and removed in Java
@@ -36,8 +34,7 @@ public class JavabuilderSecurityPolicy extends Policy {
   // The only root confined student code may write to / delete within.
   private final String writableRoot;
   // Roots confined student code may read from (a superset of writableRoot). Everything the JVM
-  // needs to load classes, fonts, and library assets lives under these; sensitive locations
-  // (/proc, /etc, $HOME, env) are intentionally excluded.
+  // needs to load classes, fonts, and library assets lives under these
   private final String[] readableRoots;
 
   public JavabuilderSecurityPolicy() {
@@ -61,12 +58,6 @@ public class JavabuilderSecurityPolicy extends Policy {
     if (permission instanceof FilePermission) {
       return isAllowedFileAccess((FilePermission) permission);
     }
-    // Filesystem access is the only thing we confine here. Everything else student code can do
-    // today is preserved. Note: we intentionally do NOT deny getenv, because the AWS SDK resolves
-    // credentials via System.getenv() while student code is on the call stack (e.g. when a println
-    // is flushed through the output adapter), and AccessController would then deny the SDK's own
-    // read. Env-var credential exposure is mitigated instead by the file policy (which blocks
-    // reading /proc/self/environ) and by minimizing the Lambda execution role.
     return true;
   }
 
