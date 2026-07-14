@@ -487,32 +487,16 @@ Resources:
             Status: Enabled
             ExpirationInDays: 1
 
-  ContentOriginAccessControl:
-    Type: AWS::CloudFront::OriginAccessControl
-    Properties:
-      OriginAccessControlConfig:
-        Name: !Sub "${SubdomainName}-${BaseDomainName}-content-oac"
-        OriginAccessControlOriginType: s3
-        SigningBehavior: always
-        SigningProtocol: sigv4
-
   ContentBucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:
       Bucket: !Ref ContentBucket
       PolicyDocument:
-        Version: '2012-10-17'
         Statement:
-          - Sid: AllowCloudFrontRead
-            Effect: Allow
-            Principal:
-              Service: cloudfront.amazonaws.com
-            Action:
-              - s3:GetObject
-            Resource: !Sub "arn:aws:s3:::${ContentBucket}/*"
-            Condition:
-              StringEquals:
-                AWS:SourceArn: !Sub "arn:aws:cloudfront::${AWS::AccountId}:distribution/${ContentCDN}"
+        - Action: ['s3:GetObject']
+          Effect: Allow
+          Resource: !Sub "arn:aws:s3:::${ContentBucket}/*"
+          Principal: '*'
 
   ContentApiCertificate:
     Type: AWS::CertificateManager::Certificate
@@ -553,10 +537,8 @@ Resources:
         #   Prefix: !Sub "${SubdomainName}-content.${BaseDomainName}"
         Origins:
           - Id: ContentBucket
-            DomainName: !GetAtt ContentBucket.RegionalDomainName
-            OriginAccessControlId: !GetAtt ContentOriginAccessControl.Id
-            S3OriginConfig:
-              OriginAccessIdentity: ""
+            DomainName: !GetAtt ContentBucket.DomainName
+            S3OriginConfig: {}
         DefaultCacheBehavior:
           TargetOriginId: ContentBucket
           AllowedMethods: [DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT]
