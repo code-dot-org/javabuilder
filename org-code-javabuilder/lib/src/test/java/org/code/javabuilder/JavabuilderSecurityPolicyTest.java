@@ -6,6 +6,7 @@ import java.io.FilePermission;
 import java.net.URL;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
+import java.security.SecurityPermission;
 import java.security.cert.Certificate;
 import java.util.List;
 import java.util.PropertyPermission;
@@ -63,6 +64,25 @@ class JavabuilderSecurityPolicyTest {
     assertTrue(policy.implies(userDomain, new RuntimePermission("modifyThread")));
     assertTrue(policy.implies(userDomain, new PropertyPermission("user.language", "read")));
     assertTrue(policy.implies(userDomain, new RuntimePermission("getenv.AWS_SECRET_ACCESS_KEY")));
+  }
+
+  @Test
+  public void studentCannotDisableTheSandbox() {
+    // Confined code must never be allowed to install a new SecurityManager or Policy, which would
+    // turn off all confinement. This holds in both USER and VALIDATOR (reflection-capable) runs.
+    for (ProtectionDomain studentDomain : new ProtectionDomain[] {userDomain, validatorDomain}) {
+      assertFalse(
+          policy.implies(studentDomain, new RuntimePermission("setSecurityManager")));
+      assertFalse(
+          policy.implies(studentDomain, new RuntimePermission("createSecurityManager")));
+      assertFalse(policy.implies(studentDomain, new SecurityPermission("setPolicy")));
+      assertFalse(policy.implies(studentDomain, new SecurityPermission("createPolicy.JavaPolicy")));
+      assertFalse(
+          policy.implies(studentDomain, new SecurityPermission("setProperty.policy.provider")));
+    }
+    // Framework code is unaffected: it retains full control of the security infrastructure.
+    assertTrue(policy.implies(frameworkDomain, new RuntimePermission("setSecurityManager")));
+    assertTrue(policy.implies(frameworkDomain, new SecurityPermission("setPolicy")));
   }
 
   @Test
