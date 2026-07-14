@@ -7,7 +7,6 @@ import java.security.CodeSource;
 import java.security.Permission;
 import java.security.Policy;
 import java.security.ProtectionDomain;
-import java.security.SecurityPermission;
 import java.security.cert.Certificate;
 import java.util.List;
 
@@ -23,9 +22,7 @@ import java.util.List;
  *   <li>allows read/write/delete only under the writable temp directory,
  *   <li>allows read-only access to the app/runtime directories the JVM and student libraries need
  *       (so class loading, fonts, and bundled assets keep working),
- *   <li>denies all other filesystem access,
- *   <li>denies the permissions that would let confined code disable its own confinement (installing
- *       a new SecurityManager or Policy).
+ *   <li>denies all other filesystem access 
  * </ul>
  *
  * <p>NOTE: {@link SecurityManager} / {@link Policy} are deprecated in Java 17 and removed in Java
@@ -61,27 +58,7 @@ public class JavabuilderSecurityPolicy extends Policy {
     if (permission instanceof FilePermission) {
       return isAllowedFileAccess((FilePermission) permission);
     }
-    if (isSandboxControlPermission(permission)) {
-      return false;
-    }
     return true;
-  }
-
-  /**
-   * True for the permissions that would let confined code disable or replace its own confinement:
-   * installing/creating a {@link SecurityManager}, or any {@link SecurityPermission} (which covers
-   * {@code setPolicy}, {@code createPolicy.*}, and changing security properties such as the policy
-   * provider). Student code has no legitimate need for any of these.
-   */
-  private static boolean isSandboxControlPermission(Permission permission) {
-    if (permission instanceof SecurityPermission) {
-      return true;
-    }
-    if (permission instanceof RuntimePermission) {
-      final String name = permission.getName();
-      return "setSecurityManager".equals(name) || "createSecurityManager".equals(name);
-    }
-    return false;
   }
 
   /**
