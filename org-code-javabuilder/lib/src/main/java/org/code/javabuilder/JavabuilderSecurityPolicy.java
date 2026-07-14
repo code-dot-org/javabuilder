@@ -22,7 +22,8 @@ import java.util.List;
  *   <li>allows read/write/delete only under the writable temp directory,
  *   <li>allows read-only access to the app/runtime directories the JVM and student libraries need
  *       (so class loading, fonts, and bundled assets keep working),
- *   <li>denies all other filesystem access 
+ *   <li>never allows execute
+ *   <li>denies all other filesystem access
  * </ul>
  *
  * <p>NOTE: {@link SecurityManager} / {@link Policy} are deprecated in Java 17 and removed in Java
@@ -104,10 +105,13 @@ public class JavabuilderSecurityPolicy extends Policy {
       return false;
     }
     final String actions = permission.getActions();
+    if (actions.contains("execute")) {
+      return false;
+    }
     if (actions.contains("write") || actions.contains("delete")) {
       return isUnder(path, this.writableRoot);
     }
-    // read / execute / readlink
+    // read / readlink
     for (String root : this.readableRoots) {
       if (root != null && isUnder(path, root)) {
         return true;

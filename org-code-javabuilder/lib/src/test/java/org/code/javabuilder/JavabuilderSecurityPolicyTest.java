@@ -66,6 +66,17 @@ class JavabuilderSecurityPolicyTest {
   }
 
   @Test
+  public void studentCannotExecuteEvenUnderTmp() {
+    final String tmpBinary = System.getProperty("java.io.tmpdir") + "/x";
+    assertFalse(policy.implies(userDomain, new FilePermission(tmpBinary, "execute")));
+    assertFalse(policy.implies(userDomain, new FilePermission(tmpBinary, "read,execute")));
+    // Execute is denied everywhere, including the otherwise-readable runtime roots.
+    final String runtimeBinary = System.getProperty("java.home") + "/bin/java";
+    assertFalse(policy.implies(userDomain, new FilePermission(runtimeBinary, "execute")));
+    assertFalse(policy.implies(validatorDomain, new FilePermission(tmpBinary, "execute")));
+  }
+
+  @Test
   public void validatorRunIsAlsoConfined() {
     // The validation run loads and executes student code in a VALIDATOR-level UserClassLoader, so
     // it must be confined the same way as a USER run.
