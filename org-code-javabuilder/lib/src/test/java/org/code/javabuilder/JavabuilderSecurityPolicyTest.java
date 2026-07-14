@@ -86,10 +86,9 @@ class JavabuilderSecurityPolicyTest {
   }
 
   @Test
-  public void warmUpDoesNotThrowAndPolicyStillEnforces() {
-    final JavabuilderSecurityPolicy freshPolicy = new JavabuilderSecurityPolicy();
-    assertDoesNotThrow(freshPolicy::warmUp);
-    // Warming up must not weaken enforcement.
+  public void constructorWarmUpDoesNotThrowAndPolicyStillEnforces() {
+    // Construction warms the policy up; it must not throw and must not weaken enforcement.
+    final JavabuilderSecurityPolicy freshPolicy = assertDoesNotThrow(JavabuilderSecurityPolicy::new);
     assertFalse(freshPolicy.implies(userDomain, new FilePermission("/etc/passwd", "read")));
   }
 

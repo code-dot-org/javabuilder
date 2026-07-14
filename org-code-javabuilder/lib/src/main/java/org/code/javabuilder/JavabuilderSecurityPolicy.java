@@ -48,6 +48,9 @@ public class JavabuilderSecurityPolicy extends Policy {
           "/var/lang", // managed runtime
           "/opt" // Lambda layers: fonts, instrument samples, wrapper
         };
+    // Warm up here, at construction, so it is guaranteed to run before the caller installs a
+    // SecurityManager.
+    warmUp();
   }
 
   @Override
@@ -63,17 +66,17 @@ public class JavabuilderSecurityPolicy extends Policy {
   }
 
   /**
-   * Forces every class that {@link #implies} references to load. This MUST be called before a
-   * SecurityManager is installed.
+   * Forces every class that #implies references to load. Called from the constructor so it always
+   * runs before a SecurityManager is installed.
    *
-   * <p>{@code implies} runs on every permission check, including the {@code File.exists()} calls
-   * the class loader makes to locate a class. If a class {@code implies} references (notably {@link
-   * UserClassLoader}) is still unloaded when the first such check fires, loading it re-enters
-   * {@code implies} before the load completes and throws {@link ClassCircularityError}. Exercising
+   * #implies runs on every permission check, including the File.exists() calls
+   * the class loader makes to locate a class. If a class #implies references
+   * is still unloaded when the first such check fires, loading it re-enters
+   * #implies before the load completes and throws ClassCircularityError. Exercising
    * the policy here, while no SecurityManager is active, guarantees those classes are already
    * loaded by the time checks begin.
    */
-  public void warmUp() {
+  private void warmUp() {
     final ProtectionDomain studentDomain =
         new ProtectionDomain(
             new CodeSource(null, (Certificate[]) null),
