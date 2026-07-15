@@ -20,6 +20,7 @@ import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.security.Policy;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
@@ -74,6 +75,13 @@ public class LambdaRequestHandler implements RequestHandler<Map<String, String>,
     // This will only be called once in the initial creation of the lambda instance.
     // Documentation: https://docs.aws.amazon.com/lambda/latest/dg/java-handler.html
     CachedResources.create();
+
+    // Install the security policy once for the entire container. The policy scopes itself to code
+    // loaded by a UserClassLoader, so a fresh UserClassLoader per run means confinement is applied
+    // per run without any per-invocation setup.
+    final JavabuilderSecurityPolicy securityPolicy = new JavabuilderSecurityPolicy();
+    Policy.setPolicy(securityPolicy);
+    System.setSecurityManager(new SecurityManager());
     COLD_BOOT_END = Clock.systemUTC().instant();
     this.apiClient =
         AmazonApiGatewayManagementApiClientBuilder.standard()
