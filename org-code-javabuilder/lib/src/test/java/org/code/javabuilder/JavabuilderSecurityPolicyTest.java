@@ -6,6 +6,7 @@ import java.io.FilePermission;
 import java.net.URL;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
+import java.security.SecurityPermission;
 import java.security.cert.Certificate;
 import java.util.List;
 import java.util.PropertyPermission;
@@ -77,6 +78,19 @@ class JavabuilderSecurityPolicyTest {
   }
 
   @Test
+  public void studentCannotDisableTheSandbox() {
+    // System.setSecurityManager(null) would remove the sandbox; Policy.setPolicy() would let
+    // student code replace this policy with an allow-everything one.
+    assertFalse(policy.implies(userDomain, new RuntimePermission("setSecurityManager")));
+    assertFalse(policy.implies(userDomain, new SecurityPermission("setPolicy")));
+    assertFalse(policy.implies(validatorDomain, new RuntimePermission("setSecurityManager")));
+    assertFalse(policy.implies(validatorDomain, new SecurityPermission("setPolicy")));
+    // Framework code (LambdaRequestHandler) installs the manager and policy itself.
+    assertTrue(policy.implies(frameworkDomain, new RuntimePermission("setSecurityManager")));
+    assertTrue(policy.implies(frameworkDomain, new SecurityPermission("setPolicy")));
+  }
+
+  @Test
   public void validatorRunIsAlsoConfined() {
     // The validation run loads and executes student code in a VALIDATOR-level UserClassLoader, so
     // it must be confined the same way as a USER run.
@@ -88,7 +102,8 @@ class JavabuilderSecurityPolicyTest {
   @Test
   public void constructorWarmUpDoesNotThrowAndPolicyStillEnforces() {
     // Construction warms the policy up; it must not throw and must not weaken enforcement.
-    final JavabuilderSecurityPolicy freshPolicy = assertDoesNotThrow(JavabuilderSecurityPolicy::new);
+    final JavabuilderSecurityPolicy freshPolicy =
+        assertDoesNotThrow(JavabuilderSecurityPolicy::new);
     assertFalse(freshPolicy.implies(userDomain, new FilePermission("/etc/passwd", "read")));
   }
 
