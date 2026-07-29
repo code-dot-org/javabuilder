@@ -7,6 +7,7 @@ import java.security.CodeSource;
 import java.security.Permission;
 import java.security.Policy;
 import java.security.ProtectionDomain;
+import java.security.SecurityPermission;
 import java.security.cert.Certificate;
 import java.util.List;
 
@@ -24,6 +25,7 @@ import java.util.List;
  *       (so class loading, fonts, and bundled assets keep working),
  *   <li>never allows execute
  *   <li>denies all other filesystem access
+ *   <li>denies replacing or removing the SecurityManager and this policy.
  * </ul>
  *
  * <p>NOTE: {@link SecurityManager} / {@link Policy} are deprecated in Java 17 and removed in Java
@@ -62,6 +64,14 @@ public class JavabuilderSecurityPolicy extends Policy {
     if (permission instanceof FilePermission) {
       return isAllowedFileAccess((FilePermission) permission);
     }
+
+    if (permission instanceof RuntimePermission
+        && "setSecurityManager".equals(permission.getName())) {
+      return false;
+    }
+    if (permission instanceof SecurityPermission && "setPolicy".equals(permission.getName())) {
+      return false;
+    }
     return true;
   }
 
@@ -69,12 +79,11 @@ public class JavabuilderSecurityPolicy extends Policy {
    * Forces every class that #implies references to load. Called from the constructor so it always
    * runs before a SecurityManager is installed.
    *
-   * #implies runs on every permission check, including the File.exists() calls
-   * the class loader makes to locate a class. If a class #implies references
-   * is still unloaded when the first such check fires, loading it re-enters
-   * #implies before the load completes and throws ClassCircularityError. Exercising
-   * the policy here, while no SecurityManager is active, guarantees those classes are already
-   * loaded by the time checks begin.
+   * <p>#implies runs on every permission check, including the File.exists() calls the class loader
+   * makes to locate a class. If a class #implies references is still unloaded when the first such
+   * check fires, loading it re-enters #implies before the load completes and throws
+   * ClassCircularityError. Exercising the policy here, while no SecurityManager is active,
+   * guarantees those classes are already loaded by the time checks begin.
    */
   private void warmUp() {
     final ProtectionDomain studentDomain =
@@ -89,6 +98,8 @@ public class JavabuilderSecurityPolicy extends Policy {
             null);
     this.implies(studentDomain, new FilePermission("warmup", "read"));
     this.implies(studentDomain, new FilePermission("warmup", "write"));
+    this.implies(studentDomain, new RuntimePermission("setSecurityManager"));
+    this.implies(studentDomain, new SecurityPermission("setPolicy"));
   }
 
   private boolean isConfinedStudentCode(ProtectionDomain domain) {
