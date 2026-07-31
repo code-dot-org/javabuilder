@@ -1,8 +1,8 @@
 package org.code.javabuilder;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.code.javabuilder.util.JarUtils;
@@ -15,7 +15,7 @@ public class JavaRunner {
   private final UserTestRunner userTestRunner;
   private final ValidationRunner validationRunner;
   private final List<String> javaClassNames;
-  private final List<String> validationAndJavaClassNames;
+  private final List<String> validationClassNames;
   private final OutputAdapter outputAdapter;
 
   public JavaRunner(
@@ -46,8 +46,7 @@ public class JavaRunner {
     this.userTestRunner = userTestRunner;
     this.validationRunner = validationRunner;
     this.javaClassNames = this.parseClassNames(javaFiles);
-    this.validationAndJavaClassNames = new ArrayList<>(this.javaClassNames);
-    this.validationAndJavaClassNames.addAll(this.parseClassNames(validationFiles));
+    this.validationClassNames = this.parseClassNames(validationFiles);
     this.outputAdapter = outputAdapter;
   }
 
@@ -64,12 +63,7 @@ public class JavaRunner {
   }
 
   public void runTests() throws JavabuilderException, InternalFacingException {
-    // Tests have more permissions than a regular run: as of now, all
-    // tests will be run under the VALIDATOR permission. Once we split out validation and
-    // project tests run we will need to give different permissions to each run type.
-    boolean hasValidation =
-        this.run(
-            this.validationRunner, RunPermissionLevel.VALIDATOR, this.validationAndJavaClassNames);
+    boolean hasValidation = this.runValidation();
     boolean hasUserTests =
         this.run(this.userTestRunner, RunPermissionLevel.USER, this.javaClassNames);
     if (!hasValidation && !hasUserTests) {
@@ -80,15 +74,39 @@ public class JavaRunner {
   private boolean run(
       CodeRunner runner, RunPermissionLevel permissionLevel, List<String> classNames)
       throws JavabuilderException, InternalFacingException {
-    // Include the user-facing api jars in the code we are loading so student code can access them.
-    URL[] classLoaderUrls = JarUtils.getAllJarURLs(this.executableLocation);
-
     // Create a new UserClassLoader. This class loader handles blocking any disallowed
     // packages/classes.
     UserClassLoader urlClassLoader =
         new UserClassLoader(
-            classLoaderUrls, JavaRunner.class.getClassLoader(), classNames, permissionLevel);
+            this.getClassLoaderUrls(),
+            JavaRunner.class.getClassLoader(),
+            classNames,
+            permissionLevel);
+    return this.execute(runner, urlClassLoader, urlClassLoader);
+  }
 
+  /**
+   * Runs validation with a pair of class loaders: the validation classes load at the VALIDATOR
+   * permission level while the student's classes load at the USER level, so the validator-only
+   * allowances (reflection, org.code.validation) are not reachable from student code.
+   */
+  private boolean runValidation() throws JavabuilderException, InternalFacingException {
+    UserClassLoader.ValidatorClassLoaderPair pair =
+        UserClassLoader.createValidatorPair(
+            this.getClassLoaderUrls(),
+            JavaRunner.class.getClassLoader(),
+            this.javaClassNames,
+            this.validationClassNames);
+    return this.execute(this.validationRunner, pair.getValidationLoader(), pair);
+  }
+
+  private URL[] getClassLoaderUrls() {
+    // Include the user-facing api jars in the code we are loading so student code can access them.
+    return JarUtils.getAllJarURLs(this.executableLocation);
+  }
+
+  private boolean execute(CodeRunner runner, UserClassLoader urlClassLoader, Closeable toClose)
+      throws JavabuilderException, InternalFacingException {
     boolean runResult;
     PerformanceTracker performanceTracker =
         (PerformanceTracker) JavabuilderContext.getInstance().get(PerformanceTracker.class);
@@ -100,7 +118,7 @@ public class JavaRunner {
     }
 
     try {
-      urlClassLoader.close();
+      toClose.close();
     } catch (IOException e) {
       // The user code has finished running. We don't want to confuse them at this point with an
       // error message.

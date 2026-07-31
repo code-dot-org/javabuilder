@@ -14,8 +14,9 @@ import java.util.List;
 /**
  * Security policy that confines student code at runtime while leaving all framework, JDK, and AWS
  * SDK code fully trusted. Student code is identified by being loaded from a {@link
- * UserClassLoader}. This covers both standard USER runs and the VALIDATOR-level validation run,
- * which executes student code (the student's main method) within the same class loader.
+ * UserClassLoader}. This covers both standard USER runs and the VALIDATOR-level validation run:
+ * validation runs use a pair of UserClassLoaders (one for student classes, one for validation
+ * classes), and both halves are confined here.
  *
  * <p>For confined student code this policy:
  *
@@ -104,9 +105,9 @@ public class JavabuilderSecurityPolicy extends Policy {
 
   private boolean isConfinedStudentCode(ProtectionDomain domain) {
     // Confine any code loaded by a UserClassLoader. This covers both standard USER runs and the
-    // VALIDATOR-level validation run: validation loads and invokes the student's code (via the
-    // student's main method) in the same class loader, so this ensures student code is confined
-    // there too, not just in RUN and user-test modes.
+    // VALIDATOR-level validation run: validation runs use a pair of UserClassLoaders (student
+    // classes at USER level, validation classes at VALIDATOR level), and both are confined here,
+    // as are EasyMock-generated mock classes injected into either loader.
     return domain != null && domain.getClassLoader() instanceof UserClassLoader;
   }
 

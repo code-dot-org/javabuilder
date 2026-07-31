@@ -1,8 +1,11 @@
 package org.code.javabuilder;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.lang.invoke.LambdaMetafactory;
 import java.lang.invoke.StringConcatFactory;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.HashSet;
@@ -13,22 +16,107 @@ import org.code.protocol.LoggerUtils;
 /**
  * Custom class loader for user-provided code. This class loader only allows certain classes to be
  * used within a user-provided class.
+ *
+ * <p>Validation runs use a pair of these loaders (see {@link #createValidatorPair}): a USER-level
+ * loader that defines only the student's classes, and a VALIDATOR-level loader that defines only
+ * the validation classes and delegates student class names to the student loader. Because the JVM
+ * resolves each class's symbolic references through its defining loader, the validator-only
+ * allowances (org.code.validation, java.lang.reflect) are reachable from validation code but not
+ * from student code.
+ *
+ * <p>One deliberate hole: EasyMock (cglib) defines mock subclasses inside the mocked class's own
+ * loader, so mocking a student class only links if the student loader can resolve org.easymock.*
+ * and its dependencies. The student half of a validator pair therefore allows the
+ * mocking support lists below.
  */
 public class UserClassLoader extends URLClassLoader {
   private final Set<String> userProvidedClasses;
   private final URLClassLoader approvedClassLoader;
   private final RunPermissionLevel permissionLevel;
+  // Set only on the validation half of a validator pair: the loader that defines the student's
+  // classes, consulted so validation code and student code share one copy of each student class.
+  private final UserClassLoader studentDelegate;
+  // Set only on the student half of a validator pair: allows the classes EasyMock-generated mock
+  // subclasses of student classes need to link.
+  private final boolean allowsMockingSupport;
 
   public UserClassLoader(
       URL[] urls,
       ClassLoader parent,
       List<String> userProvidedClasses,
       RunPermissionLevel permissionLevel) {
+    this(urls, parent, userProvidedClasses, permissionLevel, null, false);
+  }
+
+  private UserClassLoader(
+      URL[] urls,
+      ClassLoader parent,
+      List<String> userProvidedClasses,
+      RunPermissionLevel permissionLevel,
+      UserClassLoader studentDelegate,
+      boolean allowsMockingSupport) {
     super(urls, parent);
     this.userProvidedClasses = new HashSet<>();
     this.userProvidedClasses.addAll(userProvidedClasses);
-    this.approvedClassLoader = new URLClassLoader(urls, JavaRunner.class.getClassLoader());
+    // Share the student loader's approved class loader so classes loaded through it (org.code.*,
+    // JUnit, EasyMock) have a single identity across the pair.
+    this.approvedClassLoader =
+        studentDelegate != null
+            ? studentDelegate.approvedClassLoader
+            : new URLClassLoader(urls, JavaRunner.class.getClassLoader());
     this.permissionLevel = permissionLevel;
+    this.studentDelegate = studentDelegate;
+    this.allowsMockingSupport = allowsMockingSupport;
+  }
+
+  /**
+   * Creates the pair of class loaders used for a validation run: a USER-level loader defining the
+   * student's classes and a VALIDATOR-level loader defining the validation classes. The validation
+   * loader delegates student class names to the student loader, so student classes resolve their
+   * own references at USER level even when loaded or invoked from validation code.
+   */
+  public static ValidatorClassLoaderPair createValidatorPair(
+      URL[] urls,
+      ClassLoader parent,
+      List<String> studentClassNames,
+      List<String> validationClassNames) {
+    UserClassLoader studentLoader =
+        new UserClassLoader(urls, parent, studentClassNames, RunPermissionLevel.USER, null, true);
+    UserClassLoader validationLoader =
+        new UserClassLoader(
+            urls, parent, validationClassNames, RunPermissionLevel.VALIDATOR, studentLoader, false);
+    return new ValidatorClassLoaderPair(studentLoader, validationLoader);
+  }
+
+  /** The student/validation class loader pair used for a validation run. */
+  public static final class ValidatorClassLoaderPair implements Closeable {
+    private final UserClassLoader studentLoader;
+    private final UserClassLoader validationLoader;
+
+    private ValidatorClassLoaderPair(
+        UserClassLoader studentLoader, UserClassLoader validationLoader) {
+      this.studentLoader = studentLoader;
+      this.validationLoader = validationLoader;
+    }
+
+    public UserClassLoader getStudentLoader() {
+      return this.studentLoader;
+    }
+
+    public UserClassLoader getValidationLoader() {
+      return this.validationLoader;
+    }
+
+    // TODO: the shared approvedClassLoader is never closed (same behavior as before the pair
+    // existed).
+    @Override
+    public void close() throws IOException {
+      try {
+        this.validationLoader.close();
+      } finally {
+        this.studentLoader.close();
+      }
+    }
   }
 
   @Override
@@ -38,15 +126,22 @@ public class UserClassLoader extends URLClassLoader {
     if (this.userProvidedClasses.contains(name)) {
       return super.loadClass(name);
     }
+    // Student classes are defined by the student loader, so validation code and the student's own
+    // code see the same Class objects, and student classes resolve their references at USER level.
+    if (this.studentDelegate != null && this.studentDelegate.isUserProvidedClass(name)) {
+      return this.studentDelegate.loadClass(name);
+    }
     // If this is not a user provided class, we are loading something used by a user provided class.
     // If it is either an allowed class or package, we can load with our standard class loader.
     if (this.allowedClasses.contains(name)) {
       return this.approvedClassLoader.loadClass(name);
     }
 
-    // Validation code has a few additional allowed classes.
-    if (this.permissionLevel == RunPermissionLevel.VALIDATOR
-        && this.validatorAllowedClasses.contains(name)) {
+    // EasyMock support: needed by validation code, and by the student half of a validator pair
+    // because mock subclasses of student classes are defined inside the student loader.
+    if ((this.permissionLevel == RunPermissionLevel.VALIDATOR || this.allowsMockingSupport)
+        && (this.mockingAllowedClasses.contains(name)
+            || this.isInAllowedPackage(this.mockingAllowedPackages, name))) {
       return this.approvedClassLoader.loadClass(name);
     }
 
@@ -55,7 +150,7 @@ public class UserClassLoader extends URLClassLoader {
     // validator permissions allowed package list.
     if (this.isInAllowedPackage(this.allowedPackages, name)
         || (this.permissionLevel == RunPermissionLevel.VALIDATOR
-            && this.isInAllowedPackage(this.validatorAllowedPackages, name))) {
+            && this.isInAllowedPackage(this.validatorOnlyAllowedPackages, name))) {
       return this.approvedClassLoader.loadClass(name);
     }
 
@@ -63,6 +158,14 @@ public class UserClassLoader extends URLClassLoader {
     // as it is most likely user error, but we want to track it.
     LoggerUtils.logWarning("Invalid Class", name);
     throw new ClassNotFoundException(name);
+  }
+
+  boolean isUserProvidedClass(String name) {
+    return this.userProvidedClasses.contains(name);
+  }
+
+  URLClassLoader getApprovedClassLoader() {
+    return this.approvedClassLoader;
   }
 
   /**
@@ -130,13 +233,21 @@ public class UserClassLoader extends URLClassLoader {
         "jdk.internal.reflect.SerializationConstructorAccessorImpl" // EasyMock support
       };
 
-  // Allowed packages for code with elevated permissions, such as validation code.
-  private static final String[] validatorAllowedPackages =
-      new String[] {"org.code.validation", "java.lang.reflect", "org.easymock."};
+  // Allowed packages for code with elevated permissions, such as validation code. Never allowed
+  // for student code, including the student half of a validator pair.
+  private static final String[] validatorOnlyAllowedPackages =
+      new String[] {"org.code.validation", "java.lang.reflect"};
 
-  private static final Set<String> validatorAllowedClasses =
+  // EasyMock support: allowed for validation code and for the student half of a validator pair,
+  // because EasyMock defines mock subclasses of student classes inside the student loader.
+  private static final String[] mockingAllowedPackages = new String[] {"org.easymock."};
+
+  private static final Set<String> mockingAllowedClasses =
       Set.of(
           ThreadLocal.class.getName(), // EasyMock support
           CloneNotSupportedException.class.getName(), // EasyMock support
-          InvocationTargetException.class.getName()); // EasyMock support
+          InvocationTargetException.class.getName(), // EasyMock support
+          // EasyMock support: cglib-generated mock subclasses hold static Method fields resolved
+          // during class initialization.
+          Method.class.getName());
 }

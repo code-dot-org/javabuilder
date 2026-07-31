@@ -100,6 +100,24 @@ class JavabuilderSecurityPolicyTest {
   }
 
   @Test
+  public void bothHalvesOfValidatorPairAreConfined() {
+    // Validation runs use a pair of UserClassLoaders (student + validation); both must be
+    // confined the same way as a single-loader run.
+    final UserClassLoader.ValidatorClassLoaderPair pair =
+        UserClassLoader.createValidatorPair(
+            new URL[] {},
+            JavabuilderSecurityPolicyTest.class.getClassLoader(),
+            List.of(),
+            List.of());
+    final ProtectionDomain studentDomain = domainFor(pair.getStudentLoader());
+    final ProtectionDomain validationDomain = domainFor(pair.getValidationLoader());
+    assertFalse(policy.implies(studentDomain, new FilePermission("/etc/passwd", "read")));
+    assertFalse(policy.implies(validationDomain, new FilePermission("/etc/passwd", "read")));
+    assertFalse(policy.implies(studentDomain, new RuntimePermission("setSecurityManager")));
+    assertFalse(policy.implies(validationDomain, new RuntimePermission("setSecurityManager")));
+  }
+
+  @Test
   public void constructorWarmUpDoesNotThrowAndPolicyStillEnforces() {
     // Construction warms the policy up; it must not throw and must not weaken enforcement.
     final JavabuilderSecurityPolicy freshPolicy =
