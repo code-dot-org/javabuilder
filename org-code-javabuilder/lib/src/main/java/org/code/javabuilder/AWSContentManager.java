@@ -118,7 +118,10 @@ public class AWSContentManager implements ContentManager {
       this.uploads++;
       // Add the GET url for this file to the asset map so it can be referenced later.
       this.projectData.addNewAssetUrl(filename, this.contentBucketUrl + "/" + key);
-      return this.contentBucketUrl + presignedUrl.getFile();
+      // Return the raw S3 presigned URL. Uploads must go directly to S3 rather than through
+      // CloudFront, because the CloudFront origin access control signs origin requests and S3
+      // rejects requests that carry both that signature and presigned URL auth parameters.
+      return presignedUrl.toString();
     } catch (AbortedException e) {
       // this is most likely because the end user interrupted program execution. We can safely
       // ignore this.
