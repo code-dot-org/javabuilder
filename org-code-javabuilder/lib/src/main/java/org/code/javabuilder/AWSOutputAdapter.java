@@ -6,6 +6,8 @@ import com.amazonaws.services.apigatewaymanagementapi.AmazonApiGatewayManagement
 import com.amazonaws.services.apigatewaymanagementapi.model.GoneException;
 import com.amazonaws.services.apigatewaymanagementapi.model.PostToConnectionRequest;
 import java.nio.ByteBuffer;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import org.code.protocol.*;
 
 /** Sends messages to Amazon API Gateway from the user's program. */
@@ -45,7 +47,16 @@ public class AWSOutputAdapter implements OutputAdapter {
 
   private void sendMessageHelper(PostToConnectionRequest post) {
     try {
-      this.api.postToConnection(post);
+      // This runs with student code on the call stack (e.g. a student println), and the AWS SDK
+      // reads its credentials from environment variables on each request. JavabuilderSecurityPolicy
+      // denies getenv to student code, so run privileged to stop the permission check at this
+      // trusted frame.
+      AccessController.doPrivileged(
+          (PrivilegedAction<Void>)
+              () -> {
+                this.api.postToConnection(post);
+                return null;
+              });
     } catch (GoneException e) {
       throw new InternalFacingRuntimeException(CONNECTION_TERMINATED, e);
     } catch (IllegalStateException e) {

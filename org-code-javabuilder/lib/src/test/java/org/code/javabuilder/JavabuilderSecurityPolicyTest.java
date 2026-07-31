@@ -58,12 +58,19 @@ class JavabuilderSecurityPolicyTest {
 
   @Test
   public void studentRetainsNonFilePermissions() {
-    // Filesystem access is the only thing confined; other capabilities are preserved. getenv is
-    // intentionally NOT denied because the AWS SDK resolves credentials via getenv while student
-    // code is on the call stack (e.g. flushing a println through the output adapter).
     assertTrue(policy.implies(userDomain, new RuntimePermission("modifyThread")));
     assertTrue(policy.implies(userDomain, new PropertyPermission("user.language", "read")));
-    assertTrue(policy.implies(userDomain, new RuntimePermission("getenv.AWS_SECRET_ACCESS_KEY")));
+  }
+
+  @Test
+  public void studentCannotReadEnvironmentVariables() {
+    // The Lambda environment includes the function's AWS credentials. Trusted code that calls the
+    // AWS SDK on the student's stack (output/input adapters, content manager) wraps those calls in
+    // doPrivileged so this denial only affects direct student reads.
+    assertFalse(policy.implies(userDomain, new RuntimePermission("getenv.AWS_SECRET_ACCESS_KEY")));
+    // System.getenv() with no arguments checks "getenv.*".
+    assertFalse(policy.implies(userDomain, new RuntimePermission("getenv.*")));
+    assertFalse(policy.implies(validatorDomain, new RuntimePermission("getenv.*")));
   }
 
   @Test

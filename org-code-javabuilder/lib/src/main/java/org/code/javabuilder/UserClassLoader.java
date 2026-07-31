@@ -26,8 +26,8 @@ import org.code.protocol.LoggerUtils;
  *
  * <p>One deliberate hole: EasyMock (cglib) defines mock subclasses inside the mocked class's own
  * loader, so mocking a student class only links if the student loader can resolve org.easymock.*
- * and its dependencies. The student half of a validator pair therefore allows the
- * mocking support lists below.
+ * and its dependencies. The student half of a validator pair therefore allows the mocking support
+ * lists below.
  */
 public class UserClassLoader extends URLClassLoader {
   private final Set<String> userProvidedClasses;

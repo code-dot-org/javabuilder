@@ -15,6 +15,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Date;
 import org.code.protocol.ContentManager;
 import org.code.protocol.InternalExceptionKey;
@@ -112,9 +114,16 @@ public class AWSContentManager implements ContentManager {
     final long expirationTimeMs = System.currentTimeMillis() + context.getRemainingTimeInMillis();
 
     try {
+      // This runs with student code on the call stack (Prompter calls), and the AWS SDK reads its
+      // credentials from environment variables on each request. JavabuilderSecurityPolicy denies
+      // getenv to student code, so run privileged to stop the permission check at this trusted
+      // frame.
       final URL presignedUrl =
-          s3Client.generatePresignedUrl(
-              this.bucketName, key, new Date(expirationTimeMs), HttpMethod.PUT);
+          AccessController.doPrivileged(
+              (PrivilegedAction<URL>)
+                  () ->
+                      s3Client.generatePresignedUrl(
+                          this.bucketName, key, new Date(expirationTimeMs), HttpMethod.PUT));
       this.uploads++;
       // Add the GET url for this file to the asset map so it can be referenced later.
       this.projectData.addNewAssetUrl(filename, this.contentBucketUrl + "/" + key);
@@ -142,7 +151,14 @@ public class AWSContentManager implements ContentManager {
     ByteArrayInputStream inputStream = new ByteArrayInputStream(inputBytes);
 
     try {
-      this.s3Client.putObject(this.bucketName, filePath, inputStream, metadata);
+      // Runs on the student's call stack (theater image/audio publishing); see
+      // generateAssetUploadUrl for why this must be privileged.
+      AccessController.doPrivileged(
+          (PrivilegedAction<Void>)
+              () -> {
+                this.s3Client.putObject(this.bucketName, filePath, inputStream, metadata);
+                return null;
+              });
     } catch (AbortedException e) {
       // this is most likely because the end user interrupted program execution. We can safely
       // ignore this.
