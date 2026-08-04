@@ -69,19 +69,19 @@ class AWSContentManagerTest {
   }
 
   @Test
-  public void testGetUploadUrlReturnsGeneratedUrl() throws JavabuilderException {
+  public void testGetUploadUrlReturnsGeneratedUrl() throws Exception {
     final String fileName = "file1";
     final String key = FAKE_SESSION_ID + "/" + fileName;
-    final String urlFileName = "/file/path?queryParams";
-    final URL presignedUrl = mock(URL.class);
-    when(presignedUrl.getFile()).thenReturn(urlFileName);
+    final URL presignedUrl =
+        new URL("https://" + FAKE_BUCKET_NAME + ".s3.amazonaws.com/" + key + "?queryParams");
     when(context.getRemainingTimeInMillis()).thenReturn(1000);
     when(s3ClientMock.generatePresignedUrl(
             eq(FAKE_BUCKET_NAME), eq(key), any(Date.class), eq(HttpMethod.PUT)))
         .thenReturn(presignedUrl);
 
     final String uploadUrl = contentManager.generateAssetUploadUrl(fileName);
-    assertEquals(FAKE_OUTPUT_URL + urlFileName, uploadUrl);
+    // The upload URL is the raw S3 presigned URL, not a CloudFront URL.
+    assertEquals(presignedUrl.toString(), uploadUrl);
     verify(s3ClientMock)
         .generatePresignedUrl(eq(FAKE_BUCKET_NAME), eq(key), any(Date.class), eq(HttpMethod.PUT));
     // Verify that the URL was added to the project data's asset map
@@ -90,9 +90,9 @@ class AWSContentManagerTest {
   }
 
   @Test
-  public void testGetUploadUrlThrowsExceptionForTooManyUploads() throws JavabuilderException {
-    final URL presignedUrl = mock(URL.class);
-    when(presignedUrl.getFile()).thenReturn("/file/path?queryParams");
+  public void testGetUploadUrlThrowsExceptionForTooManyUploads() throws Exception {
+    final URL presignedUrl =
+        new URL("https://" + FAKE_BUCKET_NAME + ".s3.amazonaws.com/file/path?queryParams");
     when(context.getRemainingTimeInMillis()).thenReturn(1000);
     when(s3ClientMock.generatePresignedUrl(
             eq(FAKE_BUCKET_NAME), anyString(), any(Date.class), eq(HttpMethod.PUT)))

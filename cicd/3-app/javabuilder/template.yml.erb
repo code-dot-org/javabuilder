@@ -559,10 +559,13 @@ Resources:
               OriginAccessIdentity: ""
         DefaultCacheBehavior:
           TargetOriginId: ContentBucket
-          AllowedMethods: [DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT]
+          # Only reads go through the CDN; prompter uploads use presigned URLs directly to S3.
+          AllowedMethods: [GET, HEAD, OPTIONS]
           Compress: true
           DefaultTTL: 0
-          ForwardedValues: {QueryString: true}
+          # Don't forward query strings: clients append cache-bust suffixes that would otherwise
+          # be included in the origin access control's SigV4 signature of the origin request.
+          ForwardedValues: {QueryString: false}
           ViewerProtocolPolicy: redirect-to-https
 
 <%JAVALAB_APP_TYPES.each do | name | -%>
