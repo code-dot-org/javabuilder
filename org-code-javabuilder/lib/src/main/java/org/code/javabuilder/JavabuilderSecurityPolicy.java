@@ -25,10 +25,9 @@ import java.util.List;
  *       (so class loading, fonts, and bundled assets keep working),
  *   <li>never allows execute
  *   <li>denies all other filesystem access
- *   <li>denies reading environment variables (on Lambda they include the function's AWS
- *       credentials); trusted code that calls the AWS SDK while student code is on the stack must
- *       wrap the SDK call in {@code AccessController.doPrivileged} (see AWSOutputAdapter,
- *       AWSInputAdapter, AWSContentManager),
+ *   <li>denies reading environment variables. Trusted code that calls the AWS SDK while student code 
+ *       is on the stack must wrap the SDK call in {@code AccessController.doPrivileged}
+ *       (see AWSOutputAdapter, AWSInputAdapter, AWSContentManager),
  *   <li>denies replacing or removing the SecurityManager and this policy.
  * </ul>
  *
