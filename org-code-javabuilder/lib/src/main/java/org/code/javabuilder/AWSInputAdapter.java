@@ -6,6 +6,8 @@ import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.model.Message;
 import com.amazonaws.services.sqs.model.QueueDoesNotExistException;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -41,11 +43,20 @@ public class AWSInputAdapter implements InputAdapter {
     request.setMaxNumberOfMessages(10);
     while (messages.peek() == null) {
       try {
-        List<Message> messages = sqsClient.receiveMessage(request).getMessages();
-        for (Message message : messages) {
-          this.messages.add(message.getBody());
-          sqsClient.deleteMessage(queueUrl, message.getReceiptHandle());
-        }
+        // This runs with student code on the call stack (a student reading from System.in), and
+        // the AWS SDK reads its credentials from environment variables on each request.
+        // JavabuilderSecurityPolicy denies getenv to student code, so run privileged to stop the
+        // permission check at this trusted frame.
+        AccessController.doPrivileged(
+            (PrivilegedAction<Void>)
+                () -> {
+                  List<Message> received = sqsClient.receiveMessage(request).getMessages();
+                  for (Message message : received) {
+                    this.messages.add(message.getBody());
+                    sqsClient.deleteMessage(queueUrl, message.getReceiptHandle());
+                  }
+                  return null;
+                });
       } catch (QueueDoesNotExistException e) {
         // if we tried to send a message and got queue does not exist, we have lost our connection
         throw new InternalFacingRuntimeException(CONNECTION_TERMINATED, e);
