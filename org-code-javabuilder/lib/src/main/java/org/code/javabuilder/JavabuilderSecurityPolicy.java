@@ -25,6 +25,9 @@ import java.util.List;
  *       (so class loading, fonts, and bundled assets keep working),
  *   <li>never allows execute
  *   <li>denies all other filesystem access
+ *   <li>denies reading environment variables. Trusted code that calls the AWS SDK while student code 
+ *       is on the stack must wrap the SDK call in {@code AccessController.doPrivileged}
+ *       (see AWSOutputAdapter, AWSInputAdapter, AWSContentManager),
  *   <li>denies replacing or removing the SecurityManager and this policy.
  * </ul>
  *
@@ -65,9 +68,15 @@ public class JavabuilderSecurityPolicy extends Policy {
       return isAllowedFileAccess((FilePermission) permission);
     }
 
-    if (permission instanceof RuntimePermission
-        && "setSecurityManager".equals(permission.getName())) {
-      return false;
+    if (permission instanceof RuntimePermission) {
+      final String name = permission.getName();
+      if ("setSecurityManager".equals(name)) {
+        return false;
+      }
+      // Covers both System.getenv(name) ("getenv.<name>") and System.getenv() ("getenv.*").
+      if (name.startsWith("getenv.")) {
+        return false;
+      }
     }
     if (permission instanceof SecurityPermission && "setPolicy".equals(permission.getName())) {
       return false;
@@ -99,6 +108,7 @@ public class JavabuilderSecurityPolicy extends Policy {
     this.implies(studentDomain, new FilePermission("warmup", "read"));
     this.implies(studentDomain, new FilePermission("warmup", "write"));
     this.implies(studentDomain, new RuntimePermission("setSecurityManager"));
+    this.implies(studentDomain, new RuntimePermission("getenv.warmup"));
     this.implies(studentDomain, new SecurityPermission("setPolicy"));
   }
 
