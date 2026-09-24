@@ -73,6 +73,47 @@ Resources:
                 Resource:
                   - !Sub arn:aws:codestar-connections:us-east-1:${AWS::AccountId}:connection/*
 
+  # This role will be used by CodeBuild to verify pull requests. As such it has
+  # very limited permissions, as any GitHub user can create a Pull Requests.
+  PublicCodeBuildRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: ['sts:AssumeRole']
+            Effect: Allow
+            Principal:
+              Service:
+                - codebuild.amazonaws.com
+        Version: '2012-10-17'
+      Path: /service-role/
+      PermissionsBoundary: !ImportValue IAM-DevPermissions
+      Policies:
+        # - PolicyName: CloudformationPackage
+        #   PolicyDocument:
+        #     Statement:
+        #       - Effect: Allow
+        #         Action:
+        #           - TBD
+        #         Resource: TBD
+        - PolicyName: CodeBuildResourcesAccess
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetBucketAcl
+                  - s3:GetBucketLocation
+                Resource:
+                  - !Sub arn:aws:s3:::${ArtifactStore}
+              - Effect: Allow
+                Action:
+                  - s3:PutObject
+                  - s3:PutObjectAcl
+                  - s3:GetObject
+                  - s3:GetObjectVersion
+                Resource:
+                  - !Sub arn:aws:s3:::${ArtifactStore}/*
+
 Outputs:
   JavabuilderCodeBuildArtifactBucket:
     Description: Javabuilder CodeBuild Artifact Bucket Name
@@ -86,3 +127,11 @@ Outputs:
     Description: Javabuilder CodeBuild Role Name
     Value: !Ref JavabuilderCodeBuildRole
     Export: {Name: JavabuilderCodeBuildRoleName}
+  JavabuilderPublicCodeBuildRoleArn:
+    Description: Javabuilder Public CodeBuild Role ARN
+    Value: !GetAtt PublicCodeBuildRole.Arn
+    Export: {Name: JavabuilderPublicCodeBuildRoleArn}
+  JavabuilderPublicCodeBuildRoleName:
+    Description: Javabuilder Public CodeBuild Role Name
+    Value: !Ref PublicCodeBuildRole
+    Export: {Name: JavabuilderPublicCodeBuildRoleName}
