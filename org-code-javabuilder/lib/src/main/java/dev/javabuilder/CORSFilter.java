@@ -22,7 +22,12 @@ import javax.servlet.http.HttpServletResponse;
 public class CORSFilter extends HttpFilter {
 
   private static final List<String> ALLOWED_ORIGINS =
-      List.of("http://localhost-studio.code.org:3000", "http://127.0.0.1:3000");
+      List.of(
+        "http://localhost-studio.code.org:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost-studio.code.org:9000",
+        "http://127.0.0.1:9000",
+      );
 
   @Override
   public void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
